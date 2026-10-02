@@ -9,9 +9,9 @@
 
 | # | Việc | Trạng thái |
 |---|---|---|
-| 1 | Hỏi anh: app kế toán làm những việc gì cụ thể (báo cáo gì, ai dùng, đang làm tay ở đâu — Excel / sheet / phần mềm nào), lấy dữ liệu từ đâu | **CHƯA** — việc đầu tiên |
-| 2 | `git init` + tạo repo `hh-vibecode/ke-toan` + bật GitHub Pages | **ĐANG LÀM** — đã git init + commit ở máy (nhánh `main`, remote `origin` đã gắn). Chưa tạo repo trên GitHub: cần GitHub token (việc 3). Repo public giống 2 app kia (Pages miễn phí) |
-| 3 | Xin anh khoá → ghi `kt-keys.local.txt`: khoá quản trị Supabase (anh chọn dùng chung của project, hoặc tạo key riêng tên `ke-toan` để lộ thì thu hồi riêng), token Management API (`sbp_…`), GitHub token | chưa |
+| 1 | Hỏi anh: app kế toán làm những việc gì cụ thể (báo cáo gì, ai dùng, đang làm tay ở đâu — Excel / sheet / phần mềm nào), lấy dữ liệu từ đâu | **ĐÃ HỎI 1/10, CHỜ ANH TRẢ LỜI** |
+| 2 | `git init` + tạo repo `hh-vibecode/ke-toan` + bật GitHub Pages | **XONG 2/10** — repo public, Pages nhánh `main` thư mục gốc (giống 2 app kia): https://hh-vibecode.github.io/ke-toan/ (404 tới khi có `index.html`) |
+| 3 | Xin anh khoá → ghi `kt-keys.local.txt`: khoá quản trị Supabase (anh chọn dùng chung của project, hoặc tạo key riêng tên `ke-toan` để lộ thì thu hồi riêng), token Management API (`sbp_…`) | chưa — GitHub KHÔNG cần token riêng: dùng đăng nhập git có sẵn trên máy (anh chốt 2/10) |
 | 4 | Dựng khung app (1 file `index.html` như 2 app kia, hoặc theo anh chọn) + màn nhập MÃ TRUY CẬP + nút Đổi mã / Khoá | chưa |
 | 5 | Bảng `kt_*` (RLS bật, anon không đọc thẳng) + hàm `kt_*` tự kiểm mã; lưu `supabase-schema-kt.sql` | chưa |
 | 6 | Đẩy bản đầu, kiểm trang live, báo anh F5 | chưa |
@@ -34,6 +34,8 @@
 - **Tên:** thư mục / repo `ke-toan`. **Tiền tố:** `kt_` (bảng, hàm) · `kt-` (lịch chạy, workflow). Đã đăng ký vào sổ quy ước chung 1/10/2026.
 - **Vào app bằng MÃ TRUY CẬP riêng** (giống QC), KHÔNG dùng chung tài khoản đăng nhập của MKT/Sale.
 - Mọi thứ Claude tạo ký tên **Monsieur Claude**.
+- **Repo public** (anh chốt 2/10/2026, để Pages miễn phí như 2 app kia) → tuyệt đối không có khoá quản trị / số liệu trong code.
+- **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026), không xin anh tạo token. Không in token ra.
 
 ## 4. PHỤ THUỘC CHÉO (cần app khác làm — nhờ anh chuyển lời)
 
@@ -46,5 +48,6 @@ sẵn 1 hàm / view trả đúng số đã chốt (để 2 app không ra 2 con s
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **02/10/2026 14:38** — Tạo repo `hh-vibecode/ke-toan` (public, anh chốt) bằng đăng nhập git có sẵn trên máy, đẩy commit đầu, bật Pages (`main` /). Auto mode chặn 2 lần (đọc credential, tạo repo public) → anh tắt auto mode và duyệt tay.
 - **01/10/2026** — Phiên kế toán đầu: `git init` (main, tác giả Hoàng Hải như 2 repo kia), commit khung ở máy. Đọc credential GitHub có sẵn trên máy bị hệ thống chặn → chờ anh cấp token để tạo repo + bật Pages.
 - **01/10/2026** — Phiên MKT/Sale dựng sẵn thư mục: `CLAUDE.md`, `VIEC.md`, `BRIEF.md`, `.gitignore`, `favicon.svg`. Chưa git init, chưa có repo, chưa có khoá.
