@@ -53,7 +53,7 @@ Nhóm câu hỏi: Số dư đầu kỳ (4) · Tiền mặt & Kiot (7) · Chi (3)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
-- **05/10/2026 11:50** — Tổng quan dạng biểu đồ (anh: "hiện đại, bảng biểu kiểu sơ đồ, thoáng"): bỏ 16 ô tài khoản → biểu đồ thanh 2 chiều quanh trục 0, tự ẩn TK số dư 0 không giao dịch (nút hiện lại), bấm dòng sang đối soát, ĐẶT DƯỚI CÙNG (anh chốt); bảng theo cơ sở → thanh đôi Thu / Chi + chênh lệch; bố cục 2 cột.
+- **05/10/2026 11:41** — Tổng quan dạng biểu đồ (anh: "hiện đại, bảng biểu kiểu sơ đồ, thoáng"): bỏ 16 ô tài khoản → biểu đồ thanh 2 chiều quanh trục 0, tự ẩn TK số dư 0 không giao dịch (nút hiện lại), bấm dòng sang đối soát, ĐẶT DƯỚI CÙNG (anh chốt); bảng theo cơ sở → thanh đôi Thu / Chi + chênh lệch; bố cục 2 cột.
 
 - **05/10/2026 11:20** — Anh: "dropdown vs tìm kiếm cho hết lên trên cùng, cách dữ liệu 1 khoảng nhỏ" → hàng bộ lọc (ô chọn + tìm kiếm + nhãn tổng) chuyển lên dải tiêu đề trắng (class `fbar`, tự áp cho mọi trang danh sách trong render()); khung dữ liệu chỉ còn tab + danh sách, cách 14px.
 
