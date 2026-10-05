@@ -13,14 +13,16 @@ Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phi�
   báo anh chuyển lời cho phiên app đó. Không tự sửa sang.
 - **Tiền tố riêng: `kt_`** (bảng, view, hàm) và **`kt-`** (lịch pg_cron, Edge Function, workflow, khoá trong `job_moc`).
   Đã đăng ký trong `QUY-UOC-DUNG-CHUNG-SUPABASE.md` (repo mkt-sale-app) ngày 1/10/2026.
-- **Vào app bằng MÃ TRUY CẬP riêng** (giống QC), KHÔNG dùng chung tài khoản / `dang-nhap` / `sales_users` của MKT.
+- **Đăng nhập bằng TÀI KHOẢN + MẬT KHẨU riêng của app kế toán** (bảng `kt_nguoi_dung`), phân quyền KIỂU app MKT/Sale
+  (Supreme / Admin toàn quyền, vị trí khác tick từng trang xem / sửa) — anh chốt 05/10/2026. KHÔNG dùng chung
+  `sales_users` / `dang-nhap` của MKT.
 
 ## Supabase dùng chung (`bcrpxfvvjsjpvbksqzls`)
 - Quy ước đầy đủ: https://github.com/hh-vibecode/mkt-sale-app/blob/main/QUY-UOC-DUNG-CHUNG-SUPABASE.md
 - Chỉ ĐỌC bảng app khác; bảng dùng chung chỉ được THÊM; không đụng khoá legacy (anon, service_role), JWT secret,
   cài đặt Auth, Edge Function `dang-nhap`, hàm `la_quan_tri()`, cấu trúc `sales_users`.
 - Dữ liệu tài chính là nhạy cảm: bảng `kt_*` bật RLS, KHÔNG cho anon đọc thẳng. Trình duyệt chỉ gọi hàm `kt_*`
-  (security definer, `set search_path=public`) và hàm tự kiểm mã truy cập (lưu dạng băm, có nút Đổi mã). Không bao giờ
+  (security definer, `set search_path=public`) và hàm tự kiểm phiên đăng nhập + quyền theo trang (`kt_chan`; mật khẩu băm bcrypt, có Đổi mật khẩu). Không bao giờ
   đặt khoá quản trị trong trang web.
 - Đọc phải phân trang (tối đa 1000 dòng / lần), chỉ chọn cột cần, chỉ đọc phần mới; ghi hàng loạt gộp 1 lệnh, `return=minimal`;
   job nặng chỉ chạy khi dữ liệu đổi. Mọi thay đổi CSDL lưu file `supabase-schema-*.sql`.
@@ -33,7 +35,7 @@ Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phi�
   xung đột giải TAY từng chỗ, kiểm 0 dấu `<<<<<<<` và cú pháp OK rồi mới push — mỗi bước 1 lệnh, không nối `&&` sau bước kiểm.
 - **Đóng dấu `APP_VERSION` bằng giờ máy thật** (`date` / `Get-Date`), không tự ước. Đẩy xong đợi trang live hiện đúng bản mới
   rồi **báo anh F5**.
-- **Khoá / token / mã truy cập:** không in ra màn hình, không dán vào chat, không commit. Máy: `kt-keys.local.txt` (gitignore).
+- **Khoá / token / mật khẩu:** không in ra màn hình, không dán vào chat, không commit. Máy: `kt-keys.local.txt` (gitignore).
   Soát file khoá CHỈ in tên dòng (`grep -o '^[A-Z_]*'`) — giá trị nằm dòng dưới vẫn có thể bị in lộ (sự cố 30/9).
 - Thao tác ra ngoài khó gỡ (ghi / xoá hàng loạt trên phần mềm khác): chạy thử trước, báo số trước.
 - Số liệu tài chính: đối chiếu với nguồn gốc trước khi trình; thiếu dữ liệu KHÔNG phải là khớp.

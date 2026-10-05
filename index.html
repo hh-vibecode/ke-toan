@@ -199,7 +199,7 @@ td.num b{font-weight:800}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='05/10/2026 09:22';
+const APP_VERSION='05/10/2026 09:39';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-08-01';   // anh chốt 05/10/2026: app xử lý dữ liệu từ 1/8/2026
@@ -208,7 +208,10 @@ const TT_CHI={cho_duyet:['Chờ duyệt','warn'],cho_tt:['Chờ thanh toán','in
 const TT_THU={cho_duyet:['Chờ duyệt','warn'],da_duyet:['Đã duyệt','ok'],tu_choi:['Từ chối','bad']};
 const NGUON={tay:'Nhập',kiot:'Kiot',sheet_cu:'Sheet cũ',app:'App'};
 const PL_NO={cod:'Đơn hàng COD',no:'Đơn hàng nợ',no_npp:'Đơn hàng nợ NPP',cho_xu_ly:'Đơn chờ xử lý',tra_hang:'Đơn sẽ trả hàng'};
-const VAI_TRO={quan_tri:'Quản trị (full)',ke_toan:'Kế toán (nhập, duyệt)',xem:'Chỉ xem'};
+const VI_TRI={supreme:'Supreme (người làm app)',admin:'Admin (toàn quyền)',ke_toan:'Kế toán',nhan_vien:'Nhân viên'};
+// Trang tick quyền trong Phân quyền (key trùng tên trang dùng trong hàm SQL kt_chan)
+const TRANG_QUYEN={tong_quan:'Tổng quan',dong_tien:'Dòng tiền & đối soát',thu:'Thu',chi:'Chi',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
+  sap_tra:'Sắp phải trả',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
 const LOAI_TK={ngan_hang:'Ngân hàng',tien_mat:'Tiền mặt',vay:'Tài khoản vay',khac:'Khác'};
 const KIOT={khong:'Không ảnh hưởng TK cửa hàng',da_tao:'Đã tạo phiếu trên Kiot (4A)',khong_tao:'Không tạo phiếu Kiot (4B)'};
 const IC={
@@ -246,46 +249,56 @@ const S={ma:null,toi:null,dm:null,gy:null,page:'tong_quan',tu:null,den:null,ky:'
 const tk=id=>S.dm.tai_khoan.find(x=>x.id==id), dv=id=>S.dm.don_vi.find(x=>x.id==id), lo=id=>S.dm.loai.find(x=>x.id==id);
 const tkOn=()=>S.dm.tai_khoan.filter(x=>x.hoat_dong), coSo=()=>S.dm.don_vi.filter(x=>x.hoat_dong&&x.la_co_so),
       boPhan=()=>S.dm.don_vi.filter(x=>x.hoat_dong&&x.la_bo_phan), loai=n=>S.dm.loai.filter(x=>x.hoat_dong&&x.nhom===n);
-const coGhi=()=>S.toi&&['quan_tri','ke_toan'].includes(S.toi.vai_tro), laQT=()=>S.toi&&S.toi.vai_tro==='quan_tri';
+// Phân quyền giống app MKT/Sale (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang (xem / sửa).
+const can=(p,ghi)=>!!S.toi&&(S.toi.toan_quyen||((S.toi.quyen||[]).includes(p)&&(!ghi||(S.toi.quyen||[]).includes(p+':ghi'))));
+const coGhi=p=>can(p||S.page,true);
+const coXem=p=>p==='cai_dat'||can(p);
 
-async function rpc(fn,args={}){
+// Gọi hàm kt_* kèm phiên đăng nhập. Ô để trống ('') đổi thành null trước khi gửi (hàm SQL ép kiểu ngày / số).
+async function rpc(fn,args={},khongPhien){
+  const sach=v=>v===''?null:(v&&typeof v==='object'&&!Array.isArray(v))?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,sach(x)])):v;
   const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',
     headers:{apikey:SB_ANON,Authorization:'Bearer '+SB_ANON,'Content-Type':'application/json'},
-    body:JSON.stringify({p_ma:S.ma,...args})});
+    body:JSON.stringify(sach(khongPhien?args:{p_phien:S.phien,...args}))});
   const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
   if(!r.ok){
     const msg=(j&&(j.message||j.hint))||t||('Lỗi '+r.status);
-    if(r.status===403&&/Sai mã/.test(msg)){lock(true);throw new Error(msg)}
+    if(r.status===403&&/Phiên đăng nhập/.test(msg)){lock(true);throw new Error(msg)}
     throw new Error(msg);
   }
   return j;
 }
 
-// ── Cổng mã truy cập ───────────────────────────────────────────────────────
+// ── Đăng nhập ──────────────────────────────────────────────────────────────
 function renderGate(err){
   $('#app').innerHTML=`<div class="gate"><h1>Kế Toán</h1>
-    <input type="password" id="ma" placeholder="Mã truy cập" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
-    <label style="display:flex;gap:7px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:10px"><input type="checkbox" id="nho"> Nhớ trên máy này</label>
+    <input id="tk" placeholder="Tài khoản" autocomplete="username" autocapitalize="none" style="width:100%;margin-bottom:10px;padding:9px 12px">
+    <input type="password" id="mk" placeholder="Mật khẩu" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:10px"><input type="checkbox" id="nho"> Ghi nhớ đăng nhập trên máy này (30 ngày)</label>
     <div class="err" id="err">${esc(err||'')}</div>
-    <button class="btn pri" style="width:100%" onclick="login()">Vào</button></div>`;
-  setTimeout(()=>$('#ma')&&$('#ma').focus(),50);
+    <button class="btn pri" style="width:100%" onclick="login()">Đăng nhập</button></div>`;
+  setTimeout(()=>$('#tk')&&$('#tk').focus(),50);
 }
 async function login(){
-  const ma=$('#ma').value.trim();if(!ma)return;
-  S.ma=ma;$('#err').textContent='Đang kiểm tra...';
-  try{await rpc('kt_dang_nhap');
-    try{($('#nho').checked?localStorage:sessionStorage).setItem('kt_ma',ma)}catch(e){}
+  const tk=$('#tk').value.trim(),mk=$('#mk').value,nho=$('#nho').checked;if(!tk||!mk)return;
+  $('#err').textContent='Đang kiểm tra...';
+  try{const r=await rpc('kt_dang_nhap',{p_tk:tk,p_mk:mk,p_nho:nho},true);
+    if(r.loi)return renderGate(r.loi);
+    S.phien=r.phien;try{(nho?localStorage:sessionStorage).setItem('kt_phien',r.phien)}catch(e){}
     await boot();
-  }catch(e){S.ma=null;renderGate(e.message)}
+  }catch(e){S.phien=null;renderGate(e.message)}
 }
-function lock(saiMa){S.ma=null;S.toi=null;S.cache={};try{localStorage.removeItem('kt_ma');sessionStorage.removeItem('kt_ma')}catch(e){}
-  renderGate(saiMa?'Mã không còn đúng — nhập lại':'')}
+function lock(hetHan){const p=S.phien;S.phien=null;S.toi=null;S.cache={};
+  try{localStorage.removeItem('kt_phien');sessionStorage.removeItem('kt_phien')}catch(e){}
+  if(p&&!hetHan)rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
+  renderGate(hetHan?'Phiên đăng nhập hết hạn — đăng nhập lại':'')}
 async function boot(){
   $('#app').innerHTML='<div class="empty">Đang tải...</div>';
   const [dm,gy]=await Promise.all([rpc('kt_danh_muc'),rpc('kt_goi_y')]);
   S.dm=dm;S.toi=dm.toi;S.gy=gy;fillDatalists();
   if(!S.tu)setKy('thang',true);
   const h=location.hash.slice(1);if(h&&PAGES[h])S.page=h;
+  if(!coXem(S.page))S.page=Object.keys(PAGES).find(coXem)||'cai_dat';
   shell();
 }
 function fillDatalists(){
@@ -327,16 +340,16 @@ const PAGES={
 };
 function go(p){S.page=p;location.hash=p;shell()}
 function shell(){
-  const nhom={};Object.entries(PAGES).forEach(([k,v])=>{if(v.nhom)(nhom[v.nhom]=nhom[v.nhom]||[]).push([k,v])});
+  const nhom={};Object.entries(PAGES).forEach(([k,v])=>{if(v.nhom&&coXem(k))(nhom[v.nhom]=nhom[v.nhom]||[]).push([k,v])});
   const dem=S.cache.dem||{};
   const badge=k=>{const n=k==='chi'?(dem.cho_duyet||0)+(dem.cho_tt||0):k==='dieu_chuyen'?dem.dc_chua_xac_nhan:k==='thu'?dem.thu_cho_duyet:0;
     return n?`<span class="nav-badge">${n}</span>`:''};
   $('#app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-strip"></div>
-    <div class="sb-brand">Kế Toán <span class="muted" style="font-weight:600;font-size:12px">· ${esc(PAGES[S.page].ten)}</span><button class="btn sb-menu" onclick="this.closest('.sidebar').classList.toggle('open')">☰</button></div><div class="sb-who">${esc(S.toi.ten)} · ${esc(VAI_TRO[S.toi.vai_tro]||'')}</div>
+    <div class="sb-brand">Kế Toán <span class="muted" style="font-weight:600;font-size:12px">· ${esc(PAGES[S.page].ten)}</span><button class="btn sb-menu" onclick="this.closest('.sidebar').classList.toggle('open')">☰</button></div><div class="sb-who">${esc(S.toi.ho_ten)} · ${esc(VI_TRI[S.toi.vi_tri]||'')}</div>
     ${Object.entries(nhom).map(([n,ps])=>`<div class="sb-section">${n}</div>`+ps.map(([k,v])=>
       `<div class="nav-item ${S.page===k?'active':''}" onclick="go('${k}')">${v.ten}${badge(k)}</div>`).join('')).join('')}
     <div class="sb-bottom"><div class="nav-item ${S.page==='cai_dat'?'active':''}" onclick="go('cai_dat')">Cài đặt</div>
-      <div class="sb-tools"><button class="btn" onclick="doiGiaoDien()">Sáng / Tối</button><button class="btn" onclick="lock()">Khoá</button></div>
+      <div class="sb-tools"><button class="btn" onclick="doiGiaoDien()">Sáng / Tối</button><button class="btn" onclick="lock()">Đăng xuất</button></div>
       <div class="sb-ver">Bản ${APP_VERSION}</div></div></aside>
     <main class="main"><div class="wrap" id="page"></div></main></div>`;
   render();
@@ -547,7 +560,7 @@ async function pageChi(){
 }
 function pbRow(p={}){return `<div class="pb"><select name="pb_dv">${opts(coSo(),p.don_vi_id,'— đơn vị —')}</select>${moneyIn('pb_tien',p.so_tien,'oninput="fmtMoney(this)"')}<button class="btn sm" onclick="this.parentNode.remove()">✕</button></div>`}
 function formChi(id){
-  const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
+  const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ho_ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
   const moi=!id;
   modal(`<h2>${moi?'Đề nghị chi':'Sửa phiếu chi #'+id}</h2>
     <div class="form" id="f">
@@ -772,8 +785,9 @@ const LOGIC=[
   'Thu hồi nợ chỉ để theo dõi nợ. Tiền thực vào ghi ở Thu (hoặc tự từ Kiot) — không cộng 2 lần.',
   'Phân loại: Đơn hàng COD · Đơn hàng nợ · Đơn hàng nợ NPP (chính sách riêng) · Đơn chờ xử lý · Đơn sẽ trả hàng.']],
  ['Quyền và nhật ký',[
-  'Mỗi người 1 mã truy cập riêng (lưu dạng băm, không ai đọc lại được). Hiện tại: giám đốc, kế toán, anh Hải — đều quyền Quản trị.',
-  'Vai trò: Quản trị (toàn quyền + danh mục + người dùng) · Kế toán (nhập, duyệt, thanh toán) · Chỉ xem.',
+  'Đăng nhập bằng <b>tài khoản + mật khẩu</b> riêng của app kế toán (không dùng chung tài khoản app MKT/Sale). Mật khẩu lưu dạng băm, không ai đọc lại được. Sai 5 lần liền → khoá 15 phút.',
+  'Phân quyền giống app MKT/Sale: <b>Supreme</b> (người làm app) và <b>Admin</b> có toàn quyền; vị trí khác được tick từng trang — <b>Xem</b> và <b>Nhập / sửa</b> riêng. Quyền kiểm ở máy chủ (hàm SQL), không chỉ ẩn nút trên trang.',
+  'Hiện tại: anh Hải (Supreme), giám đốc và kế toán (Admin) — đều toàn quyền (anh chốt 05/10/2026).',
   'Mọi thêm / sửa / xoá đều ghi nhật ký: ai, lúc nào, nội dung. Xoá = ẩn khỏi báo cáo, không mất dữ liệu.']],
  ['Hạn chế nhập tay',[
   'Tài khoản, cơ sở, bộ phận, loại thu, loại chi, phân loại công nợ, ngân hàng: chỉ <b>chọn</b> từ danh sách (danh mục sửa ở Cài đặt) — hết lỗi tên ghi nhiều kiểu.',
@@ -781,9 +795,9 @@ const LOGIC=[
 ];
 async function pageCaiDat(){
   const el=$('#page');S.f.cd=S.f.cd||'logic';
-  const tabs={logic:'Logic xử lý',tai_khoan:'Tài khoản',don_vi:'Cơ sở / bộ phận',loai:'Loại thu / chi',...(laQT()?{nguoi_dung:'Người dùng',nhat_ky:'Nhật ký'}:{}),doi_ma:'Đổi mã của tôi'};
+  const tabs={logic:'Logic xử lý',tai_khoan:'Tài khoản',don_vi:'Cơ sở / bộ phận',loai:'Loại thu / chi',...(can('phan_quyen')?{nguoi_dung:'Phân quyền'}:{}),...(can('nhat_ky')?{nhat_ky:'Nhật ký'}:{}),doi_ma:'Đổi mật khẩu'};
   el.innerHTML=head('Cài đặt')+`<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<button class="btn ${S.f.cd===k?'on':''}" onclick="S.f.cd='${k}';render()">${v}</button>`).join('')}</div><div id="cd"></div>`;
-  const c=$('#cd');const qt=laQT();
+  const c=$('#cd');const qt=can('danh_muc',true);
   if(S.f.cd==='logic'){
     const lc=S.dm.loai.filter(x=>x.nhom==='chi'&&x.hoat_dong);
     c.innerHTML=`<div class="doc">${LOGIC.map(([t,ls],i)=>`<h3>${i+1}. ${t}</h3><div class="rule"><ul>${ls.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}
@@ -801,17 +815,20 @@ async function pageCaiDat(){
     c.innerHTML=`${qt?'<div class="bar"><button class="btn pri" onclick="formDM(\'loai\')">+ Thêm loại</button></div>':''}<div class="card scroll"><table><tr><th>Nhóm</th><th>Loại</th><th>Nhóm báo cáo</th><th>Cách chia</th><th>Trạng thái</th></tr>
       ${S.dm.loai.map(x=>`<tr class="${qt?'click':''}" ${qt?`onclick="formDM('loai',${x.id})"`:''}><td>${x.nhom==='thu'?'Thu':'Chi'}</td><td>${esc(x.ten)}</td><td>${esc(x.nhom_bc||'')}</td><td>${x.nhom==='chi'?(x.cach_chia==='ty_le_thu'?'Theo tỉ lệ thu':'Riêng'):''}</td><td>${x.hoat_dong?vb('Đang dùng','ok'):vb('Tắt','grey')}</td></tr>`).join('')}</table></div>`;
   }else if(S.f.cd==='nguoi_dung'){
-    const ds=await rpc('kt_ds_nguoi_dung');S.cache.nd=ds;
-    c.innerHTML=`<div class="bar"><button class="btn pri" onclick="formND()">+ Thêm người dùng</button></div><div class="card scroll"><table><tr><th>Tên</th><th>Vai trò</th><th>Đổi mã gần nhất</th><th>Trạng thái</th></tr>
-      ${ds.map(x=>`<tr class="click" onclick="formND(${x.id})"><td>${esc(x.ten)}</td><td>${esc(VAI_TRO[x.vai_tro])}</td><td>${fmtDT(x.doi_ma_luc||x.tao_luc)}</td><td>${x.hoat_dong?vb('Đang dùng','ok'):vb('Đã khoá','grey')}</td></tr>`).join('')}</table></div>`;
+    const ds=await rpc('kt_ds_nguoi_dung');S.cache.nd=ds;const sua=can('phan_quyen',true);
+    const qtxt=x=>['supreme','admin'].includes(x.vi_tri)||(x.quyen||[]).includes('*')?'Toàn quyền':(x.quyen||[]).filter(q=>!q.includes(':')).map(q=>(TRANG_QUYEN[q]||q).split(' (')[0]+((x.quyen||[]).includes(q+':ghi')?' (sửa)':'')).join(', ')||'Chưa có quyền';
+    c.innerHTML=`${sua?'<div class="bar"><button class="btn pri" onclick="formND()">+ Thêm tài khoản</button></div>':''}<div class="card scroll"><table><tr><th>Tài khoản</th><th>Họ tên</th><th>Vị trí</th><th>Quyền</th><th>Đăng nhập gần nhất</th><th>Trạng thái</th></tr>
+      ${ds.map(x=>`<tr class="${sua?'click':''}" ${sua?`onclick="formND(${x.id})"`:''}><td><b>${esc(x.ten_dang_nhap)}</b></td><td>${esc(x.ho_ten)}</td><td class="nw">${esc(VI_TRI[x.vi_tri]||x.vi_tri)}</td>
+        <td style="max-width:380px">${esc(qtxt(x))}</td><td class="nw">${fmtDT(x.dang_nhap_luc)}</td><td>${!x.hoat_dong?vb('Đã khoá','grey'):x.dang_khoa?vb('Tạm khoá (sai MK)','warn'):vb('Đang dùng','ok')}</td></tr>`).join('')}</table></div>`;
   }else if(S.f.cd==='nhat_ky'){
     const ds=await rpc('kt_ds_nhat_ky');
     c.innerHTML=`<div class="card scroll"><table><tr><th>Lúc</th><th>Người</th><th>Bảng</th><th>Dòng</th><th>Việc</th><th>Chi tiết</th></tr>
       ${ds.map(x=>`<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc(x.nguoi)}</td><td>${esc(x.bang)}</td><td class="num">${x.dong_id??''}</td><td>${esc(x.hanh_dong)}</td><td style="font-size:11px;max-width:420px;word-break:break-word" class="muted">${esc(x.du_lieu?JSON.stringify(x.du_lieu).slice(0,300):'')}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Chưa có</td></tr>'}</table></div>`;
   }else if(S.f.cd==='doi_ma'){
-    c.innerHTML=`<div class="card" style="max-width:420px;padding:16px"><div class="form" id="f" style="grid-template-columns:1fr">
-      <label>Mã mới (từ 8 ký tự)<input type="password" name="m1" autocomplete="new-password"></label><label>Nhập lại mã mới<input type="password" name="m2" autocomplete="new-password"></label></div>
-      <div class="acts"><button class="btn pri" onclick="doiMa()">Đổi mã</button></div></div>`;
+    c.innerHTML=`<div class="card" style="max-width:420px;padding:16px"><div class="muted" style="margin-bottom:10px">Tài khoản: <b>${esc(S.toi.ten_dang_nhap)}</b></div><div class="form" id="f" style="grid-template-columns:1fr">
+      <label>Mật khẩu hiện tại<input type="password" name="m0" autocomplete="current-password"></label>
+      <label>Mật khẩu mới (từ 8 ký tự)<input type="password" name="m1" autocomplete="new-password"></label><label>Nhập lại mật khẩu mới<input type="password" name="m2" autocomplete="new-password"></label></div>
+      <div class="acts"><button class="btn pri" onclick="doiMa()">Đổi mật khẩu</button></div></div>`;
   }
 }
 function arrIn(v){return (v||'').split(',').map(s=>s.trim()).filter(Boolean)}
@@ -839,22 +856,35 @@ async function luuDM(bang,id){const o=formData($('#f'));o.id=id;
   if('ton_dau' in o)o.ton_dau=so(o.ton_dau)||0;if('kiot_ma' in o)o.kiot_ma=arrIn(o.kiot_ma);if('kiot_chi_nhanh' in o)o.kiot_chi_nhanh=arrIn(o.kiot_chi_nhanh);
   if(id&&bang==='loai')o.nhom=S.dm.loai.find(x=>x.id===id).nhom;
   await save('kt_luu_danh_muc',{p_bang:bang,p_dong:o});await reloadDm();render()}
-function formND(id){const x=id?S.cache.nd.find(n=>n.id===id):{vai_tro:'xem',hoat_dong:true};
-  modal(`<h2>${id?'Sửa người dùng':'Thêm người dùng'}</h2><div class="form" id="f">
-    <label>Tên<input name="ten" value="${esc(x.ten||'')}"></label><label>Vai trò<select name="vai_tro">${optsObj(VAI_TRO,x.vai_tro)}</select></label>
-    <label class="full">${id?'Đặt lại mã (để trống = giữ mã cũ)':'Mã truy cập (từ 8 ký tự)'}<input type="password" name="ma_moi" autocomplete="new-password"></label>
-    <label class="full chk"><input type="checkbox" name="hoat_dong" ${x.hoat_dong?'checked':''}> Đang dùng (bỏ tick = khoá mã)</label></div>
+function formND(id){const x=id?S.cache.nd.find(n=>n.id===id):{vi_tri:'nhan_vien',hoat_dong:true,quyen:[]};
+  const q=x.quyen||[];const vt=S.toi.vi_tri==='supreme'?VI_TRI:Object.fromEntries(Object.entries(VI_TRI).filter(([k])=>k!=='supreme'));
+  modal(`<h2>${id?'Sửa tài khoản':'Thêm tài khoản'}</h2><div class="form" id="f">
+    <label>Tên đăng nhập (chữ thường, không dấu)<input name="ten_dang_nhap" value="${esc(x.ten_dang_nhap||'')}" autocapitalize="none"></label>
+    <label>Họ tên<input name="ho_ten" value="${esc(x.ho_ten||'')}"></label>
+    <label>Vị trí<select name="vi_tri" onchange="$('#qbox').style.display=['supreme','admin'].includes(this.value)?'none':''">${optsObj(vt,x.vi_tri)}</select></label>
+    <label>${id?'Đặt lại mật khẩu (để trống = giữ)':'Mật khẩu (từ 8 ký tự)'}<input type="password" name="mk_moi" autocomplete="new-password"></label>
+    <div class="full" id="qbox" style="grid-column:1/-1;${['supreme','admin'].includes(x.vi_tri)?'display:none':''}">
+      <div class="sec" style="margin-top:4px">Quyền theo trang <span class="badge">Supreme / Admin tự có toàn quyền</span></div>
+      <label class="chk" style="margin-bottom:6px"><input type="checkbox" id="q_all" ${q.includes('*')?'checked':''}> Toàn quyền (mọi trang, kể cả trang thêm sau)</label>
+      <div class="card"><table><tr><th>Trang</th><th class="c">Xem</th><th class="c">Nhập / sửa</th></tr>
+      ${Object.entries(TRANG_QUYEN).map(([k,v])=>`<tr><td>${esc(v)}</td><td class="c"><input type="checkbox" data-q="${k}" ${q.includes(k)?'checked':''}></td><td class="c"><input type="checkbox" data-q="${k}:ghi" ${q.includes(k+':ghi')?'checked':''}></td></tr>`).join('')}</table></div></div>
+    <label class="full chk"><input type="checkbox" name="hoat_dong" ${x.hoat_dong?'checked':''}> Đang dùng (bỏ tick = khoá tài khoản, đăng xuất ngay)</label></div>
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuND(${id||'null'})">Lưu</button></div>`)}
-async function luuND(id){const o=formData($('#f'));o.id=id;if(!o.ten.trim())return alert('Nhập tên');await save('kt_luu_nguoi_dung',{p_dong:o});render()}
-async function doiMa(){const o=formData($('#f'));if(o.m1.length<8)return alert('Mã mới từ 8 ký tự');if(o.m1!==o.m2)return alert('Hai lần nhập không khớp');
-  try{await rpc('kt_doi_ma',{p_ma_moi:o.m1});S.ma=o.m1;
-    try{if(localStorage.getItem('kt_ma'))localStorage.setItem('kt_ma',o.m1);else sessionStorage.setItem('kt_ma',o.m1)}catch(e){}
-    toast('Đã đổi mã');render()}catch(e){alert(e.message)}}
+async function luuND(id){const f=$('#f');const o={id,ten_dang_nhap:f.querySelector('[name=ten_dang_nhap]').value.trim().toLowerCase(),ho_ten:f.querySelector('[name=ho_ten]').value.trim(),
+  vi_tri:f.querySelector('[name=vi_tri]').value,mk_moi:f.querySelector('[name=mk_moi]').value,hoat_dong:f.querySelector('[name=hoat_dong]').checked};
+  const q=new Set($$('#f [data-q]').filter(c=>c.checked).map(c=>c.dataset.q));
+  [...q].filter(k=>k.endsWith(':ghi')).forEach(k=>q.add(k.split(':')[0]));   // được sửa thì phải được xem
+  if($('#q_all').checked)q.add('*');o.quyen=[...q];
+  if(!/^[a-z0-9._-]{3,40}$/.test(o.ten_dang_nhap))return alert('Tên đăng nhập 3–40 ký tự: chữ thường không dấu, số, dấu chấm, gạch');
+  if(!o.ho_ten)return alert('Nhập họ tên');if(!id&&o.mk_moi.length<8)return alert('Mật khẩu từ 8 ký tự');
+  await save('kt_luu_nguoi_dung',{p_dong:o});render()}
+async function doiMa(){const o=formData($('#f'));if(o.m1.length<8)return alert('Mật khẩu mới từ 8 ký tự');if(o.m1!==o.m2)return alert('Hai lần nhập không khớp');
+  try{await rpc('kt_doi_mat_khau',{p_mk_cu:o.m0,p_mk_moi:o.m1});toast('Đã đổi mật khẩu');render()}catch(e){alert(e.message)}}
 
 // ── Khởi động ──────────────────────────────────────────────────────────────
 try{const th=localStorage.getItem('kt_theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
-(async()=>{let ma=null;try{ma=sessionStorage.getItem('kt_ma')||localStorage.getItem('kt_ma')}catch(e){}
-  if(!ma)return renderGate();S.ma=ma;try{await boot()}catch(e){if(S.ma)renderGate(e.message)}})();
+(async()=>{let p=null;try{p=sessionStorage.getItem('kt_phien')||localStorage.getItem('kt_phien')}catch(e){}
+  if(!p)return renderGate();S.phien=p;try{await boot()}catch(e){if(S.phien)renderGate(e.message)}})();
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(PAGES[h]&&h!==S.page&&S.toi){S.page=h;shell()}});
 </script>
 </body>

@@ -5,42 +5,35 @@
 
 ---
 
-## 0. KHỞI TẠO
+## 0. KHỞI TẠO — XONG 05/10/2026
 
-| # | Việc | Trạng thái |
-|---|---|---|
-| 1 | Hỏi anh app làm gì | **XONG 05/10** — thay 2 GG Sheet (Quản lý dòng tiền + Đề nghị thanh toán) bằng app 4 phần Thu · Chi · Điều chuyển · Công nợ + báo cáo |
-| 2 | Repo + GitHub Pages | **XONG 02/10** — https://hh-vibecode.github.io/ke-toan/ |
-| 3 | Khoá → `kt-keys.local.txt` | **CHỜ ANH** — xem mục 1 |
-| 4 | Khung app `index.html` + mã truy cập + Đổi mã / Khoá + trang Logic | **XONG 05/10** (soát giao diện bằng dữ liệu giả; CHƯA chạy với CSDL thật) |
-| 5 | `supabase-schema-kt.sql` (bảng + hàm kt_*, RLS bật, không policy) | **ĐÃ VIẾT, CHƯA CHẠY** — cần token `sbp_…` |
-| 6 | Đẩy bản đầu, kiểm live, báo anh F5 | XONG 05/10 (trang hiện màn nhập mã; đăng nhập chưa được tới khi chạy SQL + tạo mã) |
+Repo + Pages · khoá (`kt-keys.local.txt`, anh nhờ phiên MKT chép sang 05/10) · `supabase-schema-kt.sql` đã chạy (14 bảng, 24 hàm,
+RLS bật, 0 policy, 0 quyền bảng cho anon) · 3 tài khoản + danh mục (`scripts/khoi-tao.js`) · `scripts/kiem-thu.js` 32/32 đạt.
+Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy SQL qua Management API).
 
 ## 1. ĐANG CHỜ ANH HẢI QUYẾT
 
 | # | Việc | Cần anh nói gì |
 |---|---|---|
-| 1 | Khoá dùng chung (anh chốt 05/10 "dùng chung khóa"): khoá quản trị Supabase + token `sbp_…` + khoá API Kiot. Luật CLAUDE.md cấm Claude đọc file khoá app khác | Anh tự dán vào `kt-keys.local.txt`, HOẶC cho phép Claude chép (không in ra) từ file khoá của mkt-sale-app |
-| 2 | Tồn đầu từng tài khoản ngày 01/08/2026 (sao kê / két) | Số dư 31/07 từng TK — hoặc cho Claude lấy tạm từ sheet rồi kế toán soát |
-| 3 | Gộp tên tài khoản (sheet có ~20 cách ghi cho ~13 TK) | Duyệt bảng gộp Claude gửi trong chat |
-| 4 | Người đề nghị chi (hàng chục người): mã chung "đề nghị" hay giữ GG Form | Chọn 1 (giai đoạn 1 tạm chỉ 3 người dùng nên chưa gấp) |
+| 1 | Tồn đầu từng tài khoản ngày 01/08/2026 (sao kê / két) | Số dư 31/07 từng TK (nhập ở Cài đặt > Tài khoản) |
+| 2 | Tài khoản "BIDV - BUI THI HIEN" trùng dãy số với "MSB CN" | Kế toán xác nhận là 1 hay 2 tài khoản |
+| 3 | Người đề nghị chi (hàng chục người): cấp tài khoản vị trí Nhân viên chỉ tick "Chi" hay giữ GG Form | Chọn 1 (chưa gấp) |
+| 4 | `kt-keys.local.txt` đang chứa cả khoá Meta / OpenAI / Pancake (app kế toán không dùng) | Đồng ý để Claude xoá các dòng đó cho gọn, an toàn? |
 
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | Chạy `supabase-schema-kt.sql` + tạo 3 mã (anh Hải, giám đốc, kế toán — quản trị) ghi vào `kt-keys.local.txt` | chờ khoá |
-| 2 | Danh mục ban đầu (TK, cơ sở / bộ phận, loại thu / chi + cách chia) từ 2 sheet | `scripts/khoi-tao.js` |
-| 3 | Chuyển dữ liệu cũ TỪ 01/08/2026: chi (sheet đề nghị), điều chuyển, công nợ, thu ngoài | Lưu ý: tab DATA THU của sheet chỉ có tháng 9 → thu tháng 8 lấy từ Kiot |
-| 4 | Luồng kéo Kiot RIÊNG (workflow `kt-kiot`, 3 tiếng / lần, tránh phút trùng job khác): sổ quỹ → `kt_kiot_so_quy` → phiếu thu sang `kt_thu` | Chưa chắc API Kiot có trả sổ quỹ — kiểm bằng khoá thật; dự phòng: hoá đơn / đơn đặt kèm thanh toán |
-| 5 | Ghép tài khoản / chi nhánh Kiot ↔ danh mục app | sau khi kéo được Kiot |
-| 6 | Tải ảnh chứng từ thẳng lên app (Supabase Storage riêng tư) — hiện mới dán link | giai đoạn sau |
+| 1 | Chuyển dữ liệu cũ TỪ 01/08/2026: chi (sheet đề nghị), điều chuyển, công nợ, thu "Thu khác" | DATA THU của sheet chỉ có tháng 9 và phần lớn là thu Kiot → thu bán hàng lấy từ Kiot, tránh cộng 2 lần |
+| 2 | Luồng kéo Kiot RIÊNG (workflow `kt-kiot`, 3 tiếng / lần, tránh phút trùng job khác): sổ quỹ → `kt_kiot_so_quy` → phiếu thu sang `kt_thu` | Chưa chắc API Kiot có trả sổ quỹ — kiểm bằng khoá thật; dự phòng: hoá đơn / đơn đặt kèm thanh toán. Cần secrets repo |
+| 3 | Ghép tài khoản / chi nhánh Kiot ↔ danh mục app | sau khi kéo được Kiot |
+| 4 | Tải ảnh chứng từ thẳng lên app (Supabase Storage riêng tư) — hiện mới dán link | giai đoạn sau |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
 - **App riêng, tách biệt hoàn toàn** khỏi MKT/Sale và QC CSKH (anh chốt 1/10/2026). Xem `CLAUDE.md` mục Tách biệt.
 - **Tên:** thư mục / repo `ke-toan`. **Tiền tố:** `kt_` (bảng, hàm) · `kt-` (lịch chạy, workflow). Đã đăng ký vào sổ quy ước chung 1/10/2026.
-- **Vào app bằng MÃ TRUY CẬP riêng**, mỗi người 1 mã (để nhật ký biết ai làm). Hiện chỉ **anh Hải, giám đốc, kế toán — đều quản trị full** (anh chốt 05/10).
+- **Đăng nhập tài khoản + mật khẩu, phân quyền giống app MKT/Sale** (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang Xem / Nhập-sửa. Tài khoản RIÊNG app kế toán. Hiện có: `hai` (Supreme), `giamdoc`, `ketoan` (Admin). Mật khẩu ban đầu trong `kt-keys.local.txt`.
 - Mọi thứ Claude tạo ký tên **Monsieur Claude**.
 - **Repo public** (anh chốt 2/10/2026) → tuyệt đối không có khoá quản trị / số liệu thật / số tài khoản thật trong code và sổ.
 - **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026). Không in token ra.
@@ -58,6 +51,8 @@
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **05/10/2026 09:40** — Anh cho chép khoá (auto mode chặn Claude đọc file khoá MKT → anh nhờ phiên MKT chép sang `kt-keys.local.txt`). Anh đổi đăng nhập sang tài khoản + mật khẩu, phân quyền kiểu MKT. Viết lại phần đăng nhập (phiên băm sha256, sai 5 lần khoá 15 phút, quyền kiểm ở `kt_chan`). Chạy `supabase-schema-kt.sql` lần đầu: lỗi `$` do Claude ghép mã (JS biến `$$` thành `$`) → sửa, chạy lại OK. Tự phát hiện + sửa trước khi chạy: khoá sai mật khẩu không ghi được (raise huỷ lệnh đếm), ô trống gửi chuỗi rỗng, tên CTE `no`. Tạo 3 tài khoản + danh mục (16 TK, 13 đơn vị, 13 loại). Kiểm thử đầu-cuối 32/32, xoá dữ liệu thử, đăng xuất phiên thử. Bỏ chế độ xem thử dữ liệu mẫu (không cần nữa).
 
 - **05/10/2026 09:23** — Anh chốt: khung OK + trang Logic; 3 người quản trị; Kiot kéo riêng 3h/lần; dữ liệu từ 1/8; dùng chung khoá; hạn chế nhập tay; giao diện kiểu phần mềm kế toán. Viết `supabase-schema-kt.sql` (chưa chạy — chưa có khoá) + `index.html` (Tổng quan thẻ + biểu đồ, Dòng tiền & đối soát, Thu dạng sổ quỹ, Chi đề nghị → duyệt → thanh toán + 4A/4B + HĐ đỏ, Điều chuyển, Công nợ, Sắp phải trả, Cài đặt: danh mục / người dùng / Logic / nhật ký / đổi mã). Soát giao diện bằng dữ liệu giả + Chrome headless (máy tính + điện thoại 375px). Sự cố nhỏ tự sửa: 1 lệnh treo vì `cat` chờ stdin (đã dừng, không ghi gì); chạy nhầm script ghép có thể xoá phần Tổng quan (script lỗi trước khi ghi — đã kiểm file còn nguyên); trang Logic lỡ ghi 1 con số thật từ sheet → đã xoá trước khi đẩy.
 
