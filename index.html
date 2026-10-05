@@ -267,12 +267,15 @@ body{overflow-x:hidden}
 .listbox{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.05)}
 .listbox>.tabs{margin:0;padding:0 8px;border-bottom:1px solid var(--border)}
 .listbox>.bar{margin:0;padding:12px 16px;border-bottom:1px solid var(--border)}
-.listbox>.bar select.sel{min-width:170px;max-width:240px;flex:0 1 200px}
-.listbox>.bar input[type=search]{flex:1 1 220px;max-width:340px}
-.listbox>.bar>.badge:last-child{margin-left:auto}
+.fbar select.sel{min-width:170px;max-width:240px;flex:0 1 200px}
+.fbar input[type=search]{flex:1 1 220px;max-width:340px}
+.fbar>.badge:last-child{margin-left:auto}
+/* hàng bộ lọc nằm trong dải tiêu đề, xuống dòng dưới tiêu đề */
+.wrap>.top:first-child{flex-wrap:wrap;margin-bottom:14px}
+.top>.fbar{flex-basis:100%;margin:4px 0 0;padding:12px 0 0;border-top:1px solid var(--border);border-bottom:none}
 .listbox .card{border:none;border-radius:0;box-shadow:none;margin:0!important}
 .listbox>.day-h{margin:0;padding:9px 16px;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.listbox>.bar+.day-h{border-top:none}
+.listbox>.bar+.day-h,.listbox>.day-h:first-child{border-top:none}
 .listbox>.empty{padding:28px}
 .kpi,.panel,.acc,.card{box-shadow:0 1px 2px rgba(16,24,40,.05)}
 /* Ô LỌC MỖI LOẠI 1 MÀU (anh 05/10: "màu sắc mấy ô lọc khác hẳn đi") — màu theo LOẠI lọc, cố định trên mọi trang:
@@ -281,11 +284,11 @@ body{overflow-x:hidden}
 :root{--f-loai:#7c3aed;--f-dv:#0f9488;--f-bp:#d97706;--f-tk:#0078c8;--f-khac:#db2777}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--f-loai:#a78bfa;--f-dv:#2dd4bf;--f-bp:#fbbf24;--f-tk:#4cb3f0;--f-khac:#f472b6}}
 :root[data-theme="dark"]{--f-loai:#a78bfa;--f-dv:#2dd4bf;--f-bp:#fbbf24;--f-tk:#4cb3f0;--f-khac:#f472b6}
-.listbox>.bar select.sel[data-fk],.listbox>.bar input.sel{border:1px solid color-mix(in srgb,var(--fc) 28%,var(--border));border-left:4px solid var(--fc);
+.fbar select.sel[data-fk],.fbar input.sel{border:1px solid color-mix(in srgb,var(--fc) 28%,var(--border));border-left:4px solid var(--fc);
   background-color:color-mix(in srgb,var(--fc) 7%,var(--surface));color:var(--text2);font-weight:700}
-.listbox>.bar select.sel[data-fk]:hover{border-color:var(--fc)}
-.listbox>.bar select.sel.on[data-fk]{background-color:color-mix(in srgb,var(--fc) 18%,var(--surface));color:var(--fc);border-color:var(--fc)}
-.listbox>.bar input.sel{--fc:var(--grey);border-left-width:1px}
+.fbar select.sel[data-fk]:hover{border-color:var(--fc)}
+.fbar select.sel.on[data-fk]{background-color:color-mix(in srgb,var(--fc) 18%,var(--surface));color:var(--fc);border-color:var(--fc)}
+.fbar input.sel{--fc:var(--grey);border-left-width:1px}
 [data-fk=loai]{--fc:var(--f-loai)}[data-fk=dv]{--fc:var(--f-dv)}[data-fk=bp]{--fc:var(--f-bp)}[data-fk=tk]{--fc:var(--f-tk)}[data-fk=khac]{--fc:var(--f-khac)}
 /* Tab trạng thái: mỗi tab màu theo trạng thái (vàng cam chờ duyệt · xanh ngọc chờ TT · đỏ quá hạn · xanh lá đã TT · xám từ chối · tím HĐ đỏ) */
 .tabs .btn.tab2{--c:var(--accent)}
@@ -295,7 +298,7 @@ body{overflow-x:hidden}
 .tabs .btn.tab2:hover{color:var(--c)}
 .tabs .btn.tab2.on{color:var(--c);border-bottom-color:var(--c);background:color-mix(in srgb,var(--c) 6%,transparent)}
 @media (max-width:760px){.wrap>.top:first-child{margin:-14px calc(50% - 50vw) 14px;padding:12px 16px}
-  .listbox>.bar select.sel{flex:1 1 100%;max-width:none}.listbox>.bar>.badge:last-child{margin-left:0}}
+  .fbar select.sel{flex:1 1 100%;max-width:none}.fbar>.badge:last-child{margin-left:0}}
 </style>
 </head>
 <body>
@@ -306,7 +309,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='05/10/2026 11:08';
+const APP_VERSION='05/10/2026 11:36';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -480,8 +483,11 @@ async function render(){
   if(['thu','chi','dieu_chuyen','cong_no','sap_tra','dong_tien'].includes(S.page)){
     const top=el.querySelector(':scope>.top'),rest=[...el.children].filter(c=>c!==top);
     if(rest.length&&!(rest.length===1&&rest[0].classList.contains('listbox'))){const box=document.createElement('div');box.className='listbox';rest.forEach(c=>box.appendChild(c));el.appendChild(box)}
+    // Ô chọn + tìm kiếm đưa LÊN dải trên cùng, ngay dưới tiêu đề (anh 05/10: "dropdown vs tìm kiếm cho hết lên trên cùng,
+    // cách dữ liệu ra 1 khoảng nhỏ") — khung dữ liệu chỉ còn tab + danh sách
+    const fb=el.querySelector(':scope>.listbox>.bar');if(fb&&top&&fb.querySelector('select,input')){fb.classList.add('fbar');top.appendChild(fb)}
     // Gắn loại cho từng ô lọc (để tô màu theo loại) dựa trên khoá bộ lọc S.f.<trang>_<loại>
-    el.querySelectorAll('.listbox>.bar select').forEach(s=>{const m=(s.getAttribute('onchange')||'').match(/S\.f\.\w+?_(loai|dv|bp|tk|nguon|xn|pl)\b/);
+    el.querySelectorAll('.fbar select').forEach(s=>{const m=(s.getAttribute('onchange')||'').match(/S\.f\.\w+?_(loai|dv|bp|tk|nguon|xn|pl)\b/);
       if(m)s.dataset.fk={loai:'loai',dv:'dv',bp:'bp',tk:'tk'}[m[1]]||'khac'})}
 }
 function doiGiaoDien(){const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
