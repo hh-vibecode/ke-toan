@@ -22,7 +22,7 @@
 |---|---|---|
 | 1 | Duyệt đề xuất app (gửi trong chat 05/10): 4 module Thu · Chi · Điều chuyển · Công nợ + báo cáo; chia giai đoạn | Đồng ý / sửa |
 | 2 | Ai dùng app, mỗi người 1 mã hay 1 mã / vai trò; người đề nghị chi có vào app không | Danh sách người + vai trò |
-| 3 | File 1 (đề nghị thanh toán) đang để riêng tư → em không đọc được | Mở quyền xem bằng link |
+| 3 | Người đề nghị chi (hàng chục người) vào app bằng 1 mã chung "đề nghị" hay giữ GG Form giai đoạn 1 (app tự kéo về) | Chọn 1 |
 | 4 | Thu Kiot tự động: nhờ phiên MKT/Sale đồng bộ sổ quỹ Kiot (phụ thuộc chéo) hay app kế toán tự kéo | Chọn 1 |
 | 5 | Khoá Supabase: dùng chung hay tạo key riêng `ke-toan` | Chọn 1 |
 
@@ -52,6 +52,7 @@ sẵn 1 hàm / view trả đúng số đã chốt (để 2 app không ra 2 con s
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **05/10/2026 09:00** — Anh gửi link xuất bản file Đề nghị thanh toán → đã đọc (tab chính + tab lưu theo tháng). Bổ sung đề xuất phần Chi trong chat.
 - **05/10/2026 08:44** — Đọc luồng Thu–Chi–Điều chuyển (ảnh anh gửi) + file GG Sheet quản lý dòng tiền (bản xuất bản, 10 tab). File đề nghị thanh toán để riêng tư, chưa đọc được. Phát hiện lỗi số liệu trên sheet (đã báo anh trong chat; KHÔNG ghi số vào repo vì repo public). Gửi đề xuất app, chờ anh duyệt.
 - **02/10/2026 14:38** — Tạo repo `hh-vibecode/ke-toan` (public, anh chốt) bằng đăng nhập git có sẵn trên máy, đẩy commit đầu, bật Pages (`main` /). Auto mode chặn 2 lần (đọc credential, tạo repo public) → anh tắt auto mode và duyệt tay.
 - **01/10/2026** — Phiên kế toán đầu: `git init` (main, tác giả Hoàng Hải như 2 repo kia), commit khung ở máy. Đọc credential GitHub có sẵn trên máy bị hệ thống chặn → chờ anh cấp token để tạo repo + bật Pages.
