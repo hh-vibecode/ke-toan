@@ -11,23 +11,25 @@ Repo + Pages · khoá (`kt-keys.local.txt`, anh nhờ phiên MKT chép sang 05/1
 RLS bật, 0 policy, 0 quyền bảng cho anon) · 3 tài khoản + danh mục (`scripts/khoi-tao.js`) · `scripts/kiem-thu.js` 32/32 đạt.
 Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy SQL qua Management API).
 
-## 1. ĐANG CHỜ ANH HẢI QUYẾT
+## 1. ĐANG CHỜ ANH HẢI QUYẾT / KẾ TOÁN XÁC NHẬN
 
-| # | Việc | Cần anh nói gì |
+| # | Việc | Cần nói gì |
 |---|---|---|
-| 1 | Tồn đầu từng tài khoản ngày 01/08/2026 (sao kê / két) | Số dư 31/07 từng TK (nhập ở Cài đặt > Tài khoản) |
-| 2 | Tài khoản "BIDV - BUI THI HIEN" trùng dãy số với "MSB CN" | Kế toán xác nhận là 1 hay 2 tài khoản |
-| 3 | Người đề nghị chi (hàng chục người): cấp tài khoản vị trí Nhân viên chỉ tick "Chi" hay giữ GG Form | Chọn 1 (chưa gấp) |
-| 4 | `kt-keys.local.txt` đang chứa cả khoá Meta / OpenAI / Pancake (app kế toán không dùng) | Đồng ý để Claude xoá các dòng đó cho gọn, an toàn? |
+| 1 | Tồn đầu 1/9 đang lấy theo sheet (9 TK, tổng khớp sheet). 7 TK còn lại (TECH, MSB, BIDV-BUI THI HIEN, VCB 9902, vay) để 0 | Kế toán xác nhận số dư 31/8 từng TK |
+| 2 | "BIDV - BUI THI HIEN" trùng dãy số với "MSB CN" | 1 hay 2 tài khoản? |
+| 3 | Chênh lệch T9 app vs sheet (xem chat 05/10): tiền vào +30,4 tr (Kiot vs sheet ở Hiền Thủy / Chánh Tâm), tiền ra −41,6 tr, tồn +339,6 tr (157 tr ở các TK sheet không theo dõi) | Kế toán soát |
+| 4 | Kiot còn 4 quỹ chưa có trong app: SHIDAI-Tiền Quỹ Ngoài, Tiền Quỹ Ngoài, Tiền Quỹ Ngoài LKT, VÍ SHOPEE. Phiếu CHI trên Kiot (≈ 3 tỷ T9, gồm cả chuyển rút) chưa đưa vào app | Có theo dõi các quỹ này + chi Kiot trên app không? |
+| 5 | Người đề nghị chi (hàng chục người): tài khoản vị trí Nhân viên chỉ tick "Chi" hay giữ GG Form | Chọn 1 |
+| 6 | `kt-keys.local.txt` chứa cả khoá Meta / OpenAI / Pancake (app không dùng) | Cho xoá các dòng đó? |
 
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | Chuyển dữ liệu cũ TỪ 01/08/2026: chi (sheet đề nghị), điều chuyển, công nợ, thu "Thu khác" | DATA THU của sheet chỉ có tháng 9 và phần lớn là thu Kiot → thu bán hàng lấy từ Kiot, tránh cộng 2 lần |
-| 2 | Luồng kéo Kiot RIÊNG (workflow `kt-kiot`, 3 tiếng / lần, tránh phút trùng job khác): sổ quỹ → `kt_kiot_so_quy` → phiếu thu sang `kt_thu` | Chưa chắc API Kiot có trả sổ quỹ — kiểm bằng khoá thật; dự phòng: hoá đơn / đơn đặt kèm thanh toán. Cần secrets repo |
-| 3 | Ghép tài khoản / chi nhánh Kiot ↔ danh mục app | sau khi kéo được Kiot |
-| 4 | Tải ảnh chứng từ thẳng lên app (Supabase Storage riêng tư) — hiện mới dán link | giai đoạn sau |
+| 1 | 3 phiếu chi sheet ghi "Đã thanh toán" nhưng thiếu ngày TT / TK / loại → đang ở Chờ thanh toán | kế toán bổ sung trên app |
+| 2 | Sheet vẫn đang được nhập song song → dữ liệu sau 5/10 trên sheet chưa vào app (chi, điều chuyển, công nợ) | chốt ngày bỏ sheet, hoặc nhập bù 1 lần |
+| 3 | Theo dõi job `kt-kiot` vài ngày (nhật ký: hanh_dong keo_kiot / keo_kiot_loi) | |
+| 4 | Tải ảnh chứng từ thẳng lên app (Storage riêng tư) — hiện mới dán link | giai đoạn sau |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
@@ -38,11 +40,11 @@ Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy 
 - **Repo public** (anh chốt 2/10/2026) → tuyệt đối không có khoá quản trị / số liệu thật / số tài khoản thật trong code và sổ.
 - **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026). Không in token ra.
 - **Khung app** theo đề xuất 05/10 (anh đồng ý) + **trang Logic trong Cài đặt** để người khác đọc app tính thế nào. Sửa luật ở SQL thì sửa luôn trang Logic.
-- **Phạm vi dữ liệu: từ 01/08/2026** (anh chốt 05/10).
-- **Kiot: luồng kéo RIÊNG** của app kế toán, KHÔNG dùng chung / nhờ MKT/Sale; **3 tiếng / lần** (anh chốt 05/10).
+- **Phạm vi dữ liệu: từ 01/09/2026** (anh chốt 05/10: "làm trước T9, dữ liệu t gửi là T9, kết hợp kiot").
+- **Kiot: luồng kéo RIÊNG** của app kế toán, KHÔNG dùng chung / nhờ MKT/Sale; **3 tiếng / lần** (anh chốt 05/10). Đã chạy: Edge Function `kt-kiot` + pg_cron `kt-kiot` (`47 */3 * * *` UTC), secrets `KT_*`. Luật Kiot → Thu ở `supabase-schema-kt-kiot.sql` + trang Logic.
 - **Khoá Supabase: dùng chung** khoá của project (anh chốt 05/10).
 - **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
-- **Giao diện kiểu phần mềm kế toán** (MISA AMIS / Xero / QuickBooks), KHÔNG giống GG Sheet: tổng quan thẻ + biểu đồ, danh sách 2 dòng, sổ quỹ gom theo ngày, xem phiếu bằng ngăn kéo bên phải (anh chốt 05/10).
+- **Giao diện theo theme XERO cho TOÀN APP** (anh chốt 05/10): menu ngang xanh đậm, dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
 
 ## 4. PHỤ THUỘC CHÉO (cần app khác làm — nhờ anh chuyển lời)
 
@@ -51,6 +53,8 @@ Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **05/10/2026 09:59** — Anh đổi mốc sang 1/9, làm T9 + Kiot; theme Xero toàn app (font Montserrat); nút con mắt mật khẩu. Kiot API có sổ quỹ (/cashflow) → `kt_dong_bo_kiot()` (thu khách TTHD/TTDH/TT + thu khác, bỏ "Chuyển rút" + phiếu huỷ; tiền mặt quầy → Két). Nhập T9: 914 phiếu Kiot (→ 505 thu), 5 thu ngoài Kiot từ sheet (12 dòng sheet trùng Kiot đã bỏ), 181 chi (đề nghị TT), 14 điều chuyển, 121 công nợ (khớp sheet 681,72 tr), tồn đầu 1/9 khớp sheet. Edge Function + pg_cron `kt-kiot` chạy thử OK. Lỗi tự sửa: đọc số mũ Excel sai (bắt được ở chạy thử, chưa ghi); mảng kiot_ma 2 chiều (ghi đè lại); endDate Kiot không gồm ngày cuối → T9 thiếu 30/9 → job tự bù, rồi 1 khoản BHXH 42,15 tr bị tính 2 lần (sheet + Kiot) → đã ẩn dòng sheet.
 
 - **05/10/2026 09:40** — Anh cho chép khoá (auto mode chặn Claude đọc file khoá MKT → anh nhờ phiên MKT chép sang `kt-keys.local.txt`). Anh đổi đăng nhập sang tài khoản + mật khẩu, phân quyền kiểu MKT. Viết lại phần đăng nhập (phiên băm sha256, sai 5 lần khoá 15 phút, quyền kiểm ở `kt_chan`). Chạy `supabase-schema-kt.sql` lần đầu: lỗi `$` do Claude ghép mã (JS biến `$$` thành `$`) → sửa, chạy lại OK. Tự phát hiện + sửa trước khi chạy: khoá sai mật khẩu không ghi được (raise huỷ lệnh đếm), ô trống gửi chuỗi rỗng, tên CTE `no`. Tạo 3 tài khoản + danh mục (16 TK, 13 đơn vị, 13 loại). Kiểm thử đầu-cuối 32/32, xoá dữ liệu thử, đăng xuất phiên thử. Bỏ chế độ xem thử dữ liệu mẫu (không cần nữa).
 

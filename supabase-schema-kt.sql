@@ -46,7 +46,7 @@ create table if not exists public.kt_tai_khoan (
   ten          text not null unique,             -- tên hiển thị, vd "VCB CTY - <số TK>"
   loai         text not null default 'ngan_hang' check (loai in ('ngan_hang','tien_mat','vay','khac')),
   ton_dau      numeric(16,0) not null default 0, -- tồn tại ngày mốc
-  ngay_ton_dau date not null default date '2026-08-01',
+  ngay_ton_dau date not null default date '2026-09-01',
   ten_cu       text[] not null default '{}',     -- các cách ghi cũ trên sheet (để chuyển dữ liệu cũ)
   kiot_ma      text[] not null default '{}',     -- tài khoản tương ứng bên Kiot (số TK / tên) — ghép phiếu thu Kiot
   thu_tu       int not null default 100,
@@ -388,7 +388,7 @@ begin
     if v_id is null then
       insert into kt_tai_khoan (ten, loai, ton_dau, ngay_ton_dau, thu_tu, hoat_dong)
       values (trim(p_dong->>'ten'), coalesce(p_dong->>'loai','ngan_hang'), coalesce((p_dong->>'ton_dau')::numeric,0),
-        coalesce((p_dong->>'ngay_ton_dau')::date, date '2026-08-01'), coalesce((p_dong->>'thu_tu')::int,100),
+        coalesce((p_dong->>'ngay_ton_dau')::date, date '2026-09-01'), coalesce((p_dong->>'thu_tu')::int,100),
         coalesce((p_dong->>'hoat_dong')::boolean,true)) returning id into v_id;
     else
       update kt_tai_khoan set ten = trim(p_dong->>'ten'), loai = coalesce(p_dong->>'loai', loai),
@@ -737,6 +737,26 @@ begin
                  where not s.da_xoa and not s.da_tra),
     'kiot_keo_luc', (select max(keo_luc) from kt_kiot_so_quy)
   ) into r;
+  -- Ô kiểu Xero (anh chốt 05/10): số dư sao kê mới nhất / khoản phải trả / tuổi nợ phải thu
+  r := r || jsonb_build_object(
+    'thuc_te', (select coalesce(jsonb_agg(jsonb_build_object('tk', tai_khoan_id, 'ngay', ngay, 'so_tien', so_tien)), '[]') from (
+       select distinct on (tai_khoan_id) tai_khoan_id, ngay, so_tien from kt_ton_thuc_te where ngay <= p_den
+        order by tai_khoan_id, ngay desc) x),
+    'phai_tra', (select jsonb_build_object(
+       'cho_duyet_tien', coalesce(sum(so_tien) filter (where trang_thai = 'cho_duyet'), 0),
+       'cho_tt_tien', coalesce(sum(so_tien) filter (where trang_thai = 'cho_tt'), 0),
+       'qua_han', count(*) filter (where han_tt < (now() at time zone 'Asia/Ho_Chi_Minh')::date),
+       'qua_han_tien', coalesce(sum(so_tien) filter (where han_tt < (now() at time zone 'Asia/Ho_Chi_Minh')::date), 0))
+       from kt_chi where not da_xoa and trang_thai in ('cho_duyet','cho_tt')),
+    'no_tuoi', (select coalesce(jsonb_agg(jsonb_build_object('nhom', nhom, 'so_khoan', n, 'con_no', s) order by thu_tu), '[]') from (
+       select case when p_den - ngay <= 30 then 'Dưới 30 ngày' when p_den - ngay <= 60 then '31–60 ngày'
+                   when p_den - ngay <= 90 then '61–90 ngày' else 'Trên 90 ngày' end nhom,
+              min(case when p_den - ngay <= 30 then 1 when p_den - ngay <= 60 then 2 when p_den - ngay <= 90 then 3 else 4 end) thu_tu,
+              count(*) n, sum(con_no) s
+         from (select n.ngay, n.so_tien - n.tra_hang - coalesce((select sum(t.so_tien) from kt_cong_no_thu t
+                 where t.cong_no_id = n.id and not t.da_xoa and t.ngay <= p_den), 0) con_no
+               from kt_cong_no n where not n.da_xoa and n.ngay <= p_den) c
+        where con_no > 0 group by 1) x));
   return r;
 end $$;
 
