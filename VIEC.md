@@ -13,18 +13,13 @@ Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy 
 
 ## 1. ĐANG CHỜ ANH HẢI QUYẾT / KẾ TOÁN XÁC NHẬN
 
-Chi tiết số liệu từng mục: `doi-chieu-T9.local.md` (máy anh, KHÔNG lên GitHub). Mục A–H trong file đó.
+**MỌI CÂU HỎI CHƯA TRẢ LỜI NẰM TRÊN APP: Cài đặt → Cần giải đáp** (bảng `kt_cau_hoi`, 19 câu, viết dễ hiểu cho người không
+làm kế toán — anh chốt 05/10: "lưu lại hết, sau t đi hỏi 1 lượt"). **Đầu mỗi phiên Claude:** đọc câu đã trả lời
+(`select tieu_de, tra_loi, tra_loi_boi from kt_cau_hoi where tra_loi is not null`) → làm theo → ghi nhật ký.
+Câu hỏi mới: thêm vào `kt-cau-hoi.local.json` rồi chạy `scripts/nap-cau-hoi.js` (chỉ thêm câu chưa có).
+Chi tiết số liệu đối chiếu T9: `doi-chieu-T9.local.md` (máy anh, KHÔNG lên GitHub).
 
-| # | Việc | Cần nói gì |
-|---|---|---|
-| 1 | (A) Tồn đầu 1/9 + số dư thật 4 TK dashboard sheet không theo dõi (TECH CN, TECH HXT, BIDV-BUI THI HIEN, TK vay) | Kế toán xác nhận |
-| 2 | "BIDV - BUI THI HIEN" trùng dãy số "MSB CN" | 1 hay 2 tài khoản? |
-| 3 | (C) Có đưa CHI TIỀN MẶT TẠI QUẦY trên Kiot vào app không (hiện không; sheet cũng không) + tồn đầu két 1/9 có cộng tiền bán 31/8 chưa nộp không | Chọn |
-| 4 | (E) Phiếu lương T8 sheet để trống loại → app gán "OPEX - Lương & BHXH" | Xác nhận |
-| 5 | (F) Kiot ghi 1 khoản chuyển TECH CN → VCB CN là "thu khác"; sheet không ghi gì | Có ghi điều chuyển không? |
-| 6 | (H) Kiot còn 4 quỹ app chưa theo dõi (3 quỹ ngoài + ví Shopee) | Có theo dõi không? |
-| 7 | Người đề nghị chi (hàng chục người): tài khoản Nhân viên chỉ tick "Chi" hay giữ GG Form | Chọn |
-| 8 | `kt-keys.local.txt` có khoá Meta / OpenAI / Pancake app không dùng | Cho xoá? |
+Nhóm câu hỏi: Số dư đầu kỳ (4) · Tiền mặt & Kiot (7) · Chi (3) · Cách tính (2) · Vận hành (3).
 
 ## 2. ĐANG NỢ
 
@@ -57,6 +52,8 @@ Chi tiết số liệu từng mục: `doi-chieu-T9.local.md` (máy anh, KHÔNG l
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **05/10/2026 11:15** — Ô lọc mỗi loại 1 màu (loại = tím, cơ sở = xanh ngọc, bộ phận = cam, tài khoản = xanh dương, khác = hồng); tab trạng thái Chi theo màu trạng thái. Trang "Cần giải đáp" (bảng kt_cau_hoi, 19 câu) trong Cài đặt. Cài đặt chia module như app MKT/Sale (menu xổ: Hỏi đáp · Quản trị · Danh mục · Hệ thống, mỗi module 1 trang). Phân quyền: bỏ ô Vị trí (anh: "bỏ phần bộ phận"), chỉ tick Toàn quyền hoặc từng trang theo module Báo cáo / Nghiệp vụ / Quản trị; bảng tài khoản kiểu MKT (Sửa · Đặt lại mật khẩu · Khoá / Mở lại).
 
 - **05/10/2026 10:57** — Anh góp ý giao diện (màu chuẩn, đừng dính nhau): gộp tab + bộ lọc + danh sách vào 1 khung trắng (mọi trang danh sách), dải tiêu đề kéo hết bề ngang, ô / nút cao đều 34px, ô lọc dài đều, nhãn tổng bên phải. Nội dung thu Kiot gọn: tên khách · mô tả · mã phiếu. Job kt-kiot chạy tự động lần đầu 10:47 OK.
 
