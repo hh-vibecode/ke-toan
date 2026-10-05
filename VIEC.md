@@ -32,7 +32,7 @@ Chi tiết số liệu từng mục: `doi-chieu-T9.local.md` (máy anh, KHÔNG l
 |---|---|---|
 | 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
 | 2 | Sheet vẫn được nhập song song → phát sinh sau 5/10 trên sheet chưa vào app | chốt ngày bỏ sheet / nhập bù |
-| 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | |
+| 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
 | 4 | Tải ảnh chứng từ thẳng lên app | giai đoạn sau |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
@@ -57,6 +57,8 @@ Chi tiết số liệu từng mục: `doi-chieu-T9.local.md` (máy anh, KHÔNG l
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **05/10/2026 10:57** — Anh góp ý giao diện (màu chuẩn, đừng dính nhau): gộp tab + bộ lọc + danh sách vào 1 khung trắng (mọi trang danh sách), dải tiêu đề kéo hết bề ngang, ô / nút cao đều 34px, ô lọc dài đều, nhãn tổng bên phải. Nội dung thu Kiot gọn: tên khách · mô tả · mã phiếu. Job kt-kiot chạy tự động lần đầu 10:47 OK.
 
 - **05/10/2026 10:08** — Đối chiếu T9 app vs sheet tới từng tài khoản: 11/12 TK khớp tuyệt đối; tiền vào và két lệch nhỏ đã giải thích đủ (Kiot tiền mặt theo ngày bán + chi tại quầy, sheet theo ngày nộp két); tiền ra khớp khi tính theo ngày dùng DV (trừ 2 phiếu sheet thiếu TK). Sửa luật Kiot: Cash → két; TTD_/CTD_ và phiếu chứa số TK công ty = chuyển nội bộ. Sửa nhập chi: lấy cả dòng gõ tay không có dấu thời gian, gán loại cho phiếu lương sheet để trống. Thêm nút "Chi theo ngày trả / ngày dùng DV" ở Tổng quan (kt_bao_cao thêm p_chi_theo). Ghi chú đối chiếu: doi-chieu-T9.local.md. Lỗi tự sửa: mất ký tự `\` trong regex SQL (luật nội bộ chưa chạy) → sửa ngay.
 
