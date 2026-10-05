@@ -41,7 +41,8 @@ begin
          when q.ma ~ '^TTDH' or q.nhom = 'Thu tiền đặt cọc' then l_coc
          when q.ma ~ '^TT[0-9]' then l_no
          else l_khac end loai_id,
-    left(concat_ws(' · ', q.chi_nhanh, nullif(q.doi_tac, ''), q.nhom, nullif(q.noi_dung, '')), 300) noi_dung
+    -- nội dung gọn: tên khách (hoặc nhóm) · mô tả · mã phiếu Kiot (cơ sở / TK / loại đã hiện ở dòng dưới trên app)
+    left(concat_ws(' · ', coalesce(nullif(trim(q.doi_tac), ''), q.nhom, case when q.ma ~ '^TNH' then 'Thu khác' else 'Khách lẻ' end), nullif(trim(q.noi_dung), ''), 'Kiot ' || q.ma), 300) noi_dung
   from kt_kiot_so_quy q
   where q.la_thu and q.so_tien > 0 and coalesce(q.nhom, '') <> 'Chuyển rút'
     and (q.ngay at time zone 'Asia/Ho_Chi_Minh')::date >= p_tu;
@@ -50,13 +51,13 @@ begin
 
   with up as (
     insert into kt_thu (ngay, noi_dung, so_tien, don_vi_id, tai_khoan_id, loai_id, trang_thai, nguon, ma_nguon, tao_boi)
-    select ngay, 'Kiot ' || ma || ' · ' || noi_dung, so_tien, dv_id, tk_id, loai_id, 'da_duyet', 'kiot', 'kiot:' || id, 'Kiot (tự kéo)'
+    select ngay, noi_dung, so_tien, dv_id, tk_id, loai_id, 'da_duyet', 'kiot', 'kiot:' || id, 'Kiot (tự kéo)'
       from _k where trang_thai = '0' and tk_id is not null and not noi_bo
     on conflict (ma_nguon) do update set ngay = excluded.ngay, noi_dung = excluded.noi_dung, so_tien = excluded.so_tien,
       don_vi_id = excluded.don_vi_id, tai_khoan_id = excluded.tai_khoan_id, loai_id = excluded.loai_id, da_xoa = false,
       sua_luc = now(), sua_boi = 'Kiot (tự kéo)'
-      where (kt_thu.ngay, kt_thu.so_tien, kt_thu.don_vi_id, kt_thu.tai_khoan_id, kt_thu.loai_id, kt_thu.da_xoa)
-        is distinct from (excluded.ngay, excluded.so_tien, excluded.don_vi_id, excluded.tai_khoan_id, excluded.loai_id, false)
+      where (kt_thu.ngay, kt_thu.noi_dung, kt_thu.so_tien, kt_thu.don_vi_id, kt_thu.tai_khoan_id, kt_thu.loai_id, kt_thu.da_xoa)
+        is distinct from (excluded.ngay, excluded.noi_dung, excluded.so_tien, excluded.don_vi_id, excluded.tai_khoan_id, excluded.loai_id, false)
     returning (xmax = 0) moi)
   select count(*) filter (where moi), count(*) filter (where not moi) into v_them, v_sua from up;
 
