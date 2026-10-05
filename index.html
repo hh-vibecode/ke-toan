@@ -163,6 +163,23 @@ td.num b{font-weight:800}
 .modal.drawer{justify-content:flex-end;padding:0}
 .modal.drawer>div{max-width:560px;height:100vh;max-height:100vh;border-radius:16px 0 0 16px;padding:20px 22px}
 .tabs .btn.on .muted{color:inherit;opacity:.8}
+/* Tổng quan dạng biểu đồ (anh 05/10: "hiện đại, bảng biểu kiểu sơ đồ, thoáng mắt") */
+.dvrow,.sdrow{display:grid;align-items:center;gap:10px;padding:6px 4px;border-radius:6px;font-size:12px}
+.dvrow{grid-template-columns:minmax(110px,30%) 1fr 92px 84px}
+.sdrow{grid-template-columns:minmax(150px,32%) 1fr 120px;cursor:pointer}
+.dvrow:hover,.sdrow:hover{background:var(--bg2)}
+.dvrow .lb,.sdrow .lb{font-weight:600;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dvrow .bars{display:flex;flex-direction:column;gap:3px}
+.dvrow .b1,.dvrow .b2{height:9px;border-radius:0 4px 4px 0;min-width:2px}
+.dvrow .b1{background:var(--s1)}.dvrow .b2{background:var(--s2)}
+.dvrow .vv{display:flex;flex-direction:column;text-align:right;font-variant-numeric:tabular-nums;font-size:11px;font-weight:700;line-height:1.35}
+.dvrow .cl{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.sdrow .trk{position:relative;height:14px}
+.sdrow .z{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.sdrow .fill{position:absolute;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0}
+.sdrow .fill.am{background:var(--s2);border-radius:4px 0 0 4px}
+.sdrow .vv{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;font-size:12.5px}
+@media (max-width:760px){.dvrow{grid-template-columns:1fr 84px}.dvrow .bars,.dvrow .cl{display:none}.sdrow{grid-template-columns:1fr 110px}.sdrow .trk{display:none}}
 .tb-dd{position:relative}
 .tb-menu-dd{display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:230px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:6px;z-index:40}
 .tb-dd.open .tb-menu-dd{display:block}
@@ -309,7 +326,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='05/10/2026 11:36';
+const APP_VERSION='05/10/2026 11:41';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -508,25 +525,18 @@ const fmtN=n=>{n=Number(n)||0;const a=Math.abs(n),s=n<0?'−':'';
 async function pageTongQuan(){
   const el=$('#page');el.innerHTML=head('Tổng quan',kyBar())+'<div class="empty">Đang tính...</div>';
   const [b,dt]=await Promise.all([rpc('kt_bao_cao',{p_tu:S.tu,p_den:S.den,p_chi_theo:S.f.chi_theo||'ngay_tt'}),rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den})]);
-  S.cache.dem=b.dem;const d=b.dem,pt=b.phai_tra||{};
+  S.cache.dem=b.dem;const d=b.dem,pt=b.phai_tra||{};S.cache.bc=b;
   const kpi=(c,ic,l,v,s,on)=>`<div class="kpi ${on?'click':''}" style="--c:var(--${c})" ${on?`onclick="${on}"`:''}><div class="ic">${IC[ic]}</div><div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div></div>`;
   const days=[];for(let x=new Date(S.tu+'T00:00:00');ymd(x)<=S.den;x=new Date(x.getTime()+864e5))days.push(ymd(x));
   S.cache.ngay=days.map(ng=>({ng,thu:sumBy(dt.phat_sinh.filter(p=>p.ngay===ng&&p.kieu==='thu'),p=>p.vao),chi:sumBy(dt.phat_sinh.filter(p=>p.ngay===ng&&p.kieu==='chi'),p=>p.ra)}));
-  // Ô tài khoản kiểu Xero: số dư sổ sách · số dư sao kê (tồn thực tế nhập gần nhất) · nút Đối soát
-  const tt=Object.fromEntries((b.thuc_te||[]).map(x=>[x.tk,x]));
-  const acc=b.tai_khoan.filter(t=>t.hoat_dong||t.cuoi_ky).map(t=>{const s=tt[t.id];const lech=s?Number(t.cuoi_ky)-Number(s.so_tien):null;
-    return `<div class="acc"><div class="t">${esc(LOAI_TK[t.loai]||'')}</div><div class="n" title="${esc(t.ten)}">${esc(t.ten)}</div>
-      <div class="acc-r"><span>Số dư sổ sách</span><b class="${t.cuoi_ky<0?'neg':''}">${fmt(t.cuoi_ky)}</b></div>
-      <div class="acc-r"><span>Số dư sao kê${s?' '+fmtD(s.ngay).slice(0,5):''}</span><b>${s?fmt(s.so_tien):'<span class="muted">chưa nhập</span>'}</b></div>
-      <div class="acc-f">${t.cuoi_ky<0?`<span class="st-bad">${IC_CANH}Tồn âm</span>`:lech?`<span class="st-bad">${IC_CANH}Lệch ${fmt(lech)}</span>`:s?'<span class="pos" style="font-size:11.5px;font-weight:700">✓ Khớp</span>':''}
-        <button class="btn sm" onclick="S.f.dt_tk=${t.id};go('dong_tien')">Đối soát</button></div></div>`}).join('');
   const hbars=(list,tong)=>{const mx=Math.max(1,...list.map(x=>x.so_tien));return list.length?list.map(x=>`<div class="hbar" data-tip="${esc(x.loai)}|${fmt(x.so_tien)}|${pct(x.so_tien,tong)}${x.so_phieu?'|'+x.so_phieu+' phiếu':''}">
       <div class="lb" title="${esc(x.loai)}">${esc(x.loai)}${x.cach_chia==='ty_le_thu'?' <span class="badge">chung</span>':''}</div>
       <div class="tr"><div class="bar-fill" style="width:${Math.max(1,x.so_tien/mx*78)}%"></div><div class="v">${fmtN(x.so_tien)} <span>${pct(x.so_tien,tong)}</span></div></div></div>`).join(''):'<div class="empty">Chưa có</div>'};
   const tuoi=b.no_tuoi||[],mxT=Math.max(1,...tuoi.map(x=>x.con_no)),tongNo=sumBy(b.cong_no,x=>x.con_no);
   const ids=[...new Set([...b.thu_theo_dv,...b.chi_theo_dv].map(x=>x.don_vi_id))];
   const dvRows=ids.map(id=>({ten:id?(dv(id)||{}).ten||'#'+id:'Chưa phân bổ',thu:sumBy(b.thu_theo_dv.filter(x=>x.don_vi_id===id),x=>x.so_tien),
-    chi:sumBy(b.chi_theo_dv.filter(x=>x.don_vi_id===id),x=>x.so_tien),tt:id?(dv(id)||{}).thu_tu||100:999})).sort((a,c)=>a.tt-c.tt);
+    chi:sumBy(b.chi_theo_dv.filter(x=>x.don_vi_id===id),x=>x.so_tien),tt:id?(dv(id)||{}).thu_tu||100:999})).filter(r=>r.thu||r.chi).sort((a,c)=>(c.thu+c.chi)-(a.thu+a.chi));
+  const mxDV=Math.max(1,...dvRows.map(r=>Math.max(r.thu,r.chi)));
   const todo=[['warn','Điều chuyển chưa xác nhận',d.dc_chua_xac_nhan,"S.f.dc_xn='chua';go('dieu_chuyen')"],['warn','Khoản thu chờ duyệt',d.thu_cho_duyet,"go('thu')"],
     ['vio','Hoá đơn đỏ chưa nhận',d.hd_do_chua_nhan,"S.f.chi_tt='hd_do';go('chi')"],['bad','Tài khoản tồn âm',d.tk_am,"go('dong_tien')"],
     ['bad','Khoản sắp trả đã quá hạn',b.sap_tra.filter(x=>x.han&&x.han<homNay()).length,"go('sap_tra')"]];
@@ -538,26 +548,47 @@ async function pageTongQuan(){
     <div class="kpi-row">${kpi('warn','cho','Chi chờ duyệt',d.cho_duyet,'phiếu · '+fmt(pt.cho_duyet_tien),"S.f.chi_tt='cho_duyet';go('chi')")}
       ${kpi('info','tt','Chi chờ thanh toán',d.cho_tt,'phiếu · '+fmt(pt.cho_tt_tien),"S.f.chi_tt='cho_tt';go('chi')")}
       ${kpi('vio','hd','HĐ đỏ chưa nhận',d.hd_do_chua_nhan,'khoản đã chi',"S.f.chi_tt='hd_do';go('chi')")}</div>
-    <div class="sec">Tài khoản ngân hàng &amp; tiền mặt <span class="badge">${fmt(b.ton_cuoi_ky)}</span></div><div class="acc-grid">${acc||'<div class="empty">Chưa có tài khoản</div>'}</div>
-    <div class="grid-2-1" style="margin-top:16px"><div class="panel"><h4>Tiền vào và ra<div class="legend"><span><i style="background:var(--s1)"></i>Tiền vào</span><span><i style="background:var(--s2)"></i>Tiền ra</span></div></h4>
+    <div class="grid-2-1"><div class="panel"><h4>Tiền vào và ra<div class="legend"><span><i style="background:var(--s1)"></i>Tiền vào</span><span><i style="background:var(--s2)"></i>Tiền ra</span></div></h4>
         <div class="chart-wrap" id="ch-ngay"></div></div>
       <div class="panel"><h4>Chi phải trả ${coGhi('chi')?`<button class="btn sm" style="margin-left:auto" onclick="go('chi');setTimeout(()=>formChi(),300)">+ Đề nghị chi</button>`:''}</h4>
         <div class="todo" onclick="S.f.chi_tt='cho_duyet';go('chi')" style="--c:var(--warn)"><span class="dot"></span>Chờ duyệt · ${d.cho_duyet} phiếu<span class="cnt">${fmt(pt.cho_duyet_tien)}</span></div>
         <div class="todo" onclick="S.f.chi_tt='cho_tt';go('chi')" style="--c:var(--info)"><span class="dot"></span>Chờ thanh toán · ${d.cho_tt} phiếu<span class="cnt">${fmt(pt.cho_tt_tien)}</span></div>
         <div class="todo ${pt.qua_han?'':'xong'}" style="--c:var(--${pt.qua_han?'bad':'grey'})" ${pt.qua_han?`onclick="S.f.chi_tt='qua_han';go('chi')"`:''}><span class="dot"></span>Quá hạn mong muốn trả · ${pt.qua_han||0}<span class="cnt ${pt.qua_han?'neg':''}">${fmt(pt.qua_han_tien)}</span></div>
         <h4 style="margin-top:16px">Việc cần làm</h4>${todo.map(([c,t,n,on])=>`<div class="todo ${n?'':'xong'}" style="--c:var(--${n?c:'grey'})" ${n?`onclick="${on}"`:''}><span class="dot"></span>${t}<span class="cnt">${n||'✓'}</span></div>`).join('')}</div></div>
-    <div class="grid-2-1"><div class="panel"><h4>Công nợ phải thu <span class="badge">${fmt(tongNo)}</span></h4><div class="chart-wrap">
-        ${tuoi.map(x=>`<div class="hbar" data-tip="${esc(x.nhom)}|${fmt(x.con_no)}|${x.so_khoan} khoản"><div class="lb">${esc(x.nhom)} <span class="muted">· ${x.so_khoan}</span></div>
-          <div class="tr"><div class="bar-fill" style="width:${Math.max(1,x.con_no/mxT*78)}%"></div><div class="v">${fmtN(x.con_no)}</div></div></div>`).join('')||'<div class="empty">Chưa có</div>'}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${b.cong_no.map(x=>`<span class="badge" style="cursor:pointer" onclick="S.f.no_pl='${x.phan_loai}';go('cong_no')">${esc(PL_NO[x.phan_loai]||x.phan_loai)} ${fmtN(x.con_no)}</span>`).join('')}</div></div>
-      <div class="panel"><h4>Khách còn nợ nhiều nhất</h4>${b.top_no.slice(0,6).map(x=>`<div class="todo" style="cursor:default"><span>${esc(x.khach)}</span><span class="cnt">${fmt(x.con_no)}</span></div>`).join('')||'<div class="empty">Chưa có</div>'}</div></div>
     <div class="two"><div class="panel"><h4>Chi theo loại <span class="badge">${fmt(b.tien_ra)}</span></h4><div class="chart-wrap">${hbars(b.chi_theo_loai,b.tien_ra)}</div></div>
       <div class="panel"><h4>Thu theo loại <span class="badge">${fmt(b.tien_vao)}</span></h4><div class="chart-wrap">${hbars(b.thu_theo_loai,b.tien_vao)}</div></div></div>
-    <div class="sec">Thu – chi theo cơ sở <span class="badge">chi phí chung chia theo tỉ lệ thu</span></div>
-    <div class="card scroll"><table><tr><th>Cơ sở</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Chênh lệch</th></tr>
-      ${dvRows.map(r=>`<tr><td><b>${esc(r.ten)}</b></td><td class="num">${fmt(r.thu)}</td><td class="num">${fmt(r.chi)}</td><td class="num ${r.thu-r.chi<0?'neg':''}"><b>${fmt(r.thu-r.chi)}</b></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Chưa có</td></tr>'}</table></div>
-    ${b.sap_tra.length?`<div class="sec">Sắp phải trả <span class="badge">${fmt(sumBy(b.sap_tra,x=>x.so_tien))}</span></div><div class="card">${b.sap_tra.map(x=>`<div class="todo" style="padding:10px 16px" onclick="go('sap_tra')"><span>${esc(x.noi_dung)} <span class="muted">· ${x.han?(x.han<homNay()?'<span class="neg">quá hạn '+fmtD(x.han)+'</span>':'hạn '+fmtD(x.han)):'chưa có hạn'}</span></span><span class="cnt">${fmt(x.so_tien)}</span></div>`).join('')}</div>`:''}`;
-  veThuChiNgay();bindTip();shellBadges();
+    <div class="two" style="margin-top:16px"><div class="panel"><h4>Thu – chi theo cơ sở <span class="badge">chi phí chung chia theo tỉ lệ thu</span><div class="legend"><span><i style="background:var(--s1)"></i>Thu</span><span><i style="background:var(--s2)"></i>Chi</span></div></h4>
+        <div class="chart-wrap">${dvRows.map(r=>`<div class="dvrow" data-tip="${esc(r.ten)}|Thu ${fmt(r.thu)}|Chi ${fmt(r.chi)}|Chênh lệch ${fmt(r.thu-r.chi)}">
+          <div class="lb" title="${esc(r.ten)}">${esc(r.ten)}</div>
+          <div class="bars"><div class="b1" style="width:${r.thu/mxDV*100}%"></div><div class="b2" style="width:${r.chi/mxDV*100}%"></div></div>
+          <div class="vv"><span>${fmtN(r.thu)}</span><span>${fmtN(r.chi)}</span></div>
+          <div class="cl ${r.thu-r.chi<0?'neg':'pos'}">${r.thu-r.chi<0?'':'+'}${fmtN(r.thu-r.chi)}</div></div>`).join('')||'<div class="empty">Chưa có</div>'}</div></div>
+      <div class="panel"><h4>Công nợ phải thu <span class="badge">${fmt(tongNo)}</span></h4><div class="chart-wrap">
+        ${tuoi.map(x=>`<div class="hbar" data-tip="${esc(x.nhom)}|${fmt(x.con_no)}|${x.so_khoan} khoản"><div class="lb">${esc(x.nhom)} <span class="muted">· ${x.so_khoan}</span></div>
+          <div class="tr"><div class="bar-fill" style="width:${Math.max(1,x.con_no/mxT*78)}%"></div><div class="v">${fmtN(x.con_no)}</div></div></div>`).join('')||'<div class="empty">Chưa có</div>'}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px">${b.cong_no.map(x=>`<span class="badge" style="cursor:pointer" onclick="S.f.no_pl='${x.phan_loai}';go('cong_no')">${esc(PL_NO[x.phan_loai]||x.phan_loai)} ${fmtN(x.con_no)}</span>`).join('')}</div>
+        <h4>Khách còn nợ nhiều nhất</h4>${b.top_no.slice(0,5).map(x=>`<div class="todo" style="cursor:default"><span>${esc(x.khach)}</span><span class="cnt">${fmt(x.con_no)}</span></div>`).join('')||'<div class="empty">Chưa có</div>'}</div></div>
+    ${b.sap_tra.length?`<div class="sec">Sắp phải trả <span class="badge">${fmt(sumBy(b.sap_tra,x=>x.so_tien))}</span></div><div class="card">${b.sap_tra.map(x=>`<div class="todo" style="padding:10px 16px" onclick="go('sap_tra')"><span>${esc(x.noi_dung)} <span class="muted">· ${x.han?(x.han<homNay()?'<span class="neg">quá hạn '+fmtD(x.han)+'</span>':'hạn '+fmtD(x.han)):'chưa có hạn'}</span></span><span class="cnt">${fmt(x.so_tien)}</span></div>`).join('')}</div>`:''}
+    <div class="panel" style="margin-top:16px" id="so-du"></div>`;
+  veThuChiNgay();veSoDu();bindTip();shellBadges();
+}
+// SỐ DƯ TÀI KHOẢN — biểu đồ thanh ngang 2 chiều quanh trục 0 (anh 05/10: bỏ 16 ô cho thoáng, đẩy xuống dưới cùng).
+// Dương = thanh xanh sang phải, âm = thanh đỏ sang trái. Tự ẩn tài khoản số dư 0 và không có giao dịch (bấm để hiện).
+// Rê chuột: sổ sách / sao kê / lệch. Bấm dòng: sang Dòng tiền & đối soát của tài khoản đó.
+function veSoDu(){
+  const box=$('#so-du');const b=S.cache.bc;if(!box||!b)return;
+  const tt=Object.fromEntries((b.thuc_te||[]).map(x=>[x.tk,x]));
+  const all=b.tai_khoan.filter(t=>t.hoat_dong||Number(t.cuoi_ky)).map(t=>({...t,v:Number(t.cuoi_ky)}));
+  const rong=t=>!t.v&&!Number(t.thu)&&!Number(t.chi)&&!Number(t.dc);
+  const an=all.filter(rong),hien=(S.f.hien0?all:all.filter(t=>!rong(t))).sort((a,c)=>c.v-a.v);
+  const mxP=Math.max(0,...hien.map(t=>t.v)),mxN=Math.max(0,...hien.map(t=>-t.v)),tong=Math.max(1,mxP+mxN),z=mxN/tong*100;
+  box.innerHTML=`<h4>Số dư tài khoản <span class="badge">${fmt(b.ton_cuoi_ky)}</span>
+      ${an.length?`<button class="btn sm" style="margin-left:auto" onclick="S.f.hien0=!S.f.hien0;veSoDu();bindTip()">${S.f.hien0?'Ẩn':'+'} ${an.length} tài khoản số dư 0</button>`:''}</h4>
+    <div class="chart-wrap sodu">${hien.map(t=>{const s=tt[t.id],lech=s?t.v-Number(s.so_tien):null,w=Math.abs(t.v)/tong*100,l=t.v>=0?z:z-w;
+      return `<div class="sdrow" onclick="S.f.dt_tk=${t.id};go('dong_tien')" data-tip="${esc(t.ten)}|Sổ sách ${fmt(t.v)}|Sao kê ${s?fmt(s.so_tien)+' ('+fmtD(s.ngay)+')':'chưa nhập'}${lech?'|Lệch '+fmt(lech):''}|Bấm để đối soát">
+        <div class="lb" title="${esc(t.ten)}">${esc(t.ten)} ${lech?`<span class="st-bad">${IC_CANH}</span>`:''}</div>
+        <div class="trk"><div class="z" style="left:${z}%"></div><div class="fill ${t.v<0?'am':''}" style="left:${l}%;width:${Math.max(w,t.v?0.6:0)}%"></div></div>
+        <div class="vv ${t.v<0?'neg':''}">${fmt(t.v)}</div></div>`}).join('')||'<div class="empty">Chưa có</div>'}</div>`;
 }
 const IC_CANH='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>';
 // Cột 2 chiều quanh 1 đường gốc: Thu lên (xanh), Chi xuống (đỏ). 1 trục, đầu cột bo 4px, cột tối đa 24px, rê chuột xem số.
