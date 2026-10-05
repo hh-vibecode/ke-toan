@@ -5,52 +5,61 @@
 
 ---
 
-## 0. KHỞI TẠO (phiên đầu tiên làm theo thứ tự)
+## 0. KHỞI TẠO
 
 | # | Việc | Trạng thái |
 |---|---|---|
-| 1 | Hỏi anh: app kế toán làm những việc gì cụ thể (báo cáo gì, ai dùng, đang làm tay ở đâu — Excel / sheet / phần mềm nào), lấy dữ liệu từ đâu | **ĐÃ HỎI 1/10, CHỜ ANH TRẢ LỜI** |
-| 2 | `git init` + tạo repo `hh-vibecode/ke-toan` + bật GitHub Pages | **XONG 2/10** — repo public, Pages nhánh `main` thư mục gốc (giống 2 app kia): https://hh-vibecode.github.io/ke-toan/ (404 tới khi có `index.html`) |
-| 3 | Xin anh khoá → ghi `kt-keys.local.txt`: khoá quản trị Supabase (anh chọn dùng chung của project, hoặc tạo key riêng tên `ke-toan` để lộ thì thu hồi riêng), token Management API (`sbp_…`) | chưa — GitHub KHÔNG cần token riêng: dùng đăng nhập git có sẵn trên máy (anh chốt 2/10) |
-| 4 | Dựng khung app (1 file `index.html` như 2 app kia, hoặc theo anh chọn) + màn nhập MÃ TRUY CẬP + nút Đổi mã / Khoá | chưa |
-| 5 | Bảng `kt_*` (RLS bật, anon không đọc thẳng) + hàm `kt_*` tự kiểm mã; lưu `supabase-schema-kt.sql` | chưa |
-| 6 | Đẩy bản đầu, kiểm trang live, báo anh F5 | chưa |
+| 1 | Hỏi anh app làm gì | **XONG 05/10** — thay 2 GG Sheet (Quản lý dòng tiền + Đề nghị thanh toán) bằng app 4 phần Thu · Chi · Điều chuyển · Công nợ + báo cáo |
+| 2 | Repo + GitHub Pages | **XONG 02/10** — https://hh-vibecode.github.io/ke-toan/ |
+| 3 | Khoá → `kt-keys.local.txt` | **CHỜ ANH** — xem mục 1 |
+| 4 | Khung app `index.html` + mã truy cập + Đổi mã / Khoá + trang Logic | **XONG 05/10** (soát giao diện bằng dữ liệu giả; CHƯA chạy với CSDL thật) |
+| 5 | `supabase-schema-kt.sql` (bảng + hàm kt_*, RLS bật, không policy) | **ĐÃ VIẾT, CHƯA CHẠY** — cần token `sbp_…` |
+| 6 | Đẩy bản đầu, kiểm live, báo anh F5 | XONG 05/10 (trang hiện màn nhập mã; đăng nhập chưa được tới khi chạy SQL + tạo mã) |
 
 ## 1. ĐANG CHỜ ANH HẢI QUYẾT
 
 | # | Việc | Cần anh nói gì |
 |---|---|---|
-| 1 | Duyệt đề xuất app (gửi trong chat 05/10): 4 module Thu · Chi · Điều chuyển · Công nợ + báo cáo; chia giai đoạn | Đồng ý / sửa |
-| 2 | Ai dùng app, mỗi người 1 mã hay 1 mã / vai trò; người đề nghị chi có vào app không | Danh sách người + vai trò |
-| 3 | Người đề nghị chi (hàng chục người) vào app bằng 1 mã chung "đề nghị" hay giữ GG Form giai đoạn 1 (app tự kéo về) | Chọn 1 |
-| 4 | Thu Kiot tự động: nhờ phiên MKT/Sale đồng bộ sổ quỹ Kiot (phụ thuộc chéo) hay app kế toán tự kéo | Chọn 1 |
-| 5 | Khoá Supabase: dùng chung hay tạo key riêng `ke-toan` | Chọn 1 |
+| 1 | Khoá dùng chung (anh chốt 05/10 "dùng chung khóa"): khoá quản trị Supabase + token `sbp_…` + khoá API Kiot. Luật CLAUDE.md cấm Claude đọc file khoá app khác | Anh tự dán vào `kt-keys.local.txt`, HOẶC cho phép Claude chép (không in ra) từ file khoá của mkt-sale-app |
+| 2 | Tồn đầu từng tài khoản ngày 01/08/2026 (sao kê / két) | Số dư 31/07 từng TK — hoặc cho Claude lấy tạm từ sheet rồi kế toán soát |
+| 3 | Gộp tên tài khoản (sheet có ~20 cách ghi cho ~13 TK) | Duyệt bảng gộp Claude gửi trong chat |
+| 4 | Người đề nghị chi (hàng chục người): mã chung "đề nghị" hay giữ GG Form | Chọn 1 (giai đoạn 1 tạm chỉ 3 người dùng nên chưa gấp) |
 
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| — | (chưa có) | |
+| 1 | Chạy `supabase-schema-kt.sql` + tạo 3 mã (anh Hải, giám đốc, kế toán — quản trị) ghi vào `kt-keys.local.txt` | chờ khoá |
+| 2 | Danh mục ban đầu (TK, cơ sở / bộ phận, loại thu / chi + cách chia) từ 2 sheet | `scripts/khoi-tao.js` |
+| 3 | Chuyển dữ liệu cũ TỪ 01/08/2026: chi (sheet đề nghị), điều chuyển, công nợ, thu ngoài | Lưu ý: tab DATA THU của sheet chỉ có tháng 9 → thu tháng 8 lấy từ Kiot |
+| 4 | Luồng kéo Kiot RIÊNG (workflow `kt-kiot`, 3 tiếng / lần, tránh phút trùng job khác): sổ quỹ → `kt_kiot_so_quy` → phiếu thu sang `kt_thu` | Chưa chắc API Kiot có trả sổ quỹ — kiểm bằng khoá thật; dự phòng: hoá đơn / đơn đặt kèm thanh toán |
+| 5 | Ghép tài khoản / chi nhánh Kiot ↔ danh mục app | sau khi kéo được Kiot |
+| 6 | Tải ảnh chứng từ thẳng lên app (Supabase Storage riêng tư) — hiện mới dán link | giai đoạn sau |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
 - **App riêng, tách biệt hoàn toàn** khỏi MKT/Sale và QC CSKH (anh chốt 1/10/2026). Xem `CLAUDE.md` mục Tách biệt.
 - **Tên:** thư mục / repo `ke-toan`. **Tiền tố:** `kt_` (bảng, hàm) · `kt-` (lịch chạy, workflow). Đã đăng ký vào sổ quy ước chung 1/10/2026.
-- **Vào app bằng MÃ TRUY CẬP riêng** (giống QC), KHÔNG dùng chung tài khoản đăng nhập của MKT/Sale.
+- **Vào app bằng MÃ TRUY CẬP riêng**, mỗi người 1 mã (để nhật ký biết ai làm). Hiện chỉ **anh Hải, giám đốc, kế toán — đều quản trị full** (anh chốt 05/10).
 - Mọi thứ Claude tạo ký tên **Monsieur Claude**.
-- **Repo public** (anh chốt 2/10/2026, để Pages miễn phí như 2 app kia) → tuyệt đối không có khoá quản trị / số liệu trong code.
-- **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026), không xin anh tạo token. Không in token ra.
+- **Repo public** (anh chốt 2/10/2026) → tuyệt đối không có khoá quản trị / số liệu thật / số tài khoản thật trong code và sổ.
+- **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026). Không in token ra.
+- **Khung app** theo đề xuất 05/10 (anh đồng ý) + **trang Logic trong Cài đặt** để người khác đọc app tính thế nào. Sửa luật ở SQL thì sửa luôn trang Logic.
+- **Phạm vi dữ liệu: từ 01/08/2026** (anh chốt 05/10).
+- **Kiot: luồng kéo RIÊNG** của app kế toán, KHÔNG dùng chung / nhờ MKT/Sale; **3 tiếng / lần** (anh chốt 05/10).
+- **Khoá Supabase: dùng chung** khoá của project (anh chốt 05/10).
+- **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
+- **Giao diện kiểu phần mềm kế toán** (MISA AMIS / Xero / QuickBooks), KHÔNG giống GG Sheet: tổng quan thẻ + biểu đồ, danh sách 2 dòng, sổ quỹ gom theo ngày, xem phiếu bằng ngăn kéo bên phải (anh chốt 05/10).
 
 ## 4. PHỤ THUỘC CHÉO (cần app khác làm — nhờ anh chuyển lời)
 
 | # | Cần gì | App nào | Trạng thái |
 |---|---|---|---|
-| — | (chưa có) | | |
-
-Nếu app kế toán cần số bán hàng (doanh thu, đơn Kiot, khách…): CHỈ ĐỌC bảng của MKT/Sale, và nên nhờ phiên MKT/Sale làm
-sẵn 1 hàm / view trả đúng số đã chốt (để 2 app không ra 2 con số khác nhau). Tóm tắt nghiệp vụ ở `BRIEF.md` mục 6.
+| — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **05/10/2026 09:23** — Anh chốt: khung OK + trang Logic; 3 người quản trị; Kiot kéo riêng 3h/lần; dữ liệu từ 1/8; dùng chung khoá; hạn chế nhập tay; giao diện kiểu phần mềm kế toán. Viết `supabase-schema-kt.sql` (chưa chạy — chưa có khoá) + `index.html` (Tổng quan thẻ + biểu đồ, Dòng tiền & đối soát, Thu dạng sổ quỹ, Chi đề nghị → duyệt → thanh toán + 4A/4B + HĐ đỏ, Điều chuyển, Công nợ, Sắp phải trả, Cài đặt: danh mục / người dùng / Logic / nhật ký / đổi mã). Soát giao diện bằng dữ liệu giả + Chrome headless (máy tính + điện thoại 375px). Sự cố nhỏ tự sửa: 1 lệnh treo vì `cat` chờ stdin (đã dừng, không ghi gì); chạy nhầm script ghép có thể xoá phần Tổng quan (script lỗi trước khi ghi — đã kiểm file còn nguyên); trang Logic lỡ ghi 1 con số thật từ sheet → đã xoá trước khi đẩy.
 
 - **05/10/2026 09:00** — Anh gửi link xuất bản file Đề nghị thanh toán → đã đọc (tab chính + tab lưu theo tháng). Bổ sung đề xuất phần Chi trong chat.
 - **05/10/2026 08:44** — Đọc luồng Thu–Chi–Điều chuyển (ảnh anh gửi) + file GG Sheet quản lý dòng tiền (bản xuất bản, 10 tab). File đề nghị thanh toán để riêng tư, chưa đọc được. Phát hiện lỗi số liệu trên sheet (đã báo anh trong chat; KHÔNG ghi số vào repo vì repo public). Gửi đề xuất app, chờ anh duyệt.
