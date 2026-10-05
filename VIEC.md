@@ -13,23 +13,27 @@ Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy 
 
 ## 1. ĐANG CHỜ ANH HẢI QUYẾT / KẾ TOÁN XÁC NHẬN
 
+Chi tiết số liệu từng mục: `doi-chieu-T9.local.md` (máy anh, KHÔNG lên GitHub). Mục A–H trong file đó.
+
 | # | Việc | Cần nói gì |
 |---|---|---|
-| 1 | Tồn đầu 1/9 đang lấy theo sheet (9 TK, tổng khớp sheet). 7 TK còn lại (TECH, MSB, BIDV-BUI THI HIEN, VCB 9902, vay) để 0 | Kế toán xác nhận số dư 31/8 từng TK |
-| 2 | "BIDV - BUI THI HIEN" trùng dãy số với "MSB CN" | 1 hay 2 tài khoản? |
-| 3 | Chênh lệch T9 app vs sheet (xem chat 05/10): tiền vào +30,4 tr (Kiot vs sheet ở Hiền Thủy / Chánh Tâm), tiền ra −41,6 tr, tồn +339,6 tr (157 tr ở các TK sheet không theo dõi) | Kế toán soát |
-| 4 | Kiot còn 4 quỹ chưa có trong app: SHIDAI-Tiền Quỹ Ngoài, Tiền Quỹ Ngoài, Tiền Quỹ Ngoài LKT, VÍ SHOPEE. Phiếu CHI trên Kiot (≈ 3 tỷ T9, gồm cả chuyển rút) chưa đưa vào app | Có theo dõi các quỹ này + chi Kiot trên app không? |
-| 5 | Người đề nghị chi (hàng chục người): tài khoản vị trí Nhân viên chỉ tick "Chi" hay giữ GG Form | Chọn 1 |
-| 6 | `kt-keys.local.txt` chứa cả khoá Meta / OpenAI / Pancake (app không dùng) | Cho xoá các dòng đó? |
+| 1 | (A) Tồn đầu 1/9 + số dư thật 4 TK dashboard sheet không theo dõi (TECH CN, TECH HXT, BIDV-BUI THI HIEN, TK vay) | Kế toán xác nhận |
+| 2 | "BIDV - BUI THI HIEN" trùng dãy số "MSB CN" | 1 hay 2 tài khoản? |
+| 3 | (C) Có đưa CHI TIỀN MẶT TẠI QUẦY trên Kiot vào app không (hiện không; sheet cũng không) + tồn đầu két 1/9 có cộng tiền bán 31/8 chưa nộp không | Chọn |
+| 4 | (E) Phiếu lương T8 sheet để trống loại → app gán "OPEX - Lương & BHXH" | Xác nhận |
+| 5 | (F) Kiot ghi 1 khoản chuyển TECH CN → VCB CN là "thu khác"; sheet không ghi gì | Có ghi điều chuyển không? |
+| 6 | (H) Kiot còn 4 quỹ app chưa theo dõi (3 quỹ ngoài + ví Shopee) | Có theo dõi không? |
+| 7 | Người đề nghị chi (hàng chục người): tài khoản Nhân viên chỉ tick "Chi" hay giữ GG Form | Chọn |
+| 8 | `kt-keys.local.txt` có khoá Meta / OpenAI / Pancake app không dùng | Cho xoá? |
 
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | 3 phiếu chi sheet ghi "Đã thanh toán" nhưng thiếu ngày TT / TK / loại → đang ở Chờ thanh toán | kế toán bổ sung trên app |
-| 2 | Sheet vẫn đang được nhập song song → dữ liệu sau 5/10 trên sheet chưa vào app (chi, điều chuyển, công nợ) | chốt ngày bỏ sheet, hoặc nhập bù 1 lần |
-| 3 | Theo dõi job `kt-kiot` vài ngày (nhật ký: hanh_dong keo_kiot / keo_kiot_loi) | |
-| 4 | Tải ảnh chứng từ thẳng lên app (Storage riêng tư) — hiện mới dán link | giai đoạn sau |
+| 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
+| 2 | Sheet vẫn được nhập song song → phát sinh sau 5/10 trên sheet chưa vào app | chốt ngày bỏ sheet / nhập bù |
+| 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | |
+| 4 | Tải ảnh chứng từ thẳng lên app | giai đoạn sau |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
@@ -53,6 +57,8 @@ Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **05/10/2026 10:08** — Đối chiếu T9 app vs sheet tới từng tài khoản: 11/12 TK khớp tuyệt đối; tiền vào và két lệch nhỏ đã giải thích đủ (Kiot tiền mặt theo ngày bán + chi tại quầy, sheet theo ngày nộp két); tiền ra khớp khi tính theo ngày dùng DV (trừ 2 phiếu sheet thiếu TK). Sửa luật Kiot: Cash → két; TTD_/CTD_ và phiếu chứa số TK công ty = chuyển nội bộ. Sửa nhập chi: lấy cả dòng gõ tay không có dấu thời gian, gán loại cho phiếu lương sheet để trống. Thêm nút "Chi theo ngày trả / ngày dùng DV" ở Tổng quan (kt_bao_cao thêm p_chi_theo). Ghi chú đối chiếu: doi-chieu-T9.local.md. Lỗi tự sửa: mất ký tự `\` trong regex SQL (luật nội bộ chưa chạy) → sửa ngay.
 
 - **05/10/2026 09:59** — Anh đổi mốc sang 1/9, làm T9 + Kiot; theme Xero toàn app (font Montserrat); nút con mắt mật khẩu. Kiot API có sổ quỹ (/cashflow) → `kt_dong_bo_kiot()` (thu khách TTHD/TTDH/TT + thu khác, bỏ "Chuyển rút" + phiếu huỷ; tiền mặt quầy → Két). Nhập T9: 914 phiếu Kiot (→ 505 thu), 5 thu ngoài Kiot từ sheet (12 dòng sheet trùng Kiot đã bỏ), 181 chi (đề nghị TT), 14 điều chuyển, 121 công nợ (khớp sheet 681,72 tr), tồn đầu 1/9 khớp sheet. Edge Function + pg_cron `kt-kiot` chạy thử OK. Lỗi tự sửa: đọc số mũ Excel sai (bắt được ở chạy thử, chưa ghi); mảng kiot_ma 2 chiều (ghi đè lại); endDate Kiot không gồm ngày cuối → T9 thiếu 30/9 → job tự bù, rồi 1 khoản BHXH 42,15 tr bị tính 2 lần (sheet + Kiot) → đã ẩn dòng sheet.
 

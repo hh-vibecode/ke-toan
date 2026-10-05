@@ -664,7 +664,10 @@ create or replace view public.kt_v_bien_dong with (security_invoker = true) as
   select d.tk_nhan_id, d.ngay, 'dc', d.so_tien, 0 from kt_dieu_chuyen d where not d.da_xoa;
 revoke all on public.kt_v_bien_dong from anon, authenticated;
 
-create or replace function public.kt_bao_cao(p_phien text, p_tu date, p_den date) returns jsonb
+-- p_chi_theo: 'ngay_tt' (mặc định — dòng tiền thật) | 'ngay_su_dung' (giống dashboard sheet cũ: tiền ra lọc theo ngày sử dụng DV).
+-- Chỉ đổi phần TIỀN RA / chi theo loại / theo cơ sở; tồn tài khoản LUÔN theo ngày thanh toán (sheet cũ cũng vậy).
+drop function if exists public.kt_bao_cao(text, date, date);
+create or replace function public.kt_bao_cao(p_phien text, p_tu date, p_den date, p_chi_theo text default 'ngay_tt') returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare r jsonb;
 begin
@@ -684,7 +687,8 @@ begin
   thu_ky as (select t.*, l.ten loai_ten from kt_thu t join kt_loai l on l.id = t.loai_id
               where not t.da_xoa and t.trang_thai = 'da_duyet' and t.ngay between p_tu and p_den),
   chi_ky as (select c.*, l.ten loai_ten, l.nhom_bc, l.cach_chia from kt_chi c join kt_loai l on l.id = c.loai_id
-              where not c.da_xoa and c.trang_thai = 'da_tt' and c.ngay_tt between p_tu and p_den),
+              where not c.da_xoa and c.trang_thai = 'da_tt'
+                and (case when p_chi_theo = 'ngay_su_dung' then coalesce(c.ngay_su_dung, c.ngay_tt) else c.ngay_tt end) between p_tu and p_den),
   -- Tỉ lệ chia chi phí chung = thu (đã duyệt) của từng cơ sở / tổng thu trong kỳ
   thu_dv as (select don_vi_id, sum(so_tien) thu from thu_ky where don_vi_id is not null group by don_vi_id),
   tong_thu as (select nullif(sum(thu), 0) tong from thu_dv),
@@ -819,7 +823,7 @@ do $$ declare f text; begin
     'kt_danh_muc(text)', 'kt_luu_danh_muc(text,text,jsonb)', 'kt_ds(text,text,date,date)',
     'kt_luu_thu(text,jsonb)', 'kt_luu_chi(text,jsonb)', 'kt_luu_dieu_chuyen(text,jsonb)', 'kt_luu_cong_no(text,jsonb)',
     'kt_thu_hoi_no(text,bigint,date,numeric,text)', 'kt_luu_sap_tra(text,jsonb)', 'kt_xoa(text,text,bigint)',
-    'kt_luu_ton_thuc_te(text,int,date,numeric)', 'kt_bao_cao(text,date,date)', 'kt_dong_tien(text,date,date)',
+    'kt_luu_ton_thuc_te(text,int,date,numeric)', 'kt_bao_cao(text,date,date,text)', 'kt_dong_tien(text,date,date)',
     'kt_ds_nhat_ky(text,bigint)', 'kt_goi_y(text)'] loop
     execute 'revoke execute on function public.' || f || ' from public';
     execute 'grant execute on function public.' || f || ' to anon, authenticated';

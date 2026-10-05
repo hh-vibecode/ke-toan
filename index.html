@@ -251,7 +251,7 @@ td.num b{font-weight:800}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='05/10/2026 09:59';
+const APP_VERSION='05/10/2026 10:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -427,7 +427,7 @@ const fmtN=n=>{n=Number(n)||0;const a=Math.abs(n),s=n<0?'−':'';
   return s+fmt(a)};
 async function pageTongQuan(){
   const el=$('#page');el.innerHTML=head('Tổng quan',kyBar())+'<div class="empty">Đang tính...</div>';
-  const [b,dt]=await Promise.all([rpc('kt_bao_cao',{p_tu:S.tu,p_den:S.den}),rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den})]);
+  const [b,dt]=await Promise.all([rpc('kt_bao_cao',{p_tu:S.tu,p_den:S.den,p_chi_theo:S.f.chi_theo||'ngay_tt'}),rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den})]);
   S.cache.dem=b.dem;const d=b.dem,pt=b.phai_tra||{};
   const kpi=(c,ic,l,v,s,on)=>`<div class="kpi ${on?'click':''}" style="--c:var(--${c})" ${on?`onclick="${on}"`:''}><div class="ic">${IC[ic]}</div><div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div></div>`;
   const days=[];for(let x=new Date(S.tu+'T00:00:00');ymd(x)<=S.den;x=new Date(x.getTime()+864e5))days.push(ymd(x));
@@ -450,9 +450,10 @@ async function pageTongQuan(){
   const todo=[['warn','Điều chuyển chưa xác nhận',d.dc_chua_xac_nhan,"S.f.dc_xn='chua';go('dieu_chuyen')"],['warn','Khoản thu chờ duyệt',d.thu_cho_duyet,"go('thu')"],
     ['vio','Hoá đơn đỏ chưa nhận',d.hd_do_chua_nhan,"S.f.chi_tt='hd_do';go('chi')"],['bad','Tài khoản tồn âm',d.tk_am,"go('dong_tien')"],
     ['bad','Khoản sắp trả đã quá hạn',b.sap_tra.filter(x=>x.han&&x.han<homNay()).length,"go('sap_tra')"]];
-  el.innerHTML=head('Tổng quan',kyBar()+(b.kiot_keo_luc?`<span class="badge">Kiot cập nhật ${fmtDT(b.kiot_keo_luc)}</span>`:`<span class="badge warn">Chưa kéo Kiot</span>`))+
+  const chiTheo=`<div class="seg" title="Tiền ra tính theo ngày nào">${[['ngay_tt','Chi theo ngày trả'],['ngay_su_dung','Chi theo ngày dùng DV']].map(([k,l])=>`<button class="${(S.f.chi_theo||'ngay_tt')===k?'on':''}" onclick="S.f.chi_theo='${k}';render()">${l}</button>`).join('')}</div>`;
+  el.innerHTML=head('Tổng quan',kyBar()+chiTheo+(b.kiot_keo_luc?`<span class="badge">Kiot cập nhật ${fmtDT(b.kiot_keo_luc)}</span>`:`<span class="badge warn">Chưa kéo Kiot</span>`))+
     `<div class="kpi-row">${kpi('ok','vao','Tiền vào',fmt(b.tien_vao),'Không gồm điều chuyển nội bộ')}
-      ${kpi('bad','ra','Tiền ra',fmt(b.tien_ra),'Chênh lệch '+(b.tien_vao-b.tien_ra<0?'':'+')+fmt(b.tien_vao-b.tien_ra))}
+      ${kpi('bad','ra','Tiền ra',fmt(b.tien_ra),((S.f.chi_theo||'ngay_tt')==='ngay_su_dung'?'Theo ngày dùng DV · ':'')+'Chênh lệch '+(b.tien_vao-b.tien_ra<0?'':'+')+fmt(b.tien_vao-b.tien_ra))}
       ${kpi('accent','ton','Tồn cuối kỳ',fmt(b.ton_cuoi_ky),'Đầu kỳ '+fmt(b.ton_dau_ky))}</div>
     <div class="kpi-row">${kpi('warn','cho','Chi chờ duyệt',d.cho_duyet,'phiếu · '+fmt(pt.cho_duyet_tien),"S.f.chi_tt='cho_duyet';go('chi')")}
       ${kpi('info','tt','Chi chờ thanh toán',d.cho_tt,'phiếu · '+fmt(pt.cho_tt_tien),"S.f.chi_tt='cho_tt';go('chi')")}
@@ -813,6 +814,9 @@ const LOGIC=[
   '<b>Điều chuyển nội bộ KHÔNG tính</b> vào Tiền vào / Tiền ra. Điều chuyển chỉ làm giảm tài khoản đi, tăng tài khoản nhận. (Sheet cũ cộng cả điều chuyển nên tiền vào / ra bị đội lên.)',
   '<b>Tồn tài khoản</b> = tồn đầu + thu − chi + điều chuyển nhận − điều chuyển đi. <b>Tồn công ty</b> = tổng tồn các tài khoản.',
   'Tài khoản tồn âm được đếm và báo đỏ ở Tổng quan — thường là thiếu phiếu thu hoặc điều chuyển.']],
+ ['Tiền ra theo ngày nào',[
+  'Mặc định <b>Chi theo ngày trả</b> (ngày thanh toán) — đúng dòng tiền thật, tồn tài khoản luôn tính theo cách này.',
+  'Nút <b>Chi theo ngày dùng DV</b> ở Tổng quan: tính tiền ra theo ngày sử dụng dịch vụ / ngày giao hàng — <b>giống dashboard sheet cũ</b>, để so số với báo cáo cũ. Chỉ đổi tiền ra, chi theo loại, theo cơ sở.']],
  ['Đối soát (trang Dòng tiền)',[
   '<b>Tồn sổ sách</b> theo ngày = tồn đầu kỳ + cộng dồn phát sinh từng ngày.',
   '<b>Tồn thực tế</b> nhập theo sao kê ngân hàng / đếm két. <b>Lệch</b> = sổ sách − thực tế; khác 0 thì tô đỏ để tìm phiếu thiếu.']],
@@ -835,7 +839,9 @@ const LOGIC=[
   'App kế toán có <b>luồng kéo Kiot riêng</b> (không dùng chung app MKT/Sale), <b>3 tiếng 1 lần</b>. Kéo <b>sổ quỹ</b> Kiot (phiếu thu / chi của 3 chi nhánh) vào bảng riêng của app.',
   'Chỉ chép thành khoản Thu: phiếu <b>đã thanh toán</b>, số tiền dương, <b>không</b> thuộc nhóm "Chuyển rút" (chuyển quỹ nội bộ trong Kiot — nộp tiền quầy về két, chuyển quỹ ngoài...). Phiếu Kiot bị huỷ sau đó → khoản thu tự ẩn.',
   'Loại thu theo mã phiếu Kiot: <b>TTHD</b> (thu tiền hoá đơn) = Thu bán hàng · <b>TTDH</b> (thu tiền đơn đặt hàng) và nhóm "Thu tiền đặt cọc" = Thu đặt cọc · <b>TT</b> (khách trả nợ) = Thu công nợ · còn lại (TNH...) = Thu khác.',
-  'Tài khoản nhận ghép theo tài khoản Kiot (Danh mục → Tài khoản, cột "Bên Kiot"). <b>Tiền mặt thu tại quầy</b> (không có tài khoản) tính vào <b>Két tiền mặt</b> — giống sheet cũ.',
+  'Tài khoản nhận ghép theo tài khoản Kiot (Danh mục → Tài khoản, cột "Bên Kiot"). Phiếu hình thức <b>Tiền mặt</b> luôn tính vào <b>Két tiền mặt</b>, kể cả khi Kiot gắn nhầm tài khoản ngân hàng (đối chiếu T9: 13 phiếu như vậy).',
+  'Phiếu là <b>chuyển nội bộ</b> không tính thu: mã <b>TTD_ / CTD_</b> (2 chiều lệnh chuyển quỹ Kiot, kể cả khi Kiot để trống nhóm) và phiếu có nội dung chứa <b>số tài khoản của chính công ty</b> (vd "ck từ TECH CN …").',
+  'Tiền mặt tính theo <b>ngày bán</b> trên Kiot; sheet cũ ghi theo <b>ngày nộp két</b> và đã trừ khoản chi lặt vặt tại quầy. Vì vậy từng ngày có thể lệch, cả tháng lệch đúng bằng: chi tiền mặt tại quầy trên Kiot − tiền mặt bán cuối tháng trước nộp đầu tháng này.',
   'Cơ sở ghép theo chi nhánh Kiot: Đồ thờ Hiền Thủy · Đồ Thờ Chánh Tâm · Tổng kho sỉ Shidai (= BP Sỉ Shidai).',
   'Khoản thu từ Kiot chỉ xem, không sửa tay — sai thì sửa bên Kiot, lần kéo sau tự cập nhật.',
   'Thu <b>không qua Kiot</b> (nộp vốn, vay, hoàn BHXH...) nhập tay ở trang Thu. Tháng 9 các khoản này lấy từ sheet cũ; dòng sheet nào trùng phiếu Kiot (cùng số tiền, lệch ≤ 3 ngày) thì bỏ để không cộng 2 lần.',
