@@ -1,18 +1,13 @@
 -- =========================================================================
 -- APP KẾ TOÁN — QUYỀN ĐỀ NGHỊ / DUYỆT CHI + CHUÔNG THÔNG BÁO + ĐẾM CHỨNG TỪ (anh chốt 08/10/2026) — Monsieur Claude
--- * Quyền mới (tick trong Phân quyền):
---     chi_de_nghi = chỉ được TẠO đề nghị chi, chỉ thấy / sửa phiếu MÌNH tạo khi còn chờ duyệt, thêm chứng từ vào phiếu mình.
---     chi_duyet   = được Duyệt / Từ chối / Thanh toán. Supreme + Admin (giám đốc, admin) luôn có.
---   Quyền cũ 'chi' (xem) / 'chi:ghi' (sửa) giữ nguyên; có 'chi:ghi' mà không có 'chi_duyet' thì vẫn KHÔNG duyệt / thanh toán được.
+-- * Quyền chi_de_nghi (nhân viên chỉ tạo đề nghị, thấy phiếu mình). CẬP NHẬT 08/10/2026: luồng duyệt chi 2 lượt + quyền chi_duyet / chi_gd
+--   + thông báo về phiếu chi nằm ở supabase-schema-kt-duyet-2-cap.sql.
 -- * Chuông thông báo trong app (thay báo Zalo, không đẩy về điện thoại): bảng kt_thong_bao, mỗi người 1 dòng.
---     Đề nghị chi mới / mở lại         → người có quyền chi_duyet
---     Phiếu chi được duyệt (chờ TT)    → người có quyền chi_duyet (người thanh toán) + người tạo phiếu
---     Phiếu chi đã TT / bị từ chối     → người tạo phiếu
 --     Điều chuyển mới (tạo trên app)   → người sửa được trang Điều chuyển (kế toán xác nhận)
 --     Điều chuyển đã xác nhận          → người tạo
 --   Không báo cho chính người vừa thao tác. Dữ liệu kéo Kiot / sheet cũ không sinh thông báo (không đi qua hàm lưu).
 -- * kt_ds trả thêm so_ct (số chứng từ) cho Thu / Chi / Điều chuyển để danh sách hiện ghim giấy.
--- File này ĐỊNH NGHĨA LẠI kt_ds, kt_luu_chi, kt_luu_dieu_chuyen (bản trong supabase-schema-kt.sql là bản cũ).
+-- File này ĐỊNH NGHĨA LẠI kt_ds, kt_luu_dieu_chuyen (bản trong supabase-schema-kt.sql là bản cũ). kt_luu_chi: xem supabase-schema-kt-duyet-2-cap.sql.
 -- =========================================================================
 
 create table if not exists public.kt_thong_bao (
@@ -106,7 +101,7 @@ begin
     return coalesce((select jsonb_agg(to_jsonb(c) || jsonb_build_object('so_ct', (select count(*) from kt_chung_tu k
         where k.bang = 'chi' and k.dong_id = c.id and not k.da_xoa)) order by coalesce(c.ngay_tt, c.ngay_de_nghi) desc, c.id desc) from kt_chi c
       where not da_xoa and (v_tat or c.tao_boi = u.ho_ten) and (ngay_de_nghi between p_tu and p_den or ngay_tt between p_tu and p_den
-        or trang_thai in ('cho_duyet','cho_tt'))), '[]');
+        or trang_thai in ('cho_duyet','cho_gd','cho_tt'))), '[]');
   end if;
   perform kt_chan(p_phien, p_bang);
   if p_bang = 'thu' then
@@ -131,93 +126,7 @@ begin
   raise exception 'Bảng không hợp lệ';
 end $$;
 
--- Lưu phiếu chi: tách quyền đề nghị / duyệt + gửi thông báo
-create or replace function public.kt_luu_chi(p_phien text, p_dong jsonb) returns bigint
-language plpgsql security definer set search_path = public as $$
-declare u kt_nguoi_dung; v_id bigint := (p_dong->>'id')::bigint; v_cu kt_chi; v_moi kt_chi; v_tt text := p_dong->>'trang_thai';
-  v_pb jsonb := coalesce(p_dong->'phan_bo', '[]'::jsonb); v_tong numeric;
-  v_ghi boolean; v_duyet boolean; v_tom text;
-begin
-  u := kt_chan(p_phien);
-  v_ghi := kt_co_quyen(u, 'chi', true); v_duyet := kt_co_quyen(u, 'chi_duyet');
-  if not v_ghi and not kt_co_quyen(u, 'chi_de_nghi') then
-    raise exception 'Tài khoản chưa được cấp quyền tạo đề nghị chi' using errcode = '42501';
-  end if;
-  if jsonb_array_length(v_pb) > 0 then
-    select sum((x->>'so_tien')::numeric) into v_tong from jsonb_array_elements(v_pb) x;
-    if v_tong <> (p_dong->>'so_tien')::numeric then
-      raise exception 'Tổng phân bổ (%) khác số tiền chi (%)', v_tong, p_dong->>'so_tien';
-    end if;
-  end if;
-  if v_id is not null then
-    select * into v_cu from kt_chi where id = v_id and not da_xoa;
-    if v_cu.id is null then raise exception 'Không tìm thấy phiếu chi %', v_id; end if;
-    if not v_ghi and (v_cu.tao_boi is distinct from u.ho_ten or v_cu.trang_thai <> 'cho_duyet') then
-      raise exception 'Chỉ sửa được đề nghị của chính mình khi còn chờ duyệt' using errcode = '42501';
-    end if;
-  end if;
-  if not v_duyet and v_tt is not null and v_tt is distinct from coalesce(v_cu.trang_thai, 'cho_duyet') then
-    raise exception 'Chỉ giám đốc / admin (quyền Duyệt & thanh toán chi) được duyệt, từ chối, thanh toán' using errcode = '42501';
-  end if;
-  if v_duyet and p_dong->>'kiot' = 'khong_tao' and coalesce(trim(p_dong->>'kiot_ly_do'), '') = '' then
-    raise exception 'Không tạo phiếu Kiot thì phải ghi lý do';
-  end if;
-  if v_id is null then
-    insert into kt_chi (ngay_de_nghi, nguoi_de_nghi, bo_phan_id, noi_dung, ngay_su_dung, so_tien, thu_huong_ten, thu_huong_nh,
-      thu_huong_stk, phan_bo, han_tt, co_hd_do, ghi_chu, chung_tu, tao_boi)
-    values (coalesce((p_dong->>'ngay_de_nghi')::date, (now() at time zone 'Asia/Ho_Chi_Minh')::date),
-      coalesce(nullif(trim(p_dong->>'nguoi_de_nghi'),''), u.ho_ten), (p_dong->>'bo_phan_id')::int, trim(p_dong->>'noi_dung'),
-      (p_dong->>'ngay_su_dung')::date, (p_dong->>'so_tien')::numeric, nullif(trim(p_dong->>'thu_huong_ten'),''),
-      nullif(trim(p_dong->>'thu_huong_nh'),''), nullif(trim(p_dong->>'thu_huong_stk'),''), v_pb, (p_dong->>'han_tt')::date,
-      coalesce((p_dong->>'co_hd_do')::boolean,false), nullif(trim(p_dong->>'ghi_chu'),''),
-      coalesce(array(select jsonb_array_elements_text(p_dong->'chung_tu')), '{}'), u.ho_ten)
-    returning id into v_id;
-    v_tt := coalesce(v_tt, 'cho_duyet');
-  else
-    update kt_chi set ngay_de_nghi = coalesce((p_dong->>'ngay_de_nghi')::date, ngay_de_nghi),
-      nguoi_de_nghi = coalesce(nullif(trim(p_dong->>'nguoi_de_nghi'),''), nguoi_de_nghi), bo_phan_id = (p_dong->>'bo_phan_id')::int,
-      noi_dung = trim(p_dong->>'noi_dung'), ngay_su_dung = (p_dong->>'ngay_su_dung')::date, so_tien = (p_dong->>'so_tien')::numeric,
-      thu_huong_ten = nullif(trim(p_dong->>'thu_huong_ten'),''), thu_huong_nh = nullif(trim(p_dong->>'thu_huong_nh'),''),
-      thu_huong_stk = nullif(trim(p_dong->>'thu_huong_stk'),''), phan_bo = v_pb, han_tt = (p_dong->>'han_tt')::date,
-      co_hd_do = coalesce((p_dong->>'co_hd_do')::boolean,false), ghi_chu = nullif(trim(p_dong->>'ghi_chu'),''),
-      chung_tu = coalesce(array(select jsonb_array_elements_text(p_dong->'chung_tu')), '{}'),
-      sua_boi = u.ho_ten, sua_luc = now()
-     where id = v_id;
-  end if;
-  -- Phần duyệt / thanh toán: chỉ người có quyền chi_duyet; hoá đơn đỏ đã nhận: người sửa được trang Chi
-  update kt_chi set
-    trang_thai   = case when v_duyet then coalesce(v_tt, trang_thai) else trang_thai end,
-    nguoi_duyet  = case when v_duyet and v_tt in ('tu_choi','cho_tt','da_tt') and (v_cu.id is null or v_cu.trang_thai = 'cho_duyet') then u.ho_ten else nguoi_duyet end,
-    duyet_luc    = case when v_duyet and v_tt in ('tu_choi','cho_tt','da_tt') and (v_cu.id is null or v_cu.trang_thai = 'cho_duyet') then now() else duyet_luc end,
-    ngay_tt      = case when v_duyet then coalesce((p_dong->>'ngay_tt')::date, case when v_tt = 'da_tt' then ngay_tt end) else ngay_tt end,
-    tai_khoan_id = case when v_duyet then coalesce((p_dong->>'tai_khoan_id')::int, tai_khoan_id) else tai_khoan_id end,
-    loai_id      = case when v_duyet then coalesce((p_dong->>'loai_id')::int, loai_id) else loai_id end,
-    unc          = case when v_duyet then coalesce(nullif(trim(p_dong->>'unc'),''), unc) else unc end,
-    kiot         = case when v_duyet then coalesce(p_dong->>'kiot', kiot) else kiot end,
-    kiot_ly_do   = case when v_duyet then coalesce(nullif(trim(p_dong->>'kiot_ly_do'),''), kiot_ly_do) else kiot_ly_do end,
-    hd_do_nhan   = case when v_ghi then coalesce((p_dong->>'hd_do_nhan')::boolean, hd_do_nhan) else hd_do_nhan end,
-    ngay_nhan_hd = case when v_ghi then coalesce((p_dong->>'ngay_nhan_hd')::date, ngay_nhan_hd) else ngay_nhan_hd end
-   where id = v_id;
-  perform kt_ghi_nhat_ky(u.ho_ten, 'kt_chi', v_id, case when (p_dong->>'id') is null then 'them' else coalesce('trang_thai:' || v_tt, 'sua') end, p_dong);
-  -- Thông báo khi trạng thái đổi
-  select * into v_moi from kt_chi where id = v_id;
-  if v_moi.trang_thai is distinct from v_cu.trang_thai then
-    v_tom := left(v_moi.noi_dung, 120) || ' · ' || replace(to_char(v_moi.so_tien, 'FM999G999G999G999'), ',', '.') || ' đ';
-    if v_moi.trang_thai = 'cho_duyet' then
-      perform kt_bao(kt_ai_co_quyen('chi_duyet', false, u.id), u.ho_ten, 'chi_moi',
-        case when v_cu.id is null then 'Đề nghị chi mới cần duyệt' else 'Phiếu chi mở lại, cần duyệt' end, v_tom, 'chi', v_id);
-    elsif v_moi.trang_thai = 'cho_tt' then
-      perform kt_bao(kt_ai_co_quyen('chi_duyet', false, u.id), u.ho_ten, 'chi_cho_tt', 'Phiếu chi đã duyệt, chờ thanh toán', v_tom, 'chi', v_id);
-      perform kt_bao(kt_ai_ten(array[v_moi.tao_boi], u.id), u.ho_ten, 'chi_duyet', 'Đề nghị chi của anh/chị đã được duyệt', v_tom, 'chi', v_id);
-    elsif v_moi.trang_thai = 'da_tt' and v_cu.id is not null then
-      perform kt_bao(kt_ai_ten(array[v_moi.tao_boi], u.id), u.ho_ten, 'chi_da_tt', 'Phiếu chi đã thanh toán', v_tom, 'chi', v_id);
-    elsif v_moi.trang_thai in ('tu_choi','tu_choi_tt') then
-      perform kt_bao(kt_ai_ten(array[v_moi.tao_boi], u.id), u.ho_ten, 'chi_tu_choi',
-        case when v_moi.trang_thai = 'tu_choi' then 'Đề nghị chi bị từ chối' else 'Phiếu chi bị từ chối thanh toán' end, v_tom, 'chi', v_id);
-    end if;
-  end if;
-  return v_id;
-end $$;
+-- kt_luu_chi: CHUYỂN sang supabase-schema-kt-duyet-2-cap.sql (08/10/2026 — duyệt 2 lượt: kế toán kiểm → giám đốc xác nhận).
 
 -- Lưu điều chuyển + báo kế toán xác nhận (thay báo Zalo)
 create or replace function public.kt_luu_dieu_chuyen(p_phien text, p_dong jsonb) returns bigint

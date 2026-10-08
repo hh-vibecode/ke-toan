@@ -7,6 +7,9 @@
 -- hàm kiểm phiên + quyền theo trang rồi mới đọc / ghi bằng quyền chủ hàm. Mỗi người 1 tài khoản (nhật ký ghi ai làm gì).
 -- Logic tính số nằm ở hàm kt_bao_cao / kt_dong_tien — trang "Cài đặt > Logic" diễn giải đúng các luật này,
 -- sửa luật ở đây thì sửa luôn trang Logic.
+-- THỨ TỰ CHẠY (08/10/2026): kt.sql → kt-kiot → kt-kiot-mo-rong → kt-bao-cao → kt-cau-hoi → kt-chung-tu → kt-thong-bao → kt-duyet-2-cap.
+-- File SAU định nghĩa lại một số hàm của file trước (kt_ds, kt_luu_chi, kt_co_quyen, kt_bao_cao, kt_luu_nguoi_dung...) —
+-- KHÔNG chạy lại riêng file này lên CSDL đang dùng (sẽ trả hàm về bản cũ).
 -- =========================================================================
 
 create extension if not exists pgcrypto with schema extensions;

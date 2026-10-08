@@ -53,6 +53,8 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
 | 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10**, làm lại 17:32 cho gọn: kéo thả / Ctrl+V / chọn ngay lúc tạo phiếu, nén + tải ngầm có %, ghim giấy trên danh sách. Chưa thử chọn file thật trên trình duyệt bằng tay — anh thử giúp 1 phiếu |
 | 5 | Kế toán bổ sung 52 phiếu kéo bù (người đề nghị, chứng từ) | trang Chi → lọc nguồn "Kéo từ sheet cũ — cần bổ sung" |
+| 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
+| 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
@@ -69,8 +71,11 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 - **Luồng mới 08/10 (mục 1B)** thay luồng cũ dựa Google Sheet. **3 nơi tồn kho sổ thuế = 3 hộ kinh doanh** Hiền Thủy · Chánh Tâm · Shidai.
   **P&L tính theo THỰC THU / THỰC CHI**; hoá đơn và giá vốn là phần chính trong đó. **Không làm** báo cáo chi phí hoạt động, đầu tư & dự án (anh chốt 08/10).
 - **Ảnh chứng từ: lưu và xem ngay trên app** (anh chốt 08/10): bucket riêng tư `kt-chung-tu`, Edge Function `kt-chung-tu` cấp link 5 phút, ảnh nén trên máy, tải về từng file / cả phiếu / cả kỳ (.zip).
-- **Chi tách 2 quyền** (anh chốt 08/10): `chi_de_nghi` = nhân viên chỉ tạo đề nghị, chỉ thấy / sửa phiếu mình (khi còn chờ duyệt), thêm chứng từ phiếu mình;
-  `chi_duyet` = Duyệt / Từ chối / Thanh toán — **chỉ giám đốc và admin** (Supreme/Admin luôn có). Kiểm ở SQL (`kt_luu_chi`, `kt_ds`, `kt_chan_dong`), không chỉ ẩn nút.
+- **Luồng chi (anh chốt 08/10 tối):** nhân viên **đề xuất chi trên Kiot** (không dùng app) → app kéo về 3 tiếng/lần thành phiếu "Chờ kế toán kiểm"
+  → **kế toán kiểm, xác nhận lượt 1** → **giám đốc xác nhận lại (lượt 2)** → kế toán thanh toán. Người kiểm lượt 1 không tự xác nhận lượt 2.
+  Quyền `chi_duyet` = kế toán kiểm + thanh toán (Admin có); `chi_gd` = giám đốc xác nhận — KHÔNG đi theo Admin, chỉ Supreme cấp / bỏ và đặt lại mật khẩu
+  tài khoản có `chi_gd`. `chi_de_nghi` (nhân viên tạo trên app) giữ nhưng KHÔNG dùng — anh: "nhân viên m quan tâm làm gì". SQL: `supabase-schema-kt-duyet-2-cap.sql`.
+  Phiếu chi Kiot trước 08/10 KHÔNG kéo. Chống trùng: ghép phiếu app đánh dấu 4A cùng số tiền ±5 ngày; trùng khác → nhãn "Nghi trùng".
 - **Thông báo = chuông TRONG APP kiểu Facebook**, KHÔNG đẩy về điện thoại (anh chốt 08/10). Bảng `kt_thong_bao`, hàm lưu tự sinh (`supabase-schema-kt-thong-bao.sql`).
 - **Ảnh chứng từ: gọn nhất cho người up** (anh 08/10): nén + tải ngầm, bấm lại xem ngay. Kiot KHÔNG cho ghi phiếu thu/chi qua API (đã thử 08/10) → 4A tạo tay.
 - **Phát sinh còn trên sheet cũ: kéo tạm vào, gắn thẻ "Kéo từ sheet cũ"**, kế toán điền dần (anh chốt 08/10).
@@ -84,6 +89,12 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **08/10/2026 tối** — (1) **Sự cố màn hình đen** ở Tổng quan từ bản 17:02: khung xem ảnh chứng từ đặt tên lớp `.lb` trùng nhãn biểu đồ số dư
+  → mỗi nhãn thành lớp đen phủ màn hình. Em chỉ chụp kiểm trang Chi nên không bắt được. Sửa 17:50 (đổi `.ct-lb`). Bài học: chụp kiểm cả Tổng quan sau mỗi lần đổi CSS.
+  (2) Duyệt chi 2 lượt + đề xuất chi từ Kiot (xem mục 3). Kiểm thử mới `scripts/kiem-thu-duyet-2-cap.js` 20/20; test cũ sửa theo luồng 2 lượt: 33/33 · 14/14 · 12/12 · 16/16.
+  Lỗi tự bắt trước khi chạy: phép trừ mảng int[] cần extension không có; thông báo kế toán tự tạo phiếu rơi sang anh/GĐ; Admin tự cấp quyền GĐ / đặt lại mật khẩu GĐ → chặn ở SQL.
+  4 phiếu chi Kiot ngày 08/10 đã vào app (1 nghi trùng). Ghi 2 câu anh trả lời, sửa câu "nhân viên gửi đề nghị" (trước Claude tự điền sai), thêm 3 câu mới.
 
 - **08/10/2026 17:32** — Làm 5 việc anh giao: (1) thử GHI phiếu Kiot (anh cho phép): API trả 404, không có lệnh ghi → 4A tạo tay, đóng câu 23.
   (2) Chuông thông báo trong app (bảng `kt_thong_bao`; đề nghị chi mới / duyệt / đã TT / từ chối; điều chuyển mới / đã xác nhận; đếm mỗi phút).

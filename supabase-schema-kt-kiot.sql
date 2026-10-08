@@ -14,7 +14,9 @@
 --   · Mã TTD_ / CTD_ (2 chiều lệnh chuyển quỹ Kiot) cũng là chuyển nội bộ, kể cả khi Kiot để trống nhóm.
 --   · Cơ sở: chi nhánh Kiot ghép qua kt_don_vi.kiot_chi_nhanh.
 --   · Phiếu Kiot bị huỷ sau khi đã chép → khoản thu tương ứng bị ẩn (da_xoa). Phiếu không ghép được tài khoản → bỏ qua, đếm báo.
---   · Phiếu CHI Kiot không chép sang Chi (khoản chi đi qua đề nghị trên app) — giữ trong kt_kiot_so_quy để đối chiếu.
+--   · Phiếu CHI Kiot: TỪ 08/10/2026 thành đề xuất chi "chờ kế toán kiểm" trên app (kt_dong_bo_kiot_chi trong
+--     supabase-schema-kt-duyet-2-cap.sql — anh chốt: nhân viên đề xuất chi trên Kiot, app đẩy lên để kế toán kiểm, giám đốc xác nhận).
+--     Phiếu chi Kiot TRƯỚC 08/10 vẫn không chép (đã đi qua đề nghị trên sheet / app).
 -- =========================================================================
 
 create or replace function public.kt_dong_bo_kiot(p_tu date default date '2026-09-01') returns jsonb
@@ -65,6 +67,7 @@ begin
     from _k where t.ma_nguon = 'kiot:' || _k.id and (_k.trang_thai <> '0' or _k.noi_bo) and not t.da_xoa;
   get diagnostics v_huy = row_count;
 
-  return jsonb_build_object('them', v_them, 'sua', v_sua, 'huy', v_huy, 'bo_qua_khong_ghep_tk', v_bo);
+  return jsonb_build_object('them', v_them, 'sua', v_sua, 'huy', v_huy, 'bo_qua_khong_ghep_tk', v_bo,
+    'chi', kt_dong_bo_kiot_chi(p_tu));   -- đề xuất chi từ Kiot (từ 08/10/2026)
 end $$;
 revoke execute on function public.kt_dong_bo_kiot(date) from public, anon, authenticated;

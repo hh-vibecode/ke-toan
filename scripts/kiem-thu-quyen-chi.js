@@ -19,7 +19,6 @@ const loi = async (f) => { try { await f(); return null; } catch (e) { return e.
     const AD = (await rpc('kt_dang_nhap', { p_tk: 'hai', p_mk: K.KT_MK_HAI, p_nho: false })).phien;
     const hai = (await sql(`select id from kt_nguoi_dung where ten_dang_nhap='hai'`))[0].id;
     const nv = (await sql(`select id from kt_nguoi_dung where ten_dang_nhap='${TK}'`))[0].id;
-    const tb0 = await rpc('kt_dem_thong_bao', { p_phien: AD });
     // 1. nhân viên tạo đề nghị
     const id = await rpc('kt_luu_chi', { p_phien: NV, p_dong: { noi_dung: 'THU-NGHIEM quyền chi', so_tien: 12345, ngay_su_dung: '2026-10-08' } }); ids.push(id);
     const r1 = (await sql(`select trang_thai, tao_boi from kt_chi where id=${id}`))[0];
@@ -34,11 +33,14 @@ const loi = async (f) => { try { await f(); return null; } catch (e) { return e.
     kq('Nhân viên chỉ thấy phiếu mình tạo', dsNV.length >= 1 && dsNV.every(x => x.tao_boi === TEN), dsNV.length + ' phiếu');
     const dsAD = await rpc('kt_ds', { p_phien: AD, p_bang: 'chi', p_tu: '2026-09-01', p_den: '2026-10-31' });
     kq('Admin thấy mọi phiếu + có số chứng từ', dsAD.length > dsNV.length && 'so_ct' in dsAD[0], dsAD.length + ' phiếu');
-    // 4. chuông: admin nhận "đề nghị chi mới"
-    const tbA = await rpc('kt_ds_thong_bao', { p_phien: AD });
-    kq('Admin có thông báo đề nghị chi mới', tbA.some(x => x.loai === 'chi_moi' && x.dong_id === id), 'chưa đọc ' + tb0 + ' → ' + await rpc('kt_dem_thong_bao', { p_phien: AD }));
+    // 4. chuông: KẾ TOÁN nhận 'đề nghị chi mới' (luồng 2 lượt 08/10 — anh / giám đốc không nhận ở bước này)
+    const tbK = await sql(`select n.ten_dang_nhap from kt_thong_bao t join kt_nguoi_dung n on n.id = t.nguoi_dung_id where t.bang = 'chi' and t.dong_id = ${id} and t.loai = 'chi_moi'`);
+    kq('Kế toán (không phải anh / giám đốc) nhận thông báo đề nghị mới', tbK.length > 0 && tbK.every(x => x.ten_dang_nhap === 'ketoan'), tbK.map(x => x.ten_dang_nhap).join(','));
     kq('Người tạo KHÔNG tự nhận thông báo của mình', !(await rpc('kt_ds_thong_bao', { p_phien: NV })).some(x => x.dong_id === id && x.loai === 'chi_moi'));
     // 5. admin duyệt → nhân viên nhận thông báo; nhân viên không sửa được nữa
+    // duyệt 2 lượt (08/10): lượt 1 rồi lượt 2 — tài khoản hai làm cả 2 nên giả lập người kiểm lượt 1 khác
+    await rpc('kt_luu_chi', { p_phien: AD, p_dong: { id, noi_dung: 'THU-NGHIEM quyền chi', so_tien: 12345, ngay_su_dung: '2026-10-08', trang_thai: 'cho_gd' } });
+    await sql(`update kt_chi set kiem_boi = 'THU-NGHIEM lượt 1' where id = ${id}`);
     await rpc('kt_luu_chi', { p_phien: AD, p_dong: { id, noi_dung: 'THU-NGHIEM quyền chi', so_tien: 12345, ngay_su_dung: '2026-10-08', trang_thai: 'cho_tt' } });
     const tbN = await rpc('kt_ds_thong_bao', { p_phien: NV });
     kq('Nhân viên nhận thông báo "đã được duyệt"', tbN.some(x => x.loai === 'chi_duyet' && x.dong_id === id));

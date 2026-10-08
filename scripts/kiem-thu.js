@@ -46,8 +46,12 @@ async function rpc(fn, args) {
   kq('ghi khoản thu', t.s === 200, t.msg);
   const c = await rpc('kt_luu_chi', { p_phien: P, p_dong: { nguoi_de_nghi: 'KIỂM THỬ', noi_dung: 'KIỂM THỬ chi', so_tien: 400000, phan_bo: [{ don_vi_id: dv, so_tien: 400000 }], ngay_su_dung: null, han_tt: null } });
   kq('tạo đề nghị chi', c.s === 200, c.msg);
+  // Duyệt 2 lượt (08/10): lượt 1 kế toán → lượt 2 giám đốc (người khác). Tài khoản thử là Supreme nên giả lập người kiểm lượt 1 khác.
+  const c2a = await rpc('kt_luu_chi', { p_phien: P, p_dong: { id: c.j, nguoi_de_nghi: 'KIỂM THỬ', noi_dung: 'KIỂM THỬ chi', so_tien: 400000, phan_bo: [{ don_vi_id: dv, so_tien: 400000 }], trang_thai: 'cho_gd' } });
+  kq('kế toán xác nhận lượt 1', c2a.s === 200, c2a.msg);
+  await sql(`update kt_chi set kiem_boi = 'KIỂM THỬ lượt 1' where id = ${c.j}`);
   const c2 = await rpc('kt_luu_chi', { p_phien: P, p_dong: { id: c.j, nguoi_de_nghi: 'KIỂM THỬ', noi_dung: 'KIỂM THỬ chi', so_tien: 400000, phan_bo: [{ don_vi_id: dv, so_tien: 400000 }], trang_thai: 'cho_tt' } });
-  kq('duyệt chi', c2.s === 200, c2.msg);
+  kq('giám đốc xác nhận lượt 2', c2.s === 200, c2.msg);
   const c3 = await rpc('kt_luu_chi', { p_phien: P, p_dong: { id: c.j, nguoi_de_nghi: 'KIỂM THỬ', noi_dung: 'KIỂM THỬ chi', so_tien: 400000, phan_bo: [{ don_vi_id: dv, so_tien: 400000 }], trang_thai: 'da_tt', ngay_tt: '2026-10-05', tai_khoan_id: tk1, loai_id: lc, kiot: 'khong' } });
   kq('thanh toán chi', c3.s === 200, c3.msg);
   const c4 = await rpc('kt_luu_chi', { p_phien: P, p_dong: { nguoi_de_nghi: 'KIỂM THỬ', noi_dung: 'KIỂM THỬ sai phân bổ', so_tien: 500, phan_bo: [{ don_vi_id: dv, so_tien: 400 }] } });
