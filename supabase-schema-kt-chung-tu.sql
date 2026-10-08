@@ -3,6 +3,8 @@
 -- File nằm ở Storage bucket RIÊNG TƯ 'kt-chung-tu' (đường dẫn <bảng>/<id phiếu>/<thời điểm>_<tên>).
 -- Trang web KHÔNG đụng Storage trực tiếp: Edge Function 'kt-chung-tu' kiểm phiên + quyền trang rồi cấp link ký tên
 -- (tải lên / xem / tải về) sống 5 phút. Bảng kt_chung_tu giữ thông tin file; xoá = ẩn (file vẫn còn, có nhật ký).
+-- LƯU Ý 08/10: kt_quyen_chung_tu / kt_them_chung_tu / kt_ds_chung_tu / kt_xoa_chung_tu được ĐỊNH NGHĨA LẠI trong
+-- supabase-schema-kt-thong-bao.sql (kiểm quyền theo dòng). Chạy file đó SAU file này (scripts/trien-khai-chung-tu.js đã làm vậy).
 -- =========================================================================
 create table if not exists public.kt_chung_tu (
   id          bigserial primary key,

@@ -12,6 +12,9 @@ const REF = 'bcrpxfvvjsjpvbksqzls', K = docKhoa(), SB = `https://${REF}.supabase
   // 2. SQL
   await sql(fs.readFileSync(path.join(__dirname, '..', 'supabase-schema-kt-chung-tu.sql'), 'utf8'));
   console.log('SQL chứng từ: OK');
+  // 2b. quyền theo dòng + thông báo (định nghĩa lại kt_quyen_chung_tu 4 tham số — Edge Function bên dưới gọi bản này)
+  await sql(fs.readFileSync(path.join(__dirname, '..', 'supabase-schema-kt-thong-bao.sql'), 'utf8'));
+  console.log('SQL thông báo + quyền chi: OK');
   // 3. Edge Function (trang web gọi bằng khoá anon công khai → verify_jwt false, hàm tự kiểm phiên)
   const fd = new FormData();
   fd.append('metadata', JSON.stringify({ entrypoint_path: 'index.ts', name: 'kt-chung-tu', verify_jwt: false }));

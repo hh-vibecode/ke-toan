@@ -13,13 +13,13 @@ Script: `scripts/khoa.js` (đọc khoá, không in) · `scripts/sql.js` (chạy 
 
 ## 1. ĐANG CHỜ ANH HẢI QUYẾT / KẾ TOÁN XÁC NHẬN
 
-**MỌI CÂU HỎI CHƯA TRẢ LỜI NẰM TRÊN APP: Cài đặt → Cần giải đáp** (bảng `kt_cau_hoi`, 19 câu, viết dễ hiểu cho người không
+**MỌI CÂU HỎI CHƯA TRẢ LỜI NẰM TRÊN APP: Cài đặt → Cần giải đáp** (bảng `kt_cau_hoi`, 30 câu / 20 chưa trả lời lúc 08/10 17:32, viết dễ hiểu cho người không
 làm kế toán — anh chốt 05/10: "lưu lại hết, sau t đi hỏi 1 lượt"). **Đầu mỗi phiên Claude:** đọc câu đã trả lời
 (`select tieu_de, tra_loi, tra_loi_boi from kt_cau_hoi where tra_loi is not null`) → làm theo → ghi nhật ký.
 Câu hỏi mới: thêm vào `kt-cau-hoi.local.json` rồi chạy `scripts/nap-cau-hoi.js` (chỉ thêm câu chưa có).
 Chi tiết số liệu đối chiếu T9: `doi-chieu-T9.local.md` (máy anh, KHÔNG lên GitHub).
 
-Nhóm câu hỏi: Số dư đầu kỳ (4) · Tiền mặt & Kiot (7) · Chi (3) · Cách tính (2) · Vận hành (3).
+Nhóm câu hỏi: Số dư đầu kỳ · Tiền mặt & Kiot · Chi · Cách tính · Vận hành · Luồng mới (08/10) · Kéo bù từ sheet (08/10) · Phân quyền (08/10) · Kiot.
 
 ## 1B. LUỒNG MỚI (anh gửi 08/10/2026 — sơ đồ GPT + ghi chú tay; KHÔNG dựa Google Sheet)
 
@@ -34,23 +34,25 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 |---|---|---|
 | A | Kéo Kiot mở rộng (bảng `kt_kiot_*`): khách, NCC, hàng hoá + tồn kho + giá vốn, hoá đơn + chi tiết, trả hàng, nhập hàng | **XONG 08/10** — nạp đầy đủ + 3 tiếng/lần chỉ phần sửa (`lastModifiedFrom`), ~26 giây/lần |
 | B | Báo cáo Bán hàng / Khách hàng / NCC / Hàng hoá-tồn kho (công nợ khách + NCC lấy số Kiot) | **XONG 08/10** (`supabase-schema-kt-bao-cao.sql`) |
-| C | Quỹ tiền mặt 3 cửa hàng (tab trong Dòng tiền) · P&L thực thu/thực chi · Vay & lãi vay · Tài sản | **XONG 08/10** — điều chuyển báo trên app: hiện chỉ có số đếm "chưa xác nhận" trên menu, CHƯA có thông báo đẩy |
+| C | Quỹ tiền mặt 3 cửa hàng (tab trong Dòng tiền) · P&L thực thu/thực chi · Vay & lãi vay · Tài sản | **XONG 08/10** — điều chuyển báo bằng **chuông trong app** (17:32, thay Zalo; anh không cần đẩy về điện thoại) |
 | D | Hoá đơn thuế + tồn kho sổ thuế 3 HKD (chờ anh API meInvoice / 3TShop) | chờ anh — trang "Hoá đơn & thuế" đang là trang chờ |
 
-**CÒN THIẾU sau 08/10** (đã báo anh trong chat): hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) · tạo phiếu Kiot tự động 4A (chưa thử GHI Kiot — cần anh cho phép)
-· thông báo điều chuyển (thay Zalo) · quyền "chỉ tạo đề nghị chi" cho nhân viên (hiện quyền sửa Chi = được duyệt + thanh toán)
-· tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (giá vốn bình quân ngày 08/10)
-· công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · 14 câu Cần giải đáp chưa trả lời (08/10 Claude đóng 8 câu đã có căn cứ: quyết định anh + sơ đồ mới).
+**CÒN THIẾU sau 08/10 17:32**: hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) — chờ anh
+· tạo phiếu Kiot tự động 4A: **KHÔNG làm được** — đã thử (anh cho phép) POST cashflow → 404, API Kiot công khai không có lệnh ghi sổ quỹ → 4A vẫn tạo tay trên Kiot
+· tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (đã đưa câu hỏi lên app)
+· 20 câu Cần giải đáp chưa trả lời · chưa thử chứng từ / chuông trên trình duyệt THẬT bằng tay (chỉ kiểm bằng mã + chụp màn hình).
+~~thông báo điều chuyển~~ ~~quyền chỉ tạo đề nghị chi~~ ~~phát sinh sau 5/10 trên sheet~~ ~~công nợ nhập tay vs Kiot~~ — xong 08/10.
 
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
 |---|---|---|
 | 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
-| 2 | Bỏ Google Sheet (sơ đồ 08/10) — phát sinh trên sheet từ 05/10 chưa vào app | Claude nhập bù 1 lần khi anh gửi link sheet mới nhất |
-| 2b | Quyền "chỉ được tạo đề nghị chi" (không duyệt / không xem số khác) để cấp tài khoản cho nhân viên | Claude làm — sơ đồ 08/10: người đề nghị nhập trên app |
+| 2 | ~~Nhập bù phát sinh trên sheet từ 05/10~~ | **XONG 08/10** — 52 phiếu chi (tab 7.DATA CHI; Thu / Điều chuyển / công nợ không có dòng mới), nhãn "Kéo từ sheet cũ — cần bổ sung", kế toán sửa dần. Phiếu #370 (trả T8, lọt vì ngày dùng DV gõ 08/12/2026) đã ẩn. Số T9 tiền ra THAY ĐỔI vì có thêm phiếu đã trả trong T9 (số trong `doi-chieu-T9.local.md` cần đối chiếu lại) |
+| 2b | ~~Quyền "chỉ được tạo đề nghị chi"~~ | **XONG 08/10** — quyền `chi_de_nghi` + `chi_duyet`; kiểm thử 16/16 (`scripts/kiem-thu-quyen-chi.js`). Chưa có tài khoản nhân viên thật nào (câu hỏi trên app) |
 | 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
-| 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10** — chưa thử chọn file thật trên trình duyệt (nén ảnh + zip cả kỳ chỉ kiểm bằng mã), anh thử giúp 1 phiếu |
+| 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10**, làm lại 17:32 cho gọn: kéo thả / Ctrl+V / chọn ngay lúc tạo phiếu, nén + tải ngầm có %, ghim giấy trên danh sách. Chưa thử chọn file thật trên trình duyệt bằng tay — anh thử giúp 1 phiếu |
+| 5 | Kế toán bổ sung 52 phiếu kéo bù (người đề nghị, chứng từ) | trang Chi → lọc nguồn "Kéo từ sheet cũ — cần bổ sung" |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
@@ -67,6 +69,11 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 - **Luồng mới 08/10 (mục 1B)** thay luồng cũ dựa Google Sheet. **3 nơi tồn kho sổ thuế = 3 hộ kinh doanh** Hiền Thủy · Chánh Tâm · Shidai.
   **P&L tính theo THỰC THU / THỰC CHI**; hoá đơn và giá vốn là phần chính trong đó. **Không làm** báo cáo chi phí hoạt động, đầu tư & dự án (anh chốt 08/10).
 - **Ảnh chứng từ: lưu và xem ngay trên app** (anh chốt 08/10): bucket riêng tư `kt-chung-tu`, Edge Function `kt-chung-tu` cấp link 5 phút, ảnh nén trên máy, tải về từng file / cả phiếu / cả kỳ (.zip).
+- **Chi tách 2 quyền** (anh chốt 08/10): `chi_de_nghi` = nhân viên chỉ tạo đề nghị, chỉ thấy / sửa phiếu mình (khi còn chờ duyệt), thêm chứng từ phiếu mình;
+  `chi_duyet` = Duyệt / Từ chối / Thanh toán — **chỉ giám đốc và admin** (Supreme/Admin luôn có). Kiểm ở SQL (`kt_luu_chi`, `kt_ds`, `kt_chan_dong`), không chỉ ẩn nút.
+- **Thông báo = chuông TRONG APP kiểu Facebook**, KHÔNG đẩy về điện thoại (anh chốt 08/10). Bảng `kt_thong_bao`, hàm lưu tự sinh (`supabase-schema-kt-thong-bao.sql`).
+- **Ảnh chứng từ: gọn nhất cho người up** (anh 08/10): nén + tải ngầm, bấm lại xem ngay. Kiot KHÔNG cho ghi phiếu thu/chi qua API (đã thử 08/10) → 4A tạo tay.
+- **Phát sinh còn trên sheet cũ: kéo tạm vào, gắn thẻ "Kéo từ sheet cũ"**, kế toán điền dần (anh chốt 08/10).
 - **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
 - **Giao diện theo theme XERO cho TOÀN APP** (anh chốt 05/10): menu ngang xanh đậm, dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
 
@@ -77,6 +84,15 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **08/10/2026 17:32** — Làm 5 việc anh giao: (1) thử GHI phiếu Kiot (anh cho phép): API trả 404, không có lệnh ghi → 4A tạo tay, đóng câu 23.
+  (2) Chuông thông báo trong app (bảng `kt_thong_bao`; đề nghị chi mới / duyệt / đã TT / từ chối; điều chuyển mới / đã xác nhận; đếm mỗi phút).
+  (3) Chứng từ gọn hơn: kéo thả, Ctrl+V, chọn ảnh ngay lúc tạo phiếu, nén + tải ngầm có %, thử lại khi lỗi, ghim giấy + số chứng từ trên danh sách Thu / Chi / Điều chuyển bấm mở thẳng.
+  (4) Quyền `chi_de_nghi` / `chi_duyet` (SQL + giao diện + Edge Function `kt-chung-tu` kiểm quyền theo dòng, deploy v2).
+  (5) Kéo bù sheet: 52 phiếu chi, nhãn tím + bộ lọc nguồn. Thêm 7 câu hỏi lên app (tổng 20 chưa trả lời). Trang Logic thêm mục Chuông, Kéo bù, quyền Chi.
+  **Lỗi đã tự sửa:** kéo bù lần đầu ghép theo SỐ DÒNG nhưng tab DATA CHI bị xếp lại → phát hiện ở chạy thử, đổi sang ghép theo nội dung + số tiền trước khi ghi;
+  lọt phiếu #370 (trả T8) → ẩn; lệnh `cat >` treo (lặp lỗi cũ) → dừng; câu hỏi nhập hàng Kiot mô tả sai cách tính → sửa lại; bộ test cũ không dọn thông báo → thêm bước dọn,
+  và 1 ca test cũ trượt do chi chia chung (dữ liệu mới) → test so đúng loại chi riêng. Kiểm thử: 32/32 · 14/14 · 12/12 · 16/16 (mới).
 
 - **08/10/2026 17:02** — Chứng từ ảnh / PDF trên app (anh chốt "dùng app xem chứng từ"): bucket riêng tư kt-chung-tu, bảng kt_chung_tu, Edge Function kt-chung-tu (kiểm phiên + quyền, link 5 phút), ô chứng từ trong Thu / Chi / Điều chuyển / Vay / Tài sản (nén ảnh, xem to, tải về, xoá = ẩn), tải cả kỳ .zip; tạo phiếu mới xong tự mở lại để thêm ảnh. Kiểm thử phần nền 12/12 (scripts/kiem-thu-chung-tu.js) + chụp giao diện với file thử (đã xoá).
 

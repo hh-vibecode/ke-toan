@@ -56,7 +56,9 @@ async function rpc(fn, args) {
   kq('ghi điều chuyển', dc.s === 200, dc.msg);
   const bc = await rpc('kt_bao_cao', { p_phien: P, p_tu: '2026-10-05', p_den: '2026-10-05' });
   const tkCK = (b, id) => +((b.j.tai_khoan.find(x => x.id === id) || {}).cuoi_ky || 0);
-  const dvChi = (b, id) => b.j.chi_theo_dv.filter(x => x.don_vi_id === id).reduce((s, x) => s + +x.so_tien, 0);
+  // chỉ so đúng LOẠI chi riêng của phiếu thử: chi chung chia theo tỷ lệ doanh thu nên +1tr thu thử làm phần chia chung dịch theo (phát hiện 08/10)
+  const tenLc = dm.j.loai.find(x => x.id === lc).ten;
+  const dvChi = (b, id) => b.j.chi_theo_dv.filter(x => x.don_vi_id === id && x.loai === tenLc).reduce((s, x) => s + +x.so_tien, 0);
   const dVao = +bc.j.tien_vao - +bc0.j.tien_vao, dRa = +bc.j.tien_ra - +bc0.j.tien_ra;
   kq('báo cáo: tiền vào tăng 1.000.000, tiền ra tăng 400.000 (không gồm điều chuyển)', dVao === 1000000 && dRa === 400000, `vào +${dVao} · ra +${dRa}`);
   const x1 = tkCK(bc, tk1) - tkCK(bc0, tk1), x2 = tkCK(bc, tk2) - tkCK(bc0, tk2);
@@ -81,7 +83,9 @@ async function rpc(fn, args) {
   // 7. Đăng xuất
   await rpc('kt_dang_xuat', { p_phien: P });
   kq('đăng xuất xong phiên hết hiệu lực', (await rpc('kt_danh_muc', { p_phien: P })).s === 403);
-  // Dọn dữ liệu thử
+  // Dọn dữ liệu thử (cả thông báo chuông mà phiếu thử sinh ra — thêm 08/10)
+  await sql(`delete from kt_thong_bao where (bang = 'chi' and dong_id in (select id from kt_chi where nguoi_de_nghi = 'KIỂM THỬ'))
+    or (bang = 'dieu_chuyen' and dong_id in (select id from kt_dieu_chuyen where noi_dung like 'KIỂM THỬ%'))`);
   const don = await sql(`
     with a as (delete from kt_thu where noi_dung like 'KIỂM THỬ%' returning 1), b as (delete from kt_chi where nguoi_de_nghi = 'KIỂM THỬ' returning 1),
          c as (delete from kt_dieu_chuyen where noi_dung like 'KIỂM THỬ%' returning 1),
