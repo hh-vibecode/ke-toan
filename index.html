@@ -163,6 +163,22 @@ td.num b{font-weight:800}
 .modal.drawer{justify-content:flex-end;padding:0}
 .modal.drawer>div{max-width:560px;height:100vh;max-height:100vh;border-radius:16px 0 0 16px;padding:20px 22px}
 .tabs .btn.on .muted{color:inherit;opacity:.8}
+.ct-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.ct-item{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg2)}
+.ct-thumb{height:92px;display:flex;align-items:center;justify-content:center;cursor:zoom-in;overflow:hidden;background:var(--surface)}
+.ct-thumb img{width:100%;height:100%;object-fit:cover}
+.ct-pdf{font-weight:800;font-size:13px;color:var(--bad);border:2px solid var(--bad);border-radius:6px;padding:6px 10px}
+.ct-ten{font-size:10.5px;padding:4px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2)}
+.ct-nut{position:absolute;top:4px;right:4px;display:flex;gap:3px;opacity:.9}
+.ct-nut button{border:none;border-radius:5px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:2px 6px;cursor:pointer}
+.ct-them{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:118px;border:1.5px dashed var(--border);border-radius:8px;cursor:pointer;color:var(--accent);font-size:11.5px;font-weight:700}
+.ct-them b{font-size:22px;line-height:1}.ct-them:hover{border-color:var(--accent);background:var(--sel-bg)}
+.lb{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.88);display:flex;flex-direction:column}
+.lb-top{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#fff;font-size:12.5px;font-weight:700}
+.lb-top button{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700}
+.lb-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 16px 16px;min-height:0}
+.lb-body img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;background:#fff}
+.lb-body iframe{width:min(1000px,100%);height:100%;border:none;background:#fff;border-radius:4px}
 table.pl td{padding:8px 14px}table.pl .pl-h{background:var(--bg2);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 table.pl tr.tong td{background:transparent;border-top:1.5px solid var(--border)}table.pl tr.pl-net td{background:var(--sel-bg);font-size:13.5px}
 .kpi[style*="--grey"] .ic{color:var(--grey)}
@@ -329,7 +345,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='08/10/2026 16:49';
+const APP_VERSION='08/10/2026 17:02';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -524,7 +540,7 @@ function doiGiaoDien(){const r=document.documentElement,dark=r.dataset.theme?r.d
   r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('kt_theme',r.dataset.theme)}catch(e){}}
 function head(title,right=''){return `<div class="top"><div class="title">${title}</div><div class="right">${right}</div></div>`}
 function modal(html,drawer){closeModal();const m=document.createElement('div');m.className='modal'+(drawer?' drawer':'');m.id='modal';
-  m.innerHTML=`<div>${html}</div>`;m.onclick=e=>{if(e.target===m)closeModal()};document.body.appendChild(m);return m}
+  m.innerHTML=`<div>${html}</div>`;m.onclick=e=>{if(e.target===m)closeModal()};document.body.appendChild(m);setTimeout(ganCT,0);return m}
 function closeModal(){const m=$('#modal');if(m)m.remove()}
 async function save(fn,args,msg){try{const r=await rpc(fn,args);toast(msg||'Đã lưu');closeModal();S.cache={};return r}catch(e){alert(e.message);throw e}}
 
@@ -677,7 +693,7 @@ async function pageThu(){
   const l=ds.filter(x=>(!f.thu_loai||x.loai_id==f.thu_loai)&&(!f.thu_dv||x.don_vi_id==f.thu_dv)&&(!f.thu_tk||x.tai_khoan_id==f.thu_tk)
     &&(!f.thu_nguon||x.nguon===f.thu_nguon)&&(!q||(x.noi_dung+' '+(x.ghi_chu||'')).toLowerCase().includes(q)));
   const sel=(k,list,trong)=>`<select class="sel ${f[k]?'on':''}" onchange="S.f.${k}=this.value;render()">${opts(list,f[k],trong)}</select>`;
-  el.innerHTML=head('Thu',kyBar()+(coGhi()?'<button class="btn pri" onclick="formThu()">+ Thêm khoản thu</button>':''))+
+  el.innerHTML=head('Thu',kyBar()+'<button class="btn" onclick="taiCTKy()" title="Tải mọi ảnh / PDF chứng từ của kỳ đang chọn">⬇ Chứng từ kỳ (.zip)</button>'+(coGhi()?'<button class="btn pri" onclick="formThu()">+ Thêm khoản thu</button>':''))+
     `<div class="bar">${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Mọi loại thu')}${sel('thu_dv',S.dm.don_vi.filter(x=>x.la_co_so),'Mọi cơ sở')}
       ${sel('thu_tk',S.dm.tai_khoan,'Mọi tài khoản')}<select class="sel ${f.thu_nguon?'on':''}" onchange="S.f.thu_nguon=this.value;render()"><option value="">Mọi nguồn</option>${optsObj({tay:'Nhập',kiot:'Kiot',sheet_cu:'Sheet cũ'},f.thu_nguon)}</select>
       <input type="search" class="sel" placeholder="Tìm nội dung" value="${esc(f.thu_q||'')}" onchange="S.f.thu_q=this.value;render()">
@@ -702,6 +718,7 @@ function formThu(id){
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
     </div>
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
+    ${ctBox('thu',id,coGhi('thu'))}
     <div class="acts">${id&&!ro?`<button class="btn bad left" onclick="xoa('thu',${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button>
       ${ro?'':`<button class="btn pri" onclick="luuThu(${id||'null'})">Lưu</button>`}</div>`);
   if(ro)m.querySelectorAll('input,select').forEach(e=>e.disabled=true);
@@ -717,7 +734,7 @@ function goiYNoiDungThu(){const f=$('#f');const nd=f.querySelector('[name=noi_du
   nd.value=[d&&d.ten,l&&l.ten].filter(Boolean).join(' - ');nd.dataset.auto=1}
 async function luuThu(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);
   if(!o.so_tien||!o.loai_id||!o.tai_khoan_id||!o.noi_dung)return alert('Cần đủ: số tiền, loại thu, tài khoản, nội dung');
-  await save('kt_luu_thu',{p_dong:o});render()}
+  const nid=await save('kt_luu_thu',{p_dong:o});await render();if(!id&&nid)formThu(nid)}
 async function xoa(bang,id){if(!confirm('Xoá khoản này? (ẩn khỏi báo cáo, vẫn còn trong nhật ký)'))return;await save('kt_xoa',{p_bang:bang,p_id:id},'Đã xoá');render()}
 
 // ── CHI ────────────────────────────────────────────────────────────────────
@@ -732,7 +749,7 @@ async function pageChi(){
     &&(!f.chi_bp||x.bo_phan_id==f.chi_bp)&&(!f.chi_dv||(x.phan_bo||[]).some(p=>p.don_vi_id==f.chi_dv))
     &&(!q||[x.noi_dung,x.nguoi_de_nghi,x.thu_huong_ten,x.ghi_chu].join(' ').toLowerCase().includes(q)));
   const sel=(k,list,trong)=>`<select class="sel ${f[k]?'on':''}" onchange="S.f.${k}=this.value;render()">${opts(list,f[k],trong)}</select>`;
-  el.innerHTML=head('Chi',kyBar()+(coGhi()?'<button class="btn pri" onclick="formChi()">+ Đề nghị chi</button>':''))+
+  el.innerHTML=head('Chi',kyBar()+'<button class="btn" onclick="taiCTKy()" title="Tải mọi ảnh / PDF chứng từ của kỳ đang chọn">⬇ Chứng từ kỳ (.zip)</button>'+(coGhi()?'<button class="btn pri" onclick="formChi()">+ Đề nghị chi</button>':''))+
     `<div class="tabs">${Object.keys(nhan).map(k=>`<button class="btn tab2 ${f.chi_tt===k?'on':''}" style="--c:var(--${MAU_TAB[k]})" onclick="S.f.chi_tt='${k}';render()"><span>${nhan[k]}<span class="cnt">${ds.filter(loc[k]).length}</span></span><small>${fmtN(sumBy(ds.filter(loc[k]),x=>x.so_tien))}</small></button>`).join('')}</div>
     <div class="bar">${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Mọi loại chi')}${sel('chi_dv',S.dm.don_vi.filter(x=>x.la_co_so),'Mọi đơn vị chịu CP')}
       ${sel('chi_bp',S.dm.don_vi.filter(x=>x.la_bo_phan),'Mọi bộ phận')}${sel('chi_tk',S.dm.tai_khoan,'Mọi TK chi')}
@@ -764,11 +781,12 @@ function formChi(id){
       <label class="full">Đơn vị chịu chi phí <span style="text-transform:none;font-weight:600">— 1 đơn vị thì số tiền tự điền; nhiều đơn vị bấm Chia đều</span>
         <div id="pb">${(x.phan_bo.length?x.phan_bo:[{}]).map(pbRow).join('')}</div>
         <div style="display:flex;gap:6px"><button class="btn sm" onclick="$('#pb').insertAdjacentHTML('beforeend',pbRow())">+ Thêm đơn vị</button><button class="btn sm" onclick="pbChiaDeu()">Chia đều</button></div></label>
-      <label class="full">Hồ sơ đính kèm (link hoá đơn, báo giá, hình ảnh — mỗi dòng 1 link)<textarea name="chung_tu" rows="2">${esc((x.chung_tu||[]).join('\n'))}</textarea></label>
+      <label class="full">Link hồ sơ (nếu có — ảnh / PDF thì thêm ở ô chứng từ sau khi lưu)<textarea name="chung_tu" rows="2">${esc((x.chung_tu||[]).join('\n'))}</textarea></label>
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
       ${moi&&coGhi()?`<label class="full chk"><input type="checkbox" name="tt_luon" onchange="$('#tt-luon').style.display=this.checked?'':'none'"> Đã thanh toán luôn (kế toán tự chi, không cần chờ duyệt)</label>
         <div class="full" id="tt-luon" style="display:none;grid-column:1/-1">${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong'})}</div>`:''}
     </div>
+    ${ctBox('chi',id,coGhi('chi'))}
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuChi(${id||'null'})">Lưu</button></div>`);
 }
 function fieldsThanhToan(x){return `<div class="form" id="ftt">
@@ -795,7 +813,7 @@ async function luuChi(id){const o=docChi();o.id=id;
   if(!o.phan_bo.length)return alert('Chọn đơn vị chịu chi phí');
   const tl=$('#f [name=tt_luon]');
   if(tl&&tl.checked){Object.assign(o,formData($('#ftt')));o.trang_thai='da_tt';if(!o.tai_khoan_id||!o.loai_id)return alert('Thanh toán luôn: cần tài khoản chi + loại chi')}
-  await save('kt_luu_chi',{p_dong:o});await reloadDm();render()}
+  const nid=await save('kt_luu_chi',{p_dong:o});await reloadDm();await render();if(!id&&nid&&S.cache.chi&&S.cache.chi.find(c=>c.id===nid))xemChi(nid)}
 function xemChi(id){
   const x=S.cache.chi.find(c=>c.id===id);const g=coGhi();
   const ct=(x.chung_tu||[]).map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">Tệp ${i+1}</a>`).join(' · ');
@@ -811,6 +829,7 @@ function xemChi(id){
       ${kv('Uỷ nhiệm chi',x.unc?`<a href="${esc(x.unc)}" target="_blank" rel="noopener">Mở</a>`:'')}
       ${kv('Kiot',x.kiot!=='khong'?esc(KIOT[x.kiot])+(x.kiot_ly_do?' — '+esc(x.kiot_ly_do):''):'')}
       ${kv('Nguồn',x.nguon==='sheet_cu'?'Chuyển từ sheet cũ':'')}${kv('Tạo / sửa',esc(x.tao_boi||'')+' '+fmtDT(x.tao_luc)+(x.sua_boi?' · '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''))}</div>
+    ${ctBox('chi',x.id,g)}
     ${g&&x.trang_thai==='cho_tt'?`<div class="sec">Thanh toán</div>${fieldsThanhToan(x)}`:''}
     ${g&&x.trang_thai==='da_tt'?`<div class="sec">Cập nhật sau thanh toán</div>${fieldsThanhToan(x)}
       ${x.co_hd_do?`<div class="form" id="fhd" style="margin-top:10px"><label class="chk"><input type="checkbox" name="hd_do_nhan" ${x.hd_do_nhan?'checked':''}> Đã nhận hoá đơn đỏ</label>
@@ -861,6 +880,7 @@ function formDC(id){
       ${id?`<label class="full chk"><input type="checkbox" name="da_xac_nhan" ${x.da_xac_nhan?'checked':''}> Kế toán đã xác nhận${x.xac_nhan_boi?' ('+esc(x.xac_nhan_boi)+' '+fmtDT(x.xac_nhan_luc)+')':''}</label>`:''}
     </div>
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}</div>`:''}
+    ${ctBox('dieu_chuyen',id,coGhi('dieu_chuyen'))}
     <div class="acts">${id&&coGhi()?`<button class="btn bad left" onclick="xoa('dieu_chuyen',${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button>
       ${coGhi()?`<button class="btn pri" onclick="luuDC(${id||'null'})">Lưu</button>`:''}</div>`);
 }
@@ -868,7 +888,7 @@ async function luuDC(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tie
   if(!o.so_tien||!o.tk_di_id||!o.tk_nhan_id)return alert('Cần đủ: số tiền, TK đi, TK nhận');
   if(o.tk_di_id===o.tk_nhan_id)return alert('TK đi và TK nhận phải khác nhau');
   if(o.kiot==='khong_tao'&&!o.kiot_ly_do.trim())return alert('Ghi lý do không tạo phiếu Kiot');
-  await save('kt_luu_dieu_chuyen',{p_dong:o});render()}
+  const nid=await save('kt_luu_dieu_chuyen',{p_dong:o});await render();if(!id&&nid&&S.cache.dc&&S.cache.dc.find(d=>d.id===nid))formDC(nid)}
 
 // ── CÔNG NỢ ────────────────────────────────────────────────────────────────
 async function pageCongNo(){
@@ -1098,6 +1118,7 @@ function xemVay(id){const v=S.cache.vay.find(x=>x.id===id);const g=coGhi();
     <div class="card"><table><tr><th>Ngày</th><th class="num">Gốc</th><th class="num">Lãi</th><th>Trạng thái</th><th></th></tr>
       ${(v.lan_tra||[]).map(t=>`<tr><td class="nw">${fmtD(t.ngay)}</td><td class="num">${fmt(t.goc)}</td><td class="num">${fmt(t.lai)}</td><td>${t.da_tra?vb('Đã trả','ok'):vb(t.ngay<homNay()?'Quá hạn':'Dự kiến',t.ngay<homNay()?'bad':'warn')}</td>
         <td class="nw">${g?`<button class="btn sm" onclick="formVayTra(${v.id},${t.id})">✏</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Chưa có — thêm lịch trả dự kiến hoặc lần đã trả</td></tr>'}</table></div>
+    ${ctBox('vay',v.id,g)}
     <div class="acts">${g?`<button class="btn left" onclick="formVay(${v.id})">✏ Sửa khoản vay</button><button class="btn pri" onclick="formVayTra(${v.id})">+ Thêm lần trả / lịch trả</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button></div>`,true)}
 function formVayTra(vid,id){const v=S.cache.vay.find(x=>x.id===vid);const x=id?(v.lan_tra||[]).find(t=>t.id===id):{ngay:homNay(),goc:0,lai:0,da_tra:true};
   modal(`<h2>${id?'Sửa':'Thêm'} lần trả — ${esc(v.ten)}</h2><div class="form" id="f">
@@ -1131,6 +1152,7 @@ function formTS(id){const x=id?S.cache.ts.find(t=>t.id===id):{ngay_mua:homNay(),
     <label>Tình trạng<select name="tinh_trang">${optsObj(TT_TS,x.tinh_trang)}</select></label>
     <label class="full">Chứng từ (link — mỗi dòng 1 link)<textarea name="chung_tu" rows="2">${esc((x.chung_tu||[]).join('\n'))}</textarea></label>
     <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label></div>
+    ${ctBox('tai_san',id,coGhi('tai_san'))}
     <div class="acts">${id?`<button class="btn bad left" onclick="xoa('tai_san',${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuTS(${id||'null'})">Lưu</button></div>`)}
 async function luuTS(id){const o=formData($('#f'));o.id=id;o.nguyen_gia=so(o.nguyen_gia);o.so_thang_kh=Number(o.so_thang_kh)||0;
   o.chung_tu=(o.chung_tu||'').split('\n').map(s=>s.trim()).filter(Boolean);if(!o.ten||o.nguyen_gia==null||!o.ngay_mua)return alert('Cần tên, nguyên giá, ngày mua');
@@ -1156,6 +1178,70 @@ async function veQuyCuaHang(c){
 }
 
 function dtTabs(){return `<div class="tabs" style="margin-bottom:12px">${[['tk','Tài khoản & đối soát'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']].map(([k,t])=>`<button class="btn ${(S.f.dt_view||'tk')===k?'on':''}" onclick="S.f.dt_view='${k}';render()">${t}</button>`).join('')}</div>`}
+// ── CHỨNG TỪ (ảnh / PDF) lưu và xem trên app (anh chốt 08/10) ──────────────
+// Kho riêng tư; Edge Function kt-chung-tu kiểm phiên + quyền rồi cấp link ký tên sống 5 phút. Ảnh nén trên máy trước khi tải lên.
+const FN_CT=SB_URL+'/functions/v1/kt-chung-tu';
+const TEN_BANG={thu:'Thu',chi:'Chi',dieu_chuyen:'Dieu-chuyen',vay:'Vay',tai_san:'Tai-san'};
+async function ctFn(b){const r=await fetch(FN_CT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phien:S.phien,...b})});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.loi||'Lỗi chứng từ '+r.status);return j}
+// Nén ảnh: cạnh dài tối đa 2000px, JPEG 82% (~400–600 KB, vẫn đọc rõ hoá đơn). PDF / ảnh không đọc được (HEIC trên máy không hỗ trợ) giữ nguyên.
+async function nenAnh(f){
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size<350*1024)return f;
+  try{const bm=await createImageBitmap(f);const k=Math.min(1,2000/Math.max(bm.width,bm.height));
+    const c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.82));if(!b||b.size>=f.size)return f;
+    return new File([b],f.name.replace(/\.\w+$/,'')+'.jpg',{type:'image/jpeg'})}catch(e){return f}}
+// Ô chứng từ: chèn vào form / ngăn kéo; ganCT() tự vẽ sau khi mở
+const ctBox=(bang,id,sua)=>id?`<div class="sec" style="margin-top:14px">Chứng từ đính kèm</div><div class="ct" data-bang="${bang}" data-id="${id}" data-sua="${sua?1:0}"><div class="muted" style="font-size:12px">Đang tải chứng từ…</div></div>`
+  :`<div class="muted" style="font-size:11.5px;margin-top:10px">Lưu xong, phiếu tự mở lại để thêm ảnh / PDF chứng từ.</div>`;
+function ganCT(){$$('.ct[data-bang]:not([data-xong])').forEach(el=>{el.dataset.xong=1;veCT(el)})}
+async function veCT(el){
+  const bang=el.dataset.bang,id=+el.dataset.id,sua=el.dataset.sua==='1';
+  try{const ds=await rpc('kt_ds_chung_tu',{p_bang:bang,p_dong_id:id});
+    const urls=ds.length?(await ctFn({viec:'xem',ids:ds.map(x=>x.id)})).ds:[];const u=Object.fromEntries(urls.map(x=>[x.id,x.url]));
+    S.cache['ct_'+bang+id]=ds.map(x=>({...x,url:u[x.id]}));
+    el.innerHTML=`<div class="ct-grid">${ds.map(x=>{const anh=/^image\//.test(x.mime||'');return `<div class="ct-item">
+        <div class="ct-thumb" onclick="xemCT('${bang}',${id},${x.id})">${anh&&u[x.id]?`<img src="${esc(u[x.id])}" alt="${esc(x.ten)}" loading="lazy">`:`<span class="ct-pdf">${/pdf/.test(x.mime||'')?'PDF':'TỆP'}</span>`}</div>
+        <div class="ct-ten" title="${esc(x.ten)} · ${esc(x.tao_boi||'')} ${fmtDT(x.tao_luc)}">${esc(x.ten)}</div>
+        <div class="ct-nut"><button title="Tải về" onclick="taiVeCT([${x.id}])">⬇</button>${sua?`<button title="Xoá" onclick="xoaCT('${bang}',${id},${x.id})">✕</button>`:''}</div></div>`}).join('')}
+      ${sua?`<label class="ct-them"><input type="file" multiple accept="image/*,application/pdf" hidden onchange="taiLenCT(this,'${bang}',${id})"><b>＋</b><span>Thêm ảnh / PDF</span></label>`:''}</div>
+      ${ds.length>1?`<div style="margin-top:6px"><button class="btn sm" onclick="taiVeCT([${ds.map(x=>x.id).join(',')}])">⬇ Tải tất cả (${ds.length})</button></div>`:''}
+      ${!ds.length&&!sua?'<div class="muted" style="font-size:12px">Chưa có chứng từ</div>':''}`;
+  }catch(e){el.innerHTML=`<div class="neg" style="font-size:12px">${esc(e.message)}</div>`}}
+async function taiLenCT(inp,bang,id){
+  const el=inp.closest('.ct');const fs=[...inp.files];if(!fs.length)return;
+  const tt=document.createElement('div');tt.className='muted';tt.style.fontSize='12px';el.appendChild(tt);
+  try{for(let i=0;i<fs.length;i++){tt.textContent=`Đang tải ${i+1}/${fs.length}: ${fs[i].name}…`;
+      const f=await nenAnh(fs[i]);if(f.size>15*1024*1024)throw new Error(f.name+' quá 15 MB');
+      const {duong_dan,url}=await ctFn({viec:'tai_len',bang,dong_id:id,ten:f.name});
+      const r=await fetch(url,{method:'PUT',headers:{'Content-Type':f.type||'application/octet-stream'},body:f});
+      if(!r.ok)throw new Error('Tải lên lỗi '+r.status+' ('+f.name+')');
+      await rpc('kt_them_chung_tu',{p_bang:bang,p_dong_id:id,p_duong_dan:duong_dan,p_ten:f.name,p_mime:f.type||null,p_kich_thuoc:f.size})}
+    toast('Đã thêm '+fs.length+' chứng từ')}catch(e){alert(e.message)}
+  delete el.dataset.xong;el.innerHTML='<div class="muted" style="font-size:12px">Đang tải chứng từ…</div>';ganCT()}
+async function taiVeCT(ids){try{const {ds}=await ctFn({viec:'xem',ids,tai_ve:true});
+  for(const x of ds){if(!x.url)continue;const a=document.createElement('a');a.href=x.url;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();await new Promise(r=>setTimeout(r,400))}}catch(e){alert(e.message)}}
+async function xoaCT(bang,id,ctId){if(!confirm('Xoá chứng từ này? (ẩn khỏi phiếu, vẫn còn trong nhật ký)'))return;
+  try{await rpc('kt_xoa_chung_tu',{p_id:ctId});const el=$(`.ct[data-bang="${bang}"][data-id="${id}"]`);if(el){delete el.dataset.xong;ganCT()}}catch(e){alert(e.message)}}
+function xemCT(bang,id,ctId){const ds=S.cache['ct_'+bang+id]||[];let i=ds.findIndex(x=>x.id===ctId);if(i<0)return;
+  const lb=document.createElement('div');lb.className='lb';document.body.appendChild(lb);
+  const ve=()=>{const x=ds[i];const anh=/^image\//.test(x.mime||'');
+    lb.innerHTML=`<div class="lb-top"><span>${esc(x.ten)} · ${i+1}/${ds.length}</span><span style="margin-left:auto;display:flex;gap:6px">
+      ${ds.length>1?'<button data-k="-1">‹ Trước</button><button data-k="1">Sau ›</button>':''}<button data-t="1">⬇ Tải về</button><button data-x="1">✕ Đóng</button></span></div>
+      <div class="lb-body">${anh?`<img src="${esc(x.url)}">`:`<iframe src="${esc(x.url)}"></iframe>`}</div>`};
+  ve();lb.onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k){i=(i+ +b.dataset.k+ds.length)%ds.length;ve()}else if(b&&b.dataset.t)taiVeCT([ds[i].id]);
+    else if((b&&b.dataset.x)||e.target===lb||e.target.classList.contains('lb-body'))lb.remove()};}
+// Tải chứng từ cả kỳ đang chọn thành 1 file .zip (thư mục theo Thu / Chi / Điều chuyển)
+async function taiCTKy(){
+  try{const ds=await rpc('kt_ds_chung_tu_ky',{p_tu:S.tu,p_den:S.den});if(!ds.length)return alert('Kỳ này chưa có chứng từ nào trên app');
+    if(!window.JSZip)await new Promise((ok,loi)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=ok;s.onerror=()=>loi(new Error('Không tải được thư viện nén'));document.head.appendChild(s)});
+    const zip=new JSZip();let n=0;
+    for(let i=0;i<ds.length;i+=100){const part=ds.slice(i,i+100);const {ds:urls}=await ctFn({viec:'xem',ids:part.map(x=>x.id)});
+      for(const x of part){const u=(urls.find(y=>y.id===x.id)||{}).url;if(!u)continue;toast(`Đang gom ${++n}/${ds.length}…`);
+        const b=await (await fetch(u)).blob();zip.folder(TEN_BANG[x.bang]||x.bang).file(`${x.ngay}_${TEN_BANG[x.bang]}-${x.dong_id}_${x.ten}`,b)}}
+    const out=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(out);a.download=`chung-tu_${S.tu}_${S.den}.zip`;a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('Đã tải '+n+' chứng từ')}catch(e){alert(e.message)}}
+
 // ── CẦN GIẢI ĐÁP ───────────────────────────────────────────────────────────
 // Câu Claude hỏi mà chưa ai trả lời (anh 05/10: "lưu lại hết, sau t đi hỏi 1 lượt" — anh không làm nghiệp vụ kế toán).
 // Anh / kế toán bấm chọn câu trả lời có sẵn hoặc gõ thêm; phiên Claude sau đọc bảng kt_cau_hoi để làm theo.
@@ -1244,6 +1330,12 @@ const LOGIC=[
  ['Vay & lãi vay · Tài sản (nhập trên app)',[
   'Vay: nhập khoản vay (số tiền, lãi suất, đáo hạn) và các lần trả / lịch trả (gốc, lãi). Dư nợ = số vay − gốc đã trả. Tiền trả thật vẫn ghi ở trang Chi.',
   'Tài sản: khấu hao <b>đường thẳng theo tháng</b>: mỗi tháng = nguyên giá / số tháng khấu hao; giá trị còn lại = nguyên giá − khấu hao luỹ kế tới hôm nay.']],
+ ['Chứng từ (ảnh / PDF)',[
+  'Lưu và xem <b>ngay trên app</b> (anh chốt 08/10/2026): phiếu Thu, Chi, Điều chuyển, Vay, Tài sản đều có ô "Chứng từ đính kèm" — thêm nhiều ảnh / PDF, bấm ảnh để xem to, tải về từng file hoặc cả phiếu.',
+  'Ảnh tự <b>nén trên máy trước khi tải lên</b> (cạnh dài tối đa 2000px, ~400–600 KB, vẫn đọc rõ hoá đơn); PDF giữ nguyên; tối đa 15 MB / file.',
+  'Kho file <b>riêng tư</b>: chỉ người đăng nhập và có quyền xem trang đó mới mở được; mỗi lần xem app cấp link sống 5 phút. Xoá = ẩn khỏi phiếu, file vẫn còn, có nhật ký.',
+  'Nút <b>"⬇ Chứng từ kỳ (.zip)"</b> ở trang Thu / Chi: gom mọi chứng từ của kỳ đang chọn thành 1 file nén, chia thư mục Thu / Chi / Điều chuyển, tên file có ngày và số phiếu.',
+  'Link Google Drive cũ (chuyển từ sheet) vẫn giữ và bấm mở được ở mục "Hồ sơ".']],
  ['Công nợ khách',[
   '<b>Dùng số công nợ trên Kiot</b> (anh chốt 08/10/2026: "kiot là đủ"): dương = khách còn nợ, âm = khách trả trước. Là số <b>hiện tại</b>, tự cập nhật 3 tiếng 1 lần. Xem ở Tổng quan và Báo cáo → Khách hàng.',
   'Trang công nợ nhập tay (chuyển từ sheet cũ, phân loại COD / nợ / nợ NPP...) đã ẩn khỏi menu, dữ liệu cũ giữ nguyên để tra lại; không nhập mới.']],

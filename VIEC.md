@@ -38,7 +38,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | D | Hoá đơn thuế + tồn kho sổ thuế 3 HKD (chờ anh API meInvoice / 3TShop) | chờ anh — trang "Hoá đơn & thuế" đang là trang chờ |
 
 **CÒN THIẾU sau 08/10** (đã báo anh trong chat): hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) · tạo phiếu Kiot tự động 4A (chưa thử GHI Kiot — cần anh cho phép)
-· thông báo điều chuyển (thay Zalo) · ảnh chứng từ (anh chưa chọn Supabase / Drive) · quyền "chỉ tạo đề nghị chi" cho nhân viên (hiện quyền sửa Chi = được duyệt + thanh toán)
+· thông báo điều chuyển (thay Zalo) · quyền "chỉ tạo đề nghị chi" cho nhân viên (hiện quyền sửa Chi = được duyệt + thanh toán)
 · tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (giá vốn bình quân ngày 08/10)
 · công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · 14 câu Cần giải đáp chưa trả lời (08/10 Claude đóng 8 câu đã có căn cứ: quyết định anh + sơ đồ mới).
 
@@ -50,7 +50,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | 2 | Bỏ Google Sheet (sơ đồ 08/10) — phát sinh trên sheet từ 05/10 chưa vào app | Claude nhập bù 1 lần khi anh gửi link sheet mới nhất |
 | 2b | Quyền "chỉ được tạo đề nghị chi" (không duyệt / không xem số khác) để cấp tài khoản cho nhân viên | Claude làm — sơ đồ 08/10: người đề nghị nhập trên app |
 | 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
-| 4 | Tải ảnh chứng từ thẳng lên app | giai đoạn sau |
+| 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10** — chưa thử chọn file thật trên trình duyệt (nén ảnh + zip cả kỳ chỉ kiểm bằng mã), anh thử giúp 1 phiếu |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
@@ -66,7 +66,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 - **Khoá Supabase: dùng chung** khoá của project (anh chốt 05/10).
 - **Luồng mới 08/10 (mục 1B)** thay luồng cũ dựa Google Sheet. **3 nơi tồn kho sổ thuế = 3 hộ kinh doanh** Hiền Thủy · Chánh Tâm · Shidai.
   **P&L tính theo THỰC THU / THỰC CHI**; hoá đơn và giá vốn là phần chính trong đó. **Không làm** báo cáo chi phí hoạt động, đầu tư & dự án (anh chốt 08/10).
-- **Ảnh chứng từ:** app lưu được (Supabase Storage riêng tư, tự nén) hoặc đẩy sang Google Drive qua Apps Script — anh CHƯA chọn.
+- **Ảnh chứng từ: lưu và xem ngay trên app** (anh chốt 08/10): bucket riêng tư `kt-chung-tu`, Edge Function `kt-chung-tu` cấp link 5 phút, ảnh nén trên máy, tải về từng file / cả phiếu / cả kỳ (.zip).
 - **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
 - **Giao diện theo theme XERO cho TOÀN APP** (anh chốt 05/10): menu ngang xanh đậm, dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
 
@@ -77,6 +77,8 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **08/10/2026 17:02** — Chứng từ ảnh / PDF trên app (anh chốt "dùng app xem chứng từ"): bucket riêng tư kt-chung-tu, bảng kt_chung_tu, Edge Function kt-chung-tu (kiểm phiên + quyền, link 5 phút), ô chứng từ trong Thu / Chi / Điều chuyển / Vay / Tài sản (nén ảnh, xem to, tải về, xoá = ẩn), tải cả kỳ .zip; tạo phiếu mới xong tự mở lại để thêm ảnh. Kiểm thử phần nền 12/12 (scripts/kiem-thu-chung-tu.js) + chụp giao diện với file thử (đã xoá).
 
 - **08/10/2026 16:49** — Anh: tạm bỏ kiểm giao diện điện thoại; công nợ khách "kiot là đủ" → Tổng quan lấy số Kiot (khách còn nợ / trả trước / top nợ), ẩn trang công nợ nhập tay (giữ dữ liệu), sửa trang Logic, đóng câu hỏi (còn 14). Anh hỏi ảnh chứng từ "up lên app sau down về có tiện k" → đã trả lời trong chat, chờ anh gật.
 
