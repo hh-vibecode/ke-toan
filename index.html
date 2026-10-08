@@ -180,12 +180,12 @@ td.num b{font-weight:800}
 .ghim{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 7px;border-radius:10px;background:var(--sel-bg);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle}
 .ghim svg{width:12px;height:12px}.ghim:hover{background:var(--accent);color:#fff}
 .ct-them b{font-size:22px;line-height:1}.ct-them:hover{border-color:var(--accent);background:var(--sel-bg)}
-.lb{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.88);display:flex;flex-direction:column}
-.lb-top{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#fff;font-size:12.5px;font-weight:700}
-.lb-top button{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700}
-.lb-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 16px 16px;min-height:0}
-.lb-body img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;background:#fff}
-.lb-body iframe{width:min(1000px,100%);height:100%;border:none;background:#fff;border-radius:4px}
+.ct-lb{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.88);display:flex;flex-direction:column}
+.ct-lb-top{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#fff;font-size:12.5px;font-weight:700}
+.ct-lb-top button{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700}
+.ct-lb-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 16px 16px;min-height:0}
+.ct-lb-body img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;background:#fff}
+.ct-lb-body iframe{width:min(1000px,100%);height:100%;border:none;background:#fff;border-radius:4px}
 table.pl td{padding:8px 14px}table.pl .pl-h{background:var(--bg2);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 table.pl tr.tong td{background:transparent;border-top:1.5px solid var(--border)}table.pl tr.pl-net td{background:var(--sel-bg);font-size:13.5px}
 .kpi[style*="--grey"] .ic{color:var(--grey)}
@@ -361,7 +361,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='08/10/2026 17:32';
+const APP_VERSION='08/10/2026 17:50';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -1304,13 +1304,13 @@ async function taiVeCT(ids){try{const {ds}=await ctFn({viec:'xem',ids,tai_ve:tru
 async function xoaCT(bang,id,ctId){if(!confirm('Xoá chứng từ này? (ẩn khỏi phiếu, vẫn còn trong nhật ký)'))return;
   try{await rpc('kt_xoa_chung_tu',{p_id:ctId});const el=$(`.ct[data-bang="${bang}"][data-id="${id}"]`);if(el){delete el.dataset.xong;ganCT()}}catch(e){alert(e.message)}}
 function xemCT(bang,id,ctId){const ds=S.cache['ct_'+bang+id]||[];let i=ds.findIndex(x=>x.id===ctId);if(i<0)return;
-  const lb=document.createElement('div');lb.className='lb';document.body.appendChild(lb);
+  const lb=document.createElement('div');lb.className='ct-lb';document.body.appendChild(lb);
   const ve=()=>{const x=ds[i];const anh=/^image\//.test(x.mime||'');
-    lb.innerHTML=`<div class="lb-top"><span>${esc(x.ten)} · ${i+1}/${ds.length}</span><span style="margin-left:auto;display:flex;gap:6px">
+    lb.innerHTML=`<div class="ct-lb-top"><span>${esc(x.ten)} · ${i+1}/${ds.length}</span><span style="margin-left:auto;display:flex;gap:6px">
       ${ds.length>1?'<button data-k="-1">‹ Trước</button><button data-k="1">Sau ›</button>':''}<button data-t="1">⬇ Tải về</button><button data-x="1">✕ Đóng</button></span></div>
-      <div class="lb-body">${anh?`<img src="${esc(x.url)}">`:`<iframe src="${esc(x.url)}"></iframe>`}</div>`};
+      <div class="ct-lb-body">${anh?`<img src="${esc(x.url)}">`:`<iframe src="${esc(x.url)}"></iframe>`}</div>`};
   ve();lb.onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k){i=(i+ +b.dataset.k+ds.length)%ds.length;ve()}else if(b&&b.dataset.t)taiVeCT([ds[i].id]);
-    else if((b&&b.dataset.x)||e.target===lb||e.target.classList.contains('lb-body'))lb.remove()};}
+    else if((b&&b.dataset.x)||e.target===lb||e.target.classList.contains('ct-lb-body'))lb.remove()};}
 // Tải chứng từ cả kỳ đang chọn thành 1 file .zip (thư mục theo Thu / Chi / Điều chuyển)
 async function taiCTKy(){
   try{const ds=await rpc('kt_ds_chung_tu_ky',{p_tu:S.tu,p_den:S.den});if(!ds.length)return alert('Kỳ này chưa có chứng từ nào trên app');
