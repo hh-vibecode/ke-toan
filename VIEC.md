@@ -40,14 +40,15 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 **CÒN THIẾU sau 08/10** (đã báo anh trong chat): hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) · tạo phiếu Kiot tự động 4A (chưa thử GHI Kiot — cần anh cho phép)
 · thông báo điều chuyển (thay Zalo) · ảnh chứng từ (anh chưa chọn Supabase / Drive) · quyền "chỉ tạo đề nghị chi" cho nhân viên (hiện quyền sửa Chi = được duyệt + thanh toán)
 · tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (giá vốn bình quân ngày 08/10)
-· công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · giao diện điện thoại chưa kiểm · 23 câu Cần giải đáp chưa trả lời.
+· công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · giao diện điện thoại chưa kiểm · 15 câu Cần giải đáp chưa trả lời (08/10 Claude đóng 8 câu đã có căn cứ: quyết định anh + sơ đồ mới).
 
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
 |---|---|---|
 | 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
-| 2 | Sheet vẫn được nhập song song → phát sinh sau 5/10 trên sheet chưa vào app | chốt ngày bỏ sheet / nhập bù |
+| 2 | Bỏ Google Sheet (sơ đồ 08/10) — phát sinh trên sheet từ 05/10 chưa vào app | Claude nhập bù 1 lần khi anh gửi link sheet mới nhất |
+| 2b | Quyền "chỉ được tạo đề nghị chi" (không duyệt / không xem số khác) để cấp tài khoản cho nhân viên | Claude làm — sơ đồ 08/10: người đề nghị nhập trên app |
 | 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
 | 4 | Tải ảnh chứng từ thẳng lên app | giai đoạn sau |
 
