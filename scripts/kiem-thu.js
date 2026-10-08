@@ -40,6 +40,8 @@ async function rpc(fn, args) {
   // 4. Ghi thử (đánh dấu nội dung "KIỂM THỬ" để xoá)
   const tk1 = dm.j.tai_khoan[0].id, tk2 = dm.j.tai_khoan[1].id, dv = dm.j.don_vi.find(x => x.la_co_so).id;
   const lt = dm.j.loai.find(x => x.nhom === 'thu').id, lc = dm.j.loai.find(x => x.nhom === 'chi' && x.cach_chia === 'rieng').id;
+  // Ngày thử đã có dữ liệu thật (Kiot...) → so báo cáo TRƯỚC / SAU khi ghi thử, kiểm phần CHÊNH (sửa 08/10)
+  const bc0 = await rpc('kt_bao_cao', { p_phien: P, p_tu: '2026-10-05', p_den: '2026-10-05' });
   const t = await rpc('kt_luu_thu', { p_phien: P, p_dong: { ngay: '2026-10-05', noi_dung: 'KIỂM THỬ thu', so_tien: 1000000, don_vi_id: dv, tai_khoan_id: tk1, loai_id: lt, ghi_chu: null } });
   kq('ghi khoản thu', t.s === 200, t.msg);
   const c = await rpc('kt_luu_chi', { p_phien: P, p_dong: { nguoi_de_nghi: 'KIỂM THỬ', noi_dung: 'KIỂM THỬ chi', so_tien: 400000, phan_bo: [{ don_vi_id: dv, so_tien: 400000 }], ngay_su_dung: null, han_tt: null } });
@@ -53,11 +55,14 @@ async function rpc(fn, args) {
   const dc = await rpc('kt_luu_dieu_chuyen', { p_phien: P, p_dong: { ngay: '2026-10-05', noi_dung: 'KIỂM THỬ điều chuyển', so_tien: 200000, tk_di_id: tk1, tk_nhan_id: tk2, kiot: 'khong' } });
   kq('ghi điều chuyển', dc.s === 200, dc.msg);
   const bc = await rpc('kt_bao_cao', { p_phien: P, p_tu: '2026-10-05', p_den: '2026-10-05' });
-  const t1 = bc.j && bc.j.tai_khoan.find(x => x.id === tk1), t2 = bc.j && bc.j.tai_khoan.find(x => x.id === tk2);
-  kq('báo cáo: tiền vào 1.000.000, tiền ra 400.000 (không gồm điều chuyển)', bc.j && +bc.j.tien_vao === 1000000 && +bc.j.tien_ra === 400000, `vào ${bc.j && bc.j.tien_vao} · ra ${bc.j && bc.j.tien_ra}`);
-  kq('báo cáo: TK1 = +1tr −400k −200k = 400.000; TK2 = +200.000', t1 && +t1.cuoi_ky === 400000 && t2 && +t2.cuoi_ky === 200000, `TK1 ${t1 && t1.cuoi_ky} · TK2 ${t2 && t2.cuoi_ky}`);
-  const pdv = bc.j && bc.j.chi_theo_dv.find(x => x.don_vi_id === dv);
-  kq('báo cáo: chi riêng về đúng cơ sở', pdv && +pdv.so_tien === 400000, JSON.stringify(bc.j && bc.j.chi_theo_dv));
+  const tkCK = (b, id) => +((b.j.tai_khoan.find(x => x.id === id) || {}).cuoi_ky || 0);
+  const dvChi = (b, id) => b.j.chi_theo_dv.filter(x => x.don_vi_id === id).reduce((s, x) => s + +x.so_tien, 0);
+  const dVao = +bc.j.tien_vao - +bc0.j.tien_vao, dRa = +bc.j.tien_ra - +bc0.j.tien_ra;
+  kq('báo cáo: tiền vào tăng 1.000.000, tiền ra tăng 400.000 (không gồm điều chuyển)', dVao === 1000000 && dRa === 400000, `vào +${dVao} · ra +${dRa}`);
+  const x1 = tkCK(bc, tk1) - tkCK(bc0, tk1), x2 = tkCK(bc, tk2) - tkCK(bc0, tk2);
+  kq('báo cáo: TK1 +1tr −400k −200k = +400.000; TK2 +200.000', x1 === 400000 && x2 === 200000, `TK1 +${x1} · TK2 +${x2}`);
+  const dDv = dvChi(bc, dv) - dvChi(bc0, dv);
+  kq('báo cáo: chi riêng về đúng cơ sở (+400.000)', dDv === 400000, `+${dDv}`);
   // 5. Phân quyền: tài khoản nhân viên chỉ xem Thu
   await sql(`insert into kt_nguoi_dung (ten_dang_nhap, ho_ten, vi_tri, quyen, mk_hash) values ('kiemthu.nv', 'KIỂM THỬ', 'nhan_vien', '{thu}', extensions.crypt('KiemThu-12345', extensions.gen_salt('bf'))) on conflict (ten_dang_nhap) do nothing`);
   const n = await rpc('kt_dang_nhap', { p_tk: 'kiemthu.nv', p_mk: 'KiemThu-12345', p_nho: false });

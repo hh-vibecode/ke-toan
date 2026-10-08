@@ -21,6 +21,27 @@ Chi tiết số liệu đối chiếu T9: `doi-chieu-T9.local.md` (máy anh, KH�
 
 Nhóm câu hỏi: Số dư đầu kỳ (4) · Tiền mặt & Kiot (7) · Chi (3) · Cách tính (2) · Vận hành (3).
 
+## 1B. LUỒNG MỚI (anh gửi 08/10/2026 — sơ đồ GPT + ghi chú tay; KHÔNG dựa Google Sheet)
+
+Nguồn: **Kiot** (doanh thu, khách hàng, NCC, hàng hoá, thu–chi 3 cơ sở **để khớp quỹ doanh thu cuối ngày**) ·
+**meInvoice / 3TShop** (hoá đơn đầu ra / đầu vào; tồn kho sổ thuế 3 HKD) — anh lo API / khoá sau · **tự khai báo trên app** (vay & lãi vay, tài sản).
+Báo cáo: 1 Tổng quan · 2 Dòng tiền · 3 Bán hàng · 4 Khách hàng · 5 NCC · 6 Hàng hoá / tồn kho (3–6 từ Kiot) · 7 P&L ·
+8 Vay & lãi vay · 9 Tài sản · 10 Quản lý hoá đơn thuế · 11 Tồn kho sổ thuế. (Báo cáo "chi phí hoạt động" và "đầu tư & dự án" GPT thêm → anh bỏ.)
+Bỏ bước thủ công: Zalo báo điều chuyển → app tự báo · form thu ngoài → nhập thẳng app · tạo phiếu Kiot 4A → xem Kiot API có cho ghi không (CHƯA thử POST — phải hỏi anh trước khi ghi lên Kiot).
+Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 353 (có công nợ) · products 7.568 (tồn kho từng chi nhánh) · invoices · orders · purchaseorders · returns · transfers.
+
+| Giai đoạn | Việc | Trạng thái |
+|---|---|---|
+| A | Kéo Kiot mở rộng (bảng `kt_kiot_*`): khách, NCC, hàng hoá + tồn kho + giá vốn, hoá đơn + chi tiết, trả hàng, nhập hàng | **XONG 08/10** — nạp đầy đủ + 3 tiếng/lần chỉ phần sửa (`lastModifiedFrom`), ~26 giây/lần |
+| B | Báo cáo Bán hàng / Khách hàng / NCC / Hàng hoá-tồn kho (công nợ khách + NCC lấy số Kiot) | **XONG 08/10** (`supabase-schema-kt-bao-cao.sql`) |
+| C | Quỹ tiền mặt 3 cửa hàng (tab trong Dòng tiền) · P&L thực thu/thực chi · Vay & lãi vay · Tài sản | **XONG 08/10** — điều chuyển báo trên app: hiện chỉ có số đếm "chưa xác nhận" trên menu, CHƯA có thông báo đẩy |
+| D | Hoá đơn thuế + tồn kho sổ thuế 3 HKD (chờ anh API meInvoice / 3TShop) | chờ anh — trang "Hoá đơn & thuế" đang là trang chờ |
+
+**CÒN THIẾU sau 08/10** (đã báo anh trong chat): hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) · tạo phiếu Kiot tự động 4A (chưa thử GHI Kiot — cần anh cho phép)
+· thông báo điều chuyển (thay Zalo) · ảnh chứng từ (anh chưa chọn Supabase / Drive) · quyền "chỉ tạo đề nghị chi" cho nhân viên (hiện quyền sửa Chi = được duyệt + thanh toán)
+· tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (giá vốn bình quân ngày 08/10)
+· công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · giao diện điện thoại chưa kiểm · 23 câu Cần giải đáp chưa trả lời.
+
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
@@ -42,6 +63,9 @@ Nhóm câu hỏi: Số dư đầu kỳ (4) · Tiền mặt & Kiot (7) · Chi (3)
 - **Phạm vi dữ liệu: từ 01/09/2026** (anh chốt 05/10: "làm trước T9, dữ liệu t gửi là T9, kết hợp kiot").
 - **Kiot: luồng kéo RIÊNG** của app kế toán, KHÔNG dùng chung / nhờ MKT/Sale; **3 tiếng / lần** (anh chốt 05/10). Đã chạy: Edge Function `kt-kiot` + pg_cron `kt-kiot` (`47 */3 * * *` UTC), secrets `KT_*`. Luật Kiot → Thu ở `supabase-schema-kt-kiot.sql` + trang Logic.
 - **Khoá Supabase: dùng chung** khoá của project (anh chốt 05/10).
+- **Luồng mới 08/10 (mục 1B)** thay luồng cũ dựa Google Sheet. **3 nơi tồn kho sổ thuế = 3 hộ kinh doanh** Hiền Thủy · Chánh Tâm · Shidai.
+  **P&L tính theo THỰC THU / THỰC CHI**; hoá đơn và giá vốn là phần chính trong đó. **Không làm** báo cáo chi phí hoạt động, đầu tư & dự án (anh chốt 08/10).
+- **Ảnh chứng từ:** app lưu được (Supabase Storage riêng tư, tự nén) hoặc đẩy sang Google Drive qua Apps Script — anh CHƯA chọn.
 - **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
 - **Giao diện theo theme XERO cho TOÀN APP** (anh chốt 05/10): menu ngang xanh đậm, dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
 
@@ -52,6 +76,8 @@ Nhóm câu hỏi: Số dư đầu kỳ (4) · Tiền mặt & Kiot (7) · Chi (3)
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **08/10/2026 16:34** — Luồng mới (sơ đồ anh gửi, đã khớp ghi chú tay): kéo Kiot mở rộng (6 bảng `kt_kiot_*`, nạp đầy đủ: 353 NCC, 7.641 khách, 7.568 hàng, 669 HĐ, 38 trả, 57 nhập) + hàm `kt-kiot` chạy phần sửa 3 tiếng/lần. Báo cáo mới: Bán hàng, Khách hàng, NCC, Hàng hoá & tồn kho, P&L (thực thu/thực chi + tham chiếu Kiot), Quỹ tiền mặt 3 cửa hàng; nhập liệu Vay & lãi vay, Tài sản (khấu hao đường thẳng); trang chờ Hoá đơn & thuế. Menu: Tổng quan · Nghiệp vụ ▾ · Báo cáo ▾ · Cài đặt ▾; quyền theo module mới. Thêm 4 câu Cần giải đáp (23 câu). Lỗi tự sửa: nạp hàng hoá trùng dòng trong 1 lượt ghi (Kiot trả trùng khi phân trang) → bỏ trùng; nạp hoá đơn quá 150 giây vì thiếu "đến ngày" → thêm; bài kiểm thử cũ giả định ngày trống → đổi sang so trước/sau. Kiểm thử 32/32 + luồng mới 14/14.
 
 - **05/10/2026 11:41** — Tổng quan dạng biểu đồ (anh: "hiện đại, bảng biểu kiểu sơ đồ, thoáng"): bỏ 16 ô tài khoản → biểu đồ thanh 2 chiều quanh trục 0, tự ẩn TK số dư 0 không giao dịch (nút hiện lại), bấm dòng sang đối soát, ĐẶT DƯỚI CÙNG (anh chốt); bảng theo cơ sở → thanh đôi Thu / Chi + chênh lệch; bố cục 2 cột.
 
