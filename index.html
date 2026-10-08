@@ -329,7 +329,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='08/10/2026 16:34';
+const APP_VERSION='08/10/2026 16:49';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -466,7 +466,8 @@ const PAGES={
   thu:{ten:'Thu',nhom:'Nghiệp vụ',cd:'Thu – chi',fn:()=>pageThu()},
   chi:{ten:'Chi',nhom:'Nghiệp vụ',cd:'Thu – chi',fn:()=>pageChi()},
   dieu_chuyen:{ten:'Điều chuyển',nhom:'Nghiệp vụ',cd:'Thu – chi',fn:()=>pageDC()},
-  cong_no:{ten:'Công nợ (nhập tay)',nhom:'Nghiệp vụ',cd:'Theo dõi',fn:()=>pageCongNo()},
+  // Công nợ nhập tay (chuyển từ sheet): ẨN khỏi menu từ 08/10 — công nợ khách dùng số Kiot (Báo cáo → Khách hàng). Dữ liệu cũ giữ nguyên.
+  cong_no:{ten:'Công nợ (sheet cũ)',nhom:null,fn:()=>pageCongNo()},
   sap_tra:{ten:'Sắp phải trả',nhom:'Nghiệp vụ',cd:'Theo dõi',fn:()=>pageSapTra()},
   vay:{ten:'Vay & lãi vay',nhom:'Nghiệp vụ',cd:'Nhập liệu bổ sung',fn:()=>pageVay()},
   tai_san:{ten:'Tài sản',nhom:'Nghiệp vụ',cd:'Nhập liệu bổ sung',fn:()=>pageTaiSan()},
@@ -544,7 +545,7 @@ async function pageTongQuan(){
   const hbars=(list,tong)=>{const mx=Math.max(1,...list.map(x=>x.so_tien));return list.length?list.map(x=>`<div class="hbar" data-tip="${esc(x.loai)}|${fmt(x.so_tien)}|${pct(x.so_tien,tong)}${x.so_phieu?'|'+x.so_phieu+' phiếu':''}">
       <div class="lb" title="${esc(x.loai)}">${esc(x.loai)}${x.cach_chia==='ty_le_thu'?' <span class="badge">chung</span>':''}</div>
       <div class="tr"><div class="bar-fill" style="width:${Math.max(1,x.so_tien/mx*78)}%"></div><div class="v">${fmtN(x.so_tien)} <span>${pct(x.so_tien,tong)}</span></div></div></div>`).join(''):'<div class="empty">Chưa có</div>'};
-  const tuoi=b.no_tuoi||[],mxT=Math.max(1,...tuoi.map(x=>x.con_no)),tongNo=sumBy(b.cong_no,x=>x.con_no);
+  const cn=b.cong_no&&!Array.isArray(b.cong_no)?b.cong_no:{};   // công nợ khách = số Kiot (anh chốt 08/10)
   const ids=[...new Set([...b.thu_theo_dv,...b.chi_theo_dv].map(x=>x.don_vi_id))];
   const dvRows=ids.map(id=>({ten:id?(dv(id)||{}).ten||'#'+id:'Chưa phân bổ',thu:sumBy(b.thu_theo_dv.filter(x=>x.don_vi_id===id),x=>x.so_tien),
     chi:sumBy(b.chi_theo_dv.filter(x=>x.don_vi_id===id),x=>x.so_tien),tt:id?(dv(id)||{}).thu_tu||100:999})).filter(r=>r.thu||r.chi).sort((a,c)=>(c.thu+c.chi)-(a.thu+a.chi));
@@ -575,11 +576,10 @@ async function pageTongQuan(){
           <div class="bars"><div class="b1" style="width:${r.thu/mxDV*100}%"></div><div class="b2" style="width:${r.chi/mxDV*100}%"></div></div>
           <div class="vv"><span>${fmtN(r.thu)}</span><span>${fmtN(r.chi)}</span></div>
           <div class="cl ${r.thu-r.chi<0?'neg':'pos'}">${r.thu-r.chi<0?'':'+'}${fmtN(r.thu-r.chi)}</div></div>`).join('')||'<div class="empty">Chưa có</div>'}</div></div>
-      <div class="panel"><h4>Công nợ phải thu <span class="badge">${fmt(tongNo)}</span></h4><div class="chart-wrap">
-        ${tuoi.map(x=>`<div class="hbar" data-tip="${esc(x.nhom)}|${fmt(x.con_no)}|${x.so_khoan} khoản"><div class="lb">${esc(x.nhom)} <span class="muted">· ${x.so_khoan}</span></div>
-          <div class="tr"><div class="bar-fill" style="width:${Math.max(1,x.con_no/mxT*78)}%"></div><div class="v">${fmtN(x.con_no)}</div></div></div>`).join('')||'<div class="empty">Chưa có</div>'}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px">${b.cong_no.map(x=>`<span class="badge" style="cursor:pointer" onclick="S.f.no_pl='${x.phan_loai}';go('cong_no')">${esc(PL_NO[x.phan_loai]||x.phan_loai)} ${fmtN(x.con_no)}</span>`).join('')}</div>
-        <h4>Khách còn nợ nhiều nhất</h4>${b.top_no.slice(0,5).map(x=>`<div class="todo" style="cursor:default"><span>${esc(x.khach)}</span><span class="cnt">${fmt(x.con_no)}</span></div>`).join('')||'<div class="empty">Chưa có</div>'}</div></div>
+      <div class="panel"><h4>Công nợ khách <span class="badge">số Kiot hiện tại</span>${coXem('khach_hang')?`<button class="btn sm" style="margin-left:auto" onclick="go('khach_hang')">Xem tất cả</button>`:''}</h4>
+        <div class="todo" style="--c:var(--warn);cursor:default"><span class="dot"></span>Khách còn nợ · ${cn.so_khach_no||0} khách<span class="cnt">${fmt(cn.phai_thu)}</span></div>
+        <div class="todo" style="--c:var(--info);cursor:default"><span class="dot"></span>Khách trả trước · ${cn.so_tra_truoc||0} khách<span class="cnt">${fmt(cn.tra_truoc)}</span></div>
+        <h4 style="margin-top:14px">Khách còn nợ nhiều nhất</h4>${b.top_no.slice(0,6).map(x=>`<div class="todo" style="cursor:default"><span>${esc(x.khach)} <span class="muted" style="font-size:11px">${esc(x.ma||'')}</span></span><span class="cnt">${fmt(x.con_no)}</span></div>`).join('')||'<div class="empty">Chưa có</div>'}</div></div>
     ${b.sap_tra.length?`<div class="sec">Sắp phải trả <span class="badge">${fmt(sumBy(b.sap_tra,x=>x.so_tien))}</span></div><div class="card">${b.sap_tra.map(x=>`<div class="todo" style="padding:10px 16px" onclick="go('sap_tra')"><span>${esc(x.noi_dung)} <span class="muted">· ${x.han?(x.han<homNay()?'<span class="neg">quá hạn '+fmtD(x.han)+'</span>':'hạn '+fmtD(x.han)):'chưa có hạn'}</span></span><span class="cnt">${fmt(x.so_tien)}</span></div>`).join('')}</div>`:''}
     <div class="panel" style="margin-top:16px" id="so-du"></div>`;
   veThuChiNgay();veSoDu();bindTip();shellBadges();
@@ -1244,10 +1244,9 @@ const LOGIC=[
  ['Vay & lãi vay · Tài sản (nhập trên app)',[
   'Vay: nhập khoản vay (số tiền, lãi suất, đáo hạn) và các lần trả / lịch trả (gốc, lãi). Dư nợ = số vay − gốc đã trả. Tiền trả thật vẫn ghi ở trang Chi.',
   'Tài sản: khấu hao <b>đường thẳng theo tháng</b>: mỗi tháng = nguyên giá / số tháng khấu hao; giá trị còn lại = nguyên giá − khấu hao luỹ kế tới hôm nay.']],
- ['Công nợ',[
-  '<b>Còn nợ</b> = phát sinh − trả hàng − tổng các lần thu hồi.',
-  'Thu hồi nợ chỉ để theo dõi nợ. Tiền thực vào ghi ở Thu (hoặc tự từ Kiot) — không cộng 2 lần.',
-  'Phân loại: Đơn hàng COD · Đơn hàng nợ · Đơn hàng nợ NPP (chính sách riêng) · Đơn chờ xử lý · Đơn sẽ trả hàng.']],
+ ['Công nợ khách',[
+  '<b>Dùng số công nợ trên Kiot</b> (anh chốt 08/10/2026: "kiot là đủ"): dương = khách còn nợ, âm = khách trả trước. Là số <b>hiện tại</b>, tự cập nhật 3 tiếng 1 lần. Xem ở Tổng quan và Báo cáo → Khách hàng.',
+  'Trang công nợ nhập tay (chuyển từ sheet cũ, phân loại COD / nợ / nợ NPP...) đã ẩn khỏi menu, dữ liệu cũ giữ nguyên để tra lại; không nhập mới.']],
  ['Quyền và nhật ký',[
   'Đăng nhập bằng <b>tài khoản + mật khẩu</b> riêng của app kế toán (không dùng chung tài khoản app MKT/Sale). Mật khẩu lưu dạng băm, không ai đọc lại được. Sai 5 lần liền → khoá 15 phút.',
   'Phân quyền: tick <b>Toàn quyền</b>, hoặc tick từng trang — <b>Xem</b> và <b>Nhập / sửa</b> riêng (anh bỏ ô Vị trí 05/10/2026). Quyền kiểm ở máy chủ (hàm SQL), không chỉ ẩn nút trên trang.',

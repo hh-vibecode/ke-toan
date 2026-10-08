@@ -40,7 +40,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 **CÒN THIẾU sau 08/10** (đã báo anh trong chat): hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) · tạo phiếu Kiot tự động 4A (chưa thử GHI Kiot — cần anh cho phép)
 · thông báo điều chuyển (thay Zalo) · ảnh chứng từ (anh chưa chọn Supabase / Drive) · quyền "chỉ tạo đề nghị chi" cho nhân viên (hiện quyền sửa Chi = được duyệt + thanh toán)
 · tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (giá vốn bình quân ngày 08/10)
-· công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · giao diện điện thoại chưa kiểm · 15 câu Cần giải đáp chưa trả lời (08/10 Claude đóng 8 câu đã có căn cứ: quyết định anh + sơ đồ mới).
+· công nợ nhập tay vs Kiot (chờ quyết) · phát sinh sau 5/10 trên sheet chưa vào app · 14 câu Cần giải đáp chưa trả lời (08/10 Claude đóng 8 câu đã có căn cứ: quyết định anh + sơ đồ mới).
 
 ## 2. ĐANG NỢ
 
@@ -77,6 +77,8 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **08/10/2026 16:49** — Anh: tạm bỏ kiểm giao diện điện thoại; công nợ khách "kiot là đủ" → Tổng quan lấy số Kiot (khách còn nợ / trả trước / top nợ), ẩn trang công nợ nhập tay (giữ dữ liệu), sửa trang Logic, đóng câu hỏi (còn 14). Anh hỏi ảnh chứng từ "up lên app sau down về có tiện k" → đã trả lời trong chat, chờ anh gật.
 
 - **08/10/2026 16:34** — Luồng mới (sơ đồ anh gửi, đã khớp ghi chú tay): kéo Kiot mở rộng (6 bảng `kt_kiot_*`, nạp đầy đủ: 353 NCC, 7.641 khách, 7.568 hàng, 669 HĐ, 38 trả, 57 nhập) + hàm `kt-kiot` chạy phần sửa 3 tiếng/lần. Báo cáo mới: Bán hàng, Khách hàng, NCC, Hàng hoá & tồn kho, P&L (thực thu/thực chi + tham chiếu Kiot), Quỹ tiền mặt 3 cửa hàng; nhập liệu Vay & lãi vay, Tài sản (khấu hao đường thẳng); trang chờ Hoá đơn & thuế. Menu: Tổng quan · Nghiệp vụ ▾ · Báo cáo ▾ · Cài đặt ▾; quyền theo module mới. Thêm 4 câu Cần giải đáp (23 câu). Lỗi tự sửa: nạp hàng hoá trùng dòng trong 1 lượt ghi (Kiot trả trùng khi phân trang) → bỏ trùng; nạp hoá đơn quá 150 giây vì thiếu "đến ngày" → thêm; bài kiểm thử cũ giả định ngày trống → đổi sang so trước/sau. Kiểm thử 32/32 + luồng mới 14/14.
 

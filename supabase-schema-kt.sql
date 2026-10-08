@@ -726,10 +726,11 @@ begin
                      from (select don_vi_id, loai_ten, sum(so_tien) s from thu_ky group by 1, 2) x),
     'chi_theo_dv', (select coalesce(jsonb_agg(jsonb_build_object('don_vi_id', don_vi_id, 'loai', loai_ten, 'so_tien', s)), '[]')
                      from (select don_vi_id, loai_ten, sum(so_tien) s from chi_dv group by 1, 2) x),
-    'cong_no', (select coalesce(jsonb_agg(jsonb_build_object('phan_loai', phan_loai, 'con_no', s, 'so_khach', n)), '[]')
-                 from (select phan_loai, sum(con_no) s, count(*) n from cno where con_no <> 0 group by phan_loai) x),
-    'top_no', (select coalesce(jsonb_agg(jsonb_build_object('khach', khach, 'con_no', s) order by s desc), '[]')
-                from (select khach, sum(con_no) s from cno where con_no > 0 group by khach order by 2 desc limit 10) x),
+    -- Công nợ khách = SỐ KIOT (anh chốt 08/10: "kiot là đủ") — bỏ trang nhập tay khỏi báo cáo. Số Kiot là số HIỆN TẠI.
+    'cong_no', (select jsonb_build_object('phai_thu', coalesce(sum(cong_no) filter (where cong_no > 0), 0), 'so_khach_no', count(*) filter (where cong_no > 0),
+                  'tra_truoc', coalesce(-sum(cong_no) filter (where cong_no < 0), 0), 'so_tra_truoc', count(*) filter (where cong_no < 0)) from kt_kiot_khach),
+    'top_no', (select coalesce(jsonb_agg(jsonb_build_object('khach', ten, 'ma', ma, 'con_no', cong_no) order by cong_no desc), '[]')
+                from (select ten, ma, cong_no from kt_kiot_khach where cong_no > 0 order by cong_no desc limit 8) x),
     'dem', jsonb_build_object(
        'cho_duyet', (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_duyet'),
        'cho_tt',    (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_tt'),
@@ -752,6 +753,7 @@ begin
        'qua_han', count(*) filter (where han_tt < (now() at time zone 'Asia/Ho_Chi_Minh')::date),
        'qua_han_tien', coalesce(sum(so_tien) filter (where han_tt < (now() at time zone 'Asia/Ho_Chi_Minh')::date), 0))
        from kt_chi where not da_xoa and trang_thai in ('cho_duyet','cho_tt')),
+    -- (tuổi nợ theo trang nhập tay — KHÔNG còn hiện từ 08/10 vì công nợ dùng số Kiot; giữ để tra lại số sheet cũ)
     'no_tuoi', (select coalesce(jsonb_agg(jsonb_build_object('nhom', nhom, 'so_khoan', n, 'con_no', s) order by thu_tu), '[]') from (
        select case when p_den - ngay <= 30 then 'Dưới 30 ngày' when p_den - ngay <= 60 then '31–60 ngày'
                    when p_den - ngay <= 90 then '61–90 ngày' else 'Trên 90 ngày' end nhom,
