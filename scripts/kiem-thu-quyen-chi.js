@@ -16,8 +16,8 @@ const loi = async (f) => { try { await f(); return null; } catch (e) { return e.
     await sql(`delete from kt_nguoi_dung where ten_dang_nhap='${TK}'`);
     await sql(`insert into kt_nguoi_dung (ten_dang_nhap, ho_ten, vi_tri, quyen, mk_hash) values ('${TK}', '${TEN}', 'nhan_vien', '{chi_de_nghi}', extensions.crypt('${MK}', extensions.gen_salt('bf')))`);
     const NV = (await rpc('kt_dang_nhap', { p_tk: TK, p_mk: MK, p_nho: false })).phien;
-    const AD = (await rpc('kt_dang_nhap', { p_tk: 'hai', p_mk: K.KT_MK_HAI, p_nho: false })).phien;
-    const hai = (await sql(`select id from kt_nguoi_dung where ten_dang_nhap='hai'`))[0].id;
+    const AD = (await require('./tk-tam').taoTam('tam-quyen-chi', 'supreme', ['*'])).phien;   // chủ app tạm (09/10)
+    const hai = (await sql(`select id from kt_nguoi_dung where ten_dang_nhap='tam-quyen-chi'`))[0].id;   // người tạo điều chuyển = chủ app tạm
     const nv = (await sql(`select id from kt_nguoi_dung where ten_dang_nhap='${TK}'`))[0].id;
     // 1. nhân viên tạo đề nghị
     const id = await rpc('kt_luu_chi', { p_phien: NV, p_dong: { noi_dung: 'THU-NGHIEM quyền chi', so_tien: 12345, ngay_su_dung: '2026-10-08' } }); ids.push(id);
@@ -73,7 +73,8 @@ const loi = async (f) => { try { await f(); return null; } catch (e) { return e.
   finally {
     // dọn
     for (const id of ids) await sql(`delete from kt_thong_bao where bang='chi' and dong_id=${id}; delete from kt_chung_tu where bang='chi' and dong_id=${id}; delete from kt_nhat_ky where bang='kt_chi' and dong_id=${id}; delete from kt_chi where id=${id}`);
-    await sql(`delete from kt_chi where noi_dung like 'THU-NGHIEM%'; delete from kt_phien where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK}'); delete from kt_thong_bao where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK}'); delete from kt_nguoi_dung where ten_dang_nhap='${TK}'; delete from kt_phien where tao_luc > now() - interval '5 minutes'`);
+    await sql(`delete from kt_chi where noi_dung like 'THU-NGHIEM%'; delete from kt_phien where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK}'); delete from kt_thong_bao where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK}'); delete from kt_nguoi_dung where ten_dang_nhap='${TK}'`);
+    await require('./tk-tam').xoaTam('tam-quyen-chi');   // KHÔNG xoá phiên theo giờ nữa (09/10) — tránh đăng xuất người thật
     console.log(`\n${dat} đạt · ${truot} trượt (đã dọn tài khoản / phiếu / thông báo thử)`);
   }
 })();

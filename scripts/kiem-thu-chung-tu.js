@@ -6,7 +6,7 @@ const rpc = async (fn, a) => { const r = await fetch(`${SB}/rest/v1/rpc/${fn}`, 
 const fn = async b => { const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }); return { s: r.status, j: await r.json() }; };
 let ok = 0, loi = 0; const kq = (t, d, g) => { d ? ok++ : loi++; console.log((d ? 'ĐẠT ' : 'LỖI ') + t + (g ? ' — ' + g : '')); };
 (async () => {
-  const P = (await rpc('kt_dang_nhap', { p_tk: 'hai', p_mk: K.KT_MK_HAI, p_nho: false })).j.phien;
+  const TAM = await require('./tk-tam').taoTam('tam-chung-tu', 'supreme', ['*']); const P = TAM.phien;   // tài khoản tạm (09/10)
   const chiId = (await sql(`select id from kt_chi where not da_xoa order by id limit 1`))[0].id;
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
   const a = await fn({ phien: 'phien-gia', viec: 'tai_len', bang: 'chi', dong_id: chiId, ten: 'x.png' });
@@ -38,6 +38,6 @@ let ok = 0, loi = 0; const kq = (t, d, g) => { d ? ok++ : loi++; console.log((d 
   // dọn: xoá file thật + dòng + nhật ký thử
   await fetch(`${SB}/storage/v1/object/kt-chung-tu`, { method: 'DELETE', headers: { apikey: K.SERVICE_ROLE_KEY, Authorization: 'Bearer ' + K.SERVICE_ROLE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefixes: [u.j.duong_dan] }) });
   await sql(`delete from kt_chung_tu where ten_file like 'KIỂM THỬ%'; delete from kt_nhat_ky where bang='kt_chung_tu' and (du_lieu::text like '%KIỂM THỬ%' or dong_id=${g.j})`);
-  await rpc('kt_dang_xuat', { p_phien: P });
+  await rpc('kt_dang_xuat', { p_phien: P }); await require('./tk-tam').xoaTam('tam-chung-tu');
   console.log(`\nKẾT QUẢ: ${ok} đạt · ${loi} lỗi (đã xoá file + dữ liệu thử)`);
 })().catch(e => { console.error('DỪNG:', e.message); process.exit(1); });

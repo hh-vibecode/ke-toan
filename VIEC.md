@@ -37,11 +37,12 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | C | Quỹ tiền mặt 3 cửa hàng (tab trong Dòng tiền) · P&L thực thu/thực chi · Vay & lãi vay · Tài sản | **XONG 08/10** — điều chuyển báo bằng **chuông trong app** (17:32, thay Zalo; anh không cần đẩy về điện thoại) |
 | D | Hoá đơn thuế + tồn kho sổ thuế 3 HKD (chờ anh API meInvoice / 3TShop) | chờ anh — trang "Hoá đơn & thuế" đang là trang chờ |
 
-**CÒN THIẾU sau 08/10 17:32**: hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) — chờ anh
-· tạo phiếu Kiot tự động 4A: **KHÔNG làm được** — đã thử (anh cho phép) POST cashflow → 404, API Kiot công khai không có lệnh ghi sổ quỹ → 4A vẫn tạo tay trên Kiot
-· tách gốc / lãi trong chi tài chính (cần nhập khoản vay) · tồn kho tại ngày cuối kỳ (mới có tồn hiện tại) · giá vốn T9 gần đúng (đã đưa câu hỏi lên app)
-· 20 câu Cần giải đáp chưa trả lời · chưa thử chứng từ / chuông trên trình duyệt THẬT bằng tay (chỉ kiểm bằng mã + chụp màn hình).
-~~thông báo điều chuyển~~ ~~quyền chỉ tạo đề nghị chi~~ ~~phát sinh sau 5/10 trên sheet~~ ~~công nợ nhập tay vs Kiot~~ — xong 08/10.
+**CÒN THIẾU (cập nhật 09/10/2026)**: hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) — chờ anh
+· **chứng từ cũ trên Google Drive** (264 file / 133 phiếu; T9: 211 lượt file / 94 phiếu) — file Drive RIÊNG TƯ, cần anh mở quyền (mục 2 dòng 8)
+· tạo phiếu Kiot tự động 4A: KHÔNG làm được (API Kiot không có lệnh ghi sổ quỹ) → 4A tạo tay trên Kiot
+· tách gốc / lãi trong chi tài chính (cần kế toán nhập khoản vay) · giá vốn T9 gần đúng (câu hỏi trên app)
+· tồn kho cuối kỳ: CHỤP TỪ 09/10/2026 (bảng kt_ton_kho_ngay / kt_ton_kho_thang) — trước đó không lấy lại được; báo cáo chưa có màn hình xem lịch sử tồn
+· 18 câu Cần giải đáp (kế toán) · chưa thử chứng từ / chuông / duyệt 2 lượt trên trình duyệt THẬT bằng tay.
 
 ## 2. ĐANG NỢ
 
@@ -52,7 +53,9 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | 2b | ~~Quyền "chỉ được tạo đề nghị chi"~~ | **XONG 08/10** — quyền `chi_de_nghi` + `chi_duyet`; kiểm thử 16/16 (`scripts/kiem-thu-quyen-chi.js`). Chưa có tài khoản nhân viên thật nào (câu hỏi trên app) |
 | 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
 | 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10**, làm lại 17:32 cho gọn: kéo thả / Ctrl+V / chọn ngay lúc tạo phiếu, nén + tải ngầm có %, ghim giấy trên danh sách. Chưa thử chọn file thật trên trình duyệt bằng tay — anh thử giúp 1 phiếu |
-| 5 | Kế toán bổ sung 52 phiếu kéo bù (người đề nghị, chứng từ) | trang Chi → lọc nguồn "Kéo từ sheet cũ — cần bổ sung" |
+| 5 | Kế toán bổ sung 50 phiếu kéo bù (người đề nghị, chứng từ) — 09/10 ẩn 2 phiếu trùng #376 #377 | trang Chi → lọc nguồn "Kéo từ sheet cũ — cần bổ sung" |
+| 8 | Kéo chứng từ cũ từ Google Drive lên app (`scripts/keo-chung-tu-drive.js [T9|tat_ca] [ghi]`, chạy lại không trùng) | CHỜ ANH mở quyền thư mục Drive ("Bất kỳ ai có link" — tạm) → chạy T9 → kiểm → tất cả → anh khoá lại |
+| 9 | Tồn kho: lịch `kt-kiot-hang-dem` 23:20 kéo đầy đủ hàng hoá + `kt-ton-kho` 23:40 chụp (`scripts/trien-khai-ton-kho.js`) | theo dõi nhật ký `chup_ton_kho`; làm màn hình xem tồn theo ngày khi cần |
 | 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
 
@@ -92,6 +95,14 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **09/10/2026 chiều** — Làm các việc tự làm được:
+  (1) Nhật ký job Kiot ĐÃ ghi kết quả đề xuất chi (`du_lieu.so_quy.dong_bo.chi`) — hôm trước Claude tra sai chỗ, báo nhầm "chưa ghi".
+  (2) **Phát hiện tồn kho trên app CŨ**: Kiot không đổi "ngày sửa" sản phẩm khi bán / nhập → kéo 3 tiếng (chỉ phần sửa) bỏ sót; kiểm 7/15 mặt hàng lệch.
+      Kéo đầy đủ (68 giây) → 15/15 khớp. Thêm lịch kéo đầy đủ mỗi tối + chụp tồn kho cuối ngày / cuối tháng. Báo cáo Hàng hoá & giá vốn hoá đơn trước 09/10 có thể đã dùng số tồn / giá vốn cũ.
+  (3) Đối chiếu lại T9 (chi tiết `doi-chieu-T9.local.md` mục 6): tiền ra khớp sheet trừ 830.000 (2 phiếu thiếu TK chi). **Lỗi kéo bù 08/10: tạo trùng #376/#377**
+      (phí QLTK, ghép không xét ngày) → đã ẩn, sửa script. (4) Kiểm thử chuyển sang tài khoản TẠM (`scripts/tk-tam.js`), bỏ lệnh xoá phiên theo giờ: 33/14/12/16/20 đạt.
+  (5) Chứng từ cũ trên Drive: viết `scripts/keo-chung-tu-drive.js`, chạy thử T9 → 211/211 file đòi đăng nhập Google (riêng tư) → chờ anh mở quyền.
 
 - **09/10/2026** — Ghi 3 câu anh trả lời (TT luôn không cần GĐ · phiếu Kiot tự sinh qua 2 lượt · dọn file khoá), sửa trang Logic. Tài khoản anh hiển thị "Admin".
   **SỰ CỐ KHOÁ:** lúc soát cấu trúc file khoá, lệnh "che giá trị" (chỉ che chuỗi ≥14 ký tự) để lọt DB_PASSWORD (mật khẩu CSDL dùng chung) và 3 mật khẩu

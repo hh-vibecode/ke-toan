@@ -13,10 +13,10 @@ const TK_GD = 'thu-nghiem-gd', MK_GD = 'tn-' + Math.random().toString(36).slice(
 (async () => {
   const phien = [];
   try {
-    const KT = (await rpc('kt_dang_nhap', { p_tk: 'ketoan', p_mk: K.KT_MK_KETOAN, p_nho: false })).phien; phien.push(KT);
+    const KT = (await require('./tk-tam').taoTam('tam-ke-toan', 'admin', ['*'], 'THỬ NGHIỆM Kế toán')).phien; phien.push(KT);   // kế toán tạm (09/10)
     await sql(`delete from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'; insert into kt_nguoi_dung (ten_dang_nhap, ho_ten, vi_tri, quyen, mk_hash) values ('${TK_GD}', 'THỬ NGHIỆM GĐ', 'admin', '{*,chi_gd}', extensions.crypt('${MK_GD}', extensions.gen_salt('bf')))`);
     const GD = (await rpc('kt_dang_nhap', { p_tk: TK_GD, p_mk: MK_GD, p_nho: false })).phien; phien.push(GD);
-    const id = Object.fromEntries((await sql(`select ten_dang_nhap, id from kt_nguoi_dung where ten_dang_nhap in ('ketoan','${TK_GD}')`)).map(x => [x.ten_dang_nhap === 'ketoan' ? 'kt' : 'gd', x.id]));
+    const id = Object.fromEntries((await sql(`select ten_dang_nhap, id from kt_nguoi_dung where ten_dang_nhap in ('tam-ke-toan','${TK_GD}')`)).map(x => [x.ten_dang_nhap === 'tam-ke-toan' ? 'kt' : 'gd', x.id]));
     const tk = (await sql(`select id from kt_tai_khoan where hoat_dong order by id limit 1`))[0].id;
     const lc = (await sql(`select id from kt_loai where nhom='chi' and hoat_dong order by id limit 1`))[0].id;
     const tb = async (nd, chi) => (await sql(`select loai from kt_thong_bao where nguoi_dung_id=${nd} and bang='chi' and dong_id=${chi}`)).map(x => x.loai);
@@ -80,6 +80,7 @@ const TK_GD = 'thu-nghiem-gd', MK_GD = 'tn-' + Math.random().toString(36).slice(
       delete from kt_kiot_so_quy where id < 0`);
     await sql(`delete from kt_thong_bao where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'); delete from kt_phien where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'); delete from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'`);
     for (const P of phien) await rpc('kt_dang_xuat', { p_phien: P }).catch(() => {});
+    await require('./tk-tam').xoaTam('tam-ke-toan');
     const con = (await sql(`select (select count(*) from kt_chi where noi_dung like '%THU-NGHIEM%') chi, (select count(*) from kt_kiot_so_quy where id<0) sq`))[0];
     console.log(`\n${dat} đạt · ${truot} trượt · đã dọn (còn sót: chi ${con.chi}, sổ quỹ giả ${con.sq})`);
   }

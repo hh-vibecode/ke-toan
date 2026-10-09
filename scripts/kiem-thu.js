@@ -13,11 +13,12 @@ async function rpc(fn, args) {
   return { s: r.status, j, msg: j && j.message };
 }
 (async () => {
-  const MK = K.KT_MK_HAI; if (!MK || !ANON) throw new Error('thiếu KT_MK_HAI / ANON_KEY trong kt-keys.local.txt');
+  // Tài khoản TẠM (chủ app) thay tài khoản thật 'hai' — 09/10/2026, không cần mật khẩu thật
+  const TAM = await require('./tk-tam').taoTam('tam-kiem-thu', 'supreme', ['*']); const MK = TAM.mk; if (!ANON) throw new Error('thiếu ANON_KEY');
   // 1. Đăng nhập
-  const d1 = await rpc('kt_dang_nhap', { p_tk: 'hai', p_mk: MK + 'x', p_nho: false });
+  const d1 = await rpc('kt_dang_nhap', { p_tk: TAM.ten, p_mk: MK + 'x', p_nho: false });
   kq('sai mật khẩu bị từ chối', d1.s === 200 && d1.j && d1.j.loi, d1.j && d1.j.loi);
-  const d2 = await rpc('kt_dang_nhap', { p_tk: 'hai', p_mk: MK, p_nho: false });
+  const d2 = await rpc('kt_dang_nhap', { p_tk: TAM.ten, p_mk: MK, p_nho: false });
   kq('đăng nhập đúng', d2.s === 200 && d2.j && d2.j.phien, d2.j && d2.j.toi && d2.j.toi.vi_tri);
   const P = d2.j.phien;
   // 2. Chặn
@@ -85,7 +86,7 @@ async function rpc(fn, args) {
   const k = await rpc('kt_dang_nhap', { p_tk: 'kiemthu.nv', p_mk: 'KiemThu-12345', p_nho: false });
   kq('sai 5 lần → khoá dù mật khẩu đúng', k.j && k.j.loi && /khoá/.test(k.j.loi), k.j && k.j.loi);
   // 7. Đăng xuất
-  await rpc('kt_dang_xuat', { p_phien: P });
+  await rpc('kt_dang_xuat', { p_phien: P }); await rpc('kt_dang_xuat', { p_phien: TAM.phien });
   kq('đăng xuất xong phiên hết hiệu lực', (await rpc('kt_danh_muc', { p_phien: P })).s === 403);
   // Dọn dữ liệu thử (cả thông báo chuông mà phiếu thử sinh ra — thêm 08/10)
   await sql(`delete from kt_thong_bao where (bang = 'chi' and dong_id in (select id from kt_chi where nguoi_de_nghi = 'KIỂM THỬ'))
@@ -97,5 +98,6 @@ async function rpc(fn, args) {
     select (select count(*) from a) thu, (select count(*) from b) chi, (select count(*) from c) dc`);
   await sql(`delete from kt_nguoi_dung where ten_dang_nhap = 'kiemthu.nv'; delete from kt_nhat_ky where nguoi = 'KIỂM THỬ' or du_lieu::text like '%KIỂM THỬ%' or du_lieu::text like '%kiemthu.nv%'`);
   console.log('Đã xoá dữ liệu thử:', JSON.stringify(don[0]));
+  await require('./tk-tam').xoaTam('tam-kiem-thu');
   console.log(`\nKẾT QUẢ: ${ok} đạt · ${sai} lỗi`);
 })().catch(e => { console.error('DỪNG:', e.message); process.exit(1); });
