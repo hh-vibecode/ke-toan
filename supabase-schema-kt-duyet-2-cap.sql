@@ -8,7 +8,8 @@
 --   cho_gd  --giám đốc xác nhận lượt 2-->  cho_tt (chờ thanh toán)  --kế toán-->  da_tt
 --   Từ chối được ở lượt 1 / lượt 2; giám đốc có thể "trả lại" về cho kế toán kiểm lại; kế toán mở lại phiếu đã từ chối.
 --   Người đã kiểm lượt 1 KHÔNG tự xác nhận lượt 2 (2 người khác nhau).
---   "Đã thanh toán luôn" (kế toán tự chi, không qua duyệt) GIỮ như cũ — đang hỏi anh trên app có cần giám đốc xác nhận không.
+--   "Đã thanh toán luôn" (kế toán tự chi, không qua duyệt) GIỮ — anh chốt 09/10: không cần giám đốc xác nhận.
+--   Phiếu Kiot tự sinh (TTTH trả hàng, PCPN trả NCC lúc nhập) cũng qua đủ 2 lượt — anh chốt 09/10.
 --   Phiếu đã được giám đốc xác nhận: chỉ người có quyền giám đốc mới đổi được SỐ TIỀN.
 -- Quyền:
 --   chi_duyet = kế toán kiểm lượt 1 + thanh toán (Admin / Supreme luôn có).

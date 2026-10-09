@@ -361,7 +361,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='09/10/2026 13:48';
+const APP_VERSION='09/10/2026 14:02';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -1473,7 +1473,8 @@ const LOGIC=[
   'Phiếu từ Kiot: lấy phiếu CHI trên sổ quỹ Kiot từ 08/10/2026, bỏ chuyển quỹ nội bộ (nhóm "Chuyển rút", mã TTD_ / CTD_, nội dung có số tài khoản công ty). Người đề nghị = người tạo trên Kiot, cơ sở = chi nhánh Kiot, tài khoản gợi ý: tiền mặt → két, chuyển khoản → tài khoản Kiot đã ghép. Kiot không có trạng thái "chờ duyệt" (phiếu Kiot luôn ghi Đã thanh toán) — app là nơi duyệt.',
   'Chống tính 2 lần: phiếu app đã đánh dấu "Đã tạo phiếu Kiot (4A)" cùng số tiền, lệch ≤ 5 ngày → GHÉP, không tạo phiếu mới. Cùng số tiền ±5 ngày với phiếu app khác → vẫn tạo nhưng gắn nhãn đỏ <b>"Nghi trùng #…"</b> để kế toán Từ chối nếu là cùng 1 khoản.',
   'Phiếu Kiot bị huỷ → phiếu app chưa thanh toán tự chuyển Từ chối. Phiếu Kiot sửa số tiền khi app còn chờ kế toán kiểm (chưa ai sửa) → cập nhật theo. Báo cáo tiền chỉ cộng phiếu Đã thanh toán.',
-  '"Đã thanh toán luôn" (kế toán tự chi, không qua duyệt) vẫn giữ — đang hỏi anh trên trang Cần giải đáp.']],
+  '"Đã thanh toán luôn" (kế toán tự chi, không qua duyệt) — anh chốt 09/10/2026: KHÔNG cần giám đốc xác nhận.',
+  'Phiếu chi Kiot tự sinh khi trả hàng (TTTH) / trả NCC lúc nhập hàng (PCPN) cũng qua đủ 2 lượt (anh chốt 09/10/2026).']],
  ['Chuông thông báo',[
   'Chuông trên thanh menu (thay báo Zalo, không đẩy về điện thoại — anh chốt 08/10/2026). Số đỏ = chưa đọc, tự cập nhật mỗi phút khi đang mở app. Bấm 1 thông báo → mở đúng phiếu.',
   'Chi: phiếu mới / từ Kiot / mở lại → kế toán. Kế toán xác nhận lượt 1 → giám đốc. Giám đốc xác nhận → kế toán (thanh toán) + người tạo phiếu. Giám đốc trả lại → kế toán. Đã thanh toán / bị từ chối → người tạo (và người đã kiểm). Nhiều đề xuất Kiot cùng lúc gộp 1 thông báo.',

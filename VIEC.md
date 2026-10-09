@@ -76,6 +76,9 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
   Quyền `chi_duyet` = kế toán kiểm + thanh toán (Admin có); `chi_gd` = giám đốc xác nhận — KHÔNG đi theo Admin, chỉ Supreme cấp / bỏ và đặt lại mật khẩu
   tài khoản có `chi_gd`. `chi_de_nghi` (nhân viên tạo trên app) giữ nhưng KHÔNG dùng — anh: "nhân viên m quan tâm làm gì". SQL: `supabase-schema-kt-duyet-2-cap.sql`.
   Phiếu chi Kiot trước 08/10 KHÔNG kéo. Chống trùng: ghép phiếu app đánh dấu 4A cùng số tiền ±5 ngày; trùng khác → nhãn "Nghi trùng".
+  Anh chốt 09/10: "Đã thanh toán luôn" KHÔNG cần giám đốc xác nhận · phiếu Kiot tự sinh (TTTH trả hàng, PCPN trả NCC) CÓ qua đủ 2 lượt.
+- **File khoá `kt-keys.local.txt` chỉ chứa khoá app kế toán** (anh chốt 09/10, đã dọn: bỏ Pancake / Meta / OpenAI / mật khẩu CSDL / link app MKT).
+  Sửa file khoá bằng script theo tên dòng, KHÔNG in nội dung kể cả đã che (sự cố 09/10).
 - **Thông báo = chuông TRONG APP kiểu Facebook**, KHÔNG đẩy về điện thoại (anh chốt 08/10). Bảng `kt_thong_bao`, hàm lưu tự sinh (`supabase-schema-kt-thong-bao.sql`).
 - **Ảnh chứng từ: gọn nhất cho người up** (anh 08/10): nén + tải ngầm, bấm lại xem ngay. Kiot KHÔNG cho ghi phiếu thu/chi qua API (đã thử 08/10) → 4A tạo tay.
 - **Phát sinh còn trên sheet cũ: kéo tạm vào, gắn thẻ "Kéo từ sheet cũ"**, kế toán điền dần (anh chốt 08/10).
@@ -89,6 +92,11 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **09/10/2026** — Ghi 3 câu anh trả lời (TT luôn không cần GĐ · phiếu Kiot tự sinh qua 2 lượt · dọn file khoá), sửa trang Logic. Tài khoản anh hiển thị "Admin".
+  **SỰ CỐ KHOÁ:** lúc soát cấu trúc file khoá, lệnh "che giá trị" (chỉ che chuỗi ≥14 ký tự) để lọt DB_PASSWORD (mật khẩu CSDL dùng chung) và 3 mật khẩu
+  app hai / giamdoc / ketoan ra kết quả lệnh trên máy (nhật ký phiên Claude) — KHÔNG dán vào chat, không commit. Đã báo anh; đề nghị đổi mật khẩu hai + ketoan
+  trong app; mật khẩu CSDL là cài đặt dùng chung → anh quyết (đổi sẽ ảnh hưởng app MKT nếu app đó dùng).
 
 - **08/10/2026 tối** — (1) **Sự cố màn hình đen** ở Tổng quan từ bản 17:02: khung xem ảnh chứng từ đặt tên lớp `.lb` trùng nhãn biểu đồ số dư
   → mỗi nhãn thành lớp đen phủ màn hình. Em chỉ chụp kiểm trang Chi nên không bắt được. Sửa 17:50 (đổi `.ct-lb`). Bài học: chụp kiểm cả Tổng quan sau mỗi lần đổi CSS.
