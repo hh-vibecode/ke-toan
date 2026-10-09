@@ -231,6 +231,10 @@ begin
       r.tk_id, 'cho_duyet', 'kiot', 'kiot:' || r.id, 'Kiot (tự kéo)', r.id, r.ma, 'da_tao', v_nghi)
     returning id into v_id;
     v_them := v_them + 1; v_ids := v_ids || v_id;
+    if v_nghi is not null then   -- anh 09/10: mục kiểm tra lỗi riêng cho phiếu nghi trùng
+      perform kt_bao(kt_ai_ke_toan(null), 'Kiot (tự kéo)', 'chi_trung', 'Nghi trùng: phiếu Kiot ' || r.ma || ' cùng số tiền với ' || v_nghi,
+        coalesce(nullif(trim(r.nguoi), ''), 'Kiot') || ': ' || replace(to_char(r.tien, 'FM999G999G999G999'), ',', '.') || ' đ — bấm để gộp hoặc xác nhận 2 khoản khác nhau', 'chi', v_id);
+    end if;
     if v_them <= 3 then v_ds := v_ds || (coalesce(nullif(trim(r.nguoi), ''), 'Kiot') || ': ' || replace(to_char(r.tien, 'FM999G999G999G999'), ',', '.') || ' đ'); end if;
   end loop;
   if v_them > 0 then
@@ -317,6 +321,7 @@ begin
     'dem', jsonb_build_object(
        'cho_duyet', (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_duyet'),
        'cho_gd',    (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_gd'),
+       'nghi_trung', (select count(*) from kt_chi where not da_xoa and nghi_trung is not null and trang_thai <> 'tu_choi'),
        'cho_tt',    (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_tt'),
        'hd_do_chua_nhan', (select count(*) from kt_chi where not da_xoa and trang_thai = 'da_tt' and co_hd_do and not hd_do_nhan),
        'dc_chua_xac_nhan', (select count(*) from kt_dieu_chuyen where not da_xoa and not da_xac_nhan),
@@ -402,3 +407,34 @@ begin
   return v_id;
 end $function$
 ;
+
+-- Xử lý phiếu NGHI TRÙNG (anh chốt 09/10/2026: "tạo mục check lỗi riêng, có thể gộp hoặc xác định là 2 cái khác nhau"):
+--   p_gop_vao = id phiếu app trùng → GỘP: ẩn phiếu Kiot, chuyển phiếu Kiot + chứng từ sang phiếu gốc (lần kéo Kiot sau nhận ra, không tạo lại)
+--   p_gop_vao = null → 2 KHOẢN KHÁC NHAU: bỏ nhãn nghi trùng, ghi chú ai xác nhận. Quyền: kế toán (chi_duyet).
+create or replace function public.kt_xu_ly_trung(p_phien text, p_id bigint, p_gop_vao bigint default null) returns void
+language plpgsql security definer set search_path = public as $$
+declare u kt_nguoi_dung; c kt_chi; g kt_chi;
+begin
+  u := kt_chan(p_phien, 'chi_duyet');
+  select * into c from kt_chi where id = p_id and not da_xoa;
+  if c.id is null or c.nghi_trung is null then raise exception 'Phiếu % không có nhãn nghi trùng', p_id; end if;
+  if p_gop_vao is null then
+    update kt_chi set nghi_trung = null, ghi_chu = concat_ws(' ', ghi_chu, '[Đã kiểm: KHÔNG trùng ' || c.nghi_trung || ' — ' || u.ho_ten || ']') where id = p_id;
+    perform kt_ghi_nhat_ky(u.ho_ten, 'kt_chi', p_id, 'khong_trung', jsonb_build_object('nghi_trung', c.nghi_trung));
+  else
+    if not (('#' || p_gop_vao) = any(string_to_array(replace(c.nghi_trung, ' ', ''), ','))) then
+      raise exception 'Phiếu #% không nằm trong danh sách nghi trùng (%)', p_gop_vao, c.nghi_trung; end if;
+    if c.trang_thai in ('cho_tt','da_tt') then raise exception 'Phiếu đã được giám đốc xác nhận / thanh toán — không gộp được'; end if;
+    select * into g from kt_chi where id = p_gop_vao and not da_xoa;
+    if g.id is null then raise exception 'Không tìm thấy phiếu #%', p_gop_vao; end if;
+    if g.kiot_so_quy_id is not null then raise exception 'Phiếu #% đã gắn phiếu Kiot % rồi', p_gop_vao, g.kiot_ma; end if;
+    update kt_chi set da_xoa = true, kiot_so_quy_id = null, nghi_trung = null, sua_boi = u.ho_ten, sua_luc = now(),
+      ghi_chu = concat_ws(' ', ghi_chu, '[Gộp vào #' || p_gop_vao || ' — trùng — ' || u.ho_ten || ']') where id = p_id;
+    update kt_chi set kiot_so_quy_id = c.kiot_so_quy_id, kiot_ma = c.kiot_ma, kiot = 'da_tao' where id = p_gop_vao;
+    update kt_chung_tu set dong_id = p_gop_vao where bang = 'chi' and dong_id = p_id and not da_xoa;
+    perform kt_ghi_nhat_ky(u.ho_ten, 'kt_chi', p_id, 'gop_trung', jsonb_build_object('gop_vao', p_gop_vao, 'kiot_ma', c.kiot_ma));
+  end if;
+  update kt_thong_bao set da_doc = true where bang = 'chi' and dong_id = p_id and loai = 'chi_trung';
+end $$;
+revoke execute on function public.kt_xu_ly_trung(text, bigint, bigint) from public;
+grant execute on function public.kt_xu_ly_trung(text, bigint, bigint) to anon, authenticated;

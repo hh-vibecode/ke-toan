@@ -67,16 +67,30 @@ const TK_GD = 'thu-nghiem-gd', MK_GD = 'tn-' + Math.random().toString(36).slice(
     kq('Phiếu Kiot trùng số tiền phiếu app khác → gắn "nghi trùng"', (m.find(x => x.k == -903)?.nghi_trung || '').includes('#' + c9), m.find(x => x.k == -903)?.nghi_trung);
     kq('Kế toán nhận 1 thông báo gộp', (await sql(`select count(*)::int n from kt_thong_bao where nguoi_dung_id=${id.kt} and loai='chi_kiot' and tao_luc > now() - interval '2 minutes'`))[0].n === 1);
     kq('Chạy lại không nhân đôi', ((await sql(`select kt_dong_bo_kiot_chi(current_date - 1) r`))[0].r).them === 0);
+    // 10. Nghi trùng (anh 09/10): thông báo riêng · gộp · 2 khoản khác nhau
+    const t903 = (await sql(`select id from kt_chi where kiot_so_quy_id = -903`))[0].id;
+    kq('Phiếu nghi trùng có thông báo riêng cho kế toán', (await tb(id.kt, t903)).includes('chi_trung'));
+    await rpc('kt_xu_ly_trung', { p_phien: KT, p_id: t903, p_gop_vao: c9 });
+    const g = (await sql(`select (select da_xoa from kt_chi where id = ${t903}) an, (select kiot_so_quy_id from kt_chi where id = ${c9}) sq`))[0];
+    kq('Gộp: phiếu Kiot ẩn, phiếu gốc nhận phiếu Kiot', g.an === true && +g.sq === -903);
+    kq('Gộp xong chạy lại Kiot không tạo lại', ((await sql(`select kt_dong_bo_kiot_chi(current_date - 1) r`))[0].r).them === 0);
+    await sql(`insert into kt_kiot_so_quy (id, ma, ngay, chi_nhanh, la_thu, so_tien, phuong_thuc, tai_khoan, doi_tac, nhom, noi_dung, chung_tu_goc, trang_thai, goc, sua_luc_kiot, keo_luc)
+      values ${kiot(-905, 44411, 'Tiền trả NCC')}`);
+    await sql(`select kt_dong_bo_kiot_chi(current_date - 1)`);
+    const t905 = (await sql(`select id, nghi_trung from kt_chi where kiot_so_quy_id = -905`))[0];
+    await rpc('kt_xu_ly_trung', { p_phien: KT, p_id: t905.id, p_gop_vao: null });
+    kq('"2 khoản khác nhau": bỏ nhãn nghi trùng, phiếu vẫn còn', !!t905.nghi_trung && (await sql(`select nghi_trung, da_xoa from kt_chi where id = ${t905.id}`))[0].nghi_trung === null);
+    kq('Gộp vào phiếu không nằm trong danh sách → chặn', !!await loi(() => rpc('kt_xu_ly_trung', { p_phien: KT, p_id: (m.find(x => x.k == -901) || {}).id, p_gop_vao: c1 })));
     await sql(`update kt_kiot_so_quy set trang_thai='1' where id=-901`);
     await sql(`select kt_dong_bo_kiot_chi(current_date - 1)`);
     kq('Phiếu Kiot bị huỷ → phiếu app tự "Từ chối"', (await sql(`select trang_thai from kt_chi where kiot_so_quy_id=-901`))[0].trang_thai === 'tu_choi');
     kq('Báo cáo không cộng phiếu chưa thanh toán', (await sql(`select count(*)::int n from kt_v_bien_dong where kieu='chi' and ra in (33311,44411)`))[0].n === 0);
   } catch (x) { truot++; console.log('  DỪNG: ' + x.message); }
   finally {
-    await sql(`delete from kt_thong_bao where bang='chi' and dong_id in (select id from kt_chi where noi_dung like 'THU-NGHIEM%' or kiot_so_quy_id < 0);
+    await sql(`delete from kt_thong_bao where bang='chi' and dong_id in (select id from kt_chi where noi_dung like '%THU-NGHIEM%' or kiot_so_quy_id < 0);
       delete from kt_thong_bao where loai='chi_kiot' and noi_dung like 'Thử Nghiệm Kiot%';
-      delete from kt_nhat_ky where bang='kt_chi' and dong_id in (select id from kt_chi where noi_dung like 'THU-NGHIEM%' or kiot_so_quy_id < 0);
-      delete from kt_chi where noi_dung like 'THU-NGHIEM%' or kiot_so_quy_id < 0 or noi_dung like '%THU-NGHIEM kiot%';
+      delete from kt_nhat_ky where bang='kt_chi' and dong_id in (select id from kt_chi where noi_dung like '%THU-NGHIEM%' or kiot_so_quy_id < 0);
+      delete from kt_chi where noi_dung like '%THU-NGHIEM%' or kiot_so_quy_id < 0 or noi_dung like '%THU-NGHIEM kiot%';
       delete from kt_kiot_so_quy where id < 0`);
     await sql(`delete from kt_thong_bao where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'); delete from kt_phien where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'); delete from kt_nguoi_dung where ten_dang_nhap='${TK_GD}'`);
     for (const P of phien) await rpc('kt_dang_xuat', { p_phien: P }).catch(() => {});

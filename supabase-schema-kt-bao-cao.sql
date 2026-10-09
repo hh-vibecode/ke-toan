@@ -215,6 +215,9 @@ begin
     'tong_ncc', (select count(*) from kt_kiot_ncc where hoat_dong),
     'nhap', (select coalesce(sum(tong),0) from nh), 'so_phieu', (select count(*) from nh), 'da_tra', (select coalesce(sum(da_tra),0) from nh),
     'cong_no_tong', (select coalesce(sum(cong_no),0) from kt_kiot_ncc),
+    -- anh chốt 09/10/2026: công nợ NCC trên Kiot DƯƠNG = mình nợ NCC; ÂM = NCC nợ mình / mình trả trước
+    'no_phai_tra', (select coalesce(sum(cong_no),0) from kt_kiot_ncc where cong_no > 0), 'so_ncc_no', (select count(*) from kt_kiot_ncc where cong_no > 0),
+    'tra_truoc', (select coalesce(-sum(cong_no),0) from kt_kiot_ncc where cong_no < 0), 'so_ncc_tra_truoc', (select count(*) from kt_kiot_ncc where cong_no < 0),
     'theo_ncc', (select coalesce(jsonb_agg(jsonb_build_object('ncc', ncc_ten, 'ma', ncc_ma, 'nhap', s, 'so', n, 'da_tra', dt,
         'no', (select cong_no from kt_kiot_ncc c where c.id = x.ncc_id)) order by s desc), '[]')
        from (select ncc_id, max(ncc_ten) ncc_ten, max(ncc_ma) ncc_ma, sum(tong) s, count(*) n, sum(da_tra) dt from nh group by 1) x),

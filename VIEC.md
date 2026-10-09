@@ -96,6 +96,14 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **09/10/2026 tối** — (1) Đăng nhập Drive anh qua **rclone** (chỉ đọc, `%USERPROFILE%\tools\rclone`, remote `ktdrive:` — anh cho phép; lưu ý: client_id dùng chung của rclone sẽ bị Google dừng trong 2026 → khi lỗi thì tạo client_id riêng).
+  Kéo chứng từ T9: 194 file / 93 phiếu (169 MB, 80 UNC, 53 PDF); 14 file không phải ảnh/PDF + 2 lỗi → giữ link gốc. Tháng khác: chạy `keo-chung-tu-drive.js tat_ca ghi`.
+  (2) Bỏ nút "Chứng từ kỳ (.zip)" (anh: cần file nào vào phiếu tải). (3) Anh trả lời 6 câu trên app: két +6.923.000 vào tồn đầu 01/09 (37.067.000);
+  công nợ NCC Kiot DƯƠNG = mình nợ NCC (trang NCC tách 2 chiều); **mục Nghi trùng** (tab Chi + Việc cần làm + chuông `chi_trung` + hàm `kt_xu_ly_trung` gộp / khác nhau) — test 25/25.
+  (4) Kiểm dữ liệu cả năm 2026 (anh muốn xử lý full 2026): sheet đề nghị có tab T1–T8 (đủ ngày TT + TK chi; T1–T4 KHÔNG có loại chi);
+  file dòng tiền: DATA THU chỉ T9, DATA CHI/ĐIỀU CHUYỂN + TH THU-CHI (thu ngoài Kiot) từ T5. Thiếu: số dư 01/01, thu ngoài Kiot T1–4, điều chuyển T1–4 → 4 câu trên app.
+  Chờ anh đồng ý để nhập T5–T8 (Kiot từ 01/01 + chi + thu ngoài Kiot + điều chuyển) rồi đối chiếu từng tháng. Hỏi MISA AppID cho API meInvoice (anh lo).
+
 - **09/10/2026 chiều** — Làm các việc tự làm được:
   (1) Nhật ký job Kiot ĐÃ ghi kết quả đề xuất chi (`du_lieu.so_quy.dong_bo.chi`) — hôm trước Claude tra sai chỗ, báo nhầm "chưa ghi".
   (2) **Phát hiện tồn kho trên app CŨ**: Kiot không đổi "ngày sửa" sản phẩm khi bán / nhập → kéo 3 tiếng (chỉ phần sửa) bỏ sót; kiểm 7/15 mặt hàng lệch.
