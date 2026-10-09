@@ -361,7 +361,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='09/10/2026 14:02';
+const APP_VERSION='09/10/2026 14:48';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -721,7 +721,7 @@ async function pageThu(){
   const l=ds.filter(x=>(!f.thu_loai||x.loai_id==f.thu_loai)&&(!f.thu_dv||x.don_vi_id==f.thu_dv)&&(!f.thu_tk||x.tai_khoan_id==f.thu_tk)
     &&(!f.thu_nguon||x.nguon===f.thu_nguon)&&(!q||(x.noi_dung+' '+(x.ghi_chu||'')).toLowerCase().includes(q)));
   const sel=(k,list,trong)=>`<select class="sel ${f[k]?'on':''}" onchange="S.f.${k}=this.value;render()">${opts(list,f[k],trong)}</select>`;
-  el.innerHTML=head('Thu',kyBar()+'<button class="btn" onclick="taiCTKy()" title="Tải mọi ảnh / PDF chứng từ của kỳ đang chọn">⬇ Chứng từ kỳ (.zip)</button>'+(coGhi()?'<button class="btn pri" onclick="formThu()">+ Thêm khoản thu</button>':''))+
+  el.innerHTML=head('Thu',kyBar()+(coGhi()?'<button class="btn pri" onclick="formThu()">+ Thêm khoản thu</button>':''))+
     `<div class="bar">${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Mọi loại thu')}${sel('thu_dv',S.dm.don_vi.filter(x=>x.la_co_so),'Mọi cơ sở')}
       ${sel('thu_tk',S.dm.tai_khoan,'Mọi tài khoản')}<select class="sel ${f.thu_nguon?'on':''}" onchange="S.f.thu_nguon=this.value;render()"><option value="">Mọi nguồn</option>${optsObj({tay:'Nhập',kiot:'Kiot',sheet_cu:'Sheet cũ'},f.thu_nguon)}</select>
       <input type="search" class="sel" placeholder="Tìm nội dung" value="${esc(f.thu_q||'')}" onchange="S.f.thu_q=this.value;render()">
@@ -777,7 +777,7 @@ async function pageChi(){
     &&(!f.chi_bp||x.bo_phan_id==f.chi_bp)&&(!f.chi_nguon||(f.chi_nguon==='bo_sung'?canBS(x):x.nguon===f.chi_nguon))&&(!f.chi_dv||(x.phan_bo||[]).some(p=>p.don_vi_id==f.chi_dv))
     &&(!q||[x.noi_dung,x.nguoi_de_nghi,x.thu_huong_ten,x.ghi_chu].join(' ').toLowerCase().includes(q)));
   const sel=(k,list,trong)=>`<select class="sel ${f[k]?'on':''}" onchange="S.f.${k}=this.value;render()">${opts(list,f[k],trong)}</select>`;
-  el.innerHTML=head('Chi',kyBar()+'<button class="btn" onclick="taiCTKy()" title="Tải mọi ảnh / PDF chứng từ của kỳ đang chọn">⬇ Chứng từ kỳ (.zip)</button>'+(chiTao()?'<button class="btn pri" onclick="formChi()">+ Đề nghị chi</button>':''))+
+  el.innerHTML=head('Chi',kyBar()+(chiTao()?'<button class="btn pri" onclick="formChi()">+ Đề nghị chi</button>':''))+
     `<div class="tabs">${Object.keys(nhan).map(k=>`<button class="btn tab2 ${f.chi_tt===k?'on':''}" style="--c:var(--${MAU_TAB[k]})" onclick="S.f.chi_tt='${k}';render()"><span>${nhan[k]}<span class="cnt">${ds.filter(loc[k]).length}</span></span><small>${fmtN(sumBy(ds.filter(loc[k]),x=>x.so_tien))}</small></button>`).join('')}</div>
     <div class="bar">${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Mọi loại chi')}${sel('chi_dv',S.dm.don_vi.filter(x=>x.la_co_so),'Mọi đơn vị chịu CP')}
       ${sel('chi_bp',S.dm.don_vi.filter(x=>x.la_bo_phan),'Mọi bộ phận')}${sel('chi_tk',S.dm.tai_khoan,'Mọi TK chi')}${sel('chi_nguon',[{id:'kiot',ten:'Đề xuất từ Kiot'},{id:'bo_sung',ten:'Kéo từ sheet cũ — cần bổ sung'},{id:'app',ten:'Nhập trên app'},{id:'sheet_cu',ten:'Sheet cũ (cả T9 đã đối chiếu)'}],'Mọi nguồn')}
@@ -1318,16 +1318,7 @@ function xemCT(bang,id,ctId){const ds=S.cache['ct_'+bang+id]||[];let i=ds.findIn
       <div class="ct-lb-body">${anh?`<img src="${esc(x.url)}">`:`<iframe src="${esc(x.url)}"></iframe>`}</div>`};
   ve();lb.onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.k){i=(i+ +b.dataset.k+ds.length)%ds.length;ve()}else if(b&&b.dataset.t)taiVeCT([ds[i].id]);
     else if((b&&b.dataset.x)||e.target===lb||e.target.classList.contains('ct-lb-body'))lb.remove()};}
-// Tải chứng từ cả kỳ đang chọn thành 1 file .zip (thư mục theo Thu / Chi / Điều chuyển)
-async function taiCTKy(){
-  try{const ds=await rpc('kt_ds_chung_tu_ky',{p_tu:S.tu,p_den:S.den});if(!ds.length)return alert('Kỳ này chưa có chứng từ nào trên app');
-    if(!window.JSZip)await new Promise((ok,loi)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=ok;s.onerror=()=>loi(new Error('Không tải được thư viện nén'));document.head.appendChild(s)});
-    const zip=new JSZip();let n=0;
-    for(let i=0;i<ds.length;i+=100){const part=ds.slice(i,i+100);const {ds:urls}=await ctFn({viec:'xem',ids:part.map(x=>x.id)});
-      for(const x of part){const u=(urls.find(y=>y.id===x.id)||{}).url;if(!u)continue;toast(`Đang gom ${++n}/${ds.length}…`);
-        const b=await (await fetch(u)).blob();zip.folder(TEN_BANG[x.bang]||x.bang).file(`${x.ngay}_${TEN_BANG[x.bang]}-${x.dong_id}_${x.ten}`,b)}}
-    const out=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(out);a.download=`chung-tu_${S.tu}_${S.den}.zip`;a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('Đã tải '+n+' chứng từ')}catch(e){alert(e.message)}}
+// (09/10/2026 anh bỏ nút tải chứng từ cả kỳ .zip — cần file nào vào phiếu tải)
 
 // ── CHUÔNG THÔNG BÁO (anh 08/10: "có cái chuông báo trên app là được giao việc, kiểu Facebook" — không đẩy về điện thoại) ──
 // Hàm SQL tự sinh thông báo khi: có đề nghị chi mới / được duyệt / đã TT / bị từ chối, có điều chuyển mới / được xác nhận.
@@ -1456,7 +1447,6 @@ const LOGIC=[
   'Danh sách Thu / Chi / Điều chuyển có <b>ghim giấy + số chứng từ</b>: bấm là mở thẳng trình xem ảnh.',
   'Ảnh tự <b>nén trên máy trước khi tải lên</b> (cạnh dài tối đa 2000px, ~400–600 KB, vẫn đọc rõ hoá đơn); PDF giữ nguyên; tối đa 15 MB / file.',
   'Kho file <b>riêng tư</b>: chỉ người đăng nhập và có quyền xem trang đó mới mở được; mỗi lần xem app cấp link sống 5 phút. Xoá = ẩn khỏi phiếu, file vẫn còn, có nhật ký.',
-  'Nút <b>"⬇ Chứng từ kỳ (.zip)"</b> ở trang Thu / Chi: gom mọi chứng từ của kỳ đang chọn thành 1 file nén, chia thư mục Thu / Chi / Điều chuyển, tên file có ngày và số phiếu.',
   'Link Google Drive cũ (chuyển từ sheet) vẫn giữ và bấm mở được ở mục "Hồ sơ".']],
  ['Công nợ khách',[
   '<b>Dùng số công nợ trên Kiot</b> (anh chốt 08/10/2026: "kiot là đủ"): dương = khách còn nợ, âm = khách trả trước. Là số <b>hiện tại</b>, tự cập nhật 3 tiếng 1 lần. Xem ở Tổng quan và Báo cáo → Khách hàng.',

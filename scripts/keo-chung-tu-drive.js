@@ -6,6 +6,7 @@
 const { docKhoa } = require('./khoa'); const { sql } = require('./sql');
 const K = docKhoa(), SB = 'https://bcrpxfvvjsjpvbksqzls.supabase.co', BUCKET = 'kt-chung-tu';
 const KY = process.argv[2] || 'T9', GHI = process.argv[3] === 'ghi';
+const RC = require('./rclone-drive'); const DUNG_RC = RC.coSan();   // ưu tiên rclone (đăng nhập Drive anh, chỉ đọc — 09/10)
 let G = null; try { if (require('fs').existsSync(require('path').join(__dirname, '..', 'kt-google.local.json'))) G = require('./google'); } catch (e) {}
 const MIME_OK = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/;
 const sach = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/-+/g, '-').slice(-60) || 'tep';
@@ -26,7 +27,11 @@ const tachId = s => [...String(s || '').matchAll(/(?:id=|\/d\/)([A-Za-z0-9_-]{20
     if (da.has(v.fid)) { dem.da_co++; continue; }
     try {
       let ct, buf, ten0;
-      if (G) {   // đăng nhập Drive của anh
+      if (DUNG_RC) {
+        let x; try { x = RC.taiFile(v.fid); } catch (e) { dem.can_dang_nhap++; continue; }
+        ct = x.mime; ten0 = x.ten; buf = x.buf;
+        if (!MIME_OK.test(ct) || buf.length > 15 * 1024 * 1024) { dem.loai_khac++; continue; }
+      } else if (G) {   // đăng nhập Drive của anh (OAuth riêng)
         let tt; try { tt = await G.thongTin(v.fid); } catch (e) { /404|403/.test(e.message) ? dem.can_dang_nhap++ : dem.loi++; continue; }
         ct = tt.mimeType; ten0 = tt.name;
         if (!MIME_OK.test(ct) || +tt.size > 15 * 1024 * 1024) { dem.loai_khac++; continue; }
@@ -55,5 +60,5 @@ const tachId = s => [...String(s || '').matchAll(/(?:id=|\/d\/)([A-Za-z0-9_-]{20
   }
   dem.mb = Math.round(dem.mb * 10) / 10;
   if (GHI && dem.da_luu) await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_chung_tu', 'keo_drive', $kt$${JSON.stringify({ ky: KY, ...dem })}$kt$::jsonb)`);
-  console.log((GHI ? 'ĐÃ GHI' : 'CHẠY THỬ (chưa lưu)') + ' · kỳ ' + KY + ' · ' + (G ? 'Drive đăng nhập' : 'link công khai') + ' · ' + JSON.stringify(dem));
+  console.log((GHI ? 'ĐÃ GHI' : 'CHẠY THỬ (chưa lưu)') + ' · kỳ ' + KY + ' · ' + (DUNG_RC ? 'rclone (Drive anh, chỉ đọc)' : G ? 'Drive đăng nhập' : 'link công khai') + ' · ' + JSON.stringify(dem));
 })().catch(e => { console.error('DỪNG:', e.message); process.exit(1); });
