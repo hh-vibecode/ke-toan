@@ -8,9 +8,9 @@
 --     "Thu tiền đặt cọc" = Thu đặt cọc · TT (khách trả nợ) = Thu công nợ · còn lại (TNH...) = Thu khác.
 --   · Tài khoản nhận: id tài khoản Kiot ghép qua kt_tai_khoan.kiot_ma. Phiếu hình thức TIỀN MẶT (Cash) → luôn vào tài khoản
 --     có kiot_ma chứa 'TIEN_MAT_QUAY' (két tiền mặt), KỂ CẢ khi Kiot gắn nhầm tài khoản ngân hàng — giống sheet cũ.
---     (Đối chiếu T9 05/10: 13 phiếu Cash gắn TK HKD HT / CT = đúng 5.832.000 lệch giữa Kiot và sheet.)
+--     (Đối chiếu T9 05/10: 13 phiếu Cash gắn TK HKD HT / CT = đúng số lệch giữa Kiot và sheet.)
 --   · Phiếu có nội dung chứa SỐ TÀI KHOẢN của chính công ty (vd "ck từ TECH CN -1913...") = chuyển nội bộ ghi nhầm thành thu
---     → KHÔNG tính thu (đối chiếu T9: TNH000695 30 tr). Kế toán tự ghi điều chuyển nếu cần.
+--     → KHÔNG tính thu (đối chiếu T9: TNH000695). Kế toán tự ghi điều chuyển nếu cần.
 --   · Mã TTD_ / CTD_ (2 chiều lệnh chuyển quỹ Kiot) cũng là chuyển nội bộ, kể cả khi Kiot để trống nhóm.
 --   · Cơ sở: chi nhánh Kiot ghép qua kt_don_vi.kiot_chi_nhanh.
 --   · Phiếu Kiot bị huỷ sau khi đã chép → khoản thu tương ứng bị ẩn (da_xoa). Phiếu không ghép được tài khoản → bỏ qua, đếm báo.
