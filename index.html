@@ -361,12 +361,12 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='09/10/2026 16:15';
+const APP_VERSION='09/10/2026 16:59';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
-// Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot (bán hàng, khách, NCC, hàng hoá) từ 01/01 · tiền vào / ra (thu Kiot, chi, điều chuyển) từ 01/05 —
-// T1–T4 sheet không có chi đầy đủ / thu ngoài Kiot / điều chuyển (đang hỏi kế toán) · SỐ DƯ tài khoản tính từ 01/09 (mốc tồn đầu; T5–T8 thiếu dữ liệu 7 TK).
-const MOC='2026-01-01', MOC_TIEN='2026-05-01', MOC_SODU='2026-09-01', MOC_NHAP='2026-09-01';   // MOC_NHAP: ngày sớm nhất được nhập phiếu mới
+// Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
+// trước 01/09 sheet KHÔNG ghi thu ngoài Kiot → tiền vào thiếu phần đó · SỐ DƯ tài khoản tính từ 01/09 (mốc tồn đầu).
+const MOC='2026-01-01', MOC_TIEN='2026-01-01', MOC_SODU='2026-09-01', MOC_NHAP='2026-09-01';   // MOC_NHAP: ngày sớm nhất được nhập phiếu mới
 const TRANG_TIEN=['tong_quan','dong_tien','thu','chi','dieu_chuyen','pl'];
 const NGAN_HANG=['Vietcombank','BIDV','VietinBank','Agribank','Techcombank','MB Bank','VPBank','ACB','Sacombank','TPBank','VIB','HDBank','SHB','MSB','OCB','SeABank','Eximbank','LPBank','Nam A Bank','Bắc Á Bank','ABBank','PVcomBank','BaoViet Bank','Kienlongbank','Saigonbank','VietABank','NCB','Viet Capital Bank','Cake','Timo','Tiền mặt'];
 const TT_CHI={cho_duyet:['Chờ kế toán kiểm','warn'],cho_gd:['Chờ GĐ xác nhận','teal'],cho_tt:['Chờ thanh toán','info'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối thanh toán','bad']};
@@ -506,8 +506,7 @@ function kyBar(){
 }
 // Kỳ chọn trước mốc dữ liệu → nhắc ngắn (không đoạn dài): tiền vào / ra có từ 01/05, số dư tài khoản từ 01/09
 function canhBaoMoc(){if(!TRANG_TIEN.includes(S.page))return '';
-  if(S.tu<MOC_TIEN)return `<span class="badge warn" title="Tháng 1–4: sheet không có đủ chi / thu ngoài Kiot / điều chuyển — đang hỏi kế toán (Cài đặt → Cần giải đáp)">Tiền vào / ra có từ 01/05</span>`;
-  if(S.tu<MOC_SODU&&['tong_quan','dong_tien'].includes(S.page))return `<span class="badge warn" title="Tháng 5–8 thiếu sổ chi của 7 tài khoản và thu ngoài Kiot → không tính được số dư từng tài khoản">Số dư tài khoản tính từ 01/09</span>`;
+  if(S.tu<MOC_SODU)return `<span class="badge warn" title="Anh chốt 09/10: luồng chuẩn từ 01/09; trước đó chỉ phiên phiến. Trước 01/09: sheet không ghi thu ngoài Kiot (lãi, hộ kinh doanh trả, giám đốc nộp…) và thiếu sổ của 7 tài khoản → tiền vào thiếu phần đó, số dư từng tài khoản chỉ tính từ 01/09. Tháng 1–4 chưa có điều chuyển.">Trước 01/09: số tham khảo</span>`;
   return ''
 }
 
@@ -784,26 +783,28 @@ async function pageChi(){
   const ds=await rpc('kt_ds',{p_bang:'chi',p_tu:S.tu,p_den:S.den});S.cache.chi=ds;
   const f=S.f;f.chi_tt=f.chi_tt||'tat_ca';const q=(f.chi_q||'').toLowerCase();
   const loc={tat_ca:x=>true,cho_duyet:x=>x.trang_thai==='cho_duyet',cho_gd:x=>x.trang_thai==='cho_gd',nghi_trung:x=>!!x.nghi_trung&&x.trang_thai!=='tu_choi',cho_tt:x=>x.trang_thai==='cho_tt',da_tt:x=>x.trang_thai==='da_tt',
-    tu_choi:x=>x.trang_thai==='tu_choi'||x.trang_thai==='tu_choi_tt',hd_do:x=>x.trang_thai==='da_tt'&&x.co_hd_do&&!x.hd_do_nhan,qua_han:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&x.han_tt&&x.han_tt<homNay()};
+    tu_choi:x=>x.trang_thai==='tu_choi'||x.trang_thai==='tu_choi_tt',hd_do:x=>x.trang_thai==='da_tt'&&x.co_hd_do&&!x.hd_do_nhan&&x.ngay_tt>=MOC_SODU,qua_han:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&x.han_tt&&x.han_tt<homNay()};
   const nhan={nghi_trung:'Nghi trùng',cho_duyet:'Chờ kế toán kiểm',cho_gd:'Chờ GĐ xác nhận',cho_tt:'Chờ thanh toán',qua_han:'Quá hạn',da_tt:'Đã thanh toán',tu_choi:'Từ chối',hd_do:'HĐ đỏ chưa nhận',tat_ca:'Tất cả'};
   const l=ds.filter(loc[f.chi_tt]).filter(x=>(!f.chi_loai||x.loai_id==f.chi_loai)&&(!f.chi_tk||x.tai_khoan_id==f.chi_tk)
-    &&(!f.chi_bp||x.bo_phan_id==f.chi_bp)&&(!f.chi_nguon||(f.chi_nguon==='bo_sung'?canBS(x):x.nguon===f.chi_nguon))&&(!f.chi_dv||(x.phan_bo||[]).some(p=>p.don_vi_id==f.chi_dv))
+    &&(!f.chi_bp||x.bo_phan_id==f.chi_bp)&&(!f.chi_nguon||(f.chi_nguon==='bo_sung'?canBS(x):f.chi_nguon==='claude'?!!claudeGan(x):f.chi_nguon==='claude_soat'?['vừa','thấp'].includes(claudeGan(x)):x.nguon===f.chi_nguon))&&(!f.chi_dv||(x.phan_bo||[]).some(p=>p.don_vi_id==f.chi_dv))
     &&(!q||[x.noi_dung,x.nguoi_de_nghi,x.thu_huong_ten,x.ghi_chu].join(' ').toLowerCase().includes(q)));
   const sel=(k,list,trong)=>`<select class="sel ${f[k]?'on':''}" onchange="S.f.${k}=this.value;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=head('Chi',kyBar()+(chiTao()?'<button class="btn pri" onclick="formChi()">+ Đề nghị chi</button>':''))+
     `<div class="tabs">${Object.keys(nhan).filter(k=>k!=='nghi_trung'||ds.some(loc.nghi_trung)||f.chi_tt==='nghi_trung').map(k=>`<button class="btn tab2 ${f.chi_tt===k?'on':''}" style="--c:var(--${MAU_TAB[k]})" onclick="S.f.chi_tt='${k}';render()"><span>${nhan[k]}<span class="cnt">${ds.filter(loc[k]).length}</span></span><small>${fmtN(sumBy(ds.filter(loc[k]),x=>x.so_tien))}</small></button>`).join('')}</div>
     <div class="bar">${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Mọi loại chi')}${sel('chi_dv',S.dm.don_vi.filter(x=>x.la_co_so),'Mọi đơn vị chịu CP')}
-      ${sel('chi_bp',S.dm.don_vi.filter(x=>x.la_bo_phan),'Mọi bộ phận')}${sel('chi_tk',S.dm.tai_khoan,'Mọi TK chi')}${sel('chi_nguon',[{id:'kiot',ten:'Đề xuất từ Kiot'},{id:'bo_sung',ten:'Kéo từ sheet cũ — cần bổ sung'},{id:'app',ten:'Nhập trên app'},{id:'sheet_cu',ten:'Sheet cũ (cả T9 đã đối chiếu)'}],'Mọi nguồn')}
+      ${sel('chi_bp',S.dm.don_vi.filter(x=>x.la_bo_phan),'Mọi bộ phận')}${sel('chi_tk',S.dm.tai_khoan,'Mọi TK chi')}${sel('chi_nguon',[{id:'claude_soat',ten:'Claude gán loại — cần soát'},{id:'claude',ten:'Claude gán loại (tất cả)'},{id:'kiot',ten:'Đề xuất từ Kiot'},{id:'bo_sung',ten:'Kéo từ sheet cũ — cần bổ sung'},{id:'app',ten:'Nhập trên app'},{id:'sheet_cu',ten:'Sheet cũ (cả T9 đã đối chiếu)'}],'Mọi nguồn')}
       <input type="search" class="sel" placeholder="Tìm nội dung, người, thụ hưởng" value="${esc(f.chi_q||'')}" onchange="S.f.chi_q=this.value;render()">
       <span class="badge">${l.length} phiếu · ${fmt(sumBy(l,x=>x.so_tien))}</span></div>
     <div class="card">${l.map(x=>`<div class="li" onclick="xemChi(${x.id})"><div class="av">${esc(vietTat(x.nguoi_de_nghi))}</div>
-      <div class="m"><div class="t1">${esc(x.noi_dung)}${canBS(x)?' '+vb('Kéo từ sheet cũ — cần bổ sung','vio'):''}${x.nguon==='kiot'?' '+vb('Kiot '+(x.kiot_ma||''),'info'):''}${x.nghi_trung&&x.trang_thai!=='tu_choi'?' '+vb('Nghi trùng '+x.nghi_trung,'bad'):''}${ghim('chi',x)}${x.co_hd_do?` <span class="badge ${x.hd_do_nhan?'ok':'warn'}">HĐ đỏ${x.hd_do_nhan?' đã nhận':''}</span>`:''}</div>
+      <div class="m"><div class="t1">${esc(x.noi_dung)}${canBS(x)?' '+vb('Kéo từ sheet cũ — cần bổ sung','vio'):''}${claudeGan(x)?' '+vb('Claude gán loại · tin '+claudeGan(x),claudeGan(x)==='cao'?'grey':'warn'):''}${x.nguon==='kiot'?' '+vb('Kiot '+(x.kiot_ma||''),'info'):''}${x.nghi_trung&&x.trang_thai!=='tu_choi'?' '+vb('Nghi trùng '+x.nghi_trung,'bad'):''}${ghim('chi',x)}${x.co_hd_do?` <span class="badge ${x.hd_do_nhan?'ok':'warn'}">HĐ đỏ${x.hd_do_nhan?' đã nhận':''}</span>`:''}</div>
         <div class="t2">${esc(x.nguoi_de_nghi)} · ${esc((dv(x.bo_phan_id)||{}).ten||'')} · đề nghị ${fmtD(x.ngay_de_nghi)} · chịu CP: ${(x.phan_bo||[]).map(p=>esc((dv(p.don_vi_id)||{}).ten||'')).join(', ')}</div></div>
       <div class="s">${vb(...TT_CHI[x.trang_thai])}<div class="t2">${x.ngay_tt?fmtD(x.ngay_tt)+' · '+esc((tk(x.tai_khoan_id)||{}).ten||'')+'<br>'+esc((lo(x.loai_id)||{}).ten||''):x.han_tt?'Mong muốn TT '+fmtD(x.han_tt):''}</div></div>
       <div class="a">${fmt(x.so_tien)}</div></div>`).join('')||'<div class="empty">Không có phiếu</div>'}</div>`;
 }
 // Phiếu kéo bù từ sheet cũ 08/10 (ghi chú gắn thẻ) mà chưa ai sửa trên app → kế toán cần kiểm & bổ sung (người đề nghị, chứng từ...)
 const canBS=x=>String(x.ghi_chu||'').startsWith('[Kéo từ sheet cũ')&&!x.sua_boi;
+// Loại chi do Claude tự gán theo mẫu T5–T9 (anh cho phép 09/10) — trả 'cao' | 'vừa' | 'thấp'; kế toán sửa phiếu (Sửa đề nghị) là coi như đã soát
+const claudeGan=x=>{const m=String(x.ghi_chu||'').match(/\[Claude gán loại chi — tin (cao|vừa|thấp)/);return m&&!x.sua_boi?m[1]:null};
 function pbRow(p={}){return `<div class="pb"><select name="pb_dv">${opts(coSo(),p.don_vi_id,'— đơn vị —')}</select>${moneyIn('pb_tien',p.so_tien,'oninput="fmtMoney(this)"')}<button class="btn sm" onclick="this.parentNode.remove()">✕</button></div>`}
 function formChi(id){
   const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ho_ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
@@ -1404,9 +1405,12 @@ async function luuTL(id){const v=$('#tl'+id).value.trim();if(!v)return alert('Ch
 // Sửa luật ở SQL thì sửa luôn mục tương ứng ở đây — để người khác đọc là hiểu app đang tính thế nào.
 const LOGIC=[
  ['Phạm vi dữ liệu',[
-  'Anh chốt 09/10/2026: xử lý <b>cả năm 2026</b>. Hiện có: <b>Kiot từ 01/01</b> (bán hàng, hoá đơn, trả hàng, nhập hàng, sổ quỹ) · <b>tiền vào / ra từ 01/05</b> (thu Kiot + chi + điều chuyển lấy từ sheet cũ, đối chiếu từng tháng) · <b>số dư tài khoản từ 01/09</b>.',
-  'Tháng 1–4: sheet không có đủ chi (thiếu loại chi), thu ngoài Kiot và điều chuyển → chưa nhập, đang hỏi kế toán. Tháng 5–8: sheet không ghi thu ngoài Kiot (lãi ngân hàng, hộ kinh doanh trả tiền, giám đốc nộp tiền...) và không có chi của 7 tài khoản → không tính được số dư từng tài khoản trước 01/09 (tính ngược ra số âm vô lý).',
-  'Bộ lọc kỳ có "Năm nay". Chọn kỳ trước 01/05 → nhãn "Tiền vào / ra có từ 01/05"; trước 01/09 → "Số dư tài khoản tính từ 01/09" (thẻ tồn đầu kỳ, biểu đồ số dư, trang đối soát không hiện số sai).',
+  '<b>Luồng CHUẨN từ 01/09/2026; trước đó là số THAM KHẢO, làm phiên phiến</b> (anh chốt 09/10/2026) — việc / câu hỏi chỉ dính trước T9 được đóng tạm, HĐ đỏ chưa nhận chỉ đếm từ 01/09.',
+  'Anh chốt 09/10/2026: xử lý <b>cả năm 2026</b>. Có: <b>Kiot từ 01/01</b> (bán hàng, hoá đơn, trả hàng, nhập hàng, sổ quỹ → tiền vào) · <b>chi từ 01/01</b> (file Đề nghị: tab tháng + tab chính; tab 7.DATA CHI) · <b>điều chuyển từ 01/05</b> · <b>số dư tài khoản từ 01/09</b>.',
+  'Trước 01/09 sheet KHÔNG ghi tiền vào ngoài Kiot (lãi, hộ kinh doanh trả tiền, giám đốc nộp...) và không có sổ của 7 tài khoản → tiền vào thiếu phần đó, không tính được số dư từng tài khoản (tính ngược ra số âm). Tháng 1–4 chưa có điều chuyển. Đang hỏi kế toán / chờ sao kê ngân hàng.',
+  'Tháng 1–3 kế toán chi từ 5 tài khoản cũ (VCB HT, VCB CT, VCB SD, BIDV HT, TECH Cá Nhân) → đã thêm vào danh mục ở trạng thái NGỪNG DÙNG; 3 tài khoản Kiot đã xoá ghép vào VCB HT / CT / SD theo 4 số cuối trong phiếu Kiot gốc.',
+  'LOẠI CHI tháng 1–4 (sheet không ghi): Claude tự gán theo mẫu phiếu T5 trở đi (anh cho phép 09/10) — (1) cùng người thụ hưởng ≥2 phiếu và ≥80% cùng loại; (2) nội dung + bộ phận + đơn vị chịu CP + cỡ tiền giống nhất. Chấm thử trên T8–T9: tin cao đúng 95%, vừa 77%, thấp 58%. Phiếu có nhãn "Claude gán loại · tin …"; lọc Chi → nguồn "Claude gán loại — cần soát"; kế toán lưu phiếu là nhãn mất.',
+  'Bộ lọc kỳ có "Năm nay". Kỳ trước 01/09 → nhãn "Trước 01/09: thiếu thu ngoài Kiot · số dư từ 01/09" (thẻ tồn đầu kỳ, biểu đồ số dư, trang đối soát không hiện số sai).',
   'Mỗi tài khoản có <b>tồn đầu</b> tại 1 ngày mốc (mặc định 01/09/2026 — tồn đầu tháng 9 lấy theo sheet cũ, kế toán soát lại; xem bảng tài khoản bên dưới). Phát sinh trước ngày mốc không tính — đã nằm trong tồn đầu.']],
  ['Tiền vào · Tiền ra · Tồn',[
   '<b>Tiền vào</b> = tổng các khoản Thu ở trạng thái <b>Đã duyệt</b>, tính theo <b>ngày thu</b>. Gồm thu từ Kiot (tự kéo) và thu ngoài (nhập trên app).',

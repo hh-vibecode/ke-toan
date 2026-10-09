@@ -323,7 +323,7 @@ begin
        'cho_gd',    (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_gd'),
        'nghi_trung', (select count(*) from kt_chi where not da_xoa and nghi_trung is not null and trang_thai <> 'tu_choi'),
        'cho_tt',    (select count(*) from kt_chi where not da_xoa and trang_thai = 'cho_tt'),
-       'hd_do_chua_nhan', (select count(*) from kt_chi where not da_xoa and trang_thai = 'da_tt' and co_hd_do and not hd_do_nhan),
+       'hd_do_chua_nhan', (select count(*) from kt_chi where not da_xoa and trang_thai = 'da_tt' and co_hd_do and not hd_do_nhan and ngay_tt >= date '2026-09-01'),   -- trước T9 không theo dõi nhận HĐ (anh 09/10: trước T9 phiên phiến)
        'dc_chua_xac_nhan', (select count(*) from kt_dieu_chuyen where not da_xoa and not da_xac_nhan),
        'thu_cho_duyet', (select count(*) from kt_thu where not da_xoa and trang_thai = 'cho_duyet'),
        'tk_am', (select count(*) from ton where cuoi_ky < 0)),

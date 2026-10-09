@@ -96,6 +96,14 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **09/10/2026 tối** — Anh chốt: **luồng CHUẨN từ 01/09; trước T9 phiên phiến** (đóng tạm việc / câu hỏi chỉ dính trước T9).
+  (1) Chi T1–T4: `scripts/nhap-chi-t1-4.js` (tab NĂM 2025 + THÁNG 1..5 + tab chính, cột nhận theo TÊN tiêu đề) — 418 phiếu; thêm 5 TK cũ (ngừng dùng) VCB HT/CT/SD, BIDV HT, TECH Cá Nhân;
+      3 TK Kiot đã xoá ghép vào VCB HT/CT/SD theo 4 số cuối phiếu gốc → thu Kiot T1–T4 đủ (820 phiếu bị bỏ lần đầu đã vào lại).
+  (2) Loại chi T1–T4 TỰ GÁN (`scripts/gan-loai-chi.js` — chấm thử T8–T9: 78%, tin cao 93%): luật từ khoá học từ mẫu (lương, cước, NCC, điện nước) xét trước,
+      bỏ người thụ hưởng là nhân viên (nhận tiền đi trả hộ). Lần đầu bộ gán lệch về "Vận hành" (50%) và gán sai phiếu lương → phát hiện khi soát, sửa, gán lại (`regan ghi`).
+  (3) Câu hỏi soạn lại 3 nhóm (Số dư đầu T9 · Phiếu cần xác nhận · Cách tính), đóng 4 câu trước T9, thêm yêu cầu sao kê từ 01/09; 12 phiếu trước T9 thiếu TK/loại ẩn tạm;
+      HĐ đỏ chưa nhận chỉ đếm từ 01/09. Ảnh chứng từ: trung bình ~450 KB/ảnh, PDF UNC ~1,6 MB — không cần nén thêm.
+
 - **09/10/2026 chiều muộn** — **Dữ liệu năm 2026** (anh: "auke, làm nốt"):
   (1) Edge Function `kt-kiot` nhận khoảng ngày (`tu/den/thu_tu`) → `scripts/keo-kiot-cu.js` kéo Kiot T1–T8 (sổ quỹ, hoá đơn, trả hàng, nhập hàng; giá vốn tính theo giá vốn hiện tại — gần đúng);
       phiếu thu Kiot chép sang app từ 01/05 (T5–T8: 2.260 phiếu). Tiền vào T9 không đổi.
