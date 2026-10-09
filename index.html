@@ -361,7 +361,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='08/10/2026 18:01';
+const APP_VERSION='09/10/2026 13:48';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
@@ -371,7 +371,8 @@ const MAU_TAB={cho_duyet:'warn',cho_gd:'teal',cho_tt:'info',qua_han:'bad',da_tt:
 const TT_THU={cho_duyet:['Chờ duyệt','warn'],da_duyet:['Đã duyệt','ok'],tu_choi:['Từ chối','bad']};
 const NGUON={tay:'Nhập',kiot:'Kiot',sheet_cu:'Sheet cũ',app:'App'};
 const PL_NO={cod:'Đơn hàng COD',no:'Đơn hàng nợ',no_npp:'Đơn hàng nợ NPP',cho_xu_ly:'Đơn chờ xử lý',tra_hang:'Đơn sẽ trả hàng'};
-const VI_TRI={supreme:'Supreme (người làm app)',admin:'Admin (toàn quyền)',ke_toan:'Kế toán',nhan_vien:'Nhân viên'};
+// anh 09/10: tài khoản anh hiển thị là Admin (bên trong vẫn vi_tri 'supreme' = chủ app: cấp / bỏ quyền giám đốc xác nhận chi)
+const VI_TRI={supreme:'Admin (chủ app)',admin:'Admin (toàn quyền)',ke_toan:'Kế toán',nhan_vien:'Nhân viên'};
 // Quyền chia theo MODULE (giống app MKT/Sale). Key trùng tên trang dùng trong hàm SQL kt_chan. Thêm trang mới → thêm vào đây.
 // chi_de_nghi / chi_duyet (08/10): quyền 1 ô (không chia xem / sửa) — QUYEN_1_O.
 const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_gd'];
@@ -1463,8 +1464,8 @@ const LOGIC=[
  ['Quyền và nhật ký',[
   'Đăng nhập bằng <b>tài khoản + mật khẩu</b> riêng của app kế toán (không dùng chung tài khoản app MKT/Sale). Mật khẩu lưu dạng băm, không ai đọc lại được. Sai 5 lần liền → khoá 15 phút.',
   'Phân quyền: tick <b>Toàn quyền</b>, hoặc tick từng trang — <b>Xem</b> và <b>Nhập / sửa</b> riêng (anh bỏ ô Vị trí 05/10/2026). Quyền kiểm ở máy chủ (hàm SQL), không chỉ ẩn nút trên trang.',
-  'Hiện tại: anh Hải (Supreme), giám đốc và kế toán (Admin) — đều toàn quyền (anh chốt 05/10/2026).',
-  'Chi — quyền (anh chốt 08/10/2026): <b>"Kế toán kiểm lượt 1 & thanh toán"</b> (Admin luôn có) · <b>"Giám đốc xác nhận lượt 2"</b> — KHÔNG đi theo Toàn quyền, phải tick riêng ở tài khoản (hiện: giám đốc; Supreme luôn có) · "Chỉ tạo đề nghị" (thấy phiếu mình — hiện không dùng, nhân viên đề xuất trên Kiot). Kiểm ở máy chủ, không chỉ ẩn nút.',
+  'Hiện tại: anh Hải, giám đốc, kế toán — đều Admin toàn quyền (anh chốt 05/10/2026). Riêng tài khoản anh Hải là chủ app: chỉ anh cấp / bỏ quyền giám đốc xác nhận chi.',
+  'Chi — quyền (anh chốt 08/10/2026): <b>"Kế toán kiểm lượt 1 & thanh toán"</b> (Admin luôn có) · <b>"Giám đốc xác nhận lượt 2"</b> — KHÔNG đi theo Toàn quyền, phải tick riêng ở tài khoản (hiện: giám đốc; tài khoản anh Hải luôn có) · "Chỉ tạo đề nghị" (thấy phiếu mình — hiện không dùng, nhân viên đề xuất trên Kiot). Kiểm ở máy chủ, không chỉ ẩn nút.',
   'Mọi thêm / sửa / xoá đều ghi nhật ký: ai, lúc nào, nội dung. Xoá = ẩn khỏi báo cáo, không mất dữ liệu.']],
  ['Duyệt chi 2 lượt + đề xuất chi từ Kiot',[
   'Anh chốt 08/10/2026: <b>nhân viên đề xuất chi trên Kiot</b> → app tự kéo về (3 tiếng / lần) thành phiếu <b>Chờ kế toán kiểm</b> → kế toán kiểm, <b>xác nhận lượt 1</b> → <b>Chờ giám đốc xác nhận</b> → giám đốc <b>xác nhận lại</b> → <b>Chờ thanh toán</b> → kế toán chi, ghi Đã thanh toán.',
@@ -1514,7 +1515,7 @@ async function pageCaiDat(mod){
     c.innerHTML=`<div class="listbox"><div class="bar"><span class="badge ok">${ds.filter(x=>x.hoat_dong).length} tài khoản đang hoạt động</span>
       ${sua?'<button class="btn pri" style="margin-left:auto" onclick="formND()">+ Tạo tài khoản</button>':''}</div>
       <div class="card scroll"><table><tr><th>Họ tên</th><th>Tài khoản</th><th>Quyền truy cập</th><th>Đăng nhập gần nhất</th><th>Trạng thái</th><th></th></tr>
-      ${ds.map(x=>`<tr><td><b>${esc(x.ho_ten)}</b>${x.vi_tri==='supreme'?' <span class="badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff">Supreme</span>':''}</td>
+      ${ds.map(x=>`<tr><td><b>${esc(x.ho_ten)}</b>${x.vi_tri==='supreme'?' <span class="badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff">Admin</span>':''}</td>
         <td><code>${esc(x.ten_dang_nhap)}</code></td><td>${qtxt(x)}</td><td class="nw">${fmtDT(x.dang_nhap_luc)}</td>
         <td>${!x.hoat_dong?vb('Đã khoá','grey'):x.dang_khoa?vb('Tạm khoá (sai MK)','warn'):vb('Đang hoạt động','ok')}</td>
         <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">✏ Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">✏ Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
