@@ -12,6 +12,7 @@
 --   · Phiếu có nội dung chứa SỐ TÀI KHOẢN của chính công ty (vd "ck từ TECH CN -1913...") = chuyển nội bộ ghi nhầm thành thu
 --     → KHÔNG tính thu (đối chiếu T9: TNH000695). Kế toán tự ghi điều chuyển nếu cần.
 --   · Mã TTD_ / CTD_ (2 chiều lệnh chuyển quỹ Kiot) cũng là chuyển nội bộ, kể cả khi Kiot để trống nhóm.
+--   · Phiếu nội dung "cân bằng quỹ" = chỉ chỉnh số quỹ cho khớp, KHÔNG tính thu (anh trả lời 09/10/2026).
 --   · Cơ sở: chi nhánh Kiot ghép qua kt_don_vi.kiot_chi_nhanh.
 --   · Phiếu Kiot bị huỷ sau khi đã chép → khoản thu tương ứng bị ẩn (da_xoa). Phiếu không ghép được tài khoản → bỏ qua, đếm báo.
 --   · Phiếu CHI Kiot: TỪ 08/10/2026 thành đề xuất chi "chờ kế toán kiểm" trên app (kt_dong_bo_kiot_chi trong
@@ -37,7 +38,8 @@ begin
                        case when q.tai_khoan is null then v_quay end) end tk_id,
     -- mã TTD_ / CTD_ = 2 chiều của lệnh chuyển quỹ trong Kiot, kể cả khi Kiot để trống nhóm "Chuyển rút" (T9: TTD_CTM004014)
     q.ma ~ '^(TTD_|CTD_)' or exists (select 1 from kt_tai_khoan t where length(regexp_replace(t.ten, '[^0-9]', '', 'g')) >= 8
-             and coalesce(q.noi_dung, '') like '%' || regexp_replace(t.ten, '[^0-9]', '', 'g') || '%') noi_bo,
+             and coalesce(q.noi_dung, '') like '%' || regexp_replace(t.ten, '[^0-9]', '', 'g') || '%')
+    or coalesce(q.noi_dung, '') ~* 'cân bằng quỹ|can bang quy' noi_bo,   -- 'cân bằng quỹ' = chỉ chỉnh số quỹ, không tính thu (anh trả lời 09/10)
     (select d.id from kt_don_vi d where q.chi_nhanh = any(d.kiot_chi_nhanh) limit 1) dv_id,
     case when q.ma ~ '^TTHD' then l_ban
          when q.ma ~ '^TTDH' or q.nhom = 'Thu tiền đặt cọc' then l_coc

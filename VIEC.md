@@ -96,6 +96,13 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **09/10/2026 tối (3)** — **Hoá đơn & thuế từ 3TShop** (giai đoạn D — 3TShop không API, anh xuất Sheet): `supabase-schema-kt-thue.sql` (kt_thue_xnt, kt_thue_hd, kt_bc_thue),
+  `scripts/keo-3tshop.js` + `scripts/doc-xlsx.js` (nguồn trong `nguon-3tshop.local.json` — gitignore). Đã kéo HT Q1–Q3, CT Q1, Shidai (hoá đơn). Hoá đơn đọc theo TÊN cột
+  (HT quý 3 mẫu bảng kê khác — lần đầu đọc ra 0 đồng, phát hiện khi chạy thử, sửa trước khi ghi). Trang Hoá đơn & thuế: tồn kho sổ thuế hộ × kỳ (bấm xem từng mã),
+  hoá đơn bán / doanh thu Kiot theo tháng. Đối soát lỗi thêm nhóm "Hoá đơn 3TShop ngày sai năm" (Shidai 145 dòng).
+  Chờ: link CT Q2/Q3 dạng chữ · tab tồn kho Shidai. Câu hỏi chia 4 chủ đề lớn (A Thu & Kiot · B Chi · C P&L & vay · D Tồn kho sổ thuế & hoá đơn).
+  Anh trả lời "cân bằng quỹ" = không tính thu → luật Kiot bỏ 7 phiếu (1 phiếu T10).
+
 - **09/10/2026 tối (2)** — (1) **Luật loại chi** (anh: "m tự quyết, người hay nhầm"): `scripts/chot-loai-chi.js` 8 luật theo bản chất (phí NH → Vận hành; CTNN / vận chuyển TQ → Giá vốn;
   trả thẻ tín dụng → Tài chính — ban đầu định đổi sang Marketing, xem dữ liệu thấy là trả nợ thẻ nên giữ Tài chính); sửa 37 phiếu cũ. Bảng `kt_luat_loai_chi`
   + cờ "nghi sai loại" bật từ ngày áp dụng app (`kt_cai_dat.ngay_ap_dung_app` — CHỜ anh báo ngày) — test 5/5 (`scripts/kiem-thu-luat-loai.js`).

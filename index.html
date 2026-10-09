@@ -362,7 +362,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='09/10/2026 17:32';
+const APP_VERSION='09/10/2026 17:43';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1221,12 +1221,39 @@ async function luuTS(id){const o=formData($('#f'));o.id=id;o.nguyen_gia=so(o.ngu
   const nid=await save('kt_luu_tai_san',{p_dong:o});if(!o.id)ctGuiMoi('tai_san',nid);render()}
 
 // HOÁ ĐƠN & THUẾ — chờ kết nối meInvoice (MISA) + 3TShop (anh lo API / file)
+// HOÁ ĐƠN & THUẾ (09/10/2026): nguồn 3TShop — anh xuất ra Google Sheet (3TShop không có API), scripts/keo-3tshop.js đọc vào app.
+// 3 hộ: HT Hiền Thủy · CT Chánh Tâm · SD Shidai. Tồn kho sổ thuế theo hộ × kỳ · hoá đơn bán ra so với doanh thu Kiot cùng cửa hàng.
+const HKD={HT:['Hiền Thủy','Đồ thờ Hiền Thủy'],CT:['Chánh Tâm','Đồ Thờ Chánh Tâm'],SD:['Shidai','Tổng kho sỉ Shidai']};
 async function pageHoaDonThue(){
-  $('#page').innerHTML=head('Hoá đơn & thuế','<span class="badge warn">Chờ kết nối nguồn</span>')+
-    `<div class="two"><div class="panel"><h4>meInvoice (MISA) — hoá đơn điện tử</h4><div class="gt" style="font-size:12.5px;color:var(--text2);line-height:1.8">
-        Sẽ lấy: hoá đơn đầu ra · hoá đơn đầu vào · thông tin hoá đơn, NCC / khách hàng.<br>Cách kết nối: API của meInvoice (nếu có) hoặc tải file Excel xuất từ meInvoice lên app.<br><b>Đang chờ:</b> anh cấp khoá API hoặc file mẫu.</div></div>
-      <div class="panel"><h4>3TShop — phần mềm thuế</h4><div class="gt" style="font-size:12.5px;color:var(--text2);line-height:1.8">
-        Sẽ lấy: tồn kho sổ thuế của 3 hộ kinh doanh (Hiền Thủy · Chánh Tâm · Shidai) · dữ liệu khác phục vụ kê khai thuế.<br>Cách kết nối: API của 3TShop (nếu có) hoặc tải file Excel.<br><b>Đang chờ:</b> anh cấp khoá API hoặc file mẫu.</div></div></div>`;
+  const el=$('#page');el.innerHTML=head('Hoá đơn & thuế',kyBar())+'<div class="empty">Đang tính...</div>';
+  const b=await rpc('kt_bc_thue',{p_tu:S.tu,p_den:S.den});S.cache.thue=b;
+  const ra=b.hd.filter(x=>x.chieu==='ra'),vao=b.hd.filter(x=>x.chieu==='vao');
+  const kyMoi={};b.xnt.forEach(x=>{if(!kyMoi[x.hkd]||x.ky>kyMoi[x.hkd].ky)kyMoi[x.hkd]=x});
+  const tonCuoi=Object.values(kyMoi).reduce((a,x)=>a+(+x.cuoi_tien||0),0);
+  const thang=[...new Set([...ra.map(x=>x.thang),...b.kiot.map(x=>x.thang)])].sort();
+  const o=(hkd,th)=>{const h=ra.find(x=>x.hkd===hkd&&x.thang===th),k=b.kiot.find(x=>x.chi_nhanh===HKD[hkd][1]&&x.thang===th);return {hd:h?+h.thanh_tien:0,k:k?+k.doanh_thu:0}};
+  el.innerHTML=head('Hoá đơn & thuế',kyBar()+'<span class="badge">Nguồn: 3TShop (anh xuất Sheet)</span>'+(b.keo_luc?`<span class="badge">Kéo ${fmtDT(b.keo_luc)}</span>`:''))+
+    `<div class="kpi-row">${kpiBox('ok','vao','Doanh thu xuất hoá đơn (chưa thuế)',fmt(sumBy(ra,x=>x.thanh_tien)),'Trong kỳ · 3 hộ')}
+      ${kpiBox('warn','hd','Thuế GTGT đầu ra',fmt(sumBy(ra,x=>x.tien_thue)),'Theo hoá đơn trong kỳ')}
+      ${kpiBox('accent','ton','Tồn kho sổ thuế (kỳ mới nhất)',fmt(tonCuoi),Object.values(kyMoi).map(x=>x.hkd+' '+x.ky).join(' · '))}</div>
+    <div class="kpi-row">${kpiBox('info','hd','Số hoá đơn bán ra',fmt(sumBy(ra,x=>x.so_hd)),'Trong kỳ')}
+      ${kpiBox('vio','ra','Hàng nhập theo hoá đơn',fmt(sumBy(vao,x=>x.thanh_tien)),'Trong kỳ')}
+      ${kpiBox(b.ngay_sai?'bad':'grey','cho','Dòng hoá đơn ngày sai',b.ngay_sai,b.ngay_sai?'Xem trang Đối soát lỗi':'Không có')}</div>
+    <div class="sec">Tồn kho sổ thuế theo hộ kinh doanh</div>
+    <div class="card scroll" style="margin-bottom:14px"><table><tr><th>Hộ</th><th>Kỳ</th><th class="num">Số mã</th><th class="num">Tồn đầu</th><th class="num">Nhập</th><th class="num">Xuất</th><th class="num">Tồn cuối</th></tr>
+    ${b.xnt.map(x=>`<tr class="click" onclick="xemXNT('${x.hkd}','${x.ky}')"><td>${HKD[x.hkd]?HKD[x.hkd][0]:x.hkd}</td><td class="nw">${x.ky}</td><td class="num">${fmt(x.so_ma)}</td>
+      <td class="num">${fmt(x.dau_tien)}</td><td class="num">${fmt(x.nhap_tien)}</td><td class="num">${fmt(x.xuat_tien)}</td><td class="num"><b>${fmt(x.cuoi_tien)}</b></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Chưa có dữ liệu 3TShop</td></tr>'}</table></div>
+    <div class="sec">Hoá đơn bán ra (chưa thuế) so với doanh thu Kiot cùng cửa hàng — theo tháng</div>
+    <div class="card scroll"><table><tr><th>Tháng</th>${Object.keys(HKD).map(h=>`<th class="num">${HKD[h][0]} · HĐ</th><th class="num">Kiot</th><th class="num">Tỷ lệ</th>`).join('')}</tr>
+    ${thang.map(th=>`<tr><td class="nw">${th.slice(5)}/${th.slice(0,4)}</td>${Object.keys(HKD).map(h=>{const v=o(h,th);return `<td class="num">${v.hd?fmt(v.hd):''}</td><td class="num muted">${v.k?fmt(v.k):''}</td><td class="num">${v.k?pct(v.hd,v.k):''}</td>`}).join('')}</tr>`).join('')||'<tr><td colspan="10" class="empty">Không có hoá đơn trong kỳ</td></tr>'}</table></div>`;
+}
+async function xemXNT(hkd,ky,tim){
+  const ds=await rpc('kt_thue_xnt_ct',{p_hkd:hkd,p_ky:ky,p_tim:tim||null});
+  modal(`<h2>Tồn kho sổ thuế — ${esc(HKD[hkd]?HKD[hkd][0]:hkd)} · ${esc(ky)}</h2>
+    <div class="bar"><input type="search" class="sel" placeholder="Tìm mã / tên hàng" value="${esc(tim||'')}" onchange="xemXNT('${hkd}','${ky}',this.value)"><span class="badge">${ds.length} mã${ds.length===500?' (500 mã tồn lớn nhất)':''}</span></div>
+    <div class="card scroll" style="max-height:60vh"><table><tr><th>Mã</th><th>Tên hàng</th><th class="num">SL đầu</th><th class="num">Nhập</th><th class="num">Xuất</th><th class="num">SL cuối</th><th class="num">Giá trị cuối</th></tr>
+    ${ds.map(x=>`<tr><td class="nw muted">${esc(x.ma)}</td><td>${esc(x.ten||'')}</td><td class="num">${fmt(x.dau_sl)}</td><td class="num">${fmt(x.nhap_sl)}</td><td class="num">${fmt(x.xuat_sl)}</td><td class="num">${fmt(x.cuoi_sl)}</td><td class="num"><b>${fmt(x.cuoi_tien)}</b></td></tr>`).join('')}</table></div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`,true);
 }
 
 // DÒNG TIỀN — QUỸ TIỀN MẶT 3 CỬA HÀNG (đối chiếu cuối ngày, từ sổ quỹ Kiot)
@@ -1477,6 +1504,7 @@ const LOGIC=[
   'Loại thu theo mã phiếu Kiot: <b>TTHD</b> (thu tiền hoá đơn) = Thu bán hàng · <b>TTDH</b> (thu tiền đơn đặt hàng) và nhóm "Thu tiền đặt cọc" = Thu đặt cọc · <b>TT</b> (khách trả nợ) = Thu công nợ · còn lại (TNH...) = Thu khác.',
   'Tài khoản nhận ghép theo tài khoản Kiot (Danh mục → Tài khoản, cột "Bên Kiot"). Phiếu hình thức <b>Tiền mặt</b> luôn tính vào <b>Két tiền mặt</b>, kể cả khi Kiot gắn nhầm tài khoản ngân hàng (đối chiếu T9: 13 phiếu như vậy).',
   'Phiếu là <b>chuyển nội bộ</b> không tính thu: mã <b>TTD_ / CTD_</b> (2 chiều lệnh chuyển quỹ Kiot, kể cả khi Kiot để trống nhóm) và phiếu có nội dung chứa <b>số tài khoản của chính công ty</b> (vd "ck từ TECH CN …").',
+  'Phiếu Kiot nội dung <b>"cân bằng quỹ"</b> = chỉ chỉnh số quỹ cho khớp, <b>không tính thu</b> (anh trả lời 09/10/2026).',
   'Tiền mặt tính theo <b>ngày bán</b> trên Kiot; sheet cũ ghi theo <b>ngày nộp két</b> và đã trừ khoản chi lặt vặt tại quầy. Vì vậy từng ngày có thể lệch, cả tháng lệch đúng bằng: chi tiền mặt tại quầy trên Kiot − tiền mặt bán cuối tháng trước nộp đầu tháng này.',
   'Cơ sở ghép theo chi nhánh Kiot: Đồ thờ Hiền Thủy · Đồ Thờ Chánh Tâm · Tổng kho sỉ Shidai (= BP Sỉ Shidai).',
   'Khoản thu từ Kiot chỉ xem, không sửa tay — sai thì sửa bên Kiot, lần kéo sau tự cập nhật.',
@@ -1535,6 +1563,11 @@ const LOGIC=[
   '<b>Chưa rõ nguyên nhân</b> → OPEX - Khác.',
   '<b>Chuyển tiền mặt cho bà Bùi Thị Hiền</b> → OPEX - Khác.',
   'Trả thẻ tín dụng công ty để "Tài chính" vì là trả khoản vay ngắn hạn (không đoán thẻ quẹt mua gì). Phí dịch vụ ngân hàng là chi phí quản lý, không phải lãi vay. Phí chuyển tiền nước ngoài / vận chuyển hàng TQ tính vào giá vốn hàng nhập.']],
+ ['Hoá đơn & thuế (3TShop)',[
+  '3TShop không có API (anh 09/10/2026): anh xuất ra Google Sheet → app đọc (scripts/keo-3tshop.js — file Drive đọc bằng đăng nhập Drive chỉ đọc, file xuất bản đọc qua link). Chạy lại không trùng: mỗi lần thay nguyên dữ liệu của file đó.',
+  '3 hộ kinh doanh: Hiền Thủy ↔ Kiot "Đồ thờ Hiền Thủy" · Chánh Tâm ↔ "Đồ Thờ Chánh Tâm" · Shidai ↔ "Tổng kho sỉ Shidai". Hiền Thủy / Chánh Tâm: file quý (tab XNT_QUY tồn kho, HD_XUAT hoá đơn bán, HD_NHAP hàng nhập). Shidai: file tổng (THÔNG TIN XUẤT, NHẬP HT) — tồn kho Shidai chưa lấy (đang hỏi tab nào).',
+  'Bảng hoá đơn đọc theo TÊN cột (mỗi kỳ phần mềm xuất mẫu khác — vd Hiền Thủy quý 3 là bảng kê 36 cột). Tỷ lệ xuất hoá đơn = tổng hoá đơn bán (chưa thuế) / tổng hoá đơn Kiot cùng cửa hàng cùng tháng.',
+  'Ngày hoá đơn ngoài 01/01/2025 → hôm nay coi là gõ sai: không tính vào báo cáo theo tháng, liệt kê ở trang Đối soát lỗi.']],
  ['Chuông thông báo',[
   'Chuông trên thanh menu (thay báo Zalo, không đẩy về điện thoại — anh chốt 08/10/2026). Số đỏ = chưa đọc, tự cập nhật mỗi phút khi đang mở app. Bấm 1 thông báo → mở đúng phiếu.',
   'Chi: phiếu mới / từ Kiot / mở lại → kế toán. Kế toán xác nhận lượt 1 → giám đốc. Giám đốc xác nhận → kế toán (thanh toán) + người tạo phiếu. Giám đốc trả lại → kế toán. Đã thanh toán / bị từ chối → người tạo (và người đã kiểm). Nhiều đề xuất Kiot cùng lúc gộp 1 thông báo.',

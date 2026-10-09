@@ -57,6 +57,11 @@ begin
       'chi_tiet','Sổ sách '||replace(to_char(so_sach,'FM999G999G999G990'),',','.')||' · thực tế '||replace(to_char(so_tien,'FM999G999G999G990'),',','.')) order by abs(so_sach-so_tien) desc), '[]')
     into dong from so where so_sach <> so_tien;
   r := r || jsonb_build_object('ma','lech_so_du','ten','Số dư sổ sách lệch số dư thực tế (sao kê / đếm két)','ai','ke_toan','huong_dan','Mở Dòng tiền → tài khoản đó → tìm ngày bắt đầu lệch','ds',dong);
+  -- 9b. Hoá đơn 3TShop ngày sai năm (ngoài 01/01/2025 → hôm nay) — kế toán sửa trên file xuất 3TShop
+  select coalesce(jsonb_agg(jsonb_build_object('bang','thue','id',id,'ngay',ngay,'so_tien',thanh_tien,'mo_ta',case hkd when 'HT' then 'Hiền Thủy' when 'CT' then 'Chánh Tâm' else 'Shidai' end||' · '||case chieu when 'ra' then 'HĐ bán' else 'nhập' end||' '||coalesce(so_hd,'')||' · '||left(coalesce(ten,''),50),
+      'chi_tiet','Ngày '||coalesce(to_char(ngay,'DD/MM/YYYY'),'trống')||' — sai năm?') order by hkd, dong), '[]')
+    into dong from kt_thue_hd where ngay is null or ngay not between date '2025-01-01' and hom + 1;
+  r := r || jsonb_build_object('ma','thue_ngay','ten','Hoá đơn 3TShop ghi ngày sai năm','ai','ke_toan','huong_dan','Sửa ngày trên file 3TShop xuất ra rồi báo Claude kéo lại','ds',dong);
   -- 10–12. Lỗi hệ thống
   select max(keo_luc) into v_keo from kt_kiot_so_quy;
   select coalesce(jsonb_agg(jsonb_build_object('bang','nhat_ky','id',id,'ngay',(luc at time zone 'Asia/Ho_Chi_Minh')::date,'mo_ta','Job kéo Kiot lỗi','chi_tiet',left(du_lieu->>'loi',120)) order by id desc), '[]')
