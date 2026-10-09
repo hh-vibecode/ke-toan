@@ -96,6 +96,17 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **09/10/2026 chiều muộn** — **Dữ liệu năm 2026** (anh: "auke, làm nốt"):
+  (1) Edge Function `kt-kiot` nhận khoảng ngày (`tu/den/thu_tu`) → `scripts/keo-kiot-cu.js` kéo Kiot T1–T8 (sổ quỹ, hoá đơn, trả hàng, nhập hàng; giá vốn tính theo giá vốn hiện tại — gần đúng);
+      phiếu thu Kiot chép sang app từ 01/05 (T5–T8: 2.260 phiếu). Tiền vào T9 không đổi.
+  (2) `scripts/nhap-sheet-khoang.js` nhập chi + điều chuyển 01/05–31/08: nguồn chính tab 7.DATA CHI (có khoản ghi thẳng từ sao kê mà file Đề nghị không có),
+      thêm người đề nghị / UNC từ file Đề nghị (ghép 586/587). 587 phiếu (11 thiếu TK/loại → Chờ TT cho kế toán bổ sung) + 74 điều chuyển (5 dòng sheet trống TK → bỏ).
+      Đối chiếu với 5.TH THU-CHI: T6/T7/T8 khớp đúng từng đồng (trừ 11 phiếu chờ bổ sung); T5 app hơn sheet đúng 1 phiếu đã trả nhưng sheet để trống ngày DV nên tổng sheet bỏ sót.
+      Lần chạy thử đầu dùng file Đề nghị làm nguồn → đối chiếu thấy thiếu khoản sao kê → đổi nguồn TRƯỚC khi ghi.
+  (3) KHÔNG tính ngược số dư 01/05: ra 7 tài khoản âm (sheet không theo dõi chi của chúng) → số dư vẫn từ mốc 01/09; giao diện ghi rõ. Thu ngoài Kiot T5–T8 sheet không ghi → câu hỏi trên app đổi thành T1–T8.
+  (4) Bộ lọc kỳ thêm "Năm nay" (anh yêu cầu), bỏ "Từ 1/9"; mốc chọn ngày 01/01; biểu đồ Tổng quan dùng tổng theo ngày (`kt_dong_tien.theo_ngay`, file `supabase-schema-kt-nam-2026.sql`).
+  (5) Chứng từ Drive tất cả các tháng đang kéo nền (`keo-chung-tu-drive.js tat_ca ghi`, chạy lại không trùng).
+
 - **09/10/2026 tối** — (1) Đăng nhập Drive anh qua **rclone** (chỉ đọc, `%USERPROFILE%\tools\rclone`, remote `ktdrive:` — anh cho phép; lưu ý: client_id dùng chung của rclone sẽ bị Google dừng trong 2026 → khi lỗi thì tạo client_id riêng).
   Kéo chứng từ T9: 194 file / 93 phiếu (169 MB, 80 UNC, 53 PDF); 14 file không phải ảnh/PDF + 2 lỗi → giữ link gốc. Tháng khác: chạy `keo-chung-tu-drive.js tat_ca ghi`.
   (2) Bỏ nút "Chứng từ kỳ (.zip)" (anh: cần file nào vào phiếu tải). (3) Anh trả lời 6 câu trên app: két: cộng tiền bán 31/8 vào tồn đầu 01/09 (số ở doi-chieu-T9.local.md);

@@ -361,10 +361,13 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='09/10/2026 15:25';
+const APP_VERSION='09/10/2026 16:15';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
-const MOC='2026-09-01';   // anh chốt 05/10/2026: làm từ tháng 9 (dữ liệu anh gửi là T9)
+// Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot (bán hàng, khách, NCC, hàng hoá) từ 01/01 · tiền vào / ra (thu Kiot, chi, điều chuyển) từ 01/05 —
+// T1–T4 sheet không có chi đầy đủ / thu ngoài Kiot / điều chuyển (đang hỏi kế toán) · SỐ DƯ tài khoản tính từ 01/09 (mốc tồn đầu; T5–T8 thiếu dữ liệu 7 TK).
+const MOC='2026-01-01', MOC_TIEN='2026-05-01', MOC_SODU='2026-09-01', MOC_NHAP='2026-09-01';   // MOC_NHAP: ngày sớm nhất được nhập phiếu mới
+const TRANG_TIEN=['tong_quan','dong_tien','thu','chi','dieu_chuyen','pl'];
 const NGAN_HANG=['Vietcombank','BIDV','VietinBank','Agribank','Techcombank','MB Bank','VPBank','ACB','Sacombank','TPBank','VIB','HDBank','SHB','MSB','OCB','SeABank','Eximbank','LPBank','Nam A Bank','Bắc Á Bank','ABBank','PVcomBank','BaoViet Bank','Kienlongbank','Saigonbank','VietABank','NCB','Viet Capital Bank','Cake','Timo','Tiền mặt'];
 const TT_CHI={cho_duyet:['Chờ kế toán kiểm','warn'],cho_gd:['Chờ GĐ xác nhận','teal'],cho_tt:['Chờ thanh toán','info'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối thanh toán','bad']};
 const MAU_TAB={cho_duyet:'warn',cho_gd:'teal',nghi_trung:'bad',cho_tt:'info',qua_han:'bad',da_tt:'ok',tu_choi:'grey',hd_do:'vio',tat_ca:'accent'};
@@ -491,15 +494,21 @@ function setKy(k,silent){
   if(k==='thang'){tu=t.slice(0,8)+'01'}
   else if(k==='thang_truoc'){const a=new Date(d.getFullYear(),d.getMonth()-1,1),b=new Date(d.getFullYear(),d.getMonth(),0);tu=ymd(a);den=ymd(b)}
   else if(k==='7'){tu=ymd(new Date(d.getTime()-6*864e5))}
-  else if(k==='tu_moc'){tu=MOC}
+  else if(k==='nam'){tu=t.slice(0,4)+'-01-01'}
   if(k!=='tuy')[S.tu,S.den]=[tu<MOC?MOC:tu,den];
   if(!silent)render();
 }
 function kyBar(){
-  return `<div class="seg">${[['thang','Tháng này'],['thang_truoc','Tháng trước'],['7','7 ngày'],['tu_moc','Từ 1/9']].map(([k,l])=>
+  return `<div class="seg">${[['thang','Tháng này'],['thang_truoc','Tháng trước'],['7','7 ngày'],['nam','Năm nay']].map(([k,l])=>
     `<button class="${S.ky===k?'on':''}" onclick="setKy('${k}')">${l}</button>`).join('')}</div>
     <input type="date" class="sel ${S.ky==='tuy'?'on':''}" value="${S.tu}" min="${MOC}" onchange="S.ky='tuy';S.tu=this.value;render()">
-    <input type="date" class="sel ${S.ky==='tuy'?'on':''}" value="${S.den}" min="${MOC}" onchange="S.ky='tuy';S.den=this.value;render()">`;
+    <input type="date" class="sel ${S.ky==='tuy'?'on':''}" value="${S.den}" min="${MOC}" onchange="S.ky='tuy';S.den=this.value;render()">${canhBaoMoc()}`;
+}
+// Kỳ chọn trước mốc dữ liệu → nhắc ngắn (không đoạn dài): tiền vào / ra có từ 01/05, số dư tài khoản từ 01/09
+function canhBaoMoc(){if(!TRANG_TIEN.includes(S.page))return '';
+  if(S.tu<MOC_TIEN)return `<span class="badge warn" title="Tháng 1–4: sheet không có đủ chi / thu ngoài Kiot / điều chuyển — đang hỏi kế toán (Cài đặt → Cần giải đáp)">Tiền vào / ra có từ 01/05</span>`;
+  if(S.tu<MOC_SODU&&['tong_quan','dong_tien'].includes(S.page))return `<span class="badge warn" title="Tháng 5–8 thiếu sổ chi của 7 tài khoản và thu ngoài Kiot → không tính được số dư từng tài khoản">Số dư tài khoản tính từ 01/09</span>`;
+  return ''
 }
 
 // ── Khung ──────────────────────────────────────────────────────────────────
@@ -584,7 +593,9 @@ async function pageTongQuan(){
   S.cache.dem=b.dem;const d=b.dem,pt=b.phai_tra||{};S.cache.bc=b;
   const kpi=(c,ic,l,v,s,on)=>`<div class="kpi ${on?'click':''}" style="--c:var(--${c})" ${on?`onclick="${on}"`:''}><div class="ic">${IC[ic]}</div><div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div></div>`;
   const days=[];for(let x=new Date(S.tu+'T00:00:00');ymd(x)<=S.den;x=new Date(x.getTime()+864e5))days.push(ymd(x));
-  S.cache.ngay=days.map(ng=>({ng,thu:sumBy(dt.phat_sinh.filter(p=>p.ngay===ng&&p.kieu==='thu'),p=>p.vao),chi:sumBy(dt.phat_sinh.filter(p=>p.ngay===ng&&p.kieu==='chi'),p=>p.ra)}));
+  // tổng theo ngày lấy từ theo_ngay (không lọc mốc số dư — có cả tháng 5–8, sửa 09/10)
+  const tn=Object.fromEntries((dt.theo_ngay||[]).map(x=>[x.ngay,x]));
+  S.cache.ngay=days.map(ng=>({ng,thu:+((tn[ng]||{}).thu||0),chi:+((tn[ng]||{}).chi||0)}));
   const hbars=(list,tong)=>{const mx=Math.max(1,...list.map(x=>x.so_tien));return list.length?list.map(x=>`<div class="hbar" data-tip="${esc(x.loai)}|${fmt(x.so_tien)}|${pct(x.so_tien,tong)}${x.so_phieu?'|'+x.so_phieu+' phiếu':''}">
       <div class="lb" title="${esc(x.loai)}">${esc(x.loai)}${x.cach_chia==='ty_le_thu'?' <span class="badge">chung</span>':''}</div>
       <div class="tr"><div class="bar-fill" style="width:${Math.max(1,x.so_tien/mx*78)}%"></div><div class="v">${fmtN(x.so_tien)} <span>${pct(x.so_tien,tong)}</span></div></div></div>`).join(''):'<div class="empty">Chưa có</div>'};
@@ -600,7 +611,7 @@ async function pageTongQuan(){
   el.innerHTML=head('Tổng quan',kyBar()+chiTheo+(b.kiot_keo_luc?`<span class="badge">Kiot cập nhật ${fmtDT(b.kiot_keo_luc)}</span>`:`<span class="badge warn">Chưa kéo Kiot</span>`))+
     `<div class="kpi-row">${kpi('ok','vao','Tiền vào',fmt(b.tien_vao),'Không gồm điều chuyển nội bộ')}
       ${kpi('bad','ra','Tiền ra',fmt(b.tien_ra),((S.f.chi_theo||'ngay_tt')==='ngay_su_dung'?'Theo ngày dùng DV · ':'')+'Chênh lệch '+(b.tien_vao-b.tien_ra<0?'':'+')+fmt(b.tien_vao-b.tien_ra))}
-      ${kpi('accent','ton','Tồn cuối kỳ',fmt(b.ton_cuoi_ky),'Đầu kỳ '+fmt(b.ton_dau_ky))}</div>
+      ${S.tu<MOC_SODU?kpi('accent','ton','Tồn cuối kỳ',S.den>='2026-08-31'?fmt(b.ton_cuoi_ky):'—','Số dư tính từ 01/09/2026'):kpi('accent','ton','Tồn cuối kỳ',fmt(b.ton_cuoi_ky),'Đầu kỳ '+fmt(b.ton_dau_ky))}</div>
     <div class="kpi-row">${kpi('warn','cho','Chi chờ duyệt',(d.cho_duyet||0)+(d.cho_gd||0),'phiếu · '+fmt((+pt.cho_duyet_tien||0)+(+pt.cho_gd_tien||0)),"S.f.chi_tt='cho_duyet';go('chi')")}
       ${kpi('info','tt','Chi chờ thanh toán',d.cho_tt,'phiếu · '+fmt(pt.cho_tt_tien),"S.f.chi_tt='cho_tt';go('chi')")}
       ${kpi('vio','hd','HĐ đỏ chưa nhận',d.hd_do_chua_nhan,'khoản đã chi',"S.f.chi_tt='hd_do';go('chi')")}</div>
@@ -633,6 +644,7 @@ async function pageTongQuan(){
 // Rê chuột: sổ sách / sao kê / lệch. Bấm dòng: sang Dòng tiền & đối soát của tài khoản đó.
 function veSoDu(){
   const box=$('#so-du');const b=S.cache.bc;if(!box||!b)return;
+  if(S.den<'2026-08-31'){box.innerHTML='<h4>Số dư tài khoản</h4><div class="empty">Số dư từng tài khoản tính từ 01/09/2026</div>';return}
   const tt=Object.fromEntries((b.thuc_te||[]).map(x=>[x.tk,x]));
   const all=b.tai_khoan.filter(t=>t.hoat_dong||Number(t.cuoi_ky)).map(t=>({...t,v:Number(t.cuoi_ky)}));
   const rong=t=>!t.v&&!Number(t.thu)&&!Number(t.chi)&&!Number(t.dc);
@@ -690,6 +702,7 @@ function shellBadges(){const dem=S.cache.dem;if(!dem||!S.toi)return;
 async function pageDongTien(){
   const el=$('#page');S.f.dt_tk=S.f.dt_tk||(tkOn()[0]||{}).id;
   if(S.f.dt_view==='quy'){el.innerHTML=head('Dòng tiền & quỹ cửa hàng',kyBar())+dtTabs()+'<div id="quy"></div>';await veQuyCuaHang($('#quy'));return}
+  if(S.tu<MOC_SODU){el.innerHTML=head('Dòng tiền & quỹ cửa hàng',kyBar())+dtTabs()+'<div class="card"><div class="empty">Số dư từng tài khoản tính từ 01/09/2026 — chọn kỳ từ 01/09 để đối soát (tháng 5–8 thiếu sổ chi của 7 tài khoản).</div></div>';return}
   el.innerHTML=head('Dòng tiền & đối soát',kyBar())+'<div class="empty">Đang tải...</div>';
   const r=await rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den});
   const one=S.f.dt_tk!=='all';const id=Number(S.f.dt_tk);
@@ -736,7 +749,7 @@ function formThu(id){
   const ro=!coGhi()||x.nguon==='kiot';
   const m=modal(`<h2>${id?'Khoản thu':'Thêm khoản thu'}${x.nguon==='kiot'?' <span class="badge">từ Kiot — chỉ xem</span>':''}</h2>
     <div class="form" id="f">
-      <label>Ngày thu<input type="date" name="ngay" value="${x.ngay}" min="${MOC}"></label>
+      <label>Ngày thu<input type="date" name="ngay" value="${x.ngay}" min="${MOC_TIEN}"></label>
       <label>Số tiền${moneyIn('so_tien',x.so_tien)}</label>
       <label>Loại thu<select name="loai_id" onchange="goiYNoiDungThu()">${opts(loai('thu'),x.loai_id,'— chọn —')}</select></label>
       <label>Cơ sở<select name="don_vi_id" onchange="goiYNoiDungThu()">${opts(coSo(),x.don_vi_id,'— chọn —')}</select></label>
@@ -820,7 +833,7 @@ function formChi(id){
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuChi(${id||'null'})">Lưu</button></div>`);
 }
 function fieldsThanhToan(x){return `<div class="form" id="ftt">
-    <label>Ngày thanh toán<input type="date" name="ngay_tt" value="${x.ngay_tt||homNay()}" min="${MOC}"></label>
+    <label>Ngày thanh toán<input type="date" name="ngay_tt" value="${x.ngay_tt||homNay()}" min="${MOC_TIEN}"></label>
     <label>Tài khoản chi<select name="tai_khoan_id">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label>
     <label>Loại chi<select name="loai_id">${opts(loai('chi'),x.loai_id,'— chọn —')}</select></label>
     <label>Link uỷ nhiệm chi<input name="unc" value="${esc(x.unc||'')}"></label>
@@ -910,7 +923,7 @@ function formDC(id){
   const x=id?S.cache.dc.find(d=>d.id===id):{ngay:homNay(),kiot:'khong',noi_dung:'Điều chuyển giữa các tài khoản'};
   modal(`<h2>${id?'Điều chuyển #'+id:'Thêm điều chuyển'}</h2>
     <div class="form" id="f">
-      <label>Ngày<input type="date" name="ngay" value="${x.ngay}" min="${MOC}"></label>
+      <label>Ngày<input type="date" name="ngay" value="${x.ngay}" min="${MOC_TIEN}"></label>
       <label>Số tiền${moneyIn('so_tien',x.so_tien)}</label>
       <label>Tài khoản đi<select name="tk_di_id">${opts(tkOn(),x.tk_di_id,'— chọn —')}</select></label>
       <label>Tài khoản nhận<select name="tk_nhan_id">${opts(tkOn(),x.tk_nhan_id,'— chọn —')}</select></label>
@@ -1354,9 +1367,9 @@ async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':null;if(!trang||!coXem(trang))return;
   // thông báo gộp (vd nhiều đề xuất chi từ Kiot) → mở tab chờ kế toán kiểm, lọc nguồn Kiot
-  if(!x.dong_id){if(trang==='chi'){S.f.chi_tt='cho_duyet';S.f.chi_nguon=x.loai==='chi_kiot'?'kiot':''}setKy('tu_moc',true);go(trang);return}
+  if(!x.dong_id){if(trang==='chi'){S.f.chi_tt='cho_duyet';S.f.chi_nguon=x.loai==='chi_kiot'?'kiot':''}setKy('nam',true);go(trang);return}
   // mở trang + kỳ "Từ 1/9" để chắc chắn thấy phiếu, đợi danh sách tải xong rồi mở đúng phiếu
-  const k=trang==='chi'?'chi':'dc';delete S.cache[k];setKy('tu_moc',true);if(trang==='chi')S.f.chi_tt='tat_ca';
+  const k=trang==='chi'?'chi':'dc';delete S.cache[k];setKy('nam',true);if(trang==='chi')S.f.chi_tt='tat_ca';
   S.page=trang;location.hash=trang;shell();
   for(let i=0;i<80;i++){await new Promise(r=>setTimeout(r,100));const c=S.cache[k];if(!c)continue;
     if(c.find(r=>r.id===x.dong_id))trang==='chi'?xemChi(x.dong_id):formDC(x.dong_id);else toast('Phiếu không còn (đã xoá) hoặc anh/chị không có quyền xem');return}}
@@ -1391,7 +1404,9 @@ async function luuTL(id){const v=$('#tl'+id).value.trim();if(!v)return alert('Ch
 // Sửa luật ở SQL thì sửa luôn mục tương ứng ở đây — để người khác đọc là hiểu app đang tính thế nào.
 const LOGIC=[
  ['Phạm vi dữ liệu',[
-  'App xử lý dữ liệu <b>từ 01/09/2026</b> (anh Hải chốt 05/10/2026). Không chọn được kỳ trước mốc này.',
+  'Anh chốt 09/10/2026: xử lý <b>cả năm 2026</b>. Hiện có: <b>Kiot từ 01/01</b> (bán hàng, hoá đơn, trả hàng, nhập hàng, sổ quỹ) · <b>tiền vào / ra từ 01/05</b> (thu Kiot + chi + điều chuyển lấy từ sheet cũ, đối chiếu từng tháng) · <b>số dư tài khoản từ 01/09</b>.',
+  'Tháng 1–4: sheet không có đủ chi (thiếu loại chi), thu ngoài Kiot và điều chuyển → chưa nhập, đang hỏi kế toán. Tháng 5–8: sheet không ghi thu ngoài Kiot (lãi ngân hàng, hộ kinh doanh trả tiền, giám đốc nộp tiền...) và không có chi của 7 tài khoản → không tính được số dư từng tài khoản trước 01/09 (tính ngược ra số âm vô lý).',
+  'Bộ lọc kỳ có "Năm nay". Chọn kỳ trước 01/05 → nhãn "Tiền vào / ra có từ 01/05"; trước 01/09 → "Số dư tài khoản tính từ 01/09" (thẻ tồn đầu kỳ, biểu đồ số dư, trang đối soát không hiện số sai).',
   'Mỗi tài khoản có <b>tồn đầu</b> tại 1 ngày mốc (mặc định 01/09/2026 — tồn đầu tháng 9 lấy theo sheet cũ, kế toán soát lại; xem bảng tài khoản bên dưới). Phát sinh trước ngày mốc không tính — đã nằm trong tồn đầu.']],
  ['Tiền vào · Tiền ra · Tồn',[
   '<b>Tiền vào</b> = tổng các khoản Thu ở trạng thái <b>Đã duyệt</b>, tính theo <b>ngày thu</b>. Gồm thu từ Kiot (tự kéo) và thu ngoài (nhập trên app).',
@@ -1532,7 +1547,7 @@ async function pageCaiDat(mod){
 function arrIn(v){return (v||'').split(',').map(s=>s.trim()).filter(Boolean)}
 function formDM(bang,id){
   const src={tai_khoan:S.dm.tai_khoan,don_vi:S.dm.don_vi,loai:S.dm.loai}[bang];
-  const x=id?src.find(r=>r.id===id):{hoat_dong:true,thu_tu:100,loai:'ngan_hang',ngay_ton_dau:MOC,ton_dau:0,la_co_so:true,nhom:'chi',cach_chia:'rieng'};
+  const x=id?src.find(r=>r.id===id):{hoat_dong:true,thu_tu:100,loai:'ngan_hang',ngay_ton_dau:MOC_SODU,ton_dau:0,la_co_so:true,nhom:'chi',cach_chia:'rieng'};
   const f={
     tai_khoan:`<label class="full">Tên tài khoản (ngân hàng + chủ + số)<input name="ten" value="${esc(x.ten||'')}"></label>
       <label>Loại<select name="loai">${optsObj(LOAI_TK,x.loai)}</select></label><label>Thứ tự<input name="thu_tu" type="number" value="${x.thu_tu}"></label>

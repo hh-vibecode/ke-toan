@@ -6,6 +6,8 @@
 //      (lastModifiedFrom = mốc sửa mới nhất trong bảng − 2 giờ). Bảng trống → kéo đầy đủ.
 //   3. kt_tinh_gia_von() cho hoá đơn mới. Ghi nhật ký.
 // Body {"day_du":["khach","hang",...]} = kéo ĐẦY ĐỦ các loại đó (nạp ban đầu); {"chi":[...]} = chỉ chạy các loại đó.
+// Kéo DỮ LIỆU CŨ theo khoảng (09/10/2026, anh: xử lý cả năm 2026): {"tu":"2026-01-01","den":"2026-02-01","chi":["so_quy","hoa_don",...],
+//   "day_du":["hoa_don",...], "thu_tu":"2026-05-01"} — den KHÔNG gồm; phiếu thu Kiot chỉ chép sang kt_thu từ thu_tu (mặc định = tu).
 // Secrets (tiền tố KT_): KT_KIOT_CLIENT_ID, KT_KIOT_CLIENT_SECRET, KT_KIOT_RETAILER, KT_CRON_KEY. Monsieur Claude
 const SB = Deno.env.get('SUPABASE_URL')!, SK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const MOC = '2026-09-01', SO_NGAY = 10;
@@ -54,7 +56,7 @@ const vn = (s: any) => s ? String(s).slice(0, 19) + '+07:00' : null;
 const n0 = (x: any) => x == null ? null : Math.round(Number(x));
 
 // Mỗi loại: đường Kiot · tham số · cách lọc khi kéo đầy đủ · cách đổi sang dòng bảng
-const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, string>, dayDu?: Record<string, string>, moc?: (x: any) => boolean, doi: (x: any) => any }> = {
+const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, string>, dayDu?: (tu: string, den: string) => Record<string, string>, moc?: (x: any, tu: string) => boolean, doi: (x: any) => any }> = {
   khach: { bang: 'kt_kiot_khach', duong: 'customers', tham: { includeTotal: 'true' },
     doi: x => ({ id: x.id, ma: x.code, ten: x.name, sdt: x.contactNumber ?? null, loai: x.type ?? null, chi_nhanh_id: x.branchId ?? null,
       cong_no: n0(x.debt), tong_mua: n0(x.totalInvoiced), tong_mua_tru_tra: n0(x.totalRevenue), tao_kiot: vn(x.createdDate), sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
@@ -67,36 +69,36 @@ const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, s
         gia_ban: n0(x.basePrice), hoat_dong: x.isActive ?? true, ton, tong_ton: ton.reduce((s: number, t: any) => s + (Number(t.ton) || 0), 0),
         gia_tri_ton: n0(ton.reduce((s: number, t: any) => s + (Number(t.ton) || 0) * (Number(t.gia_von) || 0), 0)),
         tao_kiot: vn(x.createdDate), sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }; } },
-  hoa_don: { bang: 'kt_kiot_hoa_don', duong: 'invoices', tham: {}, dayDu: { fromPurchaseDate: MOC, toPurchaseDate: MAI() }, moc: x => String(x.purchaseDate) >= MOC,
+  hoa_don: { bang: 'kt_kiot_hoa_don', duong: 'invoices', tham: {}, dayDu: (tu, den) => ({ fromPurchaseDate: tu, toPurchaseDate: den }), moc: (x, tu) => String(x.purchaseDate) >= tu,
     doi: x => ({ id: x.id, ma: x.code, ngay: vn(x.purchaseDate), chi_nhanh: x.branchName ?? null, nv_ban: x.soldByName ?? null,
       khach_id: x.customerId ?? null, khach_ma: x.customerCode ?? null, khach_ten: x.customerName ?? null, ma_dat_hang: x.orderCode ?? null,
       tong: n0(x.total), da_tra: n0(x.totalPayment), trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null,
       chi_tiet: (x.invoiceDetails || []).map((d: any) => ({ sp: d.productId, ma: d.productCode, ten: d.productName, nhom: d.categoryName ?? null,
         sl: d.quantity, gia: n0(d.price), giam: n0(d.discount), tien: n0(d.subTotal), sl_tra: d.returnQuantity ?? 0 })),
       gia_von: null, sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
-  tra_hang: { bang: 'kt_kiot_tra_hang', duong: 'returns', tham: {}, dayDu: { fromReturnDate: MOC, toReturnDate: MAI() }, moc: x => String(x.returnDate) >= MOC,
+  tra_hang: { bang: 'kt_kiot_tra_hang', duong: 'returns', tham: {}, dayDu: (tu, den) => ({ fromReturnDate: tu, toReturnDate: den }), moc: (x, tu) => String(x.returnDate) >= tu,
     doi: x => ({ id: x.id, ma: x.code, hoa_don_id: x.invoiceId ?? null, ngay: vn(x.returnDate), chi_nhanh: x.branchName ?? null,
       tong_tra: n0(x.returnTotal), phi_tra: n0(x.returnFee), da_tra: n0(x.totalPayment), trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null,
       chi_tiet: (x.returnDetails || []).map((d: any) => ({ sp: d.productId, ma: d.productCode, ten: d.productName, sl: d.quantity, gia: n0(d.price), tien: n0(d.subTotal) })),
       sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
-  nhap_hang: { bang: 'kt_kiot_nhap_hang', duong: 'purchaseorders', tham: {}, dayDu: { fromPurchaseDate: MOC, toPurchaseDate: MAI() }, moc: x => String(x.purchaseDate) >= MOC,
+  nhap_hang: { bang: 'kt_kiot_nhap_hang', duong: 'purchaseorders', tham: {}, dayDu: (tu, den) => ({ fromPurchaseDate: tu, toPurchaseDate: den }), moc: (x, tu) => String(x.purchaseDate) >= tu,
     doi: x => ({ id: x.id, ma: x.code, ngay: vn(x.purchaseDate), chi_nhanh: x.branchName ?? null, ncc_id: x.supplierId ?? null, ncc_ma: x.supplierCode ?? null,
       ncc_ten: x.supplierName ?? null, tong: n0(x.total), da_tra: n0(x.totalPayment), giam_gia: n0(x.discount), trang_thai: x.status ?? null, mo_ta: x.description ?? null,
       chi_tiet: (x.purchaseOrderDetails || []).map((d: any) => ({ sp: d.productId, ma: d.productCode, ten: d.productName, sl: d.quantity, gia: n0(d.price), giam: n0(d.discount) })),
       sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
 };
 
-async function soQuy() {
+async function soQuy(khoang?: { tu: string, den: string, thu_tu: string }) {
   const vnNow = new Date(Date.now() + 7 * 3600e3);
   // endDate của Kiot KHÔNG gồm chính ngày đó → lấy tới ngày mai để có phiếu hôm nay
   const den = new Date(vnNow.getTime() + 864e5).toISOString().slice(0, 10), tuD = new Date(vnNow.getTime() - SO_NGAY * 864e5).toISOString().slice(0, 10);
-  const tu = tuD < MOC ? MOC : tuD;
-  const cf = await kiotHet('cashflow', { startDate: tu, endDate: den, includeAccount: 'true', includeBranch: 'true', includeUser: 'true' });
+  const tu = khoang ? khoang.tu : (tuD < MOC ? MOC : tuD);
+  const cf = await kiotHet('cashflow', { startDate: tu, endDate: khoang ? khoang.den : den, includeAccount: 'true', includeBranch: 'true', includeUser: 'true' });
   await ghi('kt_kiot_so_quy', cf.map(x => ({ id: x.id, ma: x.code, ngay: vn(x.transDate), chi_nhanh: x.branch ?? null, la_thu: x.amount > 0,
     so_tien: Math.abs(Math.round(x.amount)), phuong_thuc: x.method ?? null, tai_khoan: x.accountId ? String(x.accountId) : null, doi_tac: x.partnerName ?? null,
     nhom: x.cashGroup ?? null, noi_dung: x.description ?? null, chung_tu_goc: x.origin ?? null, trang_thai: String(x.status), goc: x, keo_luc: new Date().toISOString() })));
-  const d = await sb('rpc/kt_dong_bo_kiot', { p_tu: tu }, 'return=representation');
-  return { tu, den, so_phieu: cf.length, dong_bo: d.ok ? await d.json() : 'lỗi ' + d.status };
+  const d = await sb('rpc/kt_dong_bo_kiot', { p_tu: khoang ? khoang.thu_tu : tu }, 'return=representation');
+  return { tu, den: khoang ? khoang.den : den, so_phieu: cf.length, dong_bo: d.ok ? await d.json() : 'lỗi ' + d.status };
 }
 
 Deno.serve(async req => {
@@ -108,12 +110,14 @@ Deno.serve(async req => {
     tok = await kiotToken();
     const dayDu: string[] = body.day_du || [];
     const chay: string[] = body.chi || (dayDu.length ? dayDu : ['so_quy', ...Object.keys(LOAI)]);
-    if (chay.includes('so_quy')) kq.so_quy = await soQuy();
+    const khoang = body.tu ? { tu: String(body.tu), den: String(body.den || MAI()), thu_tu: String(body.thu_tu || body.tu) } : undefined;
+    const TU = khoang ? khoang.tu : MOC, DEN = khoang ? khoang.den : MAI();
+    if (chay.includes('so_quy')) kq.so_quy = await soQuy(khoang);
     for (const k of chay.filter(k => LOAI[k])) {
       const L = LOAI[k]; const moc = dayDu.includes(k) ? null : await mocSua(L.bang);
-      const tham = { ...L.tham, ...(moc ? { lastModifiedFrom: moc } : (L.dayDu || {})) };
+      const tham = { ...L.tham, ...(moc ? { lastModifiedFrom: moc } : (L.dayDu ? L.dayDu(TU, DEN) : {})) };
       let ds = await kiotHet(L.duong, tham);
-      if (L.moc) ds = ds.filter(L.moc);
+      if (L.moc) ds = ds.filter(x => L.moc!(x, TU));
       await ghi(L.bang, ds.map(L.doi));
       kq[k] = { kieu: moc ? 'phan_sua' : 'day_du', so_dong: ds.length };
     }
