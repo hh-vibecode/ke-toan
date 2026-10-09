@@ -96,6 +96,13 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **09/10/2026 tối (2)** — (1) **Luật loại chi** (anh: "m tự quyết, người hay nhầm"): `scripts/chot-loai-chi.js` 8 luật theo bản chất (phí NH → Vận hành; CTNN / vận chuyển TQ → Giá vốn;
+  trả thẻ tín dụng → Tài chính — ban đầu định đổi sang Marketing, xem dữ liệu thấy là trả nợ thẻ nên giữ Tài chính); sửa 37 phiếu cũ. Bảng `kt_luat_loai_chi`
+  + cờ "nghi sai loại" bật từ ngày áp dụng app (`kt_cai_dat.ngay_ap_dung_app` — CHỜ anh báo ngày) — test 5/5 (`scripts/kiem-thu-luat-loai.js`).
+  (2) **Trang Đối soát lỗi** (Nghiệp vụ → Theo dõi; kiểu Daily Task app MKT) — `supabase-schema-kt-doi-soat.sql`: 9 nhóm việc kế toán + lỗi hệ thống (job Kiot, ghép TK, tồn kho).
+  (3) Câu hỏi còn 4 (cân bằng quỹ, cọc Phương Hương, gốc vay T9, đã đóng câu chốt loại). Sao kê: anh tự gửi hằng tuần (thư mục Drive — chờ tên).
+  (4) 3TShop = tồn kho sổ thuế: file Shidai (link xuất bản đầu tiên) + HT Q1–Q3 + CT Q1 đọc được qua rclone; CT Q2/Q3 chờ link dạng chữ.
+
 - **09/10/2026 tối** — Anh chốt: **luồng CHUẨN từ 01/09; trước T9 phiên phiến** (đóng tạm việc / câu hỏi chỉ dính trước T9).
   (1) Chi T1–T4: `scripts/nhap-chi-t1-4.js` (tab NĂM 2025 + THÁNG 1..5 + tab chính, cột nhận theo TÊN tiêu đề) — 418 phiếu; thêm 5 TK cũ (ngừng dùng) VCB HT/CT/SD, BIDV HT, TECH Cá Nhân;
       3 TK Kiot đã xoá ghép vào VCB HT/CT/SD theo 4 số cuối phiếu gốc → thu Kiot T1–T4 đủ (820 phiếu bị bỏ lần đầu đã vào lại).

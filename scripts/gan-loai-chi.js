@@ -33,6 +33,8 @@ function hoc(mau) {   // mau: [{noi_dung, thu_huong_ten, loai}]
   return { docs, vec, theoTH, luat: hocLuat(mau) };
 }
 function gan(md, p) {   // p: {noi_dung, thu_huong_ten} → {loai, tin: 'cao'|'vua'|'thap', cach, diem}
+  const ch = require('./chot-loai-chi').chot(p.noi_dung);   // luật Claude chốt (09/10) xét trước tiên
+  if (ch) return { loai: ch.loai, tin: 'cao', cach: 'luật chốt "' + ch.ten + '"', diem: 1 };
   // luật từ khoá RẤT CHẮC (≥90% trong mẫu) xét TRƯỚC người thụ hưởng — vd phiếu lương của nhân viên từng được hoàn ứng loại Khác (sửa 09/10)
   const lu0 = (md.luat || []).find(x => x.ty >= 0.9 && x.re.test(p.noi_dung || ''));
   if (lu0) return { loai: lu0.loai, tin: 'cao', cach: 'từ khoá "' + lu0.ten + '"', diem: Math.round(lu0.ty * 100) / 100 };
