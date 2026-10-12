@@ -49,7 +49,9 @@ begin
     left(concat_ws(' · ', coalesce(nullif(trim(q.doi_tac), ''), q.nhom, case when q.ma ~ '^TNH' then 'Thu khác' else 'Khách lẻ' end), nullif(trim(q.noi_dung), ''), 'Kiot ' || q.ma), 300) noi_dung
   from kt_kiot_so_quy q
   where q.la_thu and q.so_tien > 0 and coalesce(q.nhom, '') <> 'Chuyển rút'
-    and (q.ngay at time zone 'Asia/Ho_Chi_Minh')::date >= p_tu;
+    and (q.ngay at time zone 'Asia/Ho_Chi_Minh')::date >= p_tu
+    -- 12/10/2026: phiếu đã dọn vĩnh viễn (vd nhà hàng AMHP — anh: không thuộc app) → không chép lại, kể cả khi kéo lại tháng cũ
+    and not exists (select 1 from kt_bo_qua_nguon b where b.ma_nguon = 'kiot:' || q.id);
 
   select count(*) into v_bo from _k where trang_thai = '0' and tk_id is null and not noi_bo;
 

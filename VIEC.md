@@ -84,6 +84,9 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 - **File khoá `kt-keys.local.txt` chỉ chứa khoá app kế toán** (anh chốt 09/10, đã dọn: bỏ Pancake / Meta / OpenAI / mật khẩu CSDL / link app MKT).
   Sửa file khoá bằng script theo tên dòng, KHÔNG in nội dung kể cả đã che (sự cố 09/10).
 - **Anh KHÔNG có nghiệp vụ kế toán** (anh 12/10): nối dữ liệu thấy gì lạ → đặt câu hỏi (bảng `kt_cau_hoi`, theo chủ đề), giải thích đời thường; chưa rõ thì gắn nhãn "chưa chắc", không trình như số đúng.
+- **App KHÔNG gồm 2 nhà hàng AMHP (Saikung / Hongkong)** — anh 12/10: "cái gì liên quan tới nhà hàng clear hết khỏi app". Đã dọn (`supabase-schema-kt-bo-nha-hang.sql`):
+  2 đơn vị, 14 phiếu chi, 5 phiếu thu Kiot (ẩn, chặn chép lại qua `kt_bo_qua_nguon`), ký hiệu HĐ *MHH/*MSH. GIỮ chi tiếp khách ở nhà hàng ngoài + khách đồ thờ tên "nhà hàng".
+  Dữ liệu mới dính nhà hàng AMHP → dọn luôn, không hỏi.
 - **Hoá đơn: meInvoice = CÔNG TY TỔNG** (đi theo dòng tiền tài khoản công ty) · **Kiot / 3TShop = các HỘ** (Hiền Thủy, Chánh Tâm, Shidai) — anh chốt 12/10.
   meInvoice nối qua MISA Open API (`developer.misa.vn/apis/itg/meinvoice`, Client ID + Secret + MST + tài khoản — trong `kt-keys.local.txt`), CHỈ ĐỌC (`/invoice/token`, `/invoice/templates`, `/invoice/paging`).
   API KHÔNG có hoá đơn mua vào. Tài liệu đầy đủ (JSON): `developer.misa.vn/backend/api/products/docs/MEINVOICE`.
