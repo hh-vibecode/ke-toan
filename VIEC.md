@@ -83,6 +83,10 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
   Anh chốt 09/10: "Đã thanh toán luôn" KHÔNG cần giám đốc xác nhận · phiếu Kiot tự sinh (TTTH trả hàng, PCPN trả NCC) CÓ qua đủ 2 lượt.
 - **File khoá `kt-keys.local.txt` chỉ chứa khoá app kế toán** (anh chốt 09/10, đã dọn: bỏ Pancake / Meta / OpenAI / mật khẩu CSDL / link app MKT).
   Sửa file khoá bằng script theo tên dòng, KHÔNG in nội dung kể cả đã che (sự cố 09/10).
+- **Anh KHÔNG có nghiệp vụ kế toán** (anh 12/10): nối dữ liệu thấy gì lạ → đặt câu hỏi (bảng `kt_cau_hoi`, theo chủ đề), giải thích đời thường; chưa rõ thì gắn nhãn "chưa chắc", không trình như số đúng.
+- **Hoá đơn: meInvoice = CÔNG TY TỔNG** (đi theo dòng tiền tài khoản công ty) · **Kiot / 3TShop = các HỘ** (Hiền Thủy, Chánh Tâm, Shidai) — anh chốt 12/10.
+  meInvoice nối qua MISA Open API (`developer.misa.vn/apis/itg/meinvoice`, Client ID + Secret + MST + tài khoản — trong `kt-keys.local.txt`), CHỈ ĐỌC (`/invoice/token`, `/invoice/templates`, `/invoice/paging`).
+  API KHÔNG có hoá đơn mua vào. Tài liệu đầy đủ (JSON): `developer.misa.vn/backend/api/products/docs/MEINVOICE`.
 - **Thông báo = chuông TRONG APP kiểu Facebook**, KHÔNG đẩy về điện thoại (anh chốt 08/10). Bảng `kt_thong_bao`, hàm lưu tự sinh (`supabase-schema-kt-thong-bao.sql`).
 - **Ảnh chứng từ: gọn nhất cho người up** (anh 08/10): nén + tải ngầm, bấm lại xem ngay. Kiot KHÔNG cho ghi phiếu thu/chi qua API (đã thử 08/10) → 4A tạo tay.
 - **Phát sinh còn trên sheet cũ: kéo tạm vào, gắn thẻ "Kéo từ sheet cũ"**, kế toán điền dần (anh chốt 08/10).
@@ -102,6 +106,9 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
   tồn kho nối Q1→Q2→Q3 khớp từng mã (số lượng lệch 0, tiền lệch vài đồng do làm tròn); HT cũng nối đúng. Câu 43 đóng; thêm câu "Chánh Tâm: hoá đơn bán lệch xa
   doanh thu Kiot theo tháng" (nhóm D). Job 3 ngày qua: Kiot 37 lượt OK, chụp tồn kho đủ 09–11/10. Chạy lại kéo chứng từ Drive tất cả tháng (2 tài khoản).
   Rút kinh nghiệm: bị chặn vì quyền / link → báo anh ngay, không tự thử lại lâu.
+- **12/10/2026 (2)** — **meInvoice nối được (CHỈ ĐỌC)**: token OK, 6 ký hiệu, kéo thử cả năm 2026 về máy (đủ số API báo, không trùng) — CHƯA ghi vào app.
+  Lạ → 3 câu hỏi nhóm E: 2 ký hiệu máy tính tiền "Hong Kong Center" / "Saikung Hot Pot" (khách lẻ, chỉ T1–T2) · mỗi ký hiệu dùng làm gì · tiền hoá đơn
+  công ty về tài khoản nào. Chờ trả lời rồi mới làm bảng + trang. Chứng từ Drive đang kéo lại (2 tài khoản): số file đã tăng, job còn chạy.
 
 - **09/10/2026 tối (3)** — **Hoá đơn & thuế từ 3TShop** (giai đoạn D — 3TShop không API, anh xuất Sheet): `supabase-schema-kt-thue.sql` (kt_thue_xnt, kt_thue_hd, kt_bc_thue),
   `scripts/keo-3tshop.js` + `scripts/doc-xlsx.js` (nguồn trong `nguon-3tshop.local.json` — gitignore). Đã kéo HT Q1–Q3, CT Q1, Shidai (hoá đơn). Hoá đơn đọc theo TÊN cột
