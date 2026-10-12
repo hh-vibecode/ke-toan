@@ -109,6 +109,11 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 - **12/10/2026 (2)** — **meInvoice nối được (CHỈ ĐỌC)**: token OK, 6 ký hiệu, kéo thử cả năm 2026 về máy (đủ số API báo, không trùng) — CHƯA ghi vào app.
   Lạ → 3 câu hỏi nhóm E: 2 ký hiệu máy tính tiền "Hong Kong Center" / "Saikung Hot Pot" (khách lẻ, chỉ T1–T2) · mỗi ký hiệu dùng làm gì · tiền hoá đơn
   công ty về tài khoản nào. Chờ trả lời rồi mới làm bảng + trang. Chứng từ Drive đang kéo lại (2 tài khoản): số file đã tăng, job còn chạy.
+- **12/10/2026 (3)** — Anh trả lời: Hong Kong Center / Saikung Hot Pot = dịch vụ khác, KHÔNG tính · THT/TYY = GTGT, TTV = nến, TCK = chuyển khoản (GIỮ hết).
+  Câu "tiền hoá đơn công ty về TK nào" để kế toán trả lời. **Triển khai**: `supabase-schema-kt-meinvoice.sql` (kt_nap_meinvoice, chỉ service_role) ·
+  Edge Function `kt-meinvoice` · secrets `KT_MEINVOICE_*` · pg_cron `kt-meinvoice` 17:25 UTC (00:25 VN, nạp lại tháng này + tháng trước) · `scripts/trien-khai-meinvoice.js`.
+  Nạp 2026: số hoá đơn từng tháng khớp lần kéo thử (4 ký hiệu). Trang Hoá đơn & thuế thêm cột "Công ty tổng" (không có cột Kiot / tỷ lệ) + trang Logic.
+  CHƯA kiểm: hoá đơn bị HUỶ có nằm trong danh sách MISA trả về không (API danh sách không có cột trạng thái) — cần đối chiếu 1 tháng với màn meInvoice.
 
 - **09/10/2026 tối (3)** — **Hoá đơn & thuế từ 3TShop** (giai đoạn D — 3TShop không API, anh xuất Sheet): `supabase-schema-kt-thue.sql` (kt_thue_xnt, kt_thue_hd, kt_bc_thue),
   `scripts/keo-3tshop.js` + `scripts/doc-xlsx.js` (nguồn trong `nguon-3tshop.local.json` — gitignore). Đã kéo HT Q1–Q3, CT Q1, Shidai (hoá đơn). Hoá đơn đọc theo TÊN cột
