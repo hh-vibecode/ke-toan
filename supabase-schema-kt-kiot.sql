@@ -53,7 +53,9 @@ begin
     -- 12/10/2026: phiếu đã dọn vĩnh viễn (vd nhà hàng AMHP — anh: không thuộc app) → không chép lại, kể cả khi kéo lại tháng cũ
     and not exists (select 1 from kt_bo_qua_nguon b where b.ma_nguon = 'kiot:' || q.id);
 
-  select count(*) into v_bo from _k where trang_thai = '0' and tk_id is null and not noi_bo;
+  -- 12/10/2026: không đếm 3 quỹ "Tiền Quỹ Ngoài" trên Kiot (đã chốt 09/10: chưa theo dõi) → cảnh báo chỉ hiện khi có tài khoản Kiot LẠ thật
+  select count(*) into v_bo from _k where trang_thai = '0' and tk_id is null and not noi_bo
+    and not exists (select 1 from kt_kiot_so_quy q2 where q2.id = _k.id and coalesce(q2.goc->>'account', '') ~* 'quỹ ngoài');
 
   with up as (
     insert into kt_thu (ngay, noi_dung, so_tien, don_vi_id, tai_khoan_id, loai_id, trang_thai, nguon, ma_nguon, tao_boi)

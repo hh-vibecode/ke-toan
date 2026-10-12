@@ -116,6 +116,8 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
   Câu "tiền hoá đơn công ty về TK nào" để kế toán trả lời. **Triển khai**: `supabase-schema-kt-meinvoice.sql` (kt_nap_meinvoice, chỉ service_role) ·
   Edge Function `kt-meinvoice` · secrets `KT_MEINVOICE_*` · pg_cron `kt-meinvoice` 17:25 UTC (00:25 VN, nạp lại tháng này + tháng trước) · `scripts/trien-khai-meinvoice.js`.
   Nạp 2026: số hoá đơn từng tháng khớp lần kéo thử (4 ký hiệu). Trang Hoá đơn & thuế thêm cột "Công ty tổng" (không có cột Kiot / tỷ lệ) + trang Logic.
+  Sửa lỗi trang Đối soát ("column reference dong is ambiguous" — nhóm hoá đơn ngày sai thêm 09/10, kiểm thử sót) + nhãn hoá đơn công ty.
+  Cảnh báo "phiếu thu Kiot không ghép TK" không đếm 3 quỹ "Tiền Quỹ Ngoài" (đã chốt chưa theo dõi). Dọn nhà hàng AMHP (xem quy tắc).
   CHƯA kiểm: hoá đơn bị HUỶ có nằm trong danh sách MISA trả về không (API danh sách không có cột trạng thái) — cần đối chiếu 1 tháng với màn meInvoice.
 
 - **09/10/2026 tối (3)** — **Hoá đơn & thuế từ 3TShop** (giai đoạn D — 3TShop không API, anh xuất Sheet): `supabase-schema-kt-thue.sql` (kt_thue_xnt, kt_thue_hd, kt_bc_thue),
