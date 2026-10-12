@@ -54,7 +54,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
 | 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10**, làm lại 17:32 cho gọn: kéo thả / Ctrl+V / chọn ngay lúc tạo phiếu, nén + tải ngầm có %, ghim giấy trên danh sách. Chưa thử chọn file thật trên trình duyệt bằng tay — anh thử giúp 1 phiếu |
 | 5 | Kế toán bổ sung 50 phiếu kéo bù (người đề nghị, chứng từ) — 09/10 ẩn 2 phiếu trùng #376 #377 | trang Chi → lọc nguồn "Kéo từ sheet cũ — cần bổ sung" |
-| 8 | Kéo chứng từ cũ từ Google Drive lên app (`scripts/keo-chung-tu-drive.js [T9|tat_ca] [ghi]`, chạy lại không trùng) | CHỜ ANH mở quyền thư mục Drive ("Bất kỳ ai có link" — tạm) → chạy T9 → kiểm → tất cả → anh khoá lại |
+| 8 | Kéo chứng từ cũ từ Google Drive lên app (`scripts/keo-chung-tu-drive.js [T9|tat_ca] [ghi]`, chạy lại không trùng) | **XONG 12/10** (2 tài khoản Drive): 1.884 file / 839 phiếu (~1,1 GB, ảnh gốc chưa nén; gói Supabase Pro). Còn 22 file cả 2 tài khoản không mở được · 80 file không phải ảnh/PDF hoặc > 15 MB · 2 lỗi — chạy lại không trùng |
 | 9 | Tồn kho: lịch `kt-kiot-hang-dem` 23:20 kéo đầy đủ hàng hoá + `kt-ton-kho` 23:40 chụp (`scripts/trien-khai-ton-kho.js`) | theo dõi nhật ký `chup_ton_kho`; làm màn hình xem tồn theo ngày khi cần |
 | 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
