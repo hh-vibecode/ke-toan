@@ -5,15 +5,17 @@ const fs = require('fs'), path = require('path'), os = require('os'), { execFile
 const EXE = path.join(process.env.USERPROFILE || os.homedir(), 'tools', 'rclone', 'rclone.exe');
 const CONF = path.join(process.env.APPDATA || '', 'rclone', 'rclone.conf');
 const MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif', pdf: 'application/pdf' };
-const coSan = () => fs.existsSync(EXE) && fs.existsSync(CONF) && /\[ktdrive\]/.test(fs.readFileSync(CONF, 'utf8'));
+// 12/10/2026: anh đăng nhập thêm tài khoản Drive thứ 2 (ktdrive2:) — file không thấy ở tài khoản này thì thử tài khoản kia
+const REMOTES = (() => { try { const c = fs.readFileSync(CONF, 'utf8'); return ['ktdrive', 'ktdrive2'].filter(n => c.includes('[' + n + ']')).map(n => n + ':'); } catch (e) { return []; } })();
+const coSan = () => fs.existsSync(EXE) && REMOTES.length > 0;
 // Tải 1 file theo id Drive → { ten, mime, buf }. File không có quyền / không tồn tại → ném lỗi.
 function taiFile(id) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ktd-'));
   try {
-    execFileSync(EXE, ['backend', 'copyid', 'ktdrive:', id, dir + path.sep], { stdio: 'pipe', timeout: 120000 });
+    for (const rm of REMOTES) { try { execFileSync(EXE, ['backend', 'copyid', rm, id, dir + path.sep], { stdio: 'pipe', timeout: 120000 }); } catch (e) { } if (fs.readdirSync(dir).length) break; }
     const f = fs.readdirSync(dir)[0]; if (!f) throw new Error('không tải được (không quyền / không có file)');
     const ext = (f.split('.').pop() || '').toLowerCase();
     return { ten: f, mime: MIME[ext] || 'application/octet-stream', buf: fs.readFileSync(path.join(dir, f)) };
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
-module.exports = { coSan, taiFile };
+module.exports = { coSan, taiFile, REMOTES };

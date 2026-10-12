@@ -6,6 +6,7 @@
 const fs = require('fs'), path = require('path'), os = require('os'), { execFileSync } = require('child_process');
 const { sql } = require('./sql'); const { docXlsx } = require('./doc-xlsx');
 const GHI = process.argv[2] === 'ghi', J = x => '$kt$' + JSON.stringify(x) + '$kt$';
+const { REMOTES } = require('./rclone-drive');
 const RC = path.join(process.env.USERPROFILE || os.homedir(), 'tools', 'rclone', 'rclone.exe');
 const so = v => { if (v == null || v === '') return null; const t = String(v).trim(); if (/^-?\d+(\.\d+)?(e[+-]?\d+)?$/i.test(t)) return +t;
   if (/^#|lỗi|error/i.test(t)) return null; const n = +t.replace(/[^\d.-]/g, ''); return isNaN(n) || t.replace(/[^\d]/g, '') === '' ? null : n; };
@@ -15,7 +16,8 @@ const thueSuat = v => { if (v == null || v === '') return null; const t = String
 const chu = v => v == null || v === '' ? null : String(v).trim();
 async function taiVe(ng) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), '3t-'));
-  if (ng.drive) execFileSync(RC, ['backend', 'copyid', 'ktdrive:', ng.drive, dir + path.sep, '--drive-export-formats', 'xlsx'], { stdio: 'pipe', timeout: 180000 });
+  // 2 tài khoản Drive của anh (12/10/2026): ktdrive: và ktdrive2: — file nằm ở tài khoản nào thì tải bằng tài khoản đó
+  if (ng.drive) { for (const rm of REMOTES) { try { execFileSync(RC, ['backend', 'copyid', rm, ng.drive, dir + path.sep, '--drive-export-formats', 'xlsx'], { stdio: 'pipe', timeout: 180000 }); } catch (e) { } if (fs.readdirSync(dir).length) break; } }
   else { const r = await fetch(ng.xuat_ban); if (!r.ok) throw new Error('tải link xuất bản lỗi ' + r.status); fs.writeFileSync(path.join(dir, 'tong.xlsx'), Buffer.from(await r.arrayBuffer())); }
   const f = fs.readdirSync(dir)[0]; if (!f) throw new Error('không tải được file (không có quyền / sai mã)'); return path.join(dir, f);
 }

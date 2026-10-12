@@ -35,7 +35,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | A | Kéo Kiot mở rộng (bảng `kt_kiot_*`): khách, NCC, hàng hoá + tồn kho + giá vốn, hoá đơn + chi tiết, trả hàng, nhập hàng | **XONG 08/10** — nạp đầy đủ + 3 tiếng/lần chỉ phần sửa (`lastModifiedFrom`), ~26 giây/lần |
 | B | Báo cáo Bán hàng / Khách hàng / NCC / Hàng hoá-tồn kho (công nợ khách + NCC lấy số Kiot) | **XONG 08/10** (`supabase-schema-kt-bao-cao.sql`) |
 | C | Quỹ tiền mặt 3 cửa hàng (tab trong Dòng tiền) · P&L thực thu/thực chi · Vay & lãi vay · Tài sản | **XONG 08/10** — điều chuyển báo bằng **chuông trong app** (17:32, thay Zalo; anh không cần đẩy về điện thoại) |
-| D | Hoá đơn thuế + tồn kho sổ thuế 3 HKD (chờ anh API meInvoice / 3TShop) | chờ anh — trang "Hoá đơn & thuế" đang là trang chờ |
+| D | Hoá đơn thuế + tồn kho sổ thuế 3 HKD (3TShop anh xuất Sheet; meInvoice chờ anh AppID) | **3TShop XONG 12/10**: HT Q1–Q3 · CT Q1–Q3 · Shidai hoá đơn (tồn kho Shidai chờ câu hỏi tab) — meInvoice chờ anh |
 
 **CÒN THIẾU (cập nhật 09/10/2026)**: hoá đơn thuế (meInvoice) + tồn kho sổ thuế (3TShop) — chờ anh
 · **chứng từ cũ trên Google Drive** (264 file / 133 phiếu; T9: 211 lượt file / 94 phiếu) — file Drive RIÊNG TƯ, cần anh mở quyền (mục 2 dòng 8)
@@ -95,6 +95,12 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **12/10/2026** — **Drive 2 tài khoản**: CT Q2/Q3 lỗi 404 vì file nằm ở tài khoản Google KHÁC của anh (không phải giới hạn lượt như tưởng 09/10) → anh đăng nhập thêm
+  remote `ktdrive2:` (chỉ đọc). `scripts/rclone-drive.js` (REMOTES) + `keo-3tshop.js` thử lần lượt `ktdrive:` → `ktdrive2:`. Kéo CT Q2 (728 mã) + Q3 (729 mã):
+  tồn kho nối Q1→Q2→Q3 khớp từng mã (số lượng lệch 0, tiền lệch vài đồng do làm tròn); HT cũng nối đúng. Câu 43 đóng; thêm câu "Chánh Tâm: hoá đơn bán lệch xa
+  doanh thu Kiot theo tháng" (nhóm D). Job 3 ngày qua: Kiot 37 lượt OK, chụp tồn kho đủ 09–11/10. Chạy lại kéo chứng từ Drive tất cả tháng (2 tài khoản).
+  Rút kinh nghiệm: bị chặn vì quyền / link → báo anh ngay, không tự thử lại lâu.
 
 - **09/10/2026 tối (3)** — **Hoá đơn & thuế từ 3TShop** (giai đoạn D — 3TShop không API, anh xuất Sheet): `supabase-schema-kt-thue.sql` (kt_thue_xnt, kt_thue_hd, kt_bc_thue),
   `scripts/keo-3tshop.js` + `scripts/doc-xlsx.js` (nguồn trong `nguon-3tshop.local.json` — gitignore). Đã kéo HT Q1–Q3, CT Q1, Shidai (hoá đơn). Hoá đơn đọc theo TÊN cột
