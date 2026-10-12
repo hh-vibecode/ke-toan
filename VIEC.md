@@ -66,6 +66,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 - **Đăng nhập tài khoản + mật khẩu, phân quyền giống app MKT/Sale** (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang Xem / Nhập-sửa. Tài khoản RIÊNG app kế toán. Hiện có: `hai` (Supreme), `giamdoc`, `ketoan` (Admin). Mật khẩu ban đầu trong `kt-keys.local.txt`.
 - Mọi thứ Claude tạo ký tên **Monsieur Claude**.
 - **Repo public** (anh chốt 2/10/2026) → tuyệt đối không có khoá quản trị / số liệu thật / số tài khoản thật trong code và sổ.
+  Lịch sử git còn vài số tổng cũ (commit 05/10 + 09/10, đã xoá khỏi file hiện tại) — anh chốt 12/10: **KỆ, không viết lại lịch sử**. Từ nay vẫn quét số trước commit.
 - **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026). Không in token ra.
 - **Khung app** theo đề xuất 05/10 (anh đồng ý) + **trang Logic trong Cài đặt** để người khác đọc app tính thế nào. Sửa luật ở SQL thì sửa luôn trang Logic.
 - **Phạm vi dữ liệu: từ 01/09/2026** (anh chốt 05/10: "làm trước T9, dữ liệu t gửi là T9, kết hợp kiot").
