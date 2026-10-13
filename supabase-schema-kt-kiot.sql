@@ -74,6 +74,7 @@ begin
   get diagnostics v_huy = row_count;
 
   return jsonb_build_object('them', v_them, 'sua', v_sua, 'huy', v_huy, 'bo_qua_khong_ghep_tk', v_bo,
-    'chi', kt_dong_bo_kiot_chi(p_tu));   -- đề xuất chi từ Kiot (từ 08/10/2026)
+    'chi', kt_dong_bo_kiot_chi(p_tu),   -- đề xuất chi từ Kiot (từ 08/10/2026)
+    'tu_khop_4a', kt_dong_bo_kiot_4a());   -- 13/10: phiếu chi app đã có phiếu chi Kiot khớp → tự gán 4A (supabase-schema-kt-kiot-4a.sql)
 end $$;
 revoke execute on function public.kt_dong_bo_kiot(date) from public, anon, authenticated;
