@@ -69,6 +69,8 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 **13/10 tối**: (1) "Chưa cập nhật KiotViet" — app TỰ khớp phiếu chi đã trả với phiếu chi trên sổ quỹ Kiot sau mỗi lần kéo (`supabase-schema-kt-kiot-4a.sql`): 170/177 phiếu từ 01/09 tự gán 4A, 7 còn lại vào Đối soát lỗi. (2) Kéo thả file tồn 3TShop trên trang Kho sổ thuế (đọc trên máy bằng SheetJS, `supabase-schema-kt-thue-nap.sql`) — thử file CT Q3 thật khớp 729 mã / tổng giá trị. Kế toán (chị Jaycie) 13/10: làm SỔ THUẾ CÔNG TY trước, 2 HKD sau → trang mặc định Công ty THT; kỳ nạp từ app = tháng ngày chốt (YYYY-MM), khác kỳ quý (YYYY-Qn) của 2 HKD — khi làm HKD phải thống nhất. Chưa làm: bước 3 xử lý điều chỉnh, bước 4 khoá kỳ. (3) Căn đều khối Tổng quan.
 
+**13/10 — XEM NHANH (anh: nối các chỗ hay cần check, kiểu app MKT/Sale)**: hàm `kt_drill` (`supabase-schema-kt-drill.sql`, quyền theo trang tương ứng) + khung trượt bên phải có Quay lại / Xuất Excel. Nối: Tổng quan (thẻ KQKD → Bán hàng / Lãi lỗ / chi phí; dòng cơ sở = lọc cả trang; ô chi phí HĐ → phiếu chi phí; nhóm hàng → mặt hàng; khách → hoá đơn → mặt hàng; mặt hàng → tồn từng cơ sở + hoá đơn; tồn kho → hàng tồn > 6 tháng; số dư → Sổ quỹ; thu / chi → Phiếu thu / chi; công nợ đến hạn / quá hạn → Công nợ đã lọc; vay → Vay) · Công nợ (hoá đơn đang nợ → chi tiết HĐ) · Phiếu chi (tên NCC / cơ sở = lọc) · Hoá đơn & Thuế (thẻ → trang; đơn vị → kho sổ thuế; dòng HĐ → dòng hàng; mã sổ thuế → phát sinh; thẻ âm sổ → tab). Kiểm: mã sổ thuế HT Q3 khớp hoá đơn 274/274.
+
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
