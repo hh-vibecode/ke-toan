@@ -448,7 +448,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 15:05';
+const APP_VERSION='13/10/2026 15:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -962,6 +962,7 @@ async function pageChi(){
 }
 // CÔNG NỢ & THANH TOÁN — giao diện mẫu kế toán (13/10/2026). Số nợ = số Kiot; tuổi nợ = gán nợ vào chứng từ gần nhất (FIFO) — xem
 // supabase-schema-kt-cong-no-kiot.sql. Kiot không có hạn thanh toán → chỉ tính số ngày nợ (đang hỏi kế toán số ngày được nợ).
+// Nhóm tuổi nợ: xếp CẢ khách / NCC theo khoản nợ lâu nhất (giống cột Trạng thái) — thẻ trên trang này và khối Công nợ ở Tổng quan cùng cách tính.
 const TUOI=[['b1','≤ 30 ngày','ok'],['b2','31–60 ngày','warn'],['b3','61–90 ngày','bad'],['b4','Trên 90 ngày','bad']];
 const nhomTuoi=x=>x.no<=0?null:x.tuoi==null?'b4':x.tuoi<=30?'b1':x.tuoi<=60?'b2':x.tuoi<=90?'b3':'b4';
 async function pageCongNoDT(loai){
@@ -978,7 +979,7 @@ async function pageCongNoDT(loai){
   el.innerHTML=head('Công nợ & Thanh toán · '+ten,`<select class="sel ${f[k+'_cn']?'on':''}" onchange="S.f.${k}_cn=this.value;render()"><option value="">Tất cả cơ sở</option>${cnL.map(c=>`<option ${f[k+'_cn']===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
       <input type="search" class="sel" placeholder="Tìm mã, tên, SĐT" value="${esc(f[k+'_q']||'')}" onchange="S.f.${k}_q=this.value;render()"><span class="badge">Số Kiot · cập nhật 3 tiếng / lần</span>`)+
     `<div class="ct-kpi">${the('accent',KH?'Tổng phải thu':'Tổng phải trả',tong('no'),no.length+' '+dtTen.toLowerCase(),'no')}
-      ${TUOI.map(([kk,t,c])=>the(c,'Nợ '+t,tong(kk)+(kk==='b4'?tong('truoc_2026'):0),no.filter(x=>nhomTuoi(x)===kk).length+' '+dtTen.toLowerCase()+(kk==='b4'&&tong('truoc_2026')?' · gồm nợ trước 2026':''),kk)).join('')}
+      ${TUOI.map(([kk,t,c])=>{const r=no.filter(x=>nhomTuoi(x)===kk);return the(c,'Nợ '+t,sumBy(r,x=>x.no),r.length+' '+dtTen.toLowerCase(),kk)}).join('')}
       ${the('info',KH?'Khách trả trước':'Mình trả trước NCC',-sumBy(tt,x=>x.no),tt.length+' '+dtTen.toLowerCase(),'tra_truoc')}</div>
     <div class="ct-split ${chon?'co':''}"><div class="card scroll ct-ds"><table class="ct-t"><tr><th>Mã</th><th>${dtTen}</th><th class="phu">Cơ sở</th><th class="num">${loc==='tra_truoc'?'Trả trước':'Còn nợ'}</th><th class="num phu">Số CT nợ</th><th class="phu2">Nợ từ ngày</th><th class="num">Số ngày nợ</th><th>Trạng thái</th></tr>
       ${l.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemCongNo('${loai}',${x.id})"><td class="nw muted">${esc(x.ma)}</td><td><div>${esc(x.ten)}</div><div class="muted">${esc(x.sdt||'')}</div></td>
