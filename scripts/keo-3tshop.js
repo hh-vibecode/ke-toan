@@ -1,7 +1,8 @@
 // Kéo TỒN KHO SỔ THUẾ + HOÁ ĐƠN từ file 3TShop anh xuất ra Google Sheet (3TShop không có API — anh 09/10/2026) — Monsieur Claude
 // Nguồn: nguon-3tshop.local.json (gitignore): [{hkd, ky, drive (mã file Drive, đọc qua rclone — chỉ đọc) | xuat_ban (link xuất bản), mau}]
 //   mau '3t_quy' (file quý của HT / CT): tab XNT_QUY · HD_XUAT · HD_NHAP
-//   mau 'sd_tong' (file tổng Shidai): tab THÔNG TIN XUẤT (hoá đơn bán) · NHẬP HT (hoá đơn mua từ Hiền Thủy). NXT Shidai CHƯA lấy (nhiều tab bản sao, có ô lỗi #VALUE! — đang hỏi).
+//   mau 'sd_tong' (file tổng Shidai): anh chốt 12/10/2026 Shidai = CÔNG TY THT → hoá đơn BÁN lấy từ meInvoice (tab THÔNG TIN XUẤT trùng ~96% số + ngày,
+//     KHÔNG lấy nữa để khỏi tính 2 lần); chỉ lấy NHẬP HT (hoá đơn mua từ Hiền Thủy — meInvoice không có hoá đơn mua vào) với hkd 'CTY'. NXT Shidai CHƯA lấy (nhiều tab bản sao, có ô lỗi #VALUE! — đang hỏi).
 // Mỗi nguồn: xoá dữ liệu cũ của chính nguồn đó rồi ghi lại (chạy lại không trùng). Chạy: Code.exe scripts/keo-3tshop.js [ghi]
 const fs = require('fs'), path = require('path'), os = require('os'), { execFileSync } = require('child_process');
 const { sql } = require('./sql'); const { docXlsx } = require('./doc-xlsx');
@@ -54,8 +55,7 @@ function hang(rows, tu) { return Object.keys(rows).map(Number).filter(n => n >= 
       const t2 = x.tab('HD_XUAT'); if (t2) hd.push(...docHD(x.load(t2), { hkd: ng.hkd, chieu: 'ra', nguon: key + ':HD_XUAT' }));
       const t3 = x.tab('HD_NHAP'); if (t3) hd.push(...docHD(x.load(t3), { hkd: ng.hkd, chieu: 'vao', nguon: key + ':HD_NHAP' }));
     } else if (ng.mau === 'sd_tong') {
-      const t2 = x.tab('THÔNG TIN XUẤT'); if (t2) hd.push(...docHD(x.load(t2), { hkd: 'SD', chieu: 'ra', nguon: key + ':THONG_TIN_XUAT' }));
-      const t3 = x.tab('NHẬP HT'); if (t3) hd.push(...docHD(x.load(t3), { hkd: 'SD', chieu: 'vao', nguon: key + ':NHAP_HT', ghi_chu: 'Mua từ HKD Hiền Thủy' }));
+      const t3 = x.tab('NHẬP HT'); if (t3) hd.push(...docHD(x.load(t3), { hkd: 'CTY', chieu: 'vao', nguon: key + ':NHAP_HT', ghi_chu: 'Mua từ HKD Hiền Thủy' }));
     }
     x.xoa();
     const ra = hd.filter(h => h.chieu === 'ra'), vao = hd.filter(h => h.chieu === 'vao'), f = n => Math.round(n).toLocaleString('vi-VN');

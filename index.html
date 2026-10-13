@@ -362,7 +362,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='12/10/2026 12:02';
+const APP_VERSION='13/10/2026 13:59';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1223,8 +1223,8 @@ async function luuTS(id){const o=formData($('#f'));o.id=id;o.nguyen_gia=so(o.ngu
 // HOÁ ĐƠN & THUẾ — hộ: 3TShop · công ty tổng: meInvoice (12/10/2026)
 // HOÁ ĐƠN & THUẾ (09/10/2026): nguồn 3TShop — anh xuất ra Google Sheet (3TShop không có API), scripts/keo-3tshop.js đọc vào app.
 // 3 hộ: HT Hiền Thủy · CT Chánh Tâm · SD Shidai. Tồn kho sổ thuế theo hộ × kỳ · hoá đơn bán ra so với doanh thu Kiot cùng cửa hàng.
-// CTY = công ty tổng (MISA meInvoice, tự kéo mỗi đêm — 12/10/2026): không có cửa hàng Kiot → chỉ cột hoá đơn
-const HKD={HT:['Hiền Thủy','Đồ thờ Hiền Thủy'],CT:['Chánh Tâm','Đồ Thờ Chánh Tâm'],SD:['Shidai','Tổng kho sỉ Shidai'],CTY:['Công ty tổng',null]};
+// CTY = công ty THT = Shidai (anh chốt 12/10/2026): hoá đơn bán từ MISA meInvoice (tự kéo mỗi đêm), hoá đơn mua Shidai từ 3TShop; so với Kiot "Tổng kho sỉ Shidai"
+const HKD={HT:['Hiền Thủy','Đồ thờ Hiền Thủy'],CT:['Chánh Tâm','Đồ Thờ Chánh Tâm'],CTY:['Công ty THT (Shidai)','Tổng kho sỉ Shidai']};
 async function pageHoaDonThue(){
   const el=$('#page');el.innerHTML=head('Hoá đơn & thuế',kyBar())+'<div class="empty">Đang tính...</div>';
   const b=await rpc('kt_bc_thue',{p_tu:S.tu,p_den:S.den});S.cache.thue=b;
@@ -1234,7 +1234,7 @@ async function pageHoaDonThue(){
   const thang=[...new Set([...ra.map(x=>x.thang),...b.kiot.map(x=>x.thang)])].sort();
   const o=(hkd,th)=>{const h=ra.find(x=>x.hkd===hkd&&x.thang===th),k=b.kiot.find(x=>x.chi_nhanh===HKD[hkd][1]&&x.thang===th);return {hd:h?+h.thanh_tien:0,k:k?+k.doanh_thu:0}};
   el.innerHTML=head('Hoá đơn & thuế',kyBar()+'<span class="badge">Hộ: 3TShop · Công ty: meInvoice</span>'+(b.keo_luc?`<span class="badge">Kéo ${fmtDT(b.keo_luc)}</span>`:''))+
-    `<div class="kpi-row">${kpiBox('ok','vao','Doanh thu xuất hoá đơn (chưa thuế)',fmt(sumBy(ra,x=>x.thanh_tien)),'Trong kỳ · 3 hộ + công ty')}
+    `<div class="kpi-row">${kpiBox('ok','vao','Doanh thu xuất hoá đơn (chưa thuế)',fmt(sumBy(ra,x=>x.thanh_tien)),'Trong kỳ · 2 hộ + công ty')}
       ${kpiBox('warn','hd','Thuế GTGT đầu ra',fmt(sumBy(ra,x=>x.tien_thue)),'Theo hoá đơn trong kỳ')}
       ${kpiBox('accent','ton','Tồn kho sổ thuế (kỳ mới nhất)',fmt(tonCuoi),Object.values(kyMoi).map(x=>x.hkd+' '+x.ky).join(' · '))}</div>
     <div class="kpi-row">${kpiBox('info','hd','Số hoá đơn bán ra',fmt(sumBy(ra,x=>x.so_hd)),'Trong kỳ')}
@@ -1566,14 +1566,15 @@ const LOGIC=[
   'Trả thẻ tín dụng công ty để "Tài chính" vì là trả khoản vay ngắn hạn (không đoán thẻ quẹt mua gì). Phí dịch vụ ngân hàng là chi phí quản lý, không phải lãi vay. Phí chuyển tiền nước ngoài / vận chuyển hàng TQ tính vào giá vốn hàng nhập.']],
  ['Hoá đơn & thuế (3TShop)',[
   '3TShop không có API (anh 09/10/2026): anh xuất ra Google Sheet → app đọc (scripts/keo-3tshop.js — file Drive đọc bằng đăng nhập Drive chỉ đọc, file xuất bản đọc qua link). Chạy lại không trùng: mỗi lần thay nguyên dữ liệu của file đó.',
-  '3 hộ kinh doanh: Hiền Thủy ↔ Kiot "Đồ thờ Hiền Thủy" · Chánh Tâm ↔ "Đồ Thờ Chánh Tâm" · Shidai ↔ "Tổng kho sỉ Shidai". Hiền Thủy / Chánh Tâm: file quý (tab XNT_QUY tồn kho, HD_XUAT hoá đơn bán, HD_NHAP hàng nhập). Shidai: file tổng (THÔNG TIN XUẤT, NHẬP HT) — tồn kho Shidai chưa lấy (đang hỏi tab nào).',
+  '2 hộ kinh doanh + công ty: Hiền Thủy ↔ Kiot "Đồ thờ Hiền Thủy" · Chánh Tâm ↔ "Đồ Thờ Chánh Tâm" · Công ty THT = Shidai ↔ "Tổng kho sỉ Shidai" (anh chốt 12/10/2026). Hiền Thủy / Chánh Tâm: file quý 3TShop (tab XNT_QUY tồn kho, HD_XUAT hoá đơn bán, HD_NHAP hàng nhập). Công ty: hoá đơn bán từ meInvoice, hoá đơn mua từ file 3TShop Shidai (NHẬP HT) — tồn kho sổ thuế công ty chưa lấy (đang hỏi tab nào).',
   'Bảng hoá đơn đọc theo TÊN cột (mỗi kỳ phần mềm xuất mẫu khác — vd Hiền Thủy quý 3 là bảng kê 36 cột). Tỷ lệ xuất hoá đơn = tổng hoá đơn bán (chưa thuế) / tổng hoá đơn Kiot cùng cửa hàng cùng tháng.',
   'Ngày hoá đơn ngoài 01/01/2025 → hôm nay coi là gõ sai: không tính vào báo cáo theo tháng, liệt kê ở trang Đối soát lỗi.']],
  ['Hoá đơn công ty tổng (MISA meInvoice)',[
   'meInvoice = hoá đơn của CÔNG TY TỔNG (đi theo dòng tiền tài khoản công ty); hoá đơn các HỘ lấy từ 3TShop (anh chốt 12/10/2026). App kéo tự động mỗi đêm 00:25 qua MISA Open API, CHỈ ĐỌC — nạp lại tháng này + tháng trước để bắt hoá đơn điều chỉnh / thay thế.',
   'Tính: mọi ký hiệu (hoá đơn giá trị gia tăng, nến, chuyển khoản). KHÔNG tính 2 ký hiệu máy tính tiền Hong Kong Center / Saikung Hot Pot (dịch vụ khác — anh chốt 12/10/2026).',
   'Phạm vi app KHÔNG gồm 2 nhà hàng AMHP (Saikung / Hongkong — anh chốt 12/10/2026): đã bỏ 2 đơn vị nhà hàng, ẩn phiếu chi vận hành / tháo dỡ và phiếu thu Kiot của nhà hàng (đều trước 01/09/2026, không ảnh hưởng số dư); phiếu Kiot đã ẩn không bao giờ bị chép lại. Chi tiếp khách ở nhà hàng ngoài vẫn tính (chi phí bán đồ thờ).',
-  'Mỗi hoá đơn 1 dòng (API danh sách chỉ có tổng tiền, không có từng mặt hàng). Công ty không có cửa hàng Kiot nên chỉ có cột hoá đơn, không có tỷ lệ so với Kiot. MISA không cho lấy hoá đơn mua vào.']],
+  'Shidai = công ty THT (anh chốt 12/10/2026). Hoá đơn bán công ty lấy từ meInvoice (bản Shidai trong file 3TShop trùng ~96% nên bỏ, tránh tính 2 lần); hoá đơn mua Shidai (nhập từ Hiền Thủy) lấy từ 3TShop. Cột công ty so với doanh thu Kiot "Tổng kho sỉ Shidai".',
+  'Mỗi hoá đơn công ty 1 dòng (API danh sách chỉ có tổng tiền, không có từng mặt hàng). Hoá đơn mua vào + chi tiết dòng hàng: cần API "meInvoice Bot" (chưa đăng ký).']],
  ['Chuông thông báo',[
   'Chuông trên thanh menu (thay báo Zalo, không đẩy về điện thoại — anh chốt 08/10/2026). Số đỏ = chưa đọc, tự cập nhật mỗi phút khi đang mở app. Bấm 1 thông báo → mở đúng phiếu.',
   'Chi: phiếu mới / từ Kiot / mở lại → kế toán. Kế toán xác nhận lượt 1 → giám đốc. Giám đốc xác nhận → kế toán (thanh toán) + người tạo phiếu. Giám đốc trả lại → kế toán. Đã thanh toán / bị từ chối → người tạo (và người đã kiểm). Nhiều đề xuất Kiot cùng lúc gộp 1 thông báo.',

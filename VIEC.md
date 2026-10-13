@@ -44,6 +44,22 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 · tồn kho cuối kỳ: CHỤP TỪ 09/10/2026 (bảng kt_ton_kho_ngay / kt_ton_kho_thang) — trước đó không lấy lại được; báo cáo chưa có màn hình xem lịch sử tồn
 · 18 câu Cần giải đáp (kế toán) · chưa thử chứng từ / chuông / duyệt 2 lượt trên trình duyệt THẬT bằng tay.
 
+## 1C. 7 NGHIỆP VỤ (anh gửi bản chốt + giao diện mẫu 12/10/2026 tối)
+
+Nguyên tắc: vào nghiệp vụ nào là màn hình THAO TÁC luôn (không có tổng quan con); danh sách + khung chi tiết bên phải; bộ lọc nhanh kỳ / cơ sở / tài khoản.
+
+| # | Nghiệp vụ | App đang có | Phải làm thêm |
+|---|---|---|---|
+| 1 | Tổng quan | trang Tổng quan, Đối soát lỗi | KQKD toàn công ty + theo cơ sở · DT theo nhóm hàng · top 5 KH / mặt hàng · tồn kho nội bộ · dòng tiền & số dư · công nợ · vay · cảnh báo & công việc |
+| 2 | Thu – Chi & Ngân quỹ | Thu, Chi (duyệt 2 lượt), Điều chuyển, chứng từ, Dòng tiền, Vay | khung chi tiết bên phải · tab chưa nhận HĐ / chưa cập nhật Kiot · Tạm ứng & hoàn ứng · Sổ quỹ & số dư TK · Đối soát ngân hàng (chờ sao kê) |
+| 3 | Công nợ & Thanh toán | công nợ KH / NCC (số Kiot), Sắp phải trả | khung chi tiết KH / NCC · kế hoạch thu – thanh toán · đối chiếu công nợ · lịch sử thanh toán |
+| 4 | Kinh doanh & Kho nội bộ | Bán hàng, Khách hàng, NCC, Hàng hoá & tồn (Kiot) | tự phân tích: hàng tồn lâu cần đẩy, giá trị tồn, lợi nhuận theo mặt hàng, ... |
+| 5 | Hoá đơn & Thuế | tồn kho sổ thuế (3TShop), HĐ ra hộ (3TShop) + công ty (meInvoice) | HĐ đầu vào (cần MISA meInvoice Bot) · xử lý HĐ điều chỉnh / thay thế / huỷ · kho sổ thuế 4 bước (tồn đầu 3TShop → phát sinh từ HĐ → tồn dự kiến → đối chiếu & chốt kỳ) |
+| 6 | Báo cáo quản trị & Chốt kỳ | P&L | chi phí · ngân sách · phân bổ · chốt kỳ |
+| 7 | Hệ thống & Cài đặt | Cài đặt (phân quyền, danh mục, logic, giải đáp) | gom về 1 nghiệp vụ |
+
+MISA hoá đơn đầu vào: API riêng "meInvoice Bot" (`/meinvoicebot/v1/...`: HĐ đầu vào + đầu ra CÓ chi tiết dòng hàng) — Client ID hiện tại bị từ chối (401) → anh đăng ký thêm sản phẩm này trên developer.misa.vn.
+
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
