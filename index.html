@@ -654,6 +654,15 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 @media (max-width:1100px){.tq2-r2,.tq2-r3,.tq2-r4{grid-template-columns:minmax(0,1fr)}.tq2-r2>.tq2:first-child{grid-column:auto}}
 .tq2-os{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tq2-mini .r3{grid-template-columns:1fr;gap:4px}.tq2-mini .r3>div{flex-direction:row;justify-content:space-between;align-items:baseline}
+/* thanh tab dạng nút bo tròn (anh 13/10: bỏ kẻ ô) */
+.m-seg{border:none;background:var(--bg2);border-radius:10px;padding:4px;gap:4px;overflow:visible;width:fit-content;max-width:100%}
+.m-seg button{border:none!important;border-radius:7px;height:32px;padding:0 12px;background:transparent;color:var(--text2);font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:background .12s}
+.m-seg button:hover{background:var(--surface);color:var(--text)}
+.m-seg button .c{min-width:20px;height:19px;padding:0 6px;border-radius:10px;background:var(--surface);color:var(--text2);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--border)}
+.m-seg button:hover .c{background:var(--bg2)}
+.m-seg button.on{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(37,99,235,.35)}
+.m-seg button.on .c{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
+.m-seg button:not(.on) .c{color:var(--c,var(--text2))}
 </style>
 </head>
 <body>
@@ -664,7 +673,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 16:00';
+const APP_VERSION='13/10/2026 16:02';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1240,7 +1249,7 @@ async function pageChi(){
       ${the('vio','link','Chưa cập nhật KiotViet',tien(ck),'Tự đối chiếu sổ quỹ Kiot',ck.length+' phiếu','chua_kiot')}</div>
       <button class="m-btn out" onclick="S.cache.chi_xuat()">${IC_XLS} Xuất Excel</button></div>
     <div class="m-split rong"><div style="min-width:0">
-      <div class="m-seg" style="margin-bottom:10px">${Object.keys(nhan).filter(k=>!['nghi_trung','nghi_loai','tu_choi'].includes(k)||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()">${nhan[k]} (${nen.filter(loc[k]).length})</button>`).join('')}</div>
+      <div class="m-seg" style="margin-bottom:10px">${Object.keys(nhan).filter(k=>!['nghi_trung','nghi_loai','tu_choi'].includes(k)||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()" style="--c:var(--${MAU_TAB[k]||'accent'})">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
       <div class="m-flt" style="align-items:center"><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span>
         <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
         ${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Tất cả loại chi')}${sel('chi_nguon',[{id:'kiot',ten:'Đề xuất từ Kiot'},{id:'app',ten:'Tạo trên app'},{id:'sheet_cu',ten:'Chuyển từ sheet cũ'},{id:'bo_sung',ten:'Sheet cũ — cần bổ sung'},{id:'claude_soat',ten:'Tự gán loại — cần soát'}],'Tất cả nguồn')}
