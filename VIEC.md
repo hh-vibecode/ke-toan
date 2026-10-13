@@ -63,8 +63,8 @@ Nguyên tắc: vào nghiệp vụ nào là màn hình THAO TÁC luôn (không c�
 MISA hoá đơn đầu vào: API riêng "meInvoice Bot" (`/meinvoicebot/v1/...`: HĐ đầu vào + đầu ra CÓ chi tiết dòng hàng) — Client ID hiện tại bị từ chối (401) → anh đăng ký thêm sản phẩm này trên developer.misa.vn.
 
 **13/10 chiều — LÀM LẠI SÁT ẢNH MẪU NÉT (anh: "y thằng mẫu", không giữ form cũ)**: khung chung (logo Tân Hưng Thịnh, menu trái + mục con + Bộ lọc nhanh, đầu trang tên nghiệp vụ / tháng / cơ sở / tìm / tài khoản, font Inter) ·
-Tổng quan 10 khối () · Phiếu chi (6 thẻ, tab, bảng nhãn, khung 5 tab) · Công nợ (tab, lọc có nhãn, bảng + phân trang, khung 4 tab; hạn nợ tạm 30 ngày trong ) ·
-Hoá đơn & Thuế 6 mục (tổng quan 5 khung, HĐ vào / ra / xử lý, kho sổ thuế 3 khối — ). CHƯA làm theo mẫu: Phiếu thu, Điều chuyển, Sổ quỹ, Vay, Kinh doanh, Báo cáo quản trị, Hệ thống.
+Tổng quan 10 khối (`kt_tq_bo_sung`) · Phiếu chi (6 thẻ, tab, bảng nhãn, khung 5 tab) · Công nợ (tab, lọc có nhãn, bảng + phân trang, khung 4 tab; hạn nợ tạm 30 ngày trong `kt_cai_dat`) ·
+Hoá đơn & Thuế 6 mục (tổng quan 5 khung, HĐ vào / ra / xử lý, kho sổ thuế 3 khối — `supabase-schema-kt-thue-ds.sql`). CHƯA làm theo mẫu: Phiếu thu, Điều chuyển, Sổ quỹ, Vay, Kinh doanh, Báo cáo quản trị, Hệ thống.
 Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả): kế hoạch doanh thu ("Đạt 67% kế hoạch"), hợp đồng sắp hết hạn, "chưa cập nhật KiotViet", tạm ứng / hoàn ứng, đối soát ngân hàng, kế hoạch thu, đối chiếu công nợ, HĐ đầu vào MISA, kéo thả file 3TShop trên app.
 
 ## 2. ĐANG NỢ
