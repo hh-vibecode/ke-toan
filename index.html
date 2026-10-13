@@ -646,6 +646,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 .tq2-t td,.tq2-t th{height:34px;box-sizing:border-box}
 .tq2-cbs>.tq2-cb{height:100%;box-sizing:border-box}
 .m-kpis>.m-k{height:100%;box-sizing:border-box}
+.kt-drop{cursor:pointer;min-height:150px;justify-content:center;text-align:center;flex-direction:column;background:var(--bg2)}.kt-drop.on{border-color:var(--accent);background:var(--sel-bg)}.kt-drop b{font-size:14px}
 </style>
 </head>
 <body>
@@ -656,7 +657,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 15:45';
+const APP_VERSION='13/10/2026 15:47';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1832,13 +1833,54 @@ async function pageHDList(kieu){
       ${thanhTrang(k,ds.length,moi,tr,'hóa đơn')}</div>`;
 }
 // KHO SỔ THUẾ — ảnh mẫu "Luồng làm việc – kho sổ thuế": luồng 4 bước · 1 Tồn sổ thuế · 2 Phát sinh trong kỳ · 3 Đối chiếu & chốt kỳ
+// NẠP FILE TỒN KHO 3TSHOP TRÊN APP (13/10/2026): kéo thả / chọn file Excel → đọc NGAY TRÊN MÁY (SheetJS) → xem trước → so với tồn kỳ trước → lưu.
+// Nhận 2 dạng: (1) file quý 3TShop có tab XNT_QUY (cột cố định B..N từ dòng 4, giống scripts/keo-3tshop.js);
+// (2) bảng bất kỳ có dòng tiêu đề chứa "mã" + "tên" — nhận cột theo tên (mã hàng, tên hàng, nhóm, ĐVT, giá vốn, số lượng tồn, giá trị tồn).
+let XLSX_LIB=null;
+async function napXLSX(){if(XLSX_LIB)return XLSX_LIB;await new Promise((ok,loi)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=ok;sc.onerror=()=>loi(new Error('Không tải được thư viện đọc Excel'));document.head.appendChild(sc)});XLSX_LIB=window.XLSX;return XLSX_LIB}
+const soX=v=>{if(v==null||v==='')return null;if(typeof v==='number')return v;const t=String(v).trim();if(/^#|lỗi|error/i.test(t))return null;const n=+t.replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,'');return isNaN(n)?null:n};
+function docTon3T(wb){
+  const X=XLSX_LIB,ten=wb.SheetNames.find(n=>/xnt_quy/i.test(n));
+  if(ten){const rows=X.utils.sheet_to_json(wb.Sheets[ten],{header:'A',defval:'',raw:true});const ds=[];
+    rows.slice(3).forEach(r=>{const ma=String(r.B||'').trim();if(!ma||/^mã/i.test(ma))return;
+      ds.push({ma,ten:r.C,nhom:r.D,dvt:r.E,gia:soX(r.F),dau_sl:soX(r.G),dau_tien:soX(r.H),nhap_sl:soX(r.I),nhap_tien:soX(r.J),xuat_sl:soX(r.K),xuat_tien:soX(r.L),sl:soX(r.M),gt:soX(r.N)})});
+    return {tab:ten,ds}}
+  for(const sn of wb.SheetNames){const rows=X.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:true});
+    const hi=rows.slice(0,15).findIndex(r=>r.some(c=>/^m[ãa]\s*(hàng|sp|sản phẩm|vt)?$/i.test(String(c).trim()))&&r.some(c=>/tên/i.test(String(c))));if(hi<0)continue;
+    const h=rows[hi].map(c=>String(c).replace(/\s+/g,' ').trim().toLowerCase()),tim=re=>h.findIndex(c=>re.test(c));
+    const c={ma:tim(/^m[ãa]( hàng| sp| sản phẩm| vt)?$/),ten:tim(/tên/),nhom:tim(/nhóm|chủng loại|loại hàng/),dvt:tim(/đvt|đơn vị tính/),gia:tim(/giá vốn|đơn giá|giá nhập/),
+      sl:tim(/(sl|số lượng).*(tồn|cuối)|tồn.*(sl|số lượng)|^tồn cuối$|^số lượng$|^sl$/),gt:tim(/(giá trị|thành tiền|tiền).*(tồn|cuối)|tồn.*(giá trị|tiền)|^giá trị$|^thành tiền$/)};
+    if(c.ma<0||c.sl<0)continue;const ds=[];
+    rows.slice(hi+1).forEach(r=>{const ma=String(r[c.ma]||'').trim();if(!ma||/^(tổng|cộng)/i.test(ma))return;const sl=soX(r[c.sl]),gia=c.gia>=0?soX(r[c.gia]):null;
+      ds.push({ma,ten:c.ten>=0?r[c.ten]:'',nhom:c.nhom>=0?r[c.nhom]:'',dvt:c.dvt>=0?r[c.dvt]:'',gia,sl,gt:c.gt>=0?soX(r[c.gt]):(sl!=null&&gia!=null?sl*gia:null)})});
+    return {tab:sn,ds}}
+  throw new Error('Không nhận ra bảng tồn kho: cần tab XNT_QUY hoặc 1 bảng có cột "Mã hàng", "Tên hàng" và số lượng tồn')}
+async function napFile3T(file){
+  const st=$('#kt-nap');if(!st)return;st.innerHTML='<div class="m-empty">Đang đọc file trên máy...</div>';
+  try{const X=await napXLSX();const wb=X.read(await file.arrayBuffer(),{type:'array'});const r=docTon3T(wb);if(!r.ds.length)throw new Error('File không có dòng mã hàng nào');
+    S.cache.kt_nap={file:file.name,...r};veNap()}catch(e){st.innerHTML=`<div class="th-bn">${IC_T.canh}<div>${esc(e.message)}</div></div>`}}
+function veNap(){
+  const st=$('#kt-nap'),n=S.cache.kt_nap,f=S.f;if(!st||!n)return;const ds=n.ds,tsl=sumBy(ds,x=>x.sl),tgt=sumBy(ds,x=>x.gt);
+  const ky=f.kt_ky_cur,truoc=S.cache.kt_ton||[],mapT=Object.fromEntries(truoc.map(x=>[x.ma,x]));
+  const lech=ky?ds.map(x=>({...x,cu:mapT[x.ma]?+mapT[x.ma].cuoi_sl:null})).filter(x=>x.cu==null||Math.abs((+x.sl||0)-x.cu)>0.0001):[];
+  const het=ky?truoc.filter(x=>+x.cuoi_sl&&!ds.some(d=>d.ma===x.ma)):[];
+  st.innerHTML=`<div class="kt-col"><div class="m-kv">${[['Tên file',`<span class="m-link">${esc(n.file)}</span> · tab ${esc(n.tab)}`],['Đơn vị',dvThueTen(f.kt_dv||'CTY')],['Số mã hàng',fmt(ds.length)],['Tổng số lượng tồn',fmt(tsl)],['Tổng giá trị tồn',fmt(tgt)]].map(([a,b])=>`<div>${a}</div><div>${b}</div>`).join('')}</div>
+      <div class="m-f"><span>Ngày chốt tồn trong file</span><input type="date" id="kt-ngay" class="m-in" value="${f.kt_ngay||ymd(new Date(+S.den.slice(0,4),+S.den.slice(5,7),0))}" onchange="S.f.kt_ngay=this.value"></div>
+      ${ky?`<div class="m-st">So với tồn đang có (${esc(ky)})</div><div class="m-kv">${[['Mã có số lượng khác',fmt(lech.filter(x=>x.cu!=null).length)],['Mã mới (kỳ trước không có)',fmt(lech.filter(x=>x.cu==null).length)],['Mã kỳ trước còn tồn, file mới không có',fmt(het.length)],['Chênh tổng giá trị',fmt(tgt-sumBy(truoc,x=>x.cuoi_tien))]].map(([a,b])=>`<div>${a}</div><div>${b}</div>`).join('')}</div>`:''}
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="m-btn" onclick="S.cache.kt_nap=null;render()">Huỷ</button>${coGhi('hoa_don_thue')?`<button class="m-btn pri" onclick="luuNap()">Lưu tồn kho sổ thuế →</button>`:'<span class="muted">Cần quyền sửa trang Hoá đơn & thuế để lưu</span>'}</div></div>`}
+async function luuNap(){const n=S.cache.kt_nap,ngay=($('#kt-ngay')||{}).value;if(!n||!ngay)return alert('Chọn ngày chốt tồn');
+  const dv=S.f.kt_dv||'CTY';if(!confirm(`Lưu ${n.ds.length} mã hàng làm tồn sổ thuế ${dvThueTen(dv)} kỳ ${ngay.slice(0,7)}? (kỳ này đã có thì thay bản cũ)`))return;
+  try{const r=await rpc('kt_nap_ton_thue',{p_hkd:dv,p_ngay_chot:ngay,p_ten_file:n.file,p_ds:n.ds.map(x=>({...x,ten:String(x.ten||''),nhom:String(x.nhom||''),dvt:String(x.dvt||'')}))});
+    toast(`Đã lưu ${fmt(r.so_ma)} mã · kỳ ${r.ky}`);S.cache.kt_nap=null;S.f.kt_ky=r.ky;render()}catch(e){alert(e.message)}}
+function vungNap(){return `<label class="kt-up kt-drop" ondragover="event.preventDefault();this.classList.add('on')" ondragleave="this.classList.remove('on')" ondrop="event.preventDefault();this.classList.remove('on');if(event.dataTransfer.files[0])napFile3T(event.dataTransfer.files[0])">
+  <input type="file" accept=".xlsx,.xls,.csv" hidden onchange="if(this.files[0])napFile3T(this.files[0])">${IC_XLS}<div><b>Kéo thả file Excel vào đây</b><br><span class="m-link">hoặc chọn file</span><br><span class="muted">File tồn kho 3TShop: mã hàng, tên hàng, số lượng tồn, giá vốn... — đọc ngay trên máy, không gửi file đi đâu</span></div></label>`}
 async function pageKhoThue(){
   const el=$('#page'),f=S.f;el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const b=await rpc('kt_bc_thue',{p_tu:'2025-01-01',p_den:homNay()});
-  const hkd=f.kt_dv||'HT',kyL=b.xnt.filter(x=>x.hkd===hkd).map(x=>x.ky).sort().reverse(),ky=kyL.includes(f.kt_ky)?f.kt_ky:kyL[0];
+  const hkd=f.kt_dv||'CTY',kyL=b.xnt.filter(x=>x.hkd===hkd).map(x=>x.ky).sort().reverse(),ky=kyL.includes(f.kt_ky)?f.kt_ky:kyL[0];
   const qTu=ky?ky.slice(0,4)+'-'+String((+ky.slice(-1)-1)*3+1).padStart(2,'0')+'-01':null,qDen=ky?ymd(new Date(+ky.slice(0,4),(+ky.slice(-1))*3,0)):null;
   const [ton,ps]=ky?await Promise.all([rpc('kt_thue_xnt_ct',{p_hkd:hkd,p_ky:ky,p_tim:f.kt_q||null}),rpc('kt_thue_ps',{p_hkd:hkd,p_tu:qTu,p_den:qDen,p_tim:f.kt_q||null})]):[[],[]];
-  const tg=b.xnt.find(x=>x.hkd===hkd&&x.ky===ky)||{};
+  const tg=b.xnt.find(x=>x.hkd===hkd&&x.ky===ky)||{};f.kt_ky_cur=ky;S.cache.kt_ton=ton;
   const ttT=x=>+x.cuoi_sl<0?['Âm sổ','bad']:+x.cuoi_sl===0?['Hết hàng','bad']:+x.cuoi_sl<=2?['Sắp hết','warn']:['Bình thường','ok'];
   const tab=f.kt_tab||'tat_ca',lT={tat_ca:x=>true,con:x=>+x.cuoi_sl>2,sap_het:x=>+x.cuoi_sl>0&&+x.cuoi_sl<=2,het:x=>+x.cuoi_sl===0,am:x=>+x.cuoi_sl<0};
   const l=ton.filter(lT[tab]),moi=f.kt_moi||10,[a,bb,tr]=phanTrang('kt',l.length,moi),trang=l.slice(a,bb);
@@ -1846,6 +1888,7 @@ async function pageKhoThue(){
   S.cache.kt_xuat=()=>xuatCSV('ton-so-thue-'+hkd+'-'+ky,[['Mã',x=>x.ma],['Tên',x=>x.ten],['Nhóm',x=>x.chung_loai||''],['ĐVT',x=>x.dvt||''],['Tồn đầu',x=>x.dau_sl],['Nhập',x=>x.nhap_sl],['Xuất',x=>x.xuat_sl],['Tồn cuối',x=>x.cuoi_sl],['Giá trị tồn',x=>x.cuoi_tien]],l);
   const buoc=(n,c,t,body)=>`<div class="kt-b" style="--c:var(--${c})"><div class="kt-bh"><span class="tq2-n" style="--c:var(--${c})">${n}</span><b>${t}</b></div>${body}</div>`;
   const k4=(c,ic,l1,v)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${IC_T[ic]}</div><div><div class="l">${l1}</div><div class="v">${v}</div></div></div>`;
+  setTimeout(()=>{if(S.cache.kt_nap)veNap()},0);
   el.innerHTML=`<div class="kt-luong">${buoc(1,'info','Nhập tồn đầu kỳ','<div class="muted">File tồn kho từ 3TShop (dịch vụ kế toán xuất): mã hàng, tên, nhóm, ĐVT, số lượng, giá vốn, giá trị tồn, ngày chốt.</div>')}<span class="kt-mt">→</span>
       ${buoc(2,'info','Theo dõi phát sinh trong kỳ','<div class="muted">Hoá đơn đầu vào → nhập · hoá đơn đầu ra → xuất (theo mã hàng). Bổ sung nhập / xuất chưa có hoá đơn.</div>')}<span class="kt-mt">→</span>
       ${buoc(3,'ok','Theo dõi tồn dự kiến','<div class="muted">Tồn dự kiến = Tồn đầu kỳ + Nhập − Xuất ± Điều chỉnh hợp lệ.</div>')}<span class="kt-mt">→</span>
@@ -1870,9 +1913,9 @@ async function pageKhoThue(){
         ${thanhTrang('kp',lp.length,10,tr2,'dòng')}</section>
       <section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--ok)">3</span><b>Đối chiếu & Chốt kỳ</b><span class="muted">Nhập file tồn cuối kỳ từ 3TShop và so sánh</span></div>
         <div class="kt-step">${['Nhập file 3TShop','So sánh & kiểm tra chênh lệch','Xử lý điều chỉnh','Xác nhận & khoá kỳ'].map((t,i)=>`<div class="${i===0?'on':''}"><span>${i+1}</span>${t}</div>`).join('')}</div>
-        <div class="m-st">Bước 1: Nhập file tồn kho cuối kỳ từ 3TShop</div>
-        <div class="kt-col"><div class="kt-up">${IC_XLS}<div>File 3TShop hiện anh / kế toán xuất lên Google Drive, app đọc tự động.<br><span class="muted">Kéo thả file trực tiếp trên app: đang làm</span></div></div>
-          <div class="m-kv">${[['Đơn vị',dvThueTen(hkd)],['Kỳ',ky||'—'],['Số mã hàng',fmt(tg.so_ma||0)],['Tổng SL tồn',fmt(tg.cuoi_sl||0)],['Tổng giá trị tồn',fmt(tg.cuoi_tien||0)],['Kéo lúc',tg.keo_luc?fmtDT(tg.keo_luc):'—']].map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div></div></section></div>`;
+        <div class="m-st">Bước 1: Nhập file tồn kho cuối kỳ từ 3TShop · ${dvThueTen(hkd)}</div>
+        <div class="tq2-2"><div>${vungNap()}</div><div id="kt-nap">${S.cache.kt_nap?'':`<div class="m-kv">${[['Tồn đang dùng',ky?esc(ky):'Chưa có'],['Số mã hàng',fmt(tg.so_ma||0)],['Tổng SL tồn',fmt(tg.cuoi_sl||0)],['Tổng giá trị tồn',fmt(tg.cuoi_tien||0)],['Cập nhật lúc',tg.keo_luc?fmtDT(tg.keo_luc):'—']].map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div>`}</div></div>
+        <div class="tq-note">Bước 3 (xử lý điều chỉnh) và 4 (khoá kỳ): đang làm — hiện lưu file là thay tồn kỳ đó.</div></section></div>`;
 }
 // HOÁ ĐƠN & THUẾ — hộ: 3TShop · công ty tổng: meInvoice (12/10/2026)
 // HOÁ ĐƠN & THUẾ (09/10/2026): nguồn 3TShop — anh xuất ra Google Sheet (3TShop không có API), scripts/keo-3tshop.js đọc vào app.

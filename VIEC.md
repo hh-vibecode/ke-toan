@@ -67,6 +67,8 @@ Tổng quan 10 khối (`kt_tq_bo_sung`) · Phiếu chi (6 thẻ, tab, bảng nh�
 Hoá đơn & Thuế 6 mục (tổng quan 5 khung, HĐ vào / ra / xử lý, kho sổ thuế 3 khối — `supabase-schema-kt-thue-ds.sql`). CHƯA làm theo mẫu: Phiếu thu, Điều chuyển, Sổ quỹ, Vay, Kinh doanh, Báo cáo quản trị, Hệ thống.
 Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả): kế hoạch doanh thu ("Đạt 67% kế hoạch"), hợp đồng sắp hết hạn, "chưa cập nhật KiotViet", tạm ứng / hoàn ứng, đối soát ngân hàng, kế hoạch thu, đối chiếu công nợ, HĐ đầu vào MISA, kéo thả file 3TShop trên app.
 
+**13/10 tối**: (1) "Chưa cập nhật KiotViet" — app TỰ khớp phiếu chi đã trả với phiếu chi trên sổ quỹ Kiot sau mỗi lần kéo (`supabase-schema-kt-kiot-4a.sql`): 170/177 phiếu từ 01/09 tự gán 4A, 7 còn lại vào Đối soát lỗi. (2) Kéo thả file tồn 3TShop trên trang Kho sổ thuế (đọc trên máy bằng SheetJS, `supabase-schema-kt-thue-nap.sql`) — thử file CT Q3 thật khớp 729 mã / tổng giá trị. Kế toán (chị Jaycie) 13/10: làm SỔ THUẾ CÔNG TY trước, 2 HKD sau → trang mặc định Công ty THT; kỳ nạp từ app = tháng ngày chốt (YYYY-MM), khác kỳ quý (YYYY-Qn) của 2 HKD — khi làm HKD phải thống nhất. Chưa làm: bước 3 xử lý điều chỉnh, bước 4 khoá kỳ. (3) Căn đều khối Tổng quan.
+
 ## 2. ĐANG NỢ
 
 | # | Việc | Ghi chú |
