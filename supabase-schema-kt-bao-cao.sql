@@ -150,12 +150,16 @@ begin
   perform kt_chan(p_phien, 'ban_hang');
   with hd as (select * from kt_kiot_hoa_don where trang_thai = 1 and (ngay at time zone 'Asia/Ho_Chi_Minh')::date between p_tu and p_den),
   ct as (select hd.chi_nhanh, hd.nv_ban, d from hd cross join lateral jsonb_array_elements(hd.chi_tiet) d),
-  th as (select * from kt_kiot_tra_hang where coalesce(trang_thai,1) = 1 and (ngay at time zone 'Asia/Ho_Chi_Minh')::date between p_tu and p_den)
+  th as (select * from kt_kiot_tra_hang where coalesce(trang_thai,1) = 1 and (ngay at time zone 'Asia/Ho_Chi_Minh')::date between p_tu and p_den),
+  -- 13/10/2026: giá vốn hàng trả = tiền trả × (giá vốn / tổng) của hoá đơn gốc (không tìm thấy → tỷ lệ chung của kỳ) — để lãi gộp không bị âm giả
+  -- khi khách trả hàng của đơn tháng trước (vd NPP trả Shidai tháng 10 hàng bán tháng 4–6)
+  tg as (select th.chi_nhanh, th.tong_tra * coalesce(h.gia_von / nullif(h.tong, 0), (select sum(gia_von) / nullif(sum(tong), 0) from hd), 0) gvt
+           from th left join kt_kiot_hoa_don h on h.id = th.hoa_don_id)
   select jsonb_build_object(
     'doanh_thu', (select coalesce(sum(tong),0) from hd), 'so_hd', (select count(*) from hd), 'gia_von', (select coalesce(sum(gia_von),0) from hd),
-    'tra_hang', (select coalesce(sum(tong_tra),0) from th), 'so_tra', (select count(*) from th),
+    'tra_hang', (select coalesce(sum(tong_tra),0) from th), 'so_tra', (select count(*) from th), 'gv_tra', (select coalesce(round(sum(gvt)),0) from tg),
     'da_thu_hd', (select coalesce(sum(da_tra),0) from hd),
-    'theo_cn', (select coalesce(jsonb_agg(jsonb_build_object('cn', chi_nhanh, 'dt', dt, 'gv', gv, 'so', n, 'tra', coalesce((select sum(tong_tra) from th where th.chi_nhanh = x.chi_nhanh),0)) order by dt desc), '[]')
+    'theo_cn', (select coalesce(jsonb_agg(jsonb_build_object('cn', chi_nhanh, 'dt', dt, 'gv', gv, 'so', n, 'tra', coalesce((select sum(tong_tra) from th where th.chi_nhanh = x.chi_nhanh),0), 'gv_tra', coalesce((select round(sum(gvt)) from tg where tg.chi_nhanh = x.chi_nhanh),0)) order by dt desc), '[]')
        from (select chi_nhanh, sum(tong) dt, sum(gia_von) gv, count(*) n from hd group by 1) x),
     'theo_ngay', (select coalesce(jsonb_agg(jsonb_build_object('ngay', ng, 'cn', chi_nhanh, 'dt', dt) order by ng), '[]')
        from (select (ngay at time zone 'Asia/Ho_Chi_Minh')::date ng, chi_nhanh, sum(tong) dt from hd group by 1, 2) x),
