@@ -647,6 +647,13 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 .tq2-cbs>.tq2-cb{height:100%;box-sizing:border-box}
 .m-kpis>.m-k{height:100%;box-sizing:border-box}
 .kt-drop{cursor:pointer;min-height:150px;justify-content:center;text-align:center;flex-direction:column;background:var(--bg2)}.kt-drop.on{border-color:var(--accent);background:var(--sel-bg)}.kt-drop b{font-size:14px}
+/* lưới chung 3 cột bằng nhau cho mọi hàng (anh 13/10): bảng to = đúng 2 cột, bảng nhỏ = 1 cột, mép thẳng nhau */
+.tq2-r2,.tq2-r3,.tq2-r4{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tq2-r2>.tq2:first-child{grid-column:span 2}
+.tq2-cbs{gap:12px}
+@media (max-width:1100px){.tq2-r2,.tq2-r3,.tq2-r4{grid-template-columns:minmax(0,1fr)}.tq2-r2>.tq2:first-child{grid-column:auto}}
+.tq2-os{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tq2-mini .r3{grid-template-columns:1fr;gap:4px}.tq2-mini .r3>div{flex-direction:row;justify-content:space-between;align-items:baseline}
 </style>
 </head>
 <body>
@@ -657,7 +664,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 15:47';
+const APP_VERSION='13/10/2026 16:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
