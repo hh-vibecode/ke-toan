@@ -6,29 +6,37 @@
 -- hoá đơn cũ nhất trong phần được gán = nợ lâu nhất. Phần không gán được (dữ liệu Kiot từ 01/01/2026) = "nợ từ trước 2026".
 -- Kiot không có hạn thanh toán → app chỉ tính SỐ NGÀY NỢ (kế toán sẽ cho biết số ngày được nợ để tính quá hạn — câu hỏi trên app).
 
+-- 13/10 (giao diện mẫu): số ngày được nợ (tạm 30 — chờ kế toán chốt) → ngày đến hạn = chứng từ nợ cũ nhất + số ngày; quá hạn = hôm nay − ngày đến hạn
+insert into kt_cai_dat (khoa, gia_tri) values ('han_no_kh_ngay', '30'), ('han_no_ncc_ngay', '30') on conflict (khoa) do nothing;
+
 create or replace function public.kt_cong_no_dt(p_phien text, p_loai text default 'kh') returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare hom date := (now() at time zone 'Asia/Ho_Chi_Minh')::date; r jsonb;
+declare hom date := (now() at time zone 'Asia/Ho_Chi_Minh')::date; r jsonb; han int;
 begin
   perform kt_chan(p_phien, case when p_loai = 'ncc' then 'ncc' else 'khach_hang' end);
+  select coalesce(nullif(gia_tri, '')::int, 30) into han from kt_cai_dat where khoa = case when p_loai = 'ncc' then 'han_no_ncc_ngay' else 'han_no_kh_ngay' end;
+  han := coalesce(han, 30);
   with dt as (
     select id, ma, ten, sdt, cong_no no, tong_mua tong from kt_kiot_khach where p_loai = 'kh' and cong_no <> 0
     union all select id, ma, ten, sdt, cong_no, tong_nhap from kt_kiot_ncc where p_loai = 'ncc' and cong_no <> 0),
   ct as (   -- hoá đơn bán (khách) / phiếu nhập (NCC) đã hoàn thành
-    select khach_id dt_id, id, ngay, chi_nhanh, tong from kt_kiot_hoa_don where p_loai = 'kh' and trang_thai = 1 and tong > 0
-    union all select ncc_id, id, ngay, chi_nhanh, tong from kt_kiot_nhap_hang where p_loai = 'ncc' and trang_thai = 3 and tong > 0),
+    select khach_id dt_id, id, ngay, chi_nhanh, tong, nv_ban nv from kt_kiot_hoa_don where p_loai = 'kh' and trang_thai = 1 and tong > 0
+    union all select ncc_id, id, ngay, chi_nhanh, tong, null from kt_kiot_nhap_hang where p_loai = 'ncc' and trang_thai = 3 and tong > 0),
   lk as (select ct.*, d.no, sum(ct.tong) over (partition by ct.dt_id order by ct.ngay desc, ct.id desc) cum
            from ct join dt d on d.id = ct.dt_id where d.no > 0),
-  pb as (select dt_id, chi_nhanh, (ngay at time zone 'Asia/Ho_Chi_Minh')::date ngay, least(tong, no - (cum - tong)) phan from lk where cum - tong < no),
-  g as (select dt_id, sum(phan) da_gan, min(ngay) cu_nhat, count(*) so_ct, (array_agg(chi_nhanh order by ngay desc))[1] cn,
+  pb as (select dt_id, chi_nhanh, (ngay at time zone 'Asia/Ho_Chi_Minh')::date ngay, tong, least(tong, no - (cum - tong)) phan from lk where cum - tong < no),
+  g as (select dt_id, sum(phan) da_gan, sum(tong) tong_ct, min(ngay) cu_nhat, count(*) so_ct, (array_agg(chi_nhanh order by ngay desc))[1] cn,
           sum(phan) filter (where hom - ngay <= 30) b1, sum(phan) filter (where hom - ngay between 31 and 60) b2,
           sum(phan) filter (where hom - ngay between 61 and 90) b3, sum(phan) filter (where hom - ngay > 90) b4
           from pb group by 1),
-  cn_cuoi as (select distinct on (dt_id) dt_id, chi_nhanh from ct order by dt_id, ngay desc)
+  cn_cuoi as (select distinct on (dt_id) dt_id, chi_nhanh, nv from ct order by dt_id, ngay desc)
   select coalesce(jsonb_agg(jsonb_build_object('id', d.id, 'ma', d.ma, 'ten', d.ten, 'sdt', d.sdt, 'no', d.no, 'tong', d.tong,
       'cn', coalesce(g.cn, c.chi_nhanh), 'so_ct', coalesce(g.so_ct, 0), 'cu_nhat', g.cu_nhat, 'tuoi', hom - g.cu_nhat,
       'b1', coalesce(g.b1, 0), 'b2', coalesce(g.b2, 0), 'b3', coalesce(g.b3, 0), 'b4', coalesce(g.b4, 0),
-      'truoc_2026', greatest(d.no - coalesce(g.da_gan, 0), 0)) order by d.no desc), '[]') into r
+      'truoc_2026', greatest(d.no - coalesce(g.da_gan, 0), 0), 'nv', c.nv, 'han', han,
+      -- tổng các chứng từ đang tính nợ (+ phần nợ trước 2026) · đã thanh toán = tổng − còn nợ · đến hạn = chứng từ nợ cũ nhất + số ngày được nợ
+      'tong_ct', coalesce(g.tong_ct, 0) + greatest(d.no - coalesce(g.da_gan, 0), 0), 'den_han', g.cu_nhat + han,
+      'qua_han', case when d.no > 0 and g.cu_nhat is not null then greatest(hom - (g.cu_nhat + han), 0) end) order by d.no desc), '[]') into r
     from dt d left join g on g.dt_id = d.id left join cn_cuoi c on c.dt_id = d.id;
   return r;
 end $$;
