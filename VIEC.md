@@ -46,6 +46,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 1C. 7 NGHIỆP VỤ (anh gửi bản chốt + giao diện mẫu 12/10/2026 tối)
 
+**Giao diện bên trong theo mẫu (anh 13/10: "không giữ form cũ")**: Tổng quan 10 khối XONG · Phiếu chi (6 thẻ + bảng + khung chi tiết phải) XONG · Công nợ phải thu / phải trả (số Kiot + tuổi nợ FIFO, `supabase-schema-kt-cong-no-kiot.sql`) XONG. Tiếp: Phiếu thu, Điều chuyển, Sổ quỹ, Hoá đơn & Thuế, Kinh doanh. MISA hoá đơn đầu vào: đăng nhập OK (`MEINVOICE_BOT_*`), bước JWT chưa xong — tạm dừng theo anh.
 **Giai đoạn 1 XONG 13/10**: menu trái 7 nghiệp vụ, xếp các trang đang có vào đúng nghiệp vụ (chụp màn hình kiểm máy tính + điện thoại). Tiếp: 2 Tổng quan theo mẫu → 3 Thu–Chi khung chi tiết bên phải → 4 Công nợ → 5 Kinh doanh phân tích → 6 Hoá đơn & Thuế (kho sổ thuế 4 bước) → 7 Báo cáo quản trị & chốt kỳ.
 Nguyên tắc: vào nghiệp vụ nào là màn hình THAO TÁC luôn (không có tổng quan con); danh sách + khung chi tiết bên phải; bộ lọc nhanh kỳ / cơ sở / tài khoản.
 
