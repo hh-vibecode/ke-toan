@@ -245,6 +245,38 @@ table.pl tr.tong td{background:transparent;border-top:1.5px solid var(--border)}
 .main{min-height:calc(100vh - 54px)}
 .wrap{max-width:1480px;margin:0 auto}
 .main>.sb-ver{text-align:center;padding:0 0 18px}
+/* MENU TRÁI 7 nghiệp vụ (12/10/2026, theo giao diện mẫu) */
+.lay{display:flex;min-height:100vh}
+.sb{width:236px;flex:none;background:var(--nav);color:#fff;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;z-index:30}
+.sb-brand{font-weight:800;font-size:17px;padding:18px 18px 14px;display:flex;align-items:center;justify-content:space-between;letter-spacing:.01em}
+.sb-x{display:none;background:none;border:none;color:#fff;font-size:16px;cursor:pointer}
+.sb-nav{flex:1;overflow-y:auto;padding:0 10px 10px}
+.sb-nv{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:rgba(255,255,255,.78);font-weight:600;font-size:13px;cursor:pointer;margin-top:2px}
+.sb-nv svg{width:18px;height:18px;flex:none}
+.sb-nv:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-nv.on{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 3px 0 0 #4cb3f0}
+.sb-t{flex:1;min-width:0}
+.sb-subs{margin:2px 0 6px 19px;border-left:1px solid rgba(255,255,255,.18);padding-left:8px}
+.sb-sub{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;color:rgba(255,255,255,.7);font-size:12.5px;font-weight:600;cursor:pointer}
+.sb-sub:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-sub.on{color:#fff;background:rgba(76,179,240,.22)}
+.sb .sb-ver{color:rgba(255,255,255,.45);padding:10px 18px 14px}
+.sb-nen{display:none}
+.hd{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 24px;min-height:52px}
+.hd-nv{font-weight:700;font-size:13px;color:var(--text2)}
+.hd .tb-btn{color:var(--text);border-color:var(--border)}
+.hd .tb-btn:hover{background:var(--bg2)}
+.hd .tb-user{color:var(--text2)}
+.sb-mo-btn{display:none}
+.lay .main{min-height:100vh}
+/* dải tiêu đề trắng: trải hết PHẦN NỘI DUNG (không theo bề ngang màn hình nữa vì đã có menu trái) */
+.lay .wrap{max-width:none}
+.lay .wrap>.top:first-child{margin:-22px -28px 20px;padding:16px 28px}
+@media (max-width:760px){.lay .wrap>.top:first-child{margin:-14px -16px 14px;padding:12px 16px}}
+@media (max-width:900px){.sb{position:fixed;left:0;top:0;transform:translateX(-100%);transition:transform .2s}
+  body.sb-mo .sb{transform:none;box-shadow:0 0 40px rgba(0,0,0,.35)}
+  body.sb-mo .sb-nen{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}
+  .sb-x,.sb-mo-btn{display:inline-block}.hd{padding:8px 16px}.hd .tb-user{display:none}}
 .acc{cursor:default}
 .acc-r{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--text2);margin-top:6px;font-variant-numeric:tabular-nums}
 .acc-r b{font-size:14px;color:var(--text)}
@@ -362,7 +394,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 13:59';
+const APP_VERSION='13/10/2026 14:04';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -512,52 +544,62 @@ function canhBaoMoc(){if(!TRANG_TIEN.includes(S.page))return '';
 }
 
 // ── Khung ──────────────────────────────────────────────────────────────────
+// 7 NGHIỆP VỤ (bản chốt anh gửi 12/10/2026 + giao diện mẫu): menu TRÁI, bấm nghiệp vụ → mở thẳng màn thao tác (mục con đầu tiên),
+// các mục con xổ ngay dưới. Mục chưa làm (tạm ứng, đối soát ngân hàng, ngân sách, chốt kỳ...) chỉ thêm khi đã có màn hình thật.
+const NV=[
+  {k:'tong_quan',ten:'Tổng quan',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>'},
+  {k:'thu_chi',ten:'Thu – Chi & Ngân quỹ',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19M6.5 15h3"/></svg>'},
+  {k:'cong_no',ten:'Công nợ & Thanh toán',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>'},
+  {k:'kinh_doanh',ten:'Kinh doanh & Kho nội bộ',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>'},
+  {k:'thue',ten:'Hoá đơn & Thuế',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h9l4 4v15H6z"/><path d="M14.5 2.5v4.5H19M9 12h7M9 16h7"/></svg>'},
+  {k:'bao_cao',ten:'Báo cáo quản trị & Chốt kỳ',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'},
+  {k:'he_thong',ten:'Hệ thống & Cài đặt',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>'}];
 const PAGES={
-  // Luồng mới 08/10/2026 (anh gửi sơ đồ "Hệ thống app quản lý tổng thể"): menu Tổng quan · Nghiệp vụ ▾ · Báo cáo ▾ · Cài đặt ▾
-  tong_quan:{ten:'Tổng quan',nhom:'Tổng quan',fn:()=>pageTongQuan()},
-  thu:{ten:'Thu',nhom:'Nghiệp vụ',cd:'Thu – chi',fn:()=>pageThu()},
-  chi:{ten:'Chi',nhom:'Nghiệp vụ',cd:'Thu – chi',fn:()=>pageChi()},
-  dieu_chuyen:{ten:'Điều chuyển',nhom:'Nghiệp vụ',cd:'Thu – chi',fn:()=>pageDC()},
-  // Công nợ nhập tay (chuyển từ sheet): ẨN khỏi menu từ 08/10 — công nợ khách dùng số Kiot (Báo cáo → Khách hàng). Dữ liệu cũ giữ nguyên.
-  cong_no:{ten:'Công nợ (sheet cũ)',nhom:null,fn:()=>pageCongNo()},
-  sap_tra:{ten:'Sắp phải trả',nhom:'Nghiệp vụ',cd:'Theo dõi',fn:()=>pageSapTra()},
-  // Đối soát lỗi (anh chốt 09/10/2026, kiểu Daily Task app MKT): mọi lỗi app phát hiện dồn về đây
-  doi_soat:{ten:'Đối soát lỗi',nhom:'Nghiệp vụ',cd:'Theo dõi',fn:()=>pageDoiSoat()},
-  vay:{ten:'Vay & lãi vay',nhom:'Nghiệp vụ',cd:'Nhập liệu bổ sung',fn:()=>pageVay()},
-  tai_san:{ten:'Tài sản',nhom:'Nghiệp vụ',cd:'Nhập liệu bổ sung',fn:()=>pageTaiSan()},
-  dong_tien:{ten:'Dòng tiền & quỹ cửa hàng',nhom:'Báo cáo',cd:'Tài chính',fn:()=>pageDongTien()},
-  pl:{ten:'P&L — Lãi / lỗ',nhom:'Báo cáo',cd:'Tài chính',fn:()=>pagePL()},
-  ban_hang:{ten:'Bán hàng',nhom:'Báo cáo',cd:'Kinh doanh (Kiot)',fn:()=>pageBanHang()},
-  khach_hang:{ten:'Khách hàng',nhom:'Báo cáo',cd:'Kinh doanh (Kiot)',fn:()=>pageKhachHang()},
-  ncc:{ten:'Nhà cung cấp',nhom:'Báo cáo',cd:'Kinh doanh (Kiot)',fn:()=>pageNCC()},
-  hang_hoa:{ten:'Hàng hoá & tồn kho',nhom:'Báo cáo',cd:'Kinh doanh (Kiot)',fn:()=>pageHangHoa()},
-  hoa_don_thue:{ten:'Hoá đơn & thuế',nhom:'Báo cáo',cd:'Thuế',fn:()=>pageHoaDonThue()},
-  // Cài đặt = menu xổ xuống, mỗi module 1 trang (giống "Cài đặt nâng cao" của app MKT/Sale)
-  cd_giai_dap:{ten:'Cần giải đáp',nhom:'Cài đặt',cd:'Hỏi đáp',fn:()=>pageGiaiDap()},
-  cd_phan_quyen:{ten:'Phân quyền',nhom:'Cài đặt',cd:'Quản trị',fn:()=>pageCaiDat('nguoi_dung')},
-  cd_nhat_ky:{ten:'Nhật ký chỉnh sửa',nhom:'Cài đặt',cd:'Quản trị',fn:()=>pageCaiDat('nhat_ky')},
-  cd_tai_khoan:{ten:'Tài khoản tiền',nhom:'Cài đặt',cd:'Danh mục',fn:()=>pageCaiDat('tai_khoan')},
-  cd_don_vi:{ten:'Cơ sở / bộ phận',nhom:'Cài đặt',cd:'Danh mục',fn:()=>pageCaiDat('don_vi')},
-  cd_loai:{ten:'Loại thu / chi',nhom:'Cài đặt',cd:'Danh mục',fn:()=>pageCaiDat('loai')},
-  cd_logic:{ten:'Logic xử lý',nhom:'Cài đặt',cd:'Hệ thống',fn:()=>pageCaiDat('logic')},
-  cd_doi_mk:{ten:'Đổi mật khẩu',nhom:'Cài đặt',cd:'Hệ thống',fn:()=>pageCaiDat('doi_ma')},
+  tong_quan:{ten:'Tổng quan',nv:'tong_quan',fn:()=>pageTongQuan()},
+  // Đối soát lỗi (anh chốt 09/10/2026, kiểu Daily Task app MKT) = "cảnh báo, công việc" của nghiệp vụ Tổng quan
+  doi_soat:{ten:'Đối soát lỗi',nv:'tong_quan',fn:()=>pageDoiSoat()},
+  chi:{ten:'Phiếu chi & duyệt thanh toán',nv:'thu_chi',fn:()=>pageChi()},
+  thu:{ten:'Phiếu thu',nv:'thu_chi',fn:()=>pageThu()},
+  dieu_chuyen:{ten:'Điều chuyển tiền',nv:'thu_chi',fn:()=>pageDC()},
+  dong_tien:{ten:'Sổ quỹ & số dư tài khoản',nv:'thu_chi',fn:()=>pageDongTien()},
+  vay:{ten:'Vay & lãi vay',nv:'thu_chi',fn:()=>pageVay()},
+  khach_hang:{ten:'Phải thu khách hàng',nv:'cong_no',fn:()=>pageKhachHang()},
+  ncc:{ten:'Phải trả nhà cung cấp',nv:'cong_no',fn:()=>pageNCC()},
+  sap_tra:{ten:'Lịch đến hạn trả',nv:'cong_no',fn:()=>pageSapTra()},
+  // Công nợ nhập tay (chuyển từ sheet): ẨN khỏi menu từ 08/10 — công nợ khách dùng số Kiot. Dữ liệu cũ giữ nguyên.
+  cong_no:{ten:'Công nợ (sheet cũ)',nv:null,fn:()=>pageCongNo()},
+  ban_hang:{ten:'Bán hàng',nv:'kinh_doanh',fn:()=>pageBanHang()},
+  hang_hoa:{ten:'Hàng hoá & tồn kho',nv:'kinh_doanh',fn:()=>pageHangHoa()},
+  hoa_don_thue:{ten:'Hoá đơn & kho sổ thuế',nv:'thue',fn:()=>pageHoaDonThue()},
+  pl:{ten:'Lãi / lỗ (P&L)',nv:'bao_cao',fn:()=>pagePL()},
+  tai_san:{ten:'Tài sản & khấu hao',nv:'bao_cao',fn:()=>pageTaiSan()},
+  cd_phan_quyen:{ten:'Phân quyền',nv:'he_thong',cd:'Quản trị',fn:()=>pageCaiDat('nguoi_dung')},
+  cd_tai_khoan:{ten:'Tài khoản tiền',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('tai_khoan')},
+  cd_don_vi:{ten:'Cơ sở / bộ phận',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('don_vi')},
+  cd_loai:{ten:'Loại thu / chi',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('loai')},
+  cd_giai_dap:{ten:'Cần giải đáp',nv:'he_thong',cd:'Hỏi đáp',fn:()=>pageGiaiDap()},
+  cd_logic:{ten:'Logic xử lý',nv:'he_thong',cd:'Hệ thống',fn:()=>pageCaiDat('logic')},
+  cd_nhat_ky:{ten:'Nhật ký chỉnh sửa',nv:'he_thong',cd:'Quản trị',fn:()=>pageCaiDat('nhat_ky')},
+  cd_doi_mk:{ten:'Đổi mật khẩu',nv:'he_thong',cd:'Hệ thống',fn:()=>pageCaiDat('doi_ma')},
 };
 function go(p){S.page=p;location.hash=p;shell()}
+// số việc cần xử lý trên từng mục (đỏ) — dùng cho menu trái
+function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0}
+const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 function shell(){
-  const dem=S.cache.dem||{};
-  const badge=k=>{const n=k==='giai_dap'?S.cauHoi:k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?dem.dc_chua_xac_nhan:k==='thu'?dem.thu_cho_duyet:0;
-    return n?`<span class="nav-badge">${n}</span>`:''};
-  // Thanh menu NGANG trên cùng kiểu Xero: Tổng quan + 3 menu xổ (Nghiệp vụ · Báo cáo · Cài đặt), mỗi menu chia nhóm nhỏ
-  const ddBadge=g=>{const n=Object.keys(PAGES).filter(k=>PAGES[k].nhom===g&&coXem(k)).reduce((a,k)=>a+(k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0),0);return n?`<span class="nav-badge">${n}</span>`:''};
-  const dd=g=>{const ks=Object.keys(PAGES).filter(k=>PAGES[k].nhom===g&&coXem(k));if(!ks.length)return '';
-    return `<div class="tb-dd"><div class="tb-item ${PAGES[S.page].nhom===g?'active':''}" data-g="${g}" onclick="event.stopPropagation();const o=this.parentNode.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(d=>d.classList.remove('open'));if(!o)this.parentNode.classList.add('open')">${g}${PAGES[S.page].nhom===g?' · '+PAGES[S.page].ten:''} ▾${ddBadge(g)}</div>
-      <div class="tb-menu-dd">${[...new Set(ks.map(k=>PAGES[k].cd))].map(c=>`<div class="dd-g">${c}</div>`+ks.filter(k=>PAGES[k].cd===c).map(k=>`<div class="dd-i ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${PAGES[k].ten}${badge(k==='cd_giai_dap'?'giai_dap':k)}</div>`).join('')).join('')}</div></div>`};
-  $('#app').innerHTML=`<header class="topbar"><div class="tb-brand">Kế Toán</div>
-    <button class="tb-btn tb-menu" onclick="document.querySelector('.topbar').classList.toggle('open')">☰</button>
-    <nav class="tb-nav">${coXem('tong_quan')?`<div class="tb-item ${S.page==='tong_quan'?'active':''}" onclick="go('tong_quan')">Tổng quan</div>`:''}${dd('Nghiệp vụ')}${dd('Báo cáo')}</nav>
-    <div class="tb-right">${chuongHtml()}<span class="tb-user">${esc(S.toi.ho_ten)} · ${esc((VI_TRI[S.toi.vi_tri]||'').split(' (')[0])}</span>${dd('Cài đặt')}
+  const nb=n=>n?`<span class="nav-badge">${n}</span>`:'',cur=PAGES[S.page].nv;
+  const nav=NV.map(v=>{const ks=mucNV(v.k);if(!ks.length)return '';const on=cur===v.k;
+    return `<div class="sb-nv ${on?'on':''}" data-g="${v.k}" onclick="go('${ks[0]}')">${v.ic}<span class="sb-t">${v.ten}</span>${nb(ks.reduce((a,k)=>a+demMuc(k),0))}</div>`+
+      (on&&ks.length>1?`<div class="sb-subs">${ks.map(k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')"><span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`).join('')}</div>`:'')}).join('');
+  $('#app').innerHTML=`<div class="lay"><aside class="sb"><div class="sb-brand">Kế Toán<button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div><nav class="sb-nav">${nav}</nav>
+      <div class="sb-ver">Bản ${APP_VERSION} · Monsieur Claude</div></aside>
+    <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
+    <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
+      <div class="hd-nv">${esc((NV.find(v=>v.k===cur)||{}).ten||'')}</div>
+      <div class="tb-right">${chuongHtml()}<span class="tb-user">${esc(S.toi.ho_ten)} · ${esc((VI_TRI[S.toi.vi_tri]||'').split(' (')[0])}</span>
       <button class="tb-btn" onclick="doiGiaoDien()" title="Sáng / Tối">◐</button><button class="tb-btn" onclick="lock()">Đăng xuất</button></div></header>
-    <main class="main"><div class="wrap" id="page"></div><div class="sb-ver">Bản ${APP_VERSION} · Monsieur Claude</div></main>`;
+      <div class="wrap" id="page"></div></main></div>`;
+  document.body.classList.remove('sb-mo');
   render();
 }
 async function render(){
@@ -692,13 +734,11 @@ function bindTip(){
     w.addEventListener('mouseleave',()=>{if(tip)tip.remove(),tip=null})});
 }
 window.addEventListener('resize',()=>{if(S.page==='tong_quan')veThuChiNgay()});
-function shellBadges(){const dem=S.cache.dem;if(!dem||!S.toi)return;
-  // cập nhật số trên nút menu nhóm + từng mục trong menu xổ khi đếm thay đổi
-  document.querySelectorAll('.tb-dd .tb-item[data-g]').forEach(n=>{const g=n.dataset.g;const ks=Object.keys(PAGES).filter(k=>PAGES[k].nhom===g&&coXem(k));
-    const c=ks.reduce((a,k)=>a+(k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0),0);
-    const b=n.querySelector('.nav-badge');if(b)b.remove();if(c)n.insertAdjacentHTML('beforeend',`<span class="nav-badge">${c}</span>`)});
-  document.querySelectorAll('.dd-i[data-p]').forEach(n=>{const k=n.dataset.p;const c=k==='cd_giai_dap'?S.cauHoi:k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?dem.dc_chua_xac_nhan:k==='thu'?dem.thu_cho_duyet:0;
-    const b=n.querySelector('.nav-badge');if(b)b.remove();if(c)n.insertAdjacentHTML('beforeend',`<span class="nav-badge">${c}</span>`)})}
+function shellBadges(){if(!S.cache.dem||!S.toi)return;
+  // cập nhật số trên nghiệp vụ (menu trái) + từng mục con khi đếm thay đổi
+  const dat=(n,c)=>{const b=n.querySelector('.nav-badge');if(b)b.remove();if(c)n.insertAdjacentHTML('beforeend',`<span class="nav-badge">${c}</span>`)};
+  document.querySelectorAll('.sb-nv[data-g]').forEach(n=>dat(n,mucNV(n.dataset.g).reduce((a,k)=>a+demMuc(k),0)));
+  document.querySelectorAll('.sb-sub[data-p]').forEach(n=>dat(n,demMuc(n.dataset.p)))}
 
 // ── DÒNG TIỀN & ĐỐI SOÁT ───────────────────────────────────────────────────
 async function pageDongTien(){

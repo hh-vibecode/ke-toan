@@ -46,6 +46,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 1C. 7 NGHIỆP VỤ (anh gửi bản chốt + giao diện mẫu 12/10/2026 tối)
 
+**Giai đoạn 1 XONG 13/10**: menu trái 7 nghiệp vụ, xếp các trang đang có vào đúng nghiệp vụ (chụp màn hình kiểm máy tính + điện thoại). Tiếp: 2 Tổng quan theo mẫu → 3 Thu–Chi khung chi tiết bên phải → 4 Công nợ → 5 Kinh doanh phân tích → 6 Hoá đơn & Thuế (kho sổ thuế 4 bước) → 7 Báo cáo quản trị & chốt kỳ.
 Nguyên tắc: vào nghiệp vụ nào là màn hình THAO TÁC luôn (không có tổng quan con); danh sách + khung chi tiết bên phải; bộ lọc nhanh kỳ / cơ sở / tài khoản.
 
 | # | Nghiệp vụ | App đang có | Phải làm thêm |
@@ -110,7 +111,7 @@ MISA hoá đơn đầu vào: API riêng "meInvoice Bot" (`/meinvoicebot/v1/...`:
 - **Ảnh chứng từ: gọn nhất cho người up** (anh 08/10): nén + tải ngầm, bấm lại xem ngay. Kiot KHÔNG cho ghi phiếu thu/chi qua API (đã thử 08/10) → 4A tạo tay.
 - **Phát sinh còn trên sheet cũ: kéo tạm vào, gắn thẻ "Kéo từ sheet cũ"**, kế toán điền dần (anh chốt 08/10).
 - **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
-- **Giao diện theo theme XERO cho TOÀN APP** (anh chốt 05/10): menu ngang xanh đậm, dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
+- **MENU TRÁI 7 nghiệp vụ** (anh chốt 12/10, thay menu ngang Xero): bấm nghiệp vụ → mở thẳng màn thao tác, mục con xổ dưới; chuông / tài khoản ở dải trên. Phần còn lại giữ theme XERO (anh chốt 05/10): dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
 
 ## 4. PHỤ THUỘC CHÉO (cần app khác làm — nhờ anh chuyển lời)
 
