@@ -58,7 +58,7 @@ begin
   perform kt_chan(p_phien, 'hoa_don_thue');
   return coalesce((select jsonb_agg(to_jsonb(x) - 'nguon' - 'keo_luc' order by x.cuoi_tien desc nulls last) from (
     select * from kt_thue_xnt where hkd = p_hkd and ky = p_ky and (p_tim is null or ten ilike '%' || p_tim || '%' or ma ilike '%' || p_tim || '%')
-    order by cuoi_tien desc nulls last limit 500) x), '[]');
+    order by cuoi_tien desc nulls last limit 5000) x)   -- 13/10: 500 → 5000 (bảng tồn sổ thuế có phân trang, cần đủ mã), '[]');
 end $$;
 revoke execute on function public.kt_thue_xnt_ct(text, text, text, text) from public;
 grant execute on function public.kt_thue_xnt_ct(text, text, text, text) to anon, authenticated;

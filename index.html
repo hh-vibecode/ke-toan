@@ -609,6 +609,29 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 .tq2-r4{grid-template-columns:minmax(0,1.5fr) minmax(0,1.05fr) minmax(0,.85fr)}
 .tq2-o{padding:7px;gap:6px}.tq2-o .m-ic{width:28px;height:28px}.tq2-o .m-ic svg{width:16px;height:16px}.tq2-o .l{font-size:11.5px;line-height:1.25}.tq2-o .v{font-size:13.5px}
 .tq2-h b{font-size:13.5px}.tq2-r3 .tq2-h{flex-wrap:wrap;row-gap:0}
+/* HOÁ ĐƠN & THUẾ sát ảnh mẫu (13/10) */
+.th-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}.th-g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+.th-o{border-radius:12px;padding:16px;background:color-mix(in srgb,var(--c) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 18%,var(--border));display:flex;flex-direction:column;gap:10px;min-width:0}
+.th-oh{display:flex;align-items:center;gap:10px}.th-oh .m-ic{background:var(--c);color:#fff;width:42px;height:42px}.th-oh b{font-size:17px;color:color-mix(in srgb,var(--c) 70%,var(--text))}
+.th-mo{font-size:12.5px;color:var(--text2)}.th-ob{display:flex;gap:12px;flex:1;flex-wrap:wrap}
+.th-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:12.5px;flex:1;min-width:200px}
+.th-ul li{display:flex;gap:8px;align-items:flex-start}.th-ul li::before{content:'✓';flex:none;width:17px;height:17px;border-radius:50%;background:var(--c);color:#fff;font-size:10px;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
+.th-o>.m-btn{align-self:flex-start}
+.th-tag{align-self:flex-end;font-size:11.5px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text2);max-width:220px}
+.th-dv{display:flex;flex-direction:column;gap:6px;min-width:200px}.th-dv>div{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px}
+.th-dv>div span{color:var(--muted);font-size:11.5px}.th-so{align-self:flex-end;margin-top:-18px;font-weight:800;color:var(--c)!important;font-size:14px!important}
+.th-lk{display:flex;align-items:center;gap:14px;padding:14px 16px;flex-wrap:wrap}.th-lk>div:nth-child(2){flex:1;min-width:240px}.th-lk .m-ic{width:44px;height:44px}
+.th-lk-o{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12.5px}
+.th-bn{display:flex;gap:10px;align-items:flex-start;background:var(--warn-bg);color:var(--text);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px}.th-bn svg{width:18px;height:18px;flex:none;color:var(--warn)}
+.kt-luong{display:flex;gap:6px;align-items:stretch;margin-bottom:12px}.kt-b{flex:1;border-radius:10px;padding:12px;background:color-mix(in srgb,var(--c) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 20%,var(--border));font-size:12px;min-width:0}
+.kt-bh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.kt-bh b{font-size:13.5px;color:color-mix(in srgb,var(--c) 70%,var(--text))}.kt-mt{align-self:center;color:var(--accent);font-size:20px}
+.kt-step{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.kt-step>div{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);padding:6px 8px;border-radius:8px}
+.kt-step span{width:20px;height:20px;border-radius:50%;background:var(--grey-bg);display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.kt-step>div.on{color:var(--accent);background:var(--sel-bg);font-weight:600}.kt-step>div.on span{background:var(--accent);color:#fff}
+.kt-up{display:flex;gap:10px;align-items:center;border:2px dashed var(--border);border-radius:10px;padding:14px;font-size:12.5px}.kt-up svg{width:34px;height:34px;color:var(--ok);flex:none}
+@media (max-width:1300px){.th-g3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.kt-luong{flex-wrap:wrap}.kt-mt{display:none}.kt-b{flex:1 1 45%}}
+@media (max-width:900px){.th-g3,.th-g2{grid-template-columns:minmax(0,1fr)}}
+.kt-col{display:flex;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
@@ -619,7 +642,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 15:32';
+const APP_VERSION='13/10/2026 15:36';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -682,7 +705,7 @@ const tkOn=()=>S.dm.tai_khoan.filter(x=>x.hoat_dong), coSo=()=>S.dm.don_vi.filte
 // Phân quyền giống app MKT/Sale (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang (xem / sửa).
 const can=(p,ghi)=>!!S.toi&&(S.toi.toan_quyen||((S.toi.quyen||[]).includes(p)&&(!ghi||(S.toi.quyen||[]).includes(p+':ghi'))));
 const coGhi=p=>can(p||S.page,true);
-const coXem=p=>p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'?can('nhat_ky'):p==='chi'?can('chi')||can('chi_de_nghi'):/^cd_/.test(p)||can(p);
+const coXem=p=>/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'?can('nhat_ky'):p==='chi'?can('chi')||can('chi_de_nghi'):/^cd_/.test(p)||can(p);
 // Chi: tạo đề nghị (sửa trang Chi hoặc quyền chỉ đề nghị) · sửa phiếu x (phiếu mình còn chờ duyệt) · duyệt / thanh toán (chỉ quyền chi_duyet)
 const chiTao=()=>coGhi('chi')||can('chi_de_nghi'), chiDuyet=()=>can('chi_duyet');
 // Giám đốc xác nhận lượt 2: KHÔNG đi theo Admin — chỉ Supreme hoặc tick riêng (giống hàm SQL kt_co_quyen)
@@ -798,7 +821,13 @@ const PAGES={
   khach_hang:{ten:'Khách hàng (phân tích)',nv:'kinh_doanh',fn:()=>pageKhachHang()},
   ncc:{ten:'Nhà cung cấp (phân tích)',nv:'kinh_doanh',fn:()=>pageNCC()},
   hang_hoa:{ten:'Hàng hoá & tồn kho',nv:'kinh_doanh',fn:()=>pageHangHoa()},
-  hoa_don_thue:{ten:'Hoá đơn & kho sổ thuế',nv:'thue',fn:()=>pageHoaDonThue()},
+  // Hoá đơn & Thuế theo ảnh mẫu (13/10/2026): 6 mục con — quyền theo trang hoa_don_thue
+  thue_tq:{ten:'Tổng quan',nv:'thue',fn:()=>pageThueTQ()},
+  hd_vao:{ten:'Tra cứu & Kiểm tra HĐ đầu vào',nv:'thue',fn:()=>pageHDList('vao')},
+  hd_ra:{ten:'Hóa đơn đầu ra',nv:'thue',fn:()=>pageHDList('ra')},
+  xl_hd:{ten:'Xử lý hóa đơn',nv:'thue',fn:()=>pageHDList('xl')},
+  kho_thue:{ten:'Kho sổ thuế',nv:'thue',fn:()=>pageKhoThue()},
+  hoa_don_thue:{ten:'Đối chiếu & công việc thuế',nv:'thue',fn:()=>pageHoaDonThue()},
   pl:{ten:'Lãi / lỗ (P&L)',nv:'bao_cao',fn:()=>pagePL()},
   tai_san:{ten:'Tài sản & khấu hao',nv:'bao_cao',fn:()=>pageTaiSan()},
   cd_phan_quyen:{ten:'Phân quyền',nv:'he_thong',cd:'Quản trị',fn:()=>pageCaiDat('nguoi_dung')},
@@ -855,7 +884,7 @@ function locNhanh(nv){
 }
 // ô tìm kiếm trên đầu trang: mỗi trang 1 khoá lọc riêng
 const TIM={chi:['chi_q','Tìm kiếm số phiếu, nội dung, nhà cung cấp...'],no_kh:['no_kh_q','Tìm khách hàng, mã KH, số điện thoại...'],no_ncc:['no_ncc_q','Tìm nhà cung cấp, mã NCC, số điện thoại...'],
-  hoa_don_thue:['thue_q','Tìm hoá đơn, mã số thuế, nhà cung cấp...'],thu:['thu_q','Tìm khoản thu...']};
+  hd_ra:['hd_ra_q','Tìm hoá đơn, mã số thuế, khách hàng...'],hd_vao:['hd_vao_q','Tìm hoá đơn, mã số thuế, nhà cung cấp...'],xl_hd:['hd_xl_q','Tìm hoá đơn...'],kho_thue:['kt_q','Tìm mã hàng, tên hàng...'],thu:['thu_q','Tìm khoản thu...']};
 const LOGO=`<svg viewBox="0 0 48 40" class="logo"><g fill="#e8b04a"><path d="M24 6c4 6 4 14 0 22-4-8-4-16 0-22z"/><path d="M24 28c-3-7-9-12-16-13 1 8 7 13 16 13z" opacity=".85"/><path d="M24 28c3-7 9-12 16-13-1 8-7 13-16 13z" opacity=".85"/><path d="M24 30c-6-3-13-3-20 0 6 4 13 4 20 0z" opacity=".7"/><path d="M24 30c6-3 13-3 20 0-6 4-13 4-20 0z" opacity=".7"/></g></svg>`;
 const IC_SB={so:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>'};
 function shell(){
@@ -1726,6 +1755,108 @@ async function luuTS(id){const o=formData($('#f'));o.id=id;o.nguyen_gia=so(o.ngu
   o.chung_tu=(o.chung_tu||'').split('\n').map(s=>s.trim()).filter(Boolean);if(!o.ten||o.nguyen_gia==null||!o.ngay_mua)return alert('Cần tên, nguyên giá, ngày mua');
   const nid=await save('kt_luu_tai_san',{p_dong:o});if(!o.id)ctGuiMoi('tai_san',nid);render()}
 
+// ── HOÁ ĐƠN & THUẾ theo ảnh mẫu kế toán (13/10/2026): Tổng quan · HĐ đầu vào · HĐ đầu ra · Xử lý HĐ · Kho sổ thuế · Đối chiếu & công việc thuế ──
+// Đơn vị: CTY = Công ty THT (= Shidai; HĐ bán từ MISA meInvoice) · CT / HT = 2 hộ kinh doanh (3TShop). HĐ đầu vào MISA (meInvoice Bot) chưa nối xong.
+const DV_THUE=[['CTY','Công ty THT (Shidai)','SD'],['CT','HKD Chánh Tâm','CT'],['HT','HKD Hiền Thủy','HT']];
+const dvThueOK=h=>locCSAll()||locCS().includes((DV_THUE.find(x=>x[0]===h)||[])[2]);
+const dvThueTen=h=>(DV_THUE.find(x=>x[0]===h)||[,h])[1];
+const IC_T={vao:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm2 8h8v2H8zm0 4h8v2H8zm0 4h5v2H8z"/></svg>',ok:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16v18H4zm5.6 11.6-2.3-2.3-1.4 1.4 3.7 3.7 7.7-7.7-1.4-1.4z"/></svg>',
+  gio:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4 3.3 2-.9 1.6L11 13.3V6h2z"/></svg>',canh:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22zm-1 7h2v6h-2zm0 8h2v2h-2z"/></svg>',
+  ma:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v4H3zm1 6h16v8H4zm4 2v2h8v-2z"/></svg>',ton:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 7l10 5 10-5zm-8.6 9.3L2 12l10 5 10-5-1.4-.7L12 15zm0 5L2 17l10 5 10-5-1.4-.7L12 20z"/></svg>',
+  cv:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 3h8v2h3v16H5V5h3zm2 0v2h4V3zM8 12l1.4-1.4L11 12.2l3.6-3.6L16 10l-5 5z"/></svg>',
+  xl:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3h-4l-.3 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.3-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>',
+  kho:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l9-6 9 6v12H3zm4 4v6h4v-6zm6 0v6h4v-6z"/></svg>',dc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h12v20H6zm3 5v2h6V7zm0 4v2h6v-2zm0 4v2h4v-2z"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'};
+const soHD=v=>String(v||'').replace(/.0+$/,'');   // số HĐ 3TShop bị Excel lưu dạng 957.0
+const laDC=x=>/điều chỉnh|thay thế/i.test(String(x.ghi_chu||''));
+async function pageThueTQ(){
+  const el=$('#page');el.innerHTML='<div class="m-empty">Đang tính...</div>';
+  const [b,ra]=await Promise.all([rpc('kt_bc_thue',{p_tu:S.tu,p_den:S.den}),rpc('kt_thue_hd_ds',{p_tu:S.tu,p_den:S.den,p_chieu:'ra'})]);
+  const hd=b.hd.filter(x=>dvThueOK(x.hkd)),vao=sumBy(hd.filter(x=>x.chieu==='vao'),x=>x.so_hd),soRa=sumBy(hd.filter(x=>x.chieu==='ra'),x=>x.so_hd),dc=ra.filter(x=>dvThueOK(x.hkd)&&laDC(x)).length;
+  const kyMoi={};b.xnt.filter(x=>dvThueOK(x.hkd)).forEach(x=>{if(!kyMoi[x.hkd]||x.ky>kyMoi[x.hkd].ky)kyMoi[x.hkd]=x});const xm=Object.values(kyMoi);
+  // chênh lệch: tháng có HĐ bán / doanh thu Kiot cùng cơ sở lệch xa (< 50% hoặc > 150%)
+  const lech=hd.filter(x=>x.chieu==='ra').filter(x=>{const k=b.kiot.find(z=>z.thang===x.thang&&String(z.chi_nhanh).toLowerCase()===String(kt_cn(x.hkd)).toLowerCase());if(!k||!+k.doanh_thu)return false;const t=x.thanh_tien/k.doanh_thu;return t<.5||t>1.5}).length;
+  const the=(c,ic,l,v)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${IC_T[ic]}</div><div><div class="l">${l}</div><div class="v">${fmt(v)}</div></div></div>`;
+  const ds=(c,ds)=>`<ul class="th-ul" style="--c:var(--${c})">${ds.map(t=>`<li>${t}</li>`).join('')}</ul>`;
+  const o=(c,ic,t,mo,list,nut,go,phu='')=>`<div class="th-o" style="--c:var(--${c})"><div class="th-oh"><span class="m-ic">${IC_T[ic]}</span><b>${t}</b></div><div class="th-mo">${mo}</div>
+    <div class="th-ob">${ds(c,list)}${phu}</div><button class="m-btn pri" style="background:var(--c);border-color:var(--c)" onclick="go('${go}')">${nut} →</button></div>`;
+  el.innerHTML=`<div class="m-kpis" style="grid-template-columns:repeat(7,minmax(0,1fr))">${the('info','vao','Hóa đơn đầu vào',vao)}${the('ok','ok','Hóa đơn đầu ra',soRa)}${the('warn','gio','Điều chỉnh / thay thế',dc)}
+      ${the('bad','canh','Cảnh báo / Sai sót',(b.ngay_sai||0)+lech)}${the('vio','ma','Mã hàng sổ thuế',sumBy(xm,x=>x.so_ma))}${the('grey','ton','Tổng tồn sổ thuế',sumBy(xm,x=>x.cuoi_sl))}${the('info','cv','Tháng HĐ lệch Kiot',lech)}</div>
+    <div class="th-g3">${o('info','vao','Tra cứu & Kiểm tra HĐ đầu vào','Tra cứu hóa đơn đầu vào, kiểm tra thông tin và đối chiếu với thanh toán.',['Xem danh sách hóa đơn mua vào','Kiểm tra thông tin (MST, thuế suất, giá trị...)','Đối chiếu với khoản chi đã thanh toán','Lọc theo nhà cung cấp, thời gian'],'Vào tra cứu HĐ đầu vào','hd_vao','<div class="th-tag">MISA đầu vào: đang kết nối · hiện lấy HĐ mua trong file 3TShop</div>')}
+      ${o('ok','ok','Hóa đơn đầu ra','Theo dõi hóa đơn đã phát hành và đối chiếu với doanh thu Kiot.',['Xem danh sách hóa đơn đã phát hành','Công ty: tự kéo từ MISA meInvoice mỗi đêm','2 hộ kinh doanh: từ file 3TShop','Lọc và thống kê theo khách hàng, thời gian'],'Vào HĐ đầu ra','hd_ra')}
+      ${o('warn','xl','Xử lý hóa đơn','Theo dõi các trường hợp điều chỉnh, thay thế hóa đơn.',['Danh sách hóa đơn điều chỉnh / thay thế','Liên kết với hóa đơn gốc','Lập / huỷ hóa đơn: làm trên MISA (app chỉ đọc)'],'Vào xử lý hóa đơn','xl_hd',`<div class="th-tag">${dc} hóa đơn điều chỉnh / thay thế trong kỳ</div>`)}</div>
+    <div class="th-g2">${o('vio','kho','Kho sổ thuế','Theo dõi tồn kho theo sổ thuế của Công ty và 2 HKD (Chánh Tâm, Hiền Thủy).',['Xem tồn theo mã hàng, nhóm hàng','Theo dõi nhập, xuất trong kỳ theo hoá đơn','Đối chiếu tồn cuối kỳ với file 3TShop','Xuất báo cáo tồn kho sổ thuế'],'Vào kho sổ thuế','kho_thue',
+        `<div class="th-dv">${DV_THUE.map(([h,t])=>{const x=kyMoi[h];return `<div><b>${t}</b><span>${x?x.ky+' · '+fmt(x.so_ma)+' mã':'chưa có tồn sổ thuế'}</span></div>`}).join('')}</div>`)}
+      ${o('bad','dc','Đối chiếu & Công việc thuế','Theo dõi các vấn đề cần xử lý, chênh lệch và công việc với kế toán thuế.',['Đối chiếu hóa đơn bán với doanh thu Kiot','Hóa đơn ghi ngày sai năm','Tháng hóa đơn lệch xa doanh thu','Theo dõi tồn kho sổ thuế từng hộ'],'Vào đối chiếu & công việc thuế','hoa_don_thue',
+        `<div class="th-dv">${[['Sai thông tin (ngày)',b.ngay_sai||0],['Chênh lệch HĐ / Kiot',lech],['Điều chỉnh / thay thế',dc]].map(([t,n])=>`<div><b>${t}</b><span class="th-so">${n}</span></div>`).join('')}</div>`)}</div>
+    <div class="m-card th-lk"><span class="m-ic" style="--c:var(--info)">${IC_T.link}</span><div><b>Liên kết hệ thống</b><div class="muted">Hóa đơn công ty tự đồng bộ từ MISA meInvoice mỗi đêm (00:25). Hóa đơn 2 hộ và tồn sổ thuế từ file 3TShop.</div></div>
+      <div class="th-lk-o"><b>MISA meInvoice</b><span class="muted">Kéo gần nhất ${b.keo_luc?fmtDT(b.keo_luc):'—'}</span></div><span class="muted">⇄</span><div class="th-lk-o"><b>Thu chi & Ngân quỹ</b><span class="muted">Liên kết thanh toán (đang làm)</span></div></div>`;
+}
+const kt_cn=h=>({CTY:'Tổng kho sỉ Shidai',SD:'Tổng kho sỉ Shidai',CT:'Đồ Thờ Chánh Tâm',HT:'Đồ thờ Hiền Thủy'})[h];
+// danh sách hoá đơn: đầu vào (vao) · đầu ra (ra) · xử lý (ra, chỉ điều chỉnh / thay thế)
+async function pageHDList(kieu){
+  const el=$('#page'),chieu=kieu==='vao'?'vao':'ra',k='hd_'+kieu,f=S.f;el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const ds=(await rpc('kt_thue_hd_ds',{p_tu:S.tu,p_den:S.den,p_chieu:chieu,p_hkd:f[k+'_dv']||null,p_tim:f[k+'_q']||null})).filter(x=>dvThueOK(x.hkd)&&(kieu!=='xl'||laDC(x)));
+  const moi=f[k+'_moi']||20,[a,b,tr]=phanTrang(k,ds.length,moi),trang=ds.slice(a,b),dt=kieu==='vao'?'Nhà cung cấp':'Khách hàng';
+  const cols=[['Ngày',x=>x.ngay],['Ký hiệu',x=>x.ky_hieu||''],['Số HĐ',x=>x.so_hd||''],[dt,x=>x.doi_tac||''],['MST',x=>x.mst||''],['Chưa thuế',x=>x.thanh_tien],['Thuế',x=>x.tien_thue],['Tổng',x=>x.tong],['Đơn vị',x=>dvThueTen(x.hkd)],['Nguồn',x=>x.nguon],['Ghi chú',x=>x.ghi_chu||'']];
+  S.cache[k+'_xuat']=()=>xuatCSV(k+'-'+S.tu+'_'+S.den,cols,ds);
+  const tt=x=>laDC(x)?pill(/thay thế/i.test(x.ghi_chu)?'Thay thế':'Điều chỉnh','warn'):pill(kieu==='vao'?'Đã nhận':'Đã phát hành','ok');
+  const ten={vao:'Hóa đơn đầu vào',ra:'Hóa đơn đầu ra',xl:'Hóa đơn điều chỉnh / thay thế'}[kieu];
+  el.innerHTML=`${kieu==='vao'?`<div class="th-bn">${IC_T.canh}<div><b>Hóa đơn đầu vào từ MISA (Xử lý hóa đơn) đang kết nối</b> — đã đăng nhập được, còn bước lấy dữ liệu. Tạm thời hiển thị hóa đơn mua vào trong file 3TShop của từng đơn vị.</div></div>`:''}
+    ${kieu==='xl'?`<div class="th-bn">${IC_T.xl}<div>Lập / điều chỉnh / thay thế / huỷ hoá đơn thực hiện trên MISA meInvoice — app chỉ đọc và theo dõi. Danh sách dưới là hoá đơn công ty có liên kết hoá đơn gốc.</div></div>`:''}
+    <div class="m-flt"><div class="m-f"><span>Thời gian</span><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span></div>
+      <div class="m-f"><span>Đơn vị</span><select onchange="S.f['${k}_dv']=this.value;S.f['${k}_tr']=1;render()"><option value="">Tất cả đơn vị</option>${DV_THUE.map(([h,t])=>`<option value="${h}" ${f[k+'_dv']===h?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="m-f"><span>&nbsp;</span><input class="m-in" type="search" placeholder="Số HĐ, ${dt.toLowerCase()}, MST, mặt hàng" value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()"></div>
+      <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache['${k}_xuat']()">${IC_XLS} Xuất Excel</button></div>
+    <div class="m-card"><div class="m-ch">${ten} <span class="m-cnt">(${fmt(ds.length)} hóa đơn · ${fmt(sumBy(ds,x=>x.thanh_tien))} chưa thuế)</span></div>
+      <div class="scroll"><table class="m-t"><tr><th class="c"><input type="checkbox"></th><th>Ngày</th><th>Ký hiệu</th><th>Số HĐ</th><th>${dt}</th><th>MST</th><th class="num">Chưa thuế</th><th class="num">Thuế</th><th class="num">Tổng thanh toán</th><th>Đơn vị</th><th>Nguồn</th><th class="c">Trạng thái</th></tr>
+      ${trang.map(x=>`<tr><td class="c"><input type="checkbox"></td><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.ky_hieu||'')}</td><td class="nw m-link">${esc(soHD(x.so_hd))}</td><td class="ten" title="${esc(x.ghi_chu||'')}">${esc(x.doi_tac||'')}${x.so_dong>1?` <span class="muted">· ${x.so_dong} dòng</span>`:''}</td>
+        <td class="nw">${esc(x.mst||'')}</td><td class="num">${fmt(x.thanh_tien)}</td><td class="num">${fmt(x.tien_thue)}</td><td class="num"><b>${fmt(x.tong)}</b></td><td class="nw">${esc(dvThueTen(x.hkd))}</td><td class="nw">${esc(x.nguon)}</td><td class="c">${tt(x)}</td></tr>`).join('')||'<tr><td colspan="12" class="m-empty">Không có hóa đơn trong kỳ</td></tr>'}</table></div>
+      ${thanhTrang(k,ds.length,moi,tr,'hóa đơn')}</div>`;
+}
+// KHO SỔ THUẾ — ảnh mẫu "Luồng làm việc – kho sổ thuế": luồng 4 bước · 1 Tồn sổ thuế · 2 Phát sinh trong kỳ · 3 Đối chiếu & chốt kỳ
+async function pageKhoThue(){
+  const el=$('#page'),f=S.f;el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const b=await rpc('kt_bc_thue',{p_tu:'2025-01-01',p_den:homNay()});
+  const hkd=f.kt_dv||'HT',kyL=b.xnt.filter(x=>x.hkd===hkd).map(x=>x.ky).sort().reverse(),ky=kyL.includes(f.kt_ky)?f.kt_ky:kyL[0];
+  const qTu=ky?ky.slice(0,4)+'-'+String((+ky.slice(-1)-1)*3+1).padStart(2,'0')+'-01':null,qDen=ky?ymd(new Date(+ky.slice(0,4),(+ky.slice(-1))*3,0)):null;
+  const [ton,ps]=ky?await Promise.all([rpc('kt_thue_xnt_ct',{p_hkd:hkd,p_ky:ky,p_tim:f.kt_q||null}),rpc('kt_thue_ps',{p_hkd:hkd,p_tu:qTu,p_den:qDen,p_tim:f.kt_q||null})]):[[],[]];
+  const tg=b.xnt.find(x=>x.hkd===hkd&&x.ky===ky)||{};
+  const ttT=x=>+x.cuoi_sl<0?['Âm sổ','bad']:+x.cuoi_sl===0?['Hết hàng','bad']:+x.cuoi_sl<=2?['Sắp hết','warn']:['Bình thường','ok'];
+  const tab=f.kt_tab||'tat_ca',lT={tat_ca:x=>true,con:x=>+x.cuoi_sl>2,sap_het:x=>+x.cuoi_sl>0&&+x.cuoi_sl<=2,het:x=>+x.cuoi_sl===0,am:x=>+x.cuoi_sl<0};
+  const l=ton.filter(lT[tab]),moi=f.kt_moi||10,[a,bb,tr]=phanTrang('kt',l.length,moi),trang=l.slice(a,bb);
+  const tabP=f.kt_ps||'tat_ca',lp=ps.filter(x=>tabP==='tat_ca'||(tabP==='nhap'?x.loai==='Nhập':x.loai==='Xuất')),[a2,b2,tr2]=phanTrang('kp',lp.length,10),trangP=lp.slice(a2,b2);
+  S.cache.kt_xuat=()=>xuatCSV('ton-so-thue-'+hkd+'-'+ky,[['Mã',x=>x.ma],['Tên',x=>x.ten],['Nhóm',x=>x.chung_loai||''],['ĐVT',x=>x.dvt||''],['Tồn đầu',x=>x.dau_sl],['Nhập',x=>x.nhap_sl],['Xuất',x=>x.xuat_sl],['Tồn cuối',x=>x.cuoi_sl],['Giá trị tồn',x=>x.cuoi_tien]],l);
+  const buoc=(n,c,t,body)=>`<div class="kt-b" style="--c:var(--${c})"><div class="kt-bh"><span class="tq2-n" style="--c:var(--${c})">${n}</span><b>${t}</b></div>${body}</div>`;
+  const k4=(c,ic,l1,v)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${IC_T[ic]}</div><div><div class="l">${l1}</div><div class="v">${v}</div></div></div>`;
+  el.innerHTML=`<div class="kt-luong">${buoc(1,'info','Nhập tồn đầu kỳ','<div class="muted">File tồn kho từ 3TShop (dịch vụ kế toán xuất): mã hàng, tên, nhóm, ĐVT, số lượng, giá vốn, giá trị tồn, ngày chốt.</div>')}<span class="kt-mt">→</span>
+      ${buoc(2,'info','Theo dõi phát sinh trong kỳ','<div class="muted">Hoá đơn đầu vào → nhập · hoá đơn đầu ra → xuất (theo mã hàng). Bổ sung nhập / xuất chưa có hoá đơn.</div>')}<span class="kt-mt">→</span>
+      ${buoc(3,'ok','Theo dõi tồn dự kiến','<div class="muted">Tồn dự kiến = Tồn đầu kỳ + Nhập − Xuất ± Điều chỉnh hợp lệ.</div>')}<span class="kt-mt">→</span>
+      ${buoc(4,'warn','Đối chiếu & Chốt kỳ','<div class="muted">Nhận file tồn cuối kỳ mới từ 3TShop, so với tồn dự kiến, xử lý chênh lệch, khoá kỳ.</div>')}</div>
+    <section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--info)">1</span><b>Tồn sổ thuế</b><span class="muted">Xem tồn theo mã hàng, nhóm hàng</span>
+        <span style="margin-left:auto;display:flex;gap:8px"><select class="m-in" onchange="S.f.kt_dv=this.value;S.f.kt_ky=null;S.f.kt_tr=1;render()">${DV_THUE.map(([h,t])=>`<option value="${h}" ${h===hkd?'selected':''}>${t}</option>`).join('')}</select>
+        <select class="m-in" onchange="S.f.kt_ky=this.value;S.f.kt_tr=1;render()">${kyL.map(x=>`<option ${x===ky?'selected':''}>${x}</option>`).join('')||'<option>—</option>'}</select></span></div>
+      ${!ky?`<div class="m-empty">${hkd==='CTY'?'Chưa có tồn kho sổ thuế của Công ty THT (Shidai) — file 3TShop Shidai có nhiều tab tồn kho, đang hỏi kế toán dùng tab nào (mục Cần giải đáp).':'Chưa có dữ liệu'}</div>`:`
+      <div style="display:flex;gap:10px;align-items:stretch"><div class="m-kpis" style="grid-template-columns:repeat(4,minmax(0,1fr));flex:1;margin:0">${k4('info','ma','Tổng mã hàng',fmt(tg.so_ma))}${k4('ok','ton','Tổng số lượng tồn cuối',fmt(tg.cuoi_sl))}${k4('warn','vao','Tổng giá trị tồn cuối',fmt(tg.cuoi_tien))}${k4('bad','canh','Mã âm sổ',fmt(ton.filter(x=>+x.cuoi_sl<0).length)+' mã hàng')}</div>
+        <input class="m-in" type="search" style="min-width:240px" placeholder="Tìm mã hàng, tên hàng..." value="${esc(f.kt_q||'')}" onchange="S.f.kt_q=this.value;S.f.kt_tr=1;render()"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0"><div class="m-seg">${[['tat_ca','Tất cả'],['con','Còn hàng'],['sap_het','Sắp hết'],['het','Hết hàng'],['am','Âm sổ']].map(([kk,t])=>`<button class="${tab===kk?'on':''}" onclick="S.f.kt_tab='${kk}';S.f.kt_tr=1;render()">${t} (${ton.filter(lT[kk]).length})</button>`).join('')}</div>
+        <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.kt_xuat()">${IC_XLS} Xuất Excel</button></div>
+      <div class="scroll"><table class="m-t"><tr><th>STT</th><th>Mã hàng</th><th>Tên hàng</th><th>Nhóm hàng</th><th>ĐVT</th><th class="num">Tồn đầu kỳ</th><th class="num">Nhập trong kỳ</th><th class="num">Xuất trong kỳ</th><th class="num">Tồn cuối</th><th class="num">Giá vốn đơn vị</th><th class="num">Giá trị tồn</th><th class="c">Trạng thái</th></tr>
+        ${trang.map((x,i)=>`<tr><td>${a+i+1}</td><td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten||'')}</td><td>${esc(x.chung_loai||'')}</td><td>${esc(x.dvt||'')}</td><td class="num">${fmt(x.dau_sl)}</td><td class="num">${fmt(x.nhap_sl)}</td><td class="num">${fmt(x.xuat_sl)}</td><td class="num"><b>${fmt(x.cuoi_sl)}</b></td>
+          <td class="num">${fmt(x.gia_nhap||(+x.cuoi_sl?Math.round(x.cuoi_tien/x.cuoi_sl):0))}</td><td class="num">${fmt(x.cuoi_tien)}</td><td class="c">${pill(...ttT(x))}</td></tr>`).join('')||'<tr><td colspan="12" class="m-empty">Không có mã hàng</td></tr>'}</table></div>
+      ${thanhTrang('kt',l.length,moi,tr,'mã hàng'+(ton.length===5000?' (5000 mã giá trị lớn nhất)':''))}`}</section>
+    <div class="tq2-r2"><section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--info)">2</span><b>Phát sinh trong kỳ</b><span class="muted">Nhập – xuất theo hoá đơn ${ky||''}</span></div>
+        <div class="m-seg" style="margin-bottom:10px;width:max-content">${[['tat_ca','Tất cả'],['nhap','Nhập'],['xuat','Xuất']].map(([kk,t])=>`<button class="${tabP===kk?'on':''}" onclick="S.f.kt_ps='${kk}';S.f.kp_tr=1;render()">${t} (${ps.filter(x=>kk==='tat_ca'||(kk==='nhap'?x.loai==='Nhập':x.loai==='Xuất')).length})</button>`).join('')}</div>
+        <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th class="c">Loại</th><th>Số chứng từ</th><th>Mã hàng</th><th>Tên hàng</th><th class="num">SL (+/-)</th><th class="num">Đơn giá</th><th class="num">Giá trị</th><th class="c">Trạng thái</th></tr>
+          ${trangP.map(x=>`<tr><td class="nw">${fmtD(x.ngay)}</td><td class="c">${pill(x.loai,x.loai==='Xuất'?'bad':'ok')}</td><td class="nw m-link">${esc(soHD(x.so_hd))}</td><td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten||'')}</td>
+            <td class="num ${x.sl<0?'neg-t':'pos-t'}">${x.sl>0?'+':''}${fmt(x.sl)}</td><td class="num">${fmt(x.don_gia)}</td><td class="num">${fmt(x.thanh_tien)}</td><td class="c">${pill(x.loai==='Xuất'?'Đã phát hành':'Có HĐ','ok')}</td></tr>`).join('')||'<tr><td colspan="9" class="m-empty">Không có phát sinh</td></tr>'}</table></div>
+        ${thanhTrang('kp',lp.length,10,tr2,'dòng')}</section>
+      <section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--ok)">3</span><b>Đối chiếu & Chốt kỳ</b><span class="muted">Nhập file tồn cuối kỳ từ 3TShop và so sánh</span></div>
+        <div class="kt-step">${['Nhập file 3TShop','So sánh & kiểm tra chênh lệch','Xử lý điều chỉnh','Xác nhận & khoá kỳ'].map((t,i)=>`<div class="${i===0?'on':''}"><span>${i+1}</span>${t}</div>`).join('')}</div>
+        <div class="m-st">Bước 1: Nhập file tồn kho cuối kỳ từ 3TShop</div>
+        <div class="kt-col"><div class="kt-up">${IC_XLS}<div>File 3TShop hiện anh / kế toán xuất lên Google Drive, app đọc tự động.<br><span class="muted">Kéo thả file trực tiếp trên app: đang làm</span></div></div>
+          <div class="m-kv">${[['Đơn vị',dvThueTen(hkd)],['Kỳ',ky||'—'],['Số mã hàng',fmt(tg.so_ma||0)],['Tổng SL tồn',fmt(tg.cuoi_sl||0)],['Tổng giá trị tồn',fmt(tg.cuoi_tien||0)],['Kéo lúc',tg.keo_luc?fmtDT(tg.keo_luc):'—']].map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div></div></section></div>`;
+}
 // HOÁ ĐƠN & THUẾ — hộ: 3TShop · công ty tổng: meInvoice (12/10/2026)
 // HOÁ ĐƠN & THUẾ (09/10/2026): nguồn 3TShop — anh xuất ra Google Sheet (3TShop không có API), scripts/keo-3tshop.js đọc vào app.
 // 3 hộ: HT Hiền Thủy · CT Chánh Tâm · SD Shidai. Tồn kho sổ thuế theo hộ × kỳ · hoá đơn bán ra so với doanh thu Kiot cùng cửa hàng.
