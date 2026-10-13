@@ -633,6 +633,19 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 @media (max-width:900px){.th-g3,.th-g2{grid-template-columns:minmax(0,1fr)}}
 .kt-col{display:flex;flex-direction:column;gap:10px}
 .m-kpis .m-k .v{font-size:16px}
+.m-kpis .m-k .v{font-size:15px;letter-spacing:-.01em}
+/* căn đều (anh 13/10): khối cùng hàng cao bằng nhau, đáy thẳng hàng; ô con bên trong đều nhau */
+.tq2-r2,.tq2-r3,.tq2-r4{margin-bottom:12px;align-items:stretch}
+.tq2-r2>.tq2,.tq2-r3>.tq2,.tq2-r4>.tq2{margin-bottom:0;display:flex;flex-direction:column}
+.tq2-r2>.tq2>.scroll,.tq2-r2>.tq2>table,.tq2-r3>.tq2>table{flex:1}
+.tq2-kq>.tq2-k{height:100%}.tq2-kt{min-height:84px}
+.tq2-os{align-items:stretch}.tq2-o{height:100%;box-sizing:border-box}
+.tq2-2{align-items:stretch}.tq2-2>*{height:100%;box-sizing:border-box}
+.tq2-mini,.tq2-no{display:flex;flex-direction:column}.tq2-mini .r3{flex:1}.tq2-no>table{margin-top:auto}
+.tq2-no .tq2-kt{min-height:96px}
+.tq2-t td,.tq2-t th{height:34px;box-sizing:border-box}
+.tq2-cbs>.tq2-cb{height:100%;box-sizing:border-box}
+.m-kpis>.m-k{height:100%;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -643,7 +656,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 15:43';
+const APP_VERSION='13/10/2026 15:45';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1409,7 +1422,7 @@ function xemChi(id){
       ['Kế toán kiểm',x.kiem_boi?esc(x.kiem_boi)+' ('+fmtDT(x.kiem_luc)+')':'','Người duyệt',x.nguoi_duyet?esc(x.nguoi_duyet)+' ('+fmtDT(x.duyet_luc)+')':'']])}
     <div><div><div class="m-st">Phân loại quản trị</div>${kv([['Nhóm chi phí',esc(l.ten||'')],['Tính chất',esc(l.nhom_bc||'')],['Kỳ báo cáo',x.ngay_su_dung?'Tháng '+x.ngay_su_dung.slice(5,7)+'/'+x.ngay_su_dung.slice(0,4):''],['Ghi chú',esc(x.ghi_chu||'')]])}</div>
       <div>${lienKet}</div></div>
-    <div class="m-st">Chứng từ đính kèm</div>${ctBox('chi',x.id,chiCT(x))}`;
+    ${ctBox('chi',x.id,chiCT(x))}`;
   else if(tab==='pb')body=`<div class="m-st">Phân bổ chi phí</div>${kv((x.phan_bo||[]).map(p=>[esc((dv(p.don_vi_id)||{}).ten||''),fmt(p.so_tien)+' · '+pct(p.so_tien,x.so_tien)]))}
     <div class="m-st">Kỳ ghi nhận</div>${kv([['Ngày sử dụng DV',fmtD(x.ngay_su_dung)],['Ngày đề nghị',fmtD(x.ngay_de_nghi)],['Ngày thanh toán',fmtD(x.ngay_tt)]])}`;
   else if(tab==='lk')body=lienKet+(dy&&x.trang_thai==='cho_tt'?`<div class="m-st">Thanh toán</div>${fieldsThanhToan(x)}`:'')+
