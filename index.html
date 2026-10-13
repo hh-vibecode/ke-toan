@@ -663,6 +663,10 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 .m-seg button.on{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(37,99,235,.35)}
 .m-seg button.on .c{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
 .m-seg button:not(.on) .c{color:var(--c,var(--text2))}
+/* tab trong 1 khung nền trải hết chiều ngang, nút giãn đều (anh 13/10) */
+.m-seg{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.m-seg button{flex:1 1 auto;justify-content:center;padding:0 10px}
+.m-seg button:hover{background:var(--bg2)}
 </style>
 </head>
 <body>
@@ -673,7 +677,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 16:02';
+const APP_VERSION='13/10/2026 16:07';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
