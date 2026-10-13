@@ -15,11 +15,11 @@ revoke all on public.kt_bo_qua_nguon from anon, authenticated;
 insert into kt_bo_qua_nguon (ma_nguon, ly_do)
 select ma_nguon, 'Nhà hàng AMHP — không thuộc app (anh 12/10/2026)' from kt_thu where id in (22375, 23583, 23106, 15358, 15359) and ma_nguon is not null
 on conflict (ma_nguon) do nothing;
-update kt_thu set da_xoa = true, sua_luc = now(), sua_boi = 'Monsieur Claude (dọn nhà hàng AMHP — anh 12/10)'
+update kt_thu set da_xoa = true, sua_luc = now(), sua_boi = 'Hệ thống (dọn nhà hàng AMHP — anh 12/10)'
  where id in (22375, 23583, 23106, 15358, 15359) and not da_xoa;
 
 -- Phiếu chi của 2 nhà hàng (vận hành tháng 12–2, tháo dỡ, liên hoan chia tay nhân sự nhà hàng)
-update kt_chi set da_xoa = true, bo_phan_id = null, sua_luc = now(), sua_boi = 'Monsieur Claude (dọn nhà hàng AMHP — anh 12/10)',
+update kt_chi set da_xoa = true, bo_phan_id = null, sua_luc = now(), sua_boi = 'Hệ thống (dọn nhà hàng AMHP — anh 12/10)',
        ghi_chu = concat_ws(' · ', nullif(ghi_chu, ''), 'Ẩn 12/10/2026: nhà hàng AMHP, không thuộc app')
  where id in (1105, 1119, 1120, 1076, 1307, 1375, 1128, 1157, 1182, 1317, 1319, 1332, 1362, 899) and not da_xoa;
 update kt_chi set bo_phan_id = null where bo_phan_id in (select id from kt_don_vi where ten ~* 'nhà hàng');

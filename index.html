@@ -394,7 +394,7 @@ body{overflow-x:hidden}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='13/10/2026 14:04';
+const APP_VERSION='13/10/2026 14:21';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -592,7 +592,7 @@ function shell(){
     return `<div class="sb-nv ${on?'on':''}" data-g="${v.k}" onclick="go('${ks[0]}')">${v.ic}<span class="sb-t">${v.ten}</span>${nb(ks.reduce((a,k)=>a+demMuc(k),0))}</div>`+
       (on&&ks.length>1?`<div class="sb-subs">${ks.map(k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')"><span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`).join('')}</div>`:'')}).join('');
   $('#app').innerHTML=`<div class="lay"><aside class="sb"><div class="sb-brand">Kế Toán<button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div><nav class="sb-nav">${nav}</nav>
-      <div class="sb-ver">Bản ${APP_VERSION} · Monsieur Claude</div></aside>
+      <div class="sb-ver">Bản ${APP_VERSION}</div></aside>
     <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
     <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
       <div class="hd-nv">${esc((NV.find(v=>v.k===cur)||{}).ten||'')}</div>
@@ -1484,7 +1484,7 @@ async function pageGiaiDap(){
   S.cauHoi=chua;shellBadges();
   const nhom=[...new Set(l.map(x=>x.nhom))];
   el.innerHTML=head('Cần giải đáp <span class="badge" style="vertical-align:middle">Cài đặt · Hỏi đáp</span>',`<div class="seg">${[['chua','Chưa trả lời '+chua],['roi','Đã trả lời '+(ds.length-chua)],['tat_ca','Tất cả '+ds.length]].map(([k,t])=>`<button class="${loc===k?'on':''}" onclick="S.f.gd='${k}';render()">${t}</button>`).join('')}</div>`)+
-    `<div class="panel" style="margin-bottom:14px;font-size:12.5px;color:var(--text2)">Các câu Monsieur Claude cần hỏi để số liệu đúng. Anh hỏi kế toán rồi <b>bấm chọn câu trả lời có sẵn</b> hoặc gõ thêm vào ô, bấm <b>Lưu</b>. Lần sau Claude đọc và làm theo.</div>`+
+    `<div class="panel" style="margin-bottom:14px;font-size:12.5px;color:var(--text2)">Các câu app cần hỏi để số liệu đúng. Anh hỏi kế toán rồi <b>bấm chọn câu trả lời có sẵn</b> hoặc gõ thêm vào ô, bấm <b>Lưu</b>. Lần sau Claude đọc và làm theo.</div>`+
     (l.length?nhom.map(n=>`<div class="sec">${esc(n)}</div>`+l.filter(x=>x.nhom===n).map(x=>`<div class="panel cauhoi ${x.tra_loi?'xong':''}" id="ch${x.id}">
       <h4>${esc(x.tieu_de)} <span class="badge ${x.hoi_ai==='anh'?'':'warn'}" style="margin-left:auto">${x.hoi_ai==='anh'?'Hỏi anh Hải':'Hỏi kế toán'}</span></h4>
       <div class="gt">${esc(x.giai_thich)}</div>

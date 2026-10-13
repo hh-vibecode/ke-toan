@@ -69,6 +69,6 @@ function hang(rows, tu) { return Object.keys(rows).map(Number).filter(n => n >= 
       select hkd, chieu, so_hd, mau, ky_hieu, ngay, mst, nguoi_mua, ma, ten, dvt, sl, don_gia, thanh_tien, thue_suat, tien_thue, tong, ghi_chu, nguon, dong
       from jsonb_populate_recordset(null::kt_thue_hd, ${J(hd.slice(i, i + 500))}::jsonb)`);
   }
-  if (GHI) await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_thue', 'keo_3tshop', ${J(tong)}::jsonb)`);
+  if (GHI) await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_thue', 'keo_3tshop', ${J(tong)}::jsonb)`);
   console.log((GHI ? 'ĐÃ GHI' : 'CHẠY THỬ') + ' · ' + JSON.stringify(tong));
 })().catch(e => { console.error('DỪNG', e.message); process.exit(1); });

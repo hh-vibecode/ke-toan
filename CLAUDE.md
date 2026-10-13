@@ -1,6 +1,6 @@
 # App KẾ TOÁN (tài chính) — luật làm việc cho Claude
 
-Làm việc bằng tiếng Việt, gọi người dùng là **anh** (anh Hải). Mọi thứ Claude tạo ký tên **Monsieur Claude**.
+Làm việc bằng tiếng Việt, gọi người dùng là **anh** (anh Hải). Ký tên **Monsieur Claude** ở commit, sổ việc, ghi chú code — **KHÔNG hiện tên trên giao diện / dữ liệu app** (anh 13/10: "k đc ký tên m"; người sửa / nhật ký ghi "Hệ thống").
 **Đầu mỗi phiên: `git pull` rồi đọc `VIEC.md`** (sổ việc: đang nợ, chờ anh quyết, quy tắc đã chốt, nhật ký).
 Xong việc thì cập nhật sổ ngay trong phiên, commit + push trước khi kết thúc. Anh đã quyết rồi thì LÀM, đừng hỏi lại.
 Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phiên đầu).

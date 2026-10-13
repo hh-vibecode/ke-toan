@@ -59,6 +59,6 @@ const tachId = s => [...String(s || '').matchAll(/(?:id=|\/d\/)([A-Za-z0-9_-]{20
     } catch (e) { dem.loi++; }
   }
   dem.mb = Math.round(dem.mb * 10) / 10;
-  if (GHI && dem.da_luu) await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_chung_tu', 'keo_drive', $kt$${JSON.stringify({ ky: KY, ...dem })}$kt$::jsonb)`);
+  if (GHI && dem.da_luu) await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_chung_tu', 'keo_drive', $kt$${JSON.stringify({ ky: KY, ...dem })}$kt$::jsonb)`);
   console.log((GHI ? 'ĐÃ GHI' : 'CHẠY THỬ (chưa lưu)') + ' · kỳ ' + KY + ' · ' + (DUNG_RC ? 'rclone (Drive anh, chỉ đọc)' : G ? 'Drive đăng nhập' : 'link công khai') + ' · ' + JSON.stringify(dem));
 })().catch(e => { console.error('DỪNG:', e.message); process.exit(1); });

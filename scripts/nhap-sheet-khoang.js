@@ -96,6 +96,6 @@ const trong = d => d && d >= TU && d < DEN;
     select ngay, noi_dung, so_tien, tk_di_id, tk_nhan_id, ghi_chu, true, 'Sheet cũ', 'sheet_cu', ma_nguon, 'Chuyển từ sheet (${TU}→${DEN})'
     from jsonb_to_recordset(${J(dc)}::jsonb) as x(ngay date, noi_dung text, so_tien numeric, tk_di_id int, tk_nhan_id int, ghi_chu text, ma_nguon text)
     on conflict (ma_nguon) do nothing`);
-  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_chi', 'nhap_sheet_khoang', ${J({ tu: TU, den: DEN, chi: chi.length, dc: dc.length, thieu })}::jsonb)`);
+  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_chi', 'nhap_sheet_khoang', ${J({ tu: TU, den: DEN, chi: chi.length, dc: dc.length, thieu })}::jsonb)`);
   console.log('ĐÃ GHI.');
 })().catch(e => { console.error('DỪNG', e.message); process.exit(1); });

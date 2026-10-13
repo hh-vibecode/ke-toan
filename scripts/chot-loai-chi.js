@@ -26,6 +26,6 @@ if (require.main === module) (async () => {
   console.log('Tổng phiếu đổi loại:', doi.length);
   if (!GHI) return console.log('(CHẠY THỬ)');
   await sql(`update kt_chi c set loai_id = x.loai_id from jsonb_to_recordset(${J(JSON.stringify(doi))}::jsonb) as x(id bigint, loai_id int) where c.id = x.id`);
-  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_chi', 'chot_loai_chi', ${J(JSON.stringify({ so: doi.length, chi_tiet: doi.slice(0, 500) }))}::jsonb)`);
+  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_chi', 'chot_loai_chi', ${J(JSON.stringify({ so: doi.length, chi_tiet: doi.slice(0, 500) }))}::jsonb)`);
   console.log('ĐÃ GHI', doi.length, 'phiếu (nhật ký lưu loại cũ để hoàn tác nếu cần)');
 })();

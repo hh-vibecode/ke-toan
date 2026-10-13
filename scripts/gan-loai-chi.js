@@ -82,6 +82,6 @@ if (require.main === module && process.argv[2] === 'regan') (async () => {
   Object.entries(chuyen).sort((a, b) => b[1] - a[1]).slice(0, 12).forEach(([k, n]) => console.log('  ', n, 'x', k));
   if (!GHI) return console.log('(CHẠY THỬ)');
   await sql(`update kt_chi c set loai_id = x.loai_id, ghi_chu = x.ghi_chu from jsonb_to_recordset(${J(JSON.stringify(doi))}::jsonb) as x(id bigint, loai_id int, ghi_chu text) where c.id = x.id and c.sua_boi is null`);
-  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_chi', 'gan_lai_loai_chi', ${J(JSON.stringify({ so: doi.length, tin }))}::jsonb)`);
+  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_chi', 'gan_lai_loai_chi', ${J(JSON.stringify({ so: doi.length, tin }))}::jsonb)`);
   console.log('ĐÃ GHI', doi.length, 'phiếu');
 })();

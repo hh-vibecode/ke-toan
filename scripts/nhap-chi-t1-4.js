@@ -103,6 +103,6 @@ function docTab(F, ten) {
       thu_huong_ten text, thu_huong_nh text, thu_huong_stk text, phan_bo jsonb, han_tt date, co_hd_do boolean, ghi_chu text, chung_tu jsonb, trang_thai text, nguoi_duyet text,
       duyet_luc timestamptz, ngay_tt date, tai_khoan_id int, loai_id int, unc text, hd_do_nhan boolean, ngay_nhan_hd date, ma_nguon text)
     on conflict (ma_nguon) do nothing`);
-  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Monsieur Claude', 'kt_chi', 'nhap_chi_t1_4', ${J({ tu: TU, den: DEN, chi: chi.length, gan: tinDem, thieu })}::jsonb)`);
+  await sql(`insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_chi', 'nhap_chi_t1_4', ${J({ tu: TU, den: DEN, chi: chi.length, gan: tinDem, thieu })}::jsonb)`);
   console.log('ĐÃ GHI.');
 })().catch(e => { console.error('DỪNG', e.message); process.exit(1); });

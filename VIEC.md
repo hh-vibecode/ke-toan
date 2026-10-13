@@ -81,7 +81,7 @@ MISA hoá đơn đầu vào: API riêng "meInvoice Bot" (`/meinvoicebot/v1/...`:
 - **App riêng, tách biệt hoàn toàn** khỏi MKT/Sale và QC CSKH (anh chốt 1/10/2026). Xem `CLAUDE.md` mục Tách biệt.
 - **Tên:** thư mục / repo `ke-toan`. **Tiền tố:** `kt_` (bảng, hàm) · `kt-` (lịch chạy, workflow). Đã đăng ký vào sổ quy ước chung 1/10/2026.
 - **Đăng nhập tài khoản + mật khẩu, phân quyền giống app MKT/Sale** (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang Xem / Nhập-sửa. Tài khoản RIÊNG app kế toán. Hiện có: `hai` (Supreme), `giamdoc`, `ketoan` (Admin). Mật khẩu ban đầu trong `kt-keys.local.txt`.
-- Mọi thứ Claude tạo ký tên **Monsieur Claude**.
+- Ký tên **Monsieur Claude** ở commit, sổ việc, ghi chú code — KHÔNG hiện tên trên giao diện / dữ liệu app (anh 13/10). Người sửa / nhật ký do script ghi = "Hệ thống".
 - **Repo public** (anh chốt 2/10/2026) → tuyệt đối không có khoá quản trị / số liệu thật / số tài khoản thật trong code và sổ.
   Lịch sử git còn vài số tổng cũ (commit 05/10 + 09/10, đã xoá khỏi file hiện tại) — anh chốt 12/10: **KỆ, không viết lại lịch sử**. Từ nay vẫn quét số trước commit.
 - **GitHub: tự xử lý bằng đăng nhập git có sẵn trên máy** (anh chốt 2/10/2026). Không in token ra.
