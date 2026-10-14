@@ -767,7 +767,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 16:26';
+const APP_VERSION='14/10/2026 16:32';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -785,9 +785,9 @@ const VI_TRI={supreme:'Admin (chủ app)',admin:'Admin (toàn quyền)',ke_toan:
 // Quyền chia theo MODULE (giống app MKT/Sale). Key trùng tên trang dùng trong hàm SQL kt_chan. Thêm trang mới → thêm vào đây.
 // chi_de_nghi / chi_duyet (08/10): quyền 1 ô (không chia xem / sửa) — QUYEN_1_O.
 const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_gd'];
-const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','dieu_chuyen','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Quản trị',['danh_muc','phan_quyen','nhat_ky']]];
+const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','dieu_chuyen','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Quản trị',['danh_muc','phan_quyen','nhat_ky']]];
 const TRANG_QUYEN={tong_quan:'Tổng quan',dong_tien:'Dòng tiền & đối soát',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán kiểm lượt 1 & thanh toán',chi_gd:'Chi — giám đốc xác nhận lượt 2',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
-  sap_tra:'Sắp phải trả',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
+  sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
 const LOAI_TK={ngan_hang:'Ngân hàng',tien_mat:'Tiền mặt',vay:'Tài khoản vay',khac:'Khác'};
 const KIOT={khong:'Không ảnh hưởng TK cửa hàng',da_tao:'Đã tạo phiếu trên Kiot (4A)',khong_tao:'Không tạo phiếu Kiot (4B)'};
 const IC={
@@ -1066,6 +1066,7 @@ const PAGES={
   thu:{ten:'Phiếu thu',nv:'thu_chi',fn:()=>pageThu()},
   dieu_chuyen:{ten:'Điều chuyển tiền',nv:'thu_chi',fn:()=>pageDC()},
   dong_tien:{ten:'Sổ quỹ & số dư tài khoản',nv:'thu_chi',fn:()=>pageDongTien()},
+  tam_ung:{ten:'Tạm ứng & hoàn ứng',nv:'thu_chi',fn:()=>pageTamUng()},
   vay:{ten:'Vay & lãi vay',nv:'thu_chi',fn:()=>pageVay()},
   // Công nợ theo giao diện mẫu (13/10): số nợ Kiot + tuổi nợ (hàm kt_cong_no_dt), bảng + khung chi tiết
   no_kh:{ten:'Phải thu khách hàng',nv:'cong_no',fn:()=>pageCongNoDT('kh')},
@@ -2557,6 +2558,93 @@ function formVayTra(vid,id){const v=S.cache.vay.find(x=>x.id===vid);const x=id?(
 async function luuVayTra(vid,id){const o=formData($('#f'));o.id=id;o.vay_id=vid;o.goc=so(o.goc)||0;o.lai=so(o.lai)||0;if(!o.goc&&!o.lai)return alert('Nhập tiền gốc hoặc lãi');
   await save('kt_luu_vay_tra',{p_dong:o});S.f.vay_chon=vid;render()}
 
+// TẠM ỨNG & HOÀN ỨNG (14/10/2026) — sổ theo dõi ai đang cầm tiền ứng. Tiền ra vẫn đi bằng Phiếu chi, trả lại tiền ghi Phiếu thu → trang này KHÔNG đổi số dư.
+const maPC=id=>'PC'+String(id).padStart(6,'0');
+const HT_HOAN={chung_tu:'Quyết toán bằng chứng từ chi phí',tien:'Trả lại tiền',tru_luong:'Trừ vào lương'};
+async function pageTamUng(){
+  const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const [ds,gy]=await Promise.all([rpc('kt_ds_tam_ung'),rpc('kt_goi_y_tam_ung')]);S.cache.tu=ds;S.cache.tu_gy=gy;
+  const nay=homNay(),f=S.f,tab=f.tu_tab||'dang',q=(f.tu_q||'').toLowerCase();
+  ds.forEach(x=>{x.con=Number(x.so_tien)-Number(x.da_hoan);x.qh=x.con>0&&x.han_hoan&&x.han_hoan<nay});
+  const loc={dang:x=>x.con>0,qua_han:x=>x.qh,xong:x=>x.con<=0,tat_ca:x=>true,goi_y:x=>false};
+  const l=tab==='goi_y'?[]:ds.filter(loc[tab]).filter(x=>!q||[x.nguoi_nhan,x.ly_do,x.ghi_chu].join(' ').toLowerCase().includes(q));
+  const dang=ds.filter(loc.dang),qh=ds.filter(loc.qua_han),g=coGhi();
+  const IC={u:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 8c0-3.3 3.6-6 8-6s8 2.7 8 6z"/></svg>',
+    qh:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21 12 2l11 19zm10-3h2v-2h-2zm0-4h2v-4h-2z"/></svg>',
+    ok:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4z"/></svg>'};
+  const the=(c,ic,l1,v,s1,key)=>`<div class="m-k click ${tab===key?'on':''}" style="--c:var(--${c})" onclick="S.f.tu_tab='${key}';render()"><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
+  const hoanKy=sumBy(ds,x=>sumBy((x.hoan||[]).filter(h=>h.ngay>=S.tu&&h.ngay<=S.den),h=>h.so_tien));
+  const cols=[['Ngày ứng',x=>x.ngay],['Người nhận',x=>x.nguoi_nhan],['Bộ phận',x=>(S.dm.don_vi.find(d=>d.id===x.bo_phan_id)||{}).ten||''],['Lý do',x=>x.ly_do||''],['Số tiền ứng',x=>x.so_tien],['Đã hoàn',x=>x.da_hoan],['Còn phải hoàn',x=>x.con],['Hạn hoàn',x=>x.han_hoan||''],['Phiếu chi',x=>x.chi_id?maPC(x.chi_id):'']];
+  S.cache.tu_xuat=()=>xuatCSV('tam-ung',cols,l);
+  const chon=f.tu_chon&&ds.some(x=>x.id===f.tu_chon)?f.tu_chon:null;
+  const bp=id=>(S.dm.don_vi.find(d=>d.id===id)||{}).ten||'';
+  const bang=tab==='goi_y'
+    ?`<div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Phiếu chi</th><th>Nội dung</th><th>Người nhận</th><th class="num">Số tiền</th><th class="c">Trạng thái phiếu</th>${g?'<th></th>':''}</tr>
+        ${gy.map(c=>`<tr><td class="nw">${fmtD(c.ngay)}</td><td class="nw">${maPC(c.id)}</td><td class="ten">${esc(c.noi_dung)}</td><td>${esc(c.nguoi||'')}</td><td class="num"><b>${fmt(c.so_tien)}</b></td>
+          <td class="c">${c.trang_thai==='da_tt'?pill('Đã chi','ok'):pill('Chưa chi','warn')}</td>${g?`<td class="c"><button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="formTU(null,${c.id})">+ Theo dõi</button></td>`:''}</tr>`).join('')
+          ||`<tr><td colspan="7" class="m-empty">Không còn phiếu chi tạm ứng nào chưa theo dõi</td></tr>`}</table></div></div>`
+    :`<div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày ứng</th><th>Người nhận</th><th>Lý do</th><th class="num">Số tiền ứng</th><th class="num">Đã hoàn</th><th class="num">Còn phải hoàn</th><th>Hạn hoàn</th><th class="c">Tình trạng</th></tr>
+        ${l.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemTU(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="ten"><b>${esc(x.nguoi_nhan)}</b>${x.bo_phan_id?`<div class="muted">${esc(bp(x.bo_phan_id))}</div>`:''}</td>
+          <td class="ten">${esc(x.ly_do||'')}</td><td class="num">${fmt(x.so_tien)}</td><td class="num">${fmt(x.da_hoan)}</td><td class="num"><b>${fmt(x.con)}</b></td>
+          <td class="nw ${x.qh?'neg':''}">${fmtD(x.han_hoan)}</td><td class="c">${x.con<=0?pill('Đã hoàn đủ','ok'):x.qh?pill('Quá hạn','bad'):Number(x.da_hoan)>0?pill('Hoàn một phần','info'):pill('Đang ứng','warn')}</td></tr>`).join('')
+          ||`<tr><td colspan="8" class="m-empty">${tab==='dang'?'Không có khoản tạm ứng đang chờ hoàn':'Không có khoản nào'}</td></tr>`}
+        ${l.length>1?`<tr class="tong"><td colspan="3"><b>Tổng</b></td><td class="num"><b>${fmt(sumBy(l,x=>x.so_tien))}</b></td><td class="num"><b>${fmt(sumBy(l,x=>x.da_hoan))}</b></td><td class="num"><b>${fmt(sumBy(l,x=>x.con))}</b></td><td colspan="2"></td></tr>`:''}</table></div></div>`;
+  el.innerHTML=`<div class="m-kpis m-k3">${the('warn','u','Đang tạm ứng chưa hoàn',fmt(sumBy(dang,x=>x.con)),dang.length+' khoản · '+new Set(dang.map(x=>x.nguoi_nhan)).size+' người','dang')}
+      ${the('bad','qh','Quá hạn hoàn ứng',fmt(sumBy(qh,x=>x.con)),qh.length+' khoản','qua_han')}
+      ${the('ok','ok','Đã hoàn trong kỳ',fmt(hoanKy),'theo ngày hoàn · kỳ đang chọn','xong')}</div>
+    <div class="m-split rong ${chon&&tab!=='goi_y'?'co':''}"><div style="min-width:0">
+      <div class="m-seg" style="margin-bottom:10px">${[['dang','Đang ứng',dang.length],['qua_han','Quá hạn',qh.length],['xong','Đã hoàn đủ',ds.filter(loc.xong).length],['tat_ca','Tất cả',ds.length],['goi_y','Phiếu chi tạm ứng chưa theo dõi',gy.length]].map(([k,t,n])=>`<button class="${tab===k?'on':''}" onclick="S.f.tu_tab='${k}';render()">${t}<span class="c">${n}</span></button>`).join('')}</div>
+      <div class="m-flt" style="align-items:center">${tab==='goi_y'?'<span class="badge">Phiếu chi có chữ "tạm ứng / ứng lương / ứng trước"</span>':`<input class="m-in" placeholder="Tìm người nhận, lý do..." value="${esc(f.tu_q||'')}" onchange="S.f.tu_q=this.value;render()">`}
+        <span style="margin-left:auto"></span>${tab==='goi_y'?'':`<button class="m-btn out" onclick="S.cache.tu_xuat()">${IC_XLS} Xuất Excel</button>`}${g?`<button class="m-btn pri" onclick="formTU()">+ Tạo tạm ứng</button>`:''}</div>
+      ${bang}</div>
+      <aside class="m-pn" id="tu-ct"></aside></div>`;
+  if(chon&&tab!=='goi_y')xemTU(chon);
+}
+function xemTU(id){const x=S.cache.tu.find(t=>t.id===id);if(!x)return;const g=coGhi();
+  const html=`<div class="m-pn-h"><h2>${esc(x.nguoi_nhan)}</h2>${x.con<=0?pill('Đã hoàn đủ','ok'):x.qh?pill('Quá hạn','bad'):pill('Đang ứng','warn')}<span class="r"><button class="x" onclick="dongTUCT()">✕</button></span></div><div class="m-pn-b">
+    <div class="m-kv"><div>Ngày ứng</div><div>${fmtD(x.ngay)}</div><div>Số tiền ứng</div><div><b>${fmt(x.so_tien)}</b></div>
+      <div>Đã hoàn</div><div>${fmt(x.da_hoan)}</div><div>Còn phải hoàn</div><div><b class="${x.con>0?'neg':''}">${fmt(x.con)}</b></div>
+      <div>Hạn hoàn</div><div class="${x.qh?'neg':''}">${fmtD(x.han_hoan)||'—'}</div>
+      ${x.bo_phan_id?`<div>Bộ phận</div><div>${esc((S.dm.don_vi.find(d=>d.id===x.bo_phan_id)||{}).ten||'')}</div>`:''}
+      <div>Lý do</div><div>${esc(x.ly_do||'—')}</div>
+      <div>Phiếu chi</div><div>${x.chi?`${coXem('chi')?`<span class="m-link" onclick="closeModal();S.f.chi_chon=${x.chi.id};S.f.chi_tt='tat_ca';go('chi')">${maPC(x.chi.id)}</span>`:maPC(x.chi.id)} · ${fmt(x.chi.so_tien)} · ${x.chi.trang_thai==='da_tt'?'đã chi '+fmtD(x.chi.ngay_tt):'chưa chi'}`:'<span class="muted">chưa gắn</span>'}</div>
+      ${x.ghi_chu?`<div>Ghi chú</div><div>${esc(x.ghi_chu)}</div>`:''}</div>
+    <div style="display:flex;align-items:center;margin:14px 0 6px"><b style="font-size:13px">Các lần hoàn ứng</b><span style="margin-left:auto"></span>${g&&x.con>0?`<button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="formTUHoan(${x.id})">+ Ghi hoàn ứng</button>`:''}</div>
+    <div class="m-card"><table class="m-t"><tr><th>Ngày</th><th>Hình thức</th><th class="num">Số tiền</th>${g?'<th></th>':''}</tr>
+      ${(x.hoan||[]).map(h=>`<tr><td class="nw">${fmtD(h.ngay)}</td><td>${esc(HT_HOAN[h.hinh_thuc]||h.hinh_thuc)}${h.ghi_chu?`<div class="muted">${esc(h.ghi_chu)}</div>`:''}</td><td class="num">${fmt(h.so_tien)}</td>
+        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formTUHoan(${x.id},${h.id})">✏</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?4:3}" class="m-empty">Chưa hoàn lần nào</td></tr>`}</table></div>
+    ${ctBox('tam_ung',x.id,g)}</div>
+    <div class="m-pn-f">${g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('tam_ung',${x.id})">Xoá</button><button class="m-btn" onclick="formTU(${x.id})">✏ Sửa</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongTUCT()">Đóng</button></div>`;
+  const p=$('#tu-ct');
+  if(p&&innerWidth>=1250){S.f.tu_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',+r.dataset.id===id))}
+  else modal(`<div class="m-pn" style="position:static;max-height:none;border:none">${html}</div>`,true);
+  setTimeout(ganCT,0);
+}
+function dongTUCT(){if($('#modal')){closeModal();return}S.f.tu_chon=null;const p=$('#tu-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
+// tạo / sửa khoản tạm ứng — tạo từ gợi ý phiếu chi thì điền sẵn người nhận, số tiền, ngày, bộ phận
+function formTU(id,chiId){const c=chiId?(S.cache.tu_gy||[]).find(r=>r.id===chiId):null;
+  const x=id?S.cache.tu.find(t=>t.id===id):c?{ngay:c.ngay||homNay(),nguoi_nhan:c.nguoi||'',so_tien:c.so_tien,ly_do:c.noi_dung,chi_id:c.id,bo_phan_id:c.bo_phan_id}:{ngay:homNay()};
+  modal(`<h2>${id?'Sửa khoản tạm ứng':'Tạo khoản tạm ứng'}</h2><div class="form" id="f">
+    <label>Ngày ứng<input type="date" name="ngay" value="${x.ngay||''}"></label><label>Số tiền ứng${moneyIn('so_tien',x.so_tien)}</label>
+    <label>Người nhận ứng<input name="nguoi_nhan" value="${esc(x.nguoi_nhan||'')}"></label><label>Bộ phận<select name="bo_phan_id">${opts(S.dm.don_vi.filter(d=>d.hoat_dong&&d.la_bo_phan),x.bo_phan_id,'—')}</select></label>
+    <label>Hạn hoàn ứng<input type="date" name="han_hoan" value="${x.han_hoan||''}"></label><label>Phiếu chi đã chi tiền ứng (số PC)<input name="chi_id" inputmode="numeric" value="${x.chi_id||''}" placeholder="vd: 1234"></label>
+    <label class="full">Lý do ứng<input name="ly_do" value="${esc(x.ly_do||'')}"></label>
+    <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label></div>
+    <div class="muted" style="font-size:11.5px;margin-top:6px">Tiền ứng ra đi bằng Phiếu chi. Trang này chỉ theo dõi còn phải hoàn bao nhiêu — không đổi số dư tài khoản.</div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuTU(${id||'null'})">Lưu</button></div>`)}
+async function luuTU(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);o.chi_id=String(o.chi_id||'').replace(/\D/g,'')||null;
+  if(!o.nguoi_nhan||!o.so_tien||!o.ngay)return alert('Cần ngày, người nhận, số tiền');
+  const nid=await save('kt_luu_tam_ung',{p_dong:o});S.f.tu_chon=nid||id;if(S.f.tu_tab==='goi_y')S.f.tu_tab='dang';render()}
+function formTUHoan(tid,id){const t=S.cache.tu.find(x=>x.id===tid);const x=id?(t.hoan||[]).find(h=>h.id===id):{ngay:homNay(),hinh_thuc:'chung_tu',so_tien:t.con};
+  modal(`<h2>${id?'Sửa':'Ghi'} hoàn ứng — ${esc(t.nguoi_nhan)}</h2><div class="form" id="f">
+    <label>Ngày<input type="date" name="ngay" value="${x.ngay}"></label><label>Số tiền${moneyIn('so_tien',x.so_tien)}</label>
+    <label class="full">Hình thức<select name="hinh_thuc">${optsObj(HT_HOAN,x.hinh_thuc)}</select></label>
+    <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}" placeholder="vd: hoá đơn xăng xe, phiếu thu số..."></label></div>
+    <div class="muted" style="font-size:11.5px;margin-top:6px">Còn phải hoàn: <b>${fmt(t.con+(id?Number(x.so_tien):0))}</b>. Trả lại tiền thì kế toán ghi thêm Phiếu thu; quyết toán bằng chứng từ thì đính kèm ở khung chi tiết.</div>
+    <div class="acts">${id?`<button class="btn bad left" onclick="xoa('tam_ung_hoan',${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuTUHoan(${tid},${id||'null'})">Lưu</button></div>`)}
+async function luuTUHoan(tid,id){const o=formData($('#f'));o.id=id;o.tam_ung_id=tid;o.so_tien=so(o.so_tien);if(!o.so_tien)return alert('Nhập số tiền');
+  await save('kt_luu_tam_ung_hoan',{p_dong:o});S.f.tu_chon=tid;render()}
+
 // TÀI SẢN — nhập trên app, khấu hao đường thẳng theo tháng
 const TT_TS={dang_dung:'Đang dùng',hong:'Hỏng',thanh_ly:'Đã thanh lý'};
 async function pageTaiSan(){
@@ -3015,6 +3103,15 @@ const LOGIC=[
   'Nhập: ngày, tài khoản đi, tài khoản nhận (phải khác nhau), số tiền. Kế toán tick "Đã xác nhận" sau khi kiểm.',
   'Điều chuyển chưa xác nhận VẪN tính vào tồn (tiền đã thực chuyển); phần xác nhận chỉ để kế toán đánh dấu đã kiểm.',
   'Cũng có lựa chọn 4A / 4B như phiếu chi.']],
+ ['Kiểm két cuối ngày (14/10/2026)',[
+  'Thủ quỹ đếm két (có thể đếm theo mệnh giá) + chụp sổ quỹ đính kèm. App lấy <b>số dư sổ sách cuối ngày đó</b> của tài khoản tiền mặt và tính chênh lệch = số đếm − sổ sách.',
+  'Số đếm được lưu làm <b>tồn thực tế</b> → Đối soát lỗi nhóm "Số dư sổ sách lệch số dư thực tế" tự báo nếu lệch. Phiếu sửa muộn → chênh lệch tính lại theo phiếu hiện tại.',
+  'Mỗi tài khoản 1 lần / ngày (đếm lại thì ghi đè, nhật ký giữ lần trước).']],
+ ['Tạm ứng & hoàn ứng (14/10/2026)',[
+  'Sổ theo dõi ai đang cầm tiền ứng. <b>Không đổi số dư tài khoản</b>: tiền ứng ra vẫn đi bằng Phiếu chi, nhân viên trả lại tiền thì ghi Phiếu thu.',
+  'Mỗi khoản: người nhận, số tiền, hạn hoàn, gắn số phiếu chi đã chi. Hoàn ứng 3 cách: quyết toán bằng chứng từ chi phí / trả lại tiền / trừ vào lương. Không cho hoàn vượt số còn lại.',
+  'Tab "Phiếu chi tạm ứng chưa theo dõi": phiếu chi có chữ tạm ứng / ứng lương / ứng trước chưa gắn khoản nào → bấm + Theo dõi để tạo nhanh.',
+  'Quá hạn = còn phải hoàn và đã qua hạn hoàn.']],
  ['Thu từ Kiot (sổ quỹ)',[
   'App kế toán có <b>luồng kéo Kiot riêng</b> (không dùng chung app MKT/Sale), <b>15 phút 1 lần</b> (từ 14/10/2026, trước đó 3 tiếng). Kéo <b>sổ quỹ</b> Kiot (phiếu thu / chi của 3 chi nhánh) vào bảng riêng của app.',
   'Chỉ chép thành khoản Thu: phiếu <b>đã thanh toán</b>, số tiền dương, <b>không</b> thuộc nhóm "Chuyển rút" (chuyển quỹ nội bộ trong Kiot — nộp tiền quầy về két, chuyển quỹ ngoài...). Phiếu Kiot bị huỷ sau đó → khoản thu tự ẩn.',
