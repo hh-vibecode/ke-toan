@@ -2,29 +2,17 @@
 -- BÁO CÁO QUẢN TRỊ: P&L (kết quả kinh doanh) + DÒNG TIỀN theo giao diện mẫu anh gửi 14/10/2026
 -- ("Phần mục báo cáo tạm thời xài báo cáo P&L và báo cáo dòng tiền trước mắt").
 -- P&L: 1 Doanh thu thuần (Kiot: hoá đơn hoàn thành − trả hàng, theo cơ sở) · 2 Giá vốn (Kiot, bình quân lúc kéo) · 3 LN gộp ·
---      4 Chi phí (phiếu chi đã thanh toán, nhóm "Chi vận hành & quản lí", theo THÁNG PHÂN BỔ nếu có — kt_chi.phan_bo_thang) chia 6 nhóm
---      theo kt_loai.nhom_pl (+ lãi vay từ trang Vay vào 4.6) · 5 LN trước thuế · 6 Thuế (loại chi nhóm 'thue') · 7 LN ròng.
+--      4 Chi phí (phiếu chi đã thanh toán, nhóm "Chi vận hành & quản lí", theo THÁNG PHÂN BỔ nếu có — kt_chi.phan_bo_thang) — mỗi loại chi OPEX 1 dòng
+--      (+ lãi vay từ trang Vay & lãi vay nếu có) · 5 Lợi nhuận ròng.
 --      KHÔNG gồm: chi nhập hàng (đã là giá vốn), trả gốc vay / chi tài chính, đầu tư (CAPEX).
 -- Dòng tiền: thu đã duyệt / chi đã thanh toán theo ngày tiền thực (không phân bổ), xếp HĐKD / Đầu tư / Tài chính; số dư từ mốc tồn đầu (01/09/2026).
 -- Monsieur Claude
 -- ════════════════════════════════════════════════════════════════════════════
 
-alter table public.kt_loai add column if not exists nhom_pl text;
-comment on column public.kt_loai.nhom_pl is 'Nhóm chi phí trên P&L: ban_hang · qldn · marketing · cua_hang · van_chuyen · khac · thue (null = theo nhóm báo cáo)';
--- mặc định theo tên loại hiện có (kế toán sửa được ở Cài đặt → Loại thu / chi)
-update public.kt_loai set nhom_pl = case
-    when ten ilike '%lương%' then 'ban_hang'
-    when ten ilike '%marketing%' then 'marketing'
-    when ten ilike '%mặt bằng%' then 'cua_hang'
-    when ten ilike '%logistic%' then 'van_chuyen'
-    when ten ilike '%vận hành%' then 'qldn'
-    when ten ilike '%thuế%' or ten ilike '%tax%' then 'thue'
-    else 'khac' end
-  where nhom = 'chi' and nhom_pl is null and nhom_bc in ('Chi vận hành & quản lí', 'Chi thuế');
--- loại chi Thuế (dòng 6 của P&L) — chưa có trong danh mục
-insert into public.kt_loai (nhom, ten, nhom_bc, cach_chia, hoat_dong, thu_tu, nhom_pl)
-select 'chi', 'TAX - Thuế (GTGT, TNCN)', 'Chi thuế', 'rieng', true, 95, 'thue'
- where not exists (select 1 from public.kt_loai where nhom = 'chi' and (ten ilike '%thuế%' or nhom_pl = 'thue'));
+-- 14/10/2026 (sửa theo anh): chi phí P&L hiện ĐÚNG các loại chi OPEX của công ty (Lương & BHXH, Marketing, Mặt bằng, Logistics, Vận hành & Quản lí, Khác),
+-- KHÔNG ép theo 6 nhóm chữ của ảnh mẫu. Bỏ cột nhom_pl và loại chi "TAX - Thuế" Claude tự thêm lúc đầu (chưa phiếu nào dùng).
+alter table public.kt_loai drop column if exists nhom_pl;
+delete from public.kt_loai l where l.ten = 'TAX - Thuế (GTGT, TNCN)' and not exists (select 1 from public.kt_chi c where c.loai_id = l.id);
 
 -- Số liệu P&L theo tháng: doanh thu / giá vốn theo chi nhánh Kiot, chi phí theo loại × đơn vị (tách theo phân bổ đơn vị + tháng)
 create or replace function public.kt_bc_pl2(p_phien text, p_tu date, p_den date) returns jsonb
@@ -49,12 +37,12 @@ begin
             from kt_chi c join kt_loai l on l.id = c.loai_id
             left join lateral jsonb_array_elements(case when jsonb_typeof(c.phan_bo_thang) = 'array' and jsonb_array_length(c.phan_bo_thang) > 0 then c.phan_bo_thang end) pt on true
             left join lateral jsonb_array_elements(case when jsonb_typeof(c.phan_bo) = 'array' and jsonb_array_length(c.phan_bo) > 0 then c.phan_bo end) pb on true
-           where not c.da_xoa and c.trang_thai = 'da_tt' and l.nhom_bc in ('Chi vận hành & quản lí', 'Chi thuế')
+           where not c.da_xoa and c.trang_thai = 'da_tt' and l.nhom_bc = 'Chi vận hành & quản lí'
              and (case when pt is null then c.ngay_tt between p_tu and p_den else pt->>'thang' between v_t0 and v_t1 end)) z
          group by 1, 2, 3) x),
     'lai_vay', (select coalesce(jsonb_agg(jsonb_build_object('thang', th, 'lai', s)), '[]') from (
         select to_char(ngay, 'YYYY-MM') th, sum(lai) s from kt_vay_tra where not da_xoa and da_tra and ngay between p_tu and p_den group by 1) x),
-    'loai', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'ten', ten, 'nhom_pl', nhom_pl, 'nhom_bc', nhom_bc)), '[]') from kt_loai where nhom = 'chi'));
+    'loai', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'ten', ten, 'nhom_bc', nhom_bc, 'thu_tu', thu_tu, 'hoat_dong', hoat_dong) order by thu_tu, id), '[]') from kt_loai where nhom = 'chi'));
 end $$;
 
 -- Chi tiết 1 nhóm chi phí (bấm dòng 4.x / 6): các phiếu chi đã thanh toán, tiền đã tách theo tháng phân bổ + đơn vị
@@ -101,7 +89,7 @@ begin
     'rong', (select coalesce(jsonb_agg(jsonb_build_object('thang', th, 'rong', s)), '[]') from (
         select to_char(b.ngay, 'YYYY-MM') th, sum(b.vao - b.ra) s from kt_v_bien_dong b join kt_tai_khoan tk on tk.id = b.tai_khoan_id
          where b.ngay between p_tu and p_den and b.ngay >= tk.ngay_ton_dau group by 1) x),
-    'loai', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'ten', ten, 'nhom', nhom, 'nhom_bc', nhom_bc, 'nhom_pl', nhom_pl)), '[]') from kt_loai));
+    'loai', (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'ten', ten, 'nhom', nhom, 'nhom_bc', nhom_bc)), '[]') from kt_loai));
 end $$;
 
 revoke execute on function public.kt_bc_pl2(text, date, date), public.kt_pl_ct(text, int[], date, date), public.kt_bc_lctt(text, date, date) from public;

@@ -86,7 +86,6 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
 | 12 | **Góp ý kế toán 14/10 còn lại** (ảnh chị Jaycie): (a) Sổ quỹ — tải sao kê ngân hàng hằng tuần để app tự khớp + cảnh báo lệch (CHỜ file sao kê mẫu từng ngân hàng); (b) két tiền mặt — kiểm quỹ cuối ngày nhập số đếm + ảnh sổ, so sổ sách; (c) Phải thu — tách "COD đang chờ thu" / "chưa lấy hàng" từ ô COD + ghi chú đơn (đã kéo cột `cod`, `ghi_chu` về `kt_kiot_hoa_don` / `kt_kiot_dat_hang`), cần quy định sales ghi chú; (d) kiểm cột "Người phụ trách" công nợ đang lấy NV nào; (e) NCC: chi phí vận chuyển / hải quan vào giá vốn, NCC nước ngoài — CHỜ chị mô tả quy trình | xem nhật ký 14/10 (5) |
 | 13 | **8 nhóm báo cáo quản trị** (anh gửi 14/10): 1 P&L ✓ · 2 Hiệu suất KD & đơn hàng (đã chốt bao nhiêu đơn, doanh số chưa ghi nhận) · 3 Dòng tiền & ngân quỹ ✓ · 4 Công nợ & dòng tiền dự kiến · 5 Chi phí & ngân sách (nhập kế hoạch → cột Kế hoạch / % HT của P&L) · 6 Hàng tồn & hiệu quả hàng hoá · 7 Vay vốn & chi phí tài chính · 8 Hiệu quả theo cơ sở / kênh bán | trước mắt chỉ P&L + Dòng tiền (anh 14/10); dữ liệu đơn đặt / cọc / kênh đã kéo sẵn cho 2 và 8 |
-| 14 | Cài đặt → Loại thu / chi: chưa có ô sửa **nhóm P&L** (`kt_loai.nhom_pl`) — đang sửa bằng SQL; Lương & BHXH tạm vào "Chi phí bán hàng" (chờ kế toán xác nhận) | |
 | 10 | Theo dõi trang **Cài đặt → Nhật ký kéo & so khớp Kiot** (14/10): lịch `kt-kiot-doi-chieu` 23:50 so tháng này + trước; lần kéo đầy đủ 23:20 tự so tồn; lần kéo 3 tiếng lấy lại tồn mặt hàng vừa phát sinh (`ton_cap_nhat` trong nhật ký) | lần kéo đầy đủ hàng ~90 giây (giới hạn Edge Function 150 giây ở gói thường / 400 giây gói Pro) — nếu lỗi hết giờ thì tách so tồn ra lần riêng |
 | 11 | Khoá `KT_CRON_KEY` bị in ra kết quả lệnh trong phiên cloud 14/10 (xem nhật ký) | chờ anh quyết có đổi khoá không (đổi xong phải chép khoá mới vào `kt-keys.local.txt` trên máy anh) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
@@ -116,6 +115,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
   Anh chốt 09/10: "Đã thanh toán luôn" KHÔNG cần giám đốc xác nhận · phiếu Kiot tự sinh (TTTH trả hàng, PCPN trả NCC) CÓ qua đủ 2 lượt.
 - **File khoá `kt-keys.local.txt` chỉ chứa khoá app kế toán** (anh chốt 09/10, đã dọn: bỏ Pancake / Meta / OpenAI / mật khẩu CSDL / link app MKT).
   Sửa file khoá bằng script theo tên dòng, KHÔNG in nội dung kể cả đã che (sự cố 09/10).
+- **Ảnh giao diện mẫu do AI vẽ — chỉ lấy bố cục** (anh 14/10): dòng, cột, lựa chọn lấy từ danh mục / dropdown thật của app (loại thu / chi, cơ sở, đơn vị, tài khoản); không tự đặt nhóm / loại mới cho khớp mẫu, không làm khung không có dữ liệu.
 - **Anh KHÔNG có nghiệp vụ kế toán** (anh 12/10): nối dữ liệu thấy gì lạ → đặt câu hỏi (bảng `kt_cau_hoi`, theo chủ đề), giải thích đời thường; chưa rõ thì gắn nhãn "chưa chắc", không trình như số đúng.
 - **App KHÔNG gồm 2 nhà hàng AMHP (Saikung / Hongkong)** — anh 12/10: "cái gì liên quan tới nhà hàng clear hết khỏi app". Đã dọn (`supabase-schema-kt-bo-nha-hang.sql`):
   2 đơn vị, 14 phiếu chi, 5 phiếu thu Kiot (ẩn, chặn chép lại qua `kt_bo_qua_nguon`), ký hiệu HĐ *MHH/*MSH. GIỮ chi tiếp khách ở nhà hàng ngoài + khách đồ thờ tên "nhà hàng".
@@ -137,6 +137,11 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (6)** — Anh: "lương BHXH có mục OPEX đàng hoàng mà… ảnh mẫu form là AI làm, phải linh hoạt lắp dữ liệu dropdown của form cũ vào — rà lại".
+  **Sai của Claude**: P&L ép theo 6 nhóm chữ của ảnh mẫu (tự xếp Lương & BHXH vào "chi phí bán hàng") và tự thêm loại chi "TAX - Thuế" để có dòng Thuế của mẫu.
+  Sửa: P&L mỗi loại chi OPEX của danh mục là 1 dòng (Lương & BHXH, Marketing, Mặt bằng, Logistics, Vận hành & Quản lí, Khác) → 5 dòng (DT, GV, LN gộp, Chi phí, LN ròng); xoá loại TAX (0 phiếu)
+  + cột `kt_loai.nhom_pl`; bỏ cột Kế hoạch / % HT và tab Thực tế / Kế hoạch (không có ngân sách). Rà các khung "theo mẫu" không có dữ liệu: bỏ 2 tab Công nợ "Đối chiếu công nợ",
+  "Lịch sử thanh toán" (đã có trong khung chi tiết từng khách) + tab "Kế hoạch thu / trả" + khung "Chứng từ liên quan" luôn trống. **Quy tắc mới**: ảnh mẫu chỉ là bố cục — dòng, cột, lựa chọn lấy từ danh mục thật.
 - **14/10/2026 (5)** — (phiên cloud, nối tiếp phiên VS Code "App kế toán" hết lượt 14:19 giữa chừng — đọc lại nhật ký phiên đó, 3 ảnh góp ý chị Jaycie).
   Phiên VS Code đã xong đợt 1–3 (commit e77c22b, c6174e4, c901cc7, 8d4a279) nhưng còn dở phần kéo thêm Kiot (file chưa commit trên máy anh: `supabase-schema-kt-kiot-don.sql`,
   sửa `kt-kiot`, `scripts/keo-bu-kiot-them.js` — đã làm lại trên cloud, **máy anh cần bỏ các file sửa dở đó trước khi `git pull`**).
