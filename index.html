@@ -744,7 +744,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 14:07';
+const APP_VERSION='14/10/2026 14:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -788,6 +788,9 @@ const so=v=>{const x=String(v??'').replace(/[^\d-]/g,'');return x?Number(x):null
 const homNay=()=>{const d=new Date(Date.now()+7*3600e3);return d.toISOString().slice(0,10)};
 const ymd=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const pct=(a,b)=>b?Math.round(a*1000/b)/10+'%':'';
+// 14/10/2026 kế toán: đơn vị chịu chi phí gọn còn 4 — Tổng công ty, HT, CT, SD (chọn 1 khi lập phiếu; chia nhiều đơn vị / nhiều tháng làm sau ở tab Phân bổ)
+const DV_CP=[[1,'Tổng công ty'],[2,'HT — Hiền Thủy'],[3,'CT — Chánh Tâm'],[4,'SD — Shidai']];
+const dvCPTen=id=>(DV_CP.find(d=>d[0]===+id)||[])[1]||((dv(id)||{}).ten||'');
 const vb=(t,c)=>`<span class="vb" style="background:var(--${c}-bg);color:var(--${c})">${esc(t)}</span>`;
 const sumBy=(a,f)=>a.reduce((s,x)=>s+(Number(f(x))||0),0);
 const vietTat=t=>{const w=String(t||'').replace(/\(.*?\)/g,'').trim().split(/\s+/);return ((w.length>1?w[w.length-2][0]:'')+(w[w.length-1]||'?')[0]).toUpperCase()};
@@ -879,8 +882,8 @@ async function dnForm(){
       <label>7. Người / đơn vị thụ hưởng *<input name="thu_huong_ten" maxlength="150"></label>
       <label class="dn-ck">8. Ngân hàng thụ hưởng *<input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
       <label class="dn-ck">9. Số tài khoản thụ hưởng *<input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
-      <div class="full dn-pb"><div class="dn-l">10. Đơn vị chịu chi phí * <span class="muted">— chọn 1 hoặc nhiều; nhiều đơn vị thì tự chia đều, sửa lại được</span></div>
-        <div class="dn-dv">${DN.dm.don_vi.map(d=>`<label class="chk"><input type="checkbox" name="dv" value="${d.id}" onchange="dnPb()"> ${esc(d.ten)}</label>`).join('')}</div>
+      <div class="full dn-pb"><div class="dn-l">10. Đơn vị chịu chi phí * <span class="muted">— chọn 1 (kế toán phân bổ thêm sau nếu cần)</span></div>
+        <div class="dn-dv">${(DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)).length?DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)):DN.dm.don_vi.map(d=>[d.id,d.ten])).map(([i,t])=>`<label class="chk"><input type="radio" name="dv" value="${i}" onchange="dnPb()"> ${esc(t)}</label>`).join('')}</div>
         <div id="dn-chia"></div></div>
       <label>11. Mong muốn thanh toán trước ngày<input type="date" name="han_tt" min="${h}"></label>
       <label>12. Có hoá đơn đỏ (VAT) không? *<select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
@@ -1694,9 +1697,6 @@ async function xemCongNo(loai,id){
 const canBS=x=>String(x.ghi_chu||'').startsWith('[Kéo từ sheet cũ')&&!x.sua_boi;
 // Loại chi do Claude tự gán theo mẫu T5–T9 (anh cho phép 09/10) — trả 'cao' | 'vừa' | 'thấp'; kế toán sửa phiếu (Sửa đề nghị) là coi như đã soát
 const claudeGan=x=>{const m=String(x.ghi_chu||'').match(/\[Claude gán loại chi — tin (cao|vừa|thấp)/);return m&&!x.sua_boi?m[1]:null};
-// 14/10/2026 kế toán: đơn vị chịu chi phí gọn còn 4 — Tổng công ty, HT, CT, SD (chọn 1 khi lập phiếu; chia nhiều đơn vị / nhiều tháng làm sau ở tab Phân bổ)
-const DV_CP=[[1,'Tổng công ty'],[2,'HT — Hiền Thủy'],[3,'CT — Chánh Tâm'],[4,'SD — Shidai']];
-const dvCPTen=id=>(DV_CP.find(d=>d[0]===+id)||[])[1]||((dv(id)||{}).ten||'');
 function pbRow(p={}){return `<div class="pb"><select name="pb_dv">${opts(coSo(),p.don_vi_id,'— đơn vị —')}</select>${moneyIn('pb_tien',p.so_tien,'oninput="fmtMoney(this)"')}<button class="btn sm" onclick="this.parentNode.remove()">✕</button></div>`}
 function formChi(id){S.f.chi_form_id=id||null;
   const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ho_ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
