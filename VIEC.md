@@ -84,6 +84,8 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 8 | Kéo chứng từ cũ từ Google Drive lên app (`scripts/keo-chung-tu-drive.js [T9|tat_ca] [ghi]`, chạy lại không trùng) | **XONG 12/10** (2 tài khoản Drive): 1.884 file / 839 phiếu (~1,1 GB, ảnh gốc chưa nén; gói Supabase Pro). Còn 22 file cả 2 tài khoản không mở được · 80 file không phải ảnh/PDF hoặc > 15 MB · 2 lỗi — chạy lại không trùng |
 | 9 | Tồn kho: lịch `kt-kiot-hang-dem` 23:20 kéo đầy đủ hàng hoá + `kt-ton-kho` 23:40 chụp (`scripts/trien-khai-ton-kho.js`) | theo dõi nhật ký `chup_ton_kho`; làm màn hình xem tồn theo ngày khi cần |
 | 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
+| 10 | Theo dõi trang **Cài đặt → Nhật ký kéo & so khớp Kiot** (14/10): lịch `kt-kiot-doi-chieu` 23:50 so tháng này + trước; lần kéo đầy đủ 23:20 tự so tồn; lần kéo 3 tiếng lấy lại tồn mặt hàng vừa phát sinh (`ton_cap_nhat` trong nhật ký) | lần kéo đầy đủ hàng ~90 giây (giới hạn Edge Function 150 giây ở gói thường / 400 giây gói Pro) — nếu lỗi hết giờ thì tách so tồn ra lần riêng |
+| 11 | Khoá `KT_CRON_KEY` bị in ra kết quả lệnh trong phiên cloud 14/10 (xem nhật ký) | chờ anh quyết có đổi khoá không (đổi xong phải chép khoá mới vào `kt-keys.local.txt` trên máy anh) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
@@ -130,6 +132,20 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **14/10/2026** — Anh: "số liệu app không khớp Kiot (doanh thu, tồn kho) — làm log lịch sử kéo + dash so khớp Kiot từng tháng" (phiên cloud).
+  **Soát**: hoá đơn Kiot T1→T10/2026 khớp TỪNG MÃ với app (số phiếu, trạng thái, tiền; chỉ thiếu 2 HĐ mới bán sau lần kéo gần nhất).
+  **Lệch thật ở TỒN KHO**: Kiot trả mỗi đơn vị phụ (thùng / tập / bịch… — 360 dòng có `masterUnitId`) thành dòng hàng riêng cùng một lượng hàng
+  → app cộng giá trị tồn 2 lần (số chênh xem trên trang, không ghi vào sổ vì repo public). Thêm: tồn giữa ngày cũ vì Kiot không đổi ngày sửa hàng khi bán (đã biết 09/10).
+  **Sửa** (`supabase-schema-kt-kiot-doi-chieu.sql`, `scripts/trien-khai-doi-chieu.js`, Edge Function `kt-kiot` v11): cột `dv_goc_id` / `quy_doi`, 4 hàm tồn
+  (`kt_bc_hang`, `kt_tq_bo_sung`, `kt_chup_ton_kho`, `kt_drill`) chỉ cộng đơn vị gốc → giá trị tồn 3 cơ sở khớp Kiot; kéo 3 tiếng lấy lại tồn các mặt hàng vừa bán / trả / nhập.
+  **Mới**: bảng `kt_kiot_doi_chieu` + trang Cài đặt → Nhật ký kéo & so khớp Kiot (thẻ chỉ số, bảng so doanh thu từng tháng bấm xem chi nhánh + mã lệch,
+  so tồn, lịch chạy, lịch sử kéo; nút Kéo ngay / So lại / So cả năm / So tồn ngay — quyền Nhật ký sửa) + dải trạng thái trên Tổng quan, Kinh doanh, Công nợ.
+  Lịch mới `kt-kiot-doi-chieu` 23:50 VN. Sửa kèm: ngày HĐ / phiếu nhập trên trang Bán hàng / NCC hiện theo giờ UTC (HĐ trước 7h sáng lùi 1 ngày); nhãn "nhóm hàng = tiền hàng chưa trừ giảm giá HĐ"; trang Logic.
+  Kiểm: quyền gọi Edge Function (không phiên 401, sai phiên / chỉ xem 403, Admin OK); chụp giao diện máy tính + điện thoại bằng tài khoản tạm (đã xoá).
+  **Lỗi của Claude trong phiên**: (1) lệnh xem lịch pg_cron dùng regex che khoá sai → `KT_CRON_KEY` in ra kết quả lệnh (không dán chat, không commit) — mục 2 dòng 11;
+  (2) đặt trùng tên hàm `tuLuc` làm trang trắng — bắt được khi chụp thử, sửa trước khi đẩy. **Chưa làm**: tồn chụp hằng ngày 09–13/10 trong `kt_ton_kho_ngay` vẫn là số cũ (cộng trùng) — không tính lại được;
+  giá vốn / lợi nhuận app vẫn theo giá vốn lúc kéo nên có thể lệch báo cáo lợi nhuận Kiot.
 
 - **12/10/2026** — **Drive 2 tài khoản**: CT Q2/Q3 lỗi 404 vì file nằm ở tài khoản Google KHÁC của anh (không phải giới hạn lượt như tưởng 09/10) → anh đăng nhập thêm
   remote `ktdrive2:` (chỉ đọc). `scripts/rclone-drive.js` (REMOTES) + `keo-3tshop.js` thử lần lượt `ktdrive:` → `ktdrive2:`. Kéo CT Q2 (728 mã) + Q3 (729 mã):
