@@ -276,8 +276,13 @@ begin
         select to_char(t.ngay, 'YYYY-MM') th, l.ten loai, sum(t.so_tien) s from kt_thu t join kt_loai l on l.id = t.loai_id
          where not t.da_xoa and t.trang_thai = 'da_duyet' and t.ngay between p_tu and p_den group by 1, 2) x),
     'chi', (select coalesce(jsonb_agg(jsonb_build_object('thang', th, 'loai', loai, 'nhom_bc', nhom_bc, 'tien', s)), '[]') from (
-        select to_char(c.ngay_tt, 'YYYY-MM') th, l.ten loai, l.nhom_bc, sum(c.so_tien) s from kt_chi c join kt_loai l on l.id = c.loai_id
-         where not c.da_xoa and c.trang_thai = 'da_tt' and c.ngay_tt between p_tu and p_den group by 1, 2, 3) x),
+        -- 14/10/2026: phiếu có phân bổ nhiều tháng (kt_chi.phan_bo_thang) → ghi nhận chi phí theo từng tháng phân bổ; còn lại theo ngày thanh toán
+        select coalesce(pt->>'thang', to_char(c.ngay_tt, 'YYYY-MM')) th, l.ten loai, l.nhom_bc, sum(coalesce((pt->>'so_tien')::numeric, c.so_tien)) s
+          from kt_chi c join kt_loai l on l.id = c.loai_id
+          left join lateral jsonb_array_elements(case when jsonb_typeof(c.phan_bo_thang) = 'array' then c.phan_bo_thang end) pt on true
+         where not c.da_xoa and c.trang_thai = 'da_tt'
+           and (case when pt is null then c.ngay_tt between p_tu and p_den else pt->>'thang' between to_char(p_tu, 'YYYY-MM') and to_char(p_den, 'YYYY-MM') end)
+         group by 1, 2, 3) x),
     'lai_vay', (select coalesce(jsonb_agg(jsonb_build_object('thang', th, 'lai', s)), '[]') from (
         select to_char(ngay, 'YYYY-MM') th, sum(lai) s from kt_vay_tra where not da_xoa and da_tra and ngay between p_tu and p_den group by 1) x),
     'kiot', (select coalesce(jsonb_agg(jsonb_build_object('thang', th, 'dt', dt, 'gv', gv)), '[]') from (
