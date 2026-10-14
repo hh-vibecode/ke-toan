@@ -692,7 +692,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 09:35';
+const APP_VERSION='14/10/2026 09:53';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2186,7 +2186,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -2200,7 +2200,8 @@ async function docChuong(id){try{await rpc('kt_doc_thong_bao',{p_id:id||null});i
 async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)return;
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
-  const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':null;if(!trang||!coXem(trang))return;
+  const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
+  if(trang==='cd_kiot'){go('cd_kiot');return}
   // thông báo gộp (vd nhiều đề xuất chi từ Kiot) → mở tab chờ kế toán kiểm, lọc nguồn Kiot
   if(!x.dong_id){if(trang==='chi'){S.f.chi_tt='cho_duyet';S.f.chi_nguon=x.loai==='chi_kiot'?'kiot':''}setKy('nam',true);go(trang);return}
   // mở trang + kỳ "Từ 1/9" để chắc chắn thấy phiếu, đợi danh sách tải xong rồi mở đúng phiếu
@@ -2324,6 +2325,7 @@ const LOGIC=[
   'Cách tính giống Kiot: <b>Doanh thu</b> = tiền hàng − giảm giá hoá đơn (hoá đơn Hoàn thành) · <b>Trả hàng</b> = giá trị phiếu trả (trạng thái Đã trả) theo ngày trả · <b>Doanh thu thuần</b> = doanh thu − trả hàng.',
   '<b>So tồn kho</b>: mỗi lần kéo đầy đủ hàng hoá (23:20 hoặc bấm "So tồn ngay"), app so tồn đang có với Kiot <b>trước khi</b> ghi đè. Lần kéo 3 tiếng lấy lại tồn của các mặt hàng vừa bán / trả / nhập; chuyển kho, kiểm kho chỉ cập nhật ở lần kéo đầy đủ ban đêm.',
   '<b>Giá vốn</b> app = giá vốn bình quân lúc kéo về (Kiot không trả giá vốn tại lúc bán) → lợi nhuận gộp có thể lệch báo cáo lợi nhuận của Kiot; doanh thu và tồn kho thì phải khớp.',
+  '<b>Cảnh báo vào chuông</b> (người có quyền Nhật ký): lần kéo Kiot lỗi · quá 4 tiếng không kéo được · lịch so khớp 23:50 không chạy · tháng còn lệch app tự bù không được · tồn kho lần so gần nhất lệch &gt; 1% giá trị. Kiểm cuối mỗi lần kéo và mỗi giờ (phút 5); cùng một vấn đề chỉ báo lại sau 12 tiếng nếu vẫn còn.',
   'Dải trạng thái trên Tổng quan và các trang Kinh doanh / Công nợ: giờ cập nhật số Kiot gần nhất + kết quả soát 2 tháng gần nhất + lần so tồn; xanh = khớp, vàng = quá 4 tiếng chưa kéo, đỏ = lỗi hoặc còn lệch.']],
  ['Quỹ tiền mặt 3 cửa hàng (đối chiếu cuối ngày)',[
   'Từ sổ quỹ Kiot, chỉ phiếu <b>tiền mặt</b>: thu tại quầy − chi tại quầy − nộp về két / quỹ khác (Chuyển rút) + nhận thêm = tiền <b>còn giữ ở quầy</b> (cộng dồn trong kỳ).',

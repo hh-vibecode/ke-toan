@@ -133,6 +133,10 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (2)** — Anh: "chủ động up đi" → đẩy thẳng `main` (bản 09:35 live). Anh: "duy trì đối chiếu với Kiot, có vấn đề báo t hoặc báo vào app" →
+  **cảnh báo vào chuông** (`supabase-schema-kt-kiot-canh-bao.sql`, hàm `kt_canh_bao_kiot`, lịch `kt-kiot-canh-bao` phút 5 mỗi giờ + gọi cuối mỗi lần chạy `kt-kiot` v12):
+  kéo lỗi · quá 4 tiếng không kéo được · lịch so 23:50 không chạy · tháng còn lệch không tự bù được · tồn lệch > 1%. Báo người có quyền Nhật ký, cùng vấn đề 12 tiếng báo 1 lần;
+  bấm chuông mở trang Nhật ký kéo. Thử: giả 1 lỗi kéo trong giao dịch huỷ ngang → 3 người nhận, không để lại dữ liệu. So tồn lại sau khi sửa: còn 1 dòng lệch.
 - **14/10/2026** — Anh: "số liệu app không khớp Kiot (doanh thu, tồn kho) — làm log lịch sử kéo + dash so khớp Kiot từng tháng" (phiên cloud).
   **Soát**: hoá đơn Kiot T1→T10/2026 khớp TỪNG MÃ với app (số phiếu, trạng thái, tiền; chỉ thiếu 2 HĐ mới bán sau lần kéo gần nhất).
   **Lệch thật ở TỒN KHO**: Kiot trả mỗi đơn vị phụ (thùng / tập / bịch… — 360 dòng có `masterUnitId`) thành dòng hàng riêng cùng một lượng hàng

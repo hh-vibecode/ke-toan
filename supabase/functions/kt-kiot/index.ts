@@ -17,6 +17,7 @@
 //   → app từng cộng 2 lần vào giá trị tồn. Lưu dv_goc_id / quy_doi; báo cáo tồn chỉ cộng dòng đơn vị gốc (dv_goc_id null).
 // Tồn kho giữa ngày (14/10/2026): Kiot không đổi "ngày sửa" hàng khi bán / nhập → lần kéo 3 tiếng lấy lại tồn từng mặt hàng
 //   có trong hoá đơn / trả hàng / nhập hàng vừa kéo (kèm dòng đơn vị gốc). Chuyển kho / kiểm kho vẫn chờ lần kéo đầy đủ ban đêm.
+// Cảnh báo (14/10/2026): cuối mỗi lần chạy gọi kt_canh_bao_kiot() → lỗi / lệch báo vào chuông app (kèm lịch kt-kiot-canh-bao mỗi giờ).
 // Secrets (tiền tố KT_): KT_KIOT_CLIENT_ID, KT_KIOT_CLIENT_SECRET, KT_KIOT_RETAILER, KT_CRON_KEY. Monsieur Claude
 const SB = Deno.env.get('SUPABASE_URL')!, SK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const MOC = '2026-09-01', SO_NGAY = 10;
@@ -228,6 +229,7 @@ Deno.serve(async req => {
       for (const m of ds) kq.doi_chieu.push(await doiChieuThang(m, nguoi));
       kq.giay = Math.round((Date.now() - batDau) / 1000);
       await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'doi_chieu_kiot', du_lieu: kq });
+      await sb('rpc/kt_canh_bao_kiot', {});   // có vấn đề → chuông app (supabase-schema-kt-kiot-canh-bao.sql)
       return tra(kq);
     }
     const dayDu: string[] = body.day_du || [];
@@ -251,9 +253,11 @@ Deno.serve(async req => {
     if (kq.hoa_don || kq.hang) { const g = await sb('rpc/kt_tinh_gia_von', { p_tat_ca: false }, 'return=representation'); kq.gia_von = g.ok ? await g.json() : 'lỗi ' + g.status; }
     kq.giay = Math.round((Date.now() - batDau) / 1000);
     await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'keo_kiot', du_lieu: kq });
+    await sb('rpc/kt_canh_bao_kiot', {});
     return tra(kq);
   } catch (e) {
     await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'keo_kiot_loi', du_lieu: { loi: String(e), da_xong: kq } });
+    await sb('rpc/kt_canh_bao_kiot', {});
     return tra({ loi: String(e), da_xong: kq }, 500);
   }
 });
