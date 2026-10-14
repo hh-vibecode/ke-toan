@@ -757,6 +757,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 .kk-mg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px}.kk-mg label{display:grid;grid-template-columns:62px 1fr;gap:6px;align-items:center;font-size:12.5px}.kk-mg label em{grid-column:2;font-style:normal;font-size:11px;color:var(--muted);text-align:right;margin-top:-4px}.kk-mg input{height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;text-align:right}
 .tt-in{min-width:0;width:130px;height:30px;text-align:right}
 .kk-mg label{grid-template-columns:58px minmax(0,1fr)!important;text-transform:none;letter-spacing:0;font-weight:600}.kk-mg input{width:100%!important;min-width:0!important;box-sizing:border-box}
+.kt-step>div.xong:not(.on) span{background:var(--ok);color:#fff}
 </style>
 </head>
 <body>
@@ -767,7 +768,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 16:32';
+const APP_VERSION='14/10/2026 16:40';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -785,9 +786,9 @@ const VI_TRI={supreme:'Admin (chủ app)',admin:'Admin (toàn quyền)',ke_toan:
 // Quyền chia theo MODULE (giống app MKT/Sale). Key trùng tên trang dùng trong hàm SQL kt_chan. Thêm trang mới → thêm vào đây.
 // chi_de_nghi / chi_duyet (08/10): quyền 1 ô (không chia xem / sửa) — QUYEN_1_O.
 const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_gd'];
-const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','dieu_chuyen','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Quản trị',['danh_muc','phan_quyen','nhat_ky']]];
+const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','dieu_chuyen','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl','khoa_ky']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Quản trị',['danh_muc','phan_quyen','nhat_ky']]];
 const TRANG_QUYEN={tong_quan:'Tổng quan',dong_tien:'Dòng tiền & đối soát',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán kiểm lượt 1 & thanh toán',chi_gd:'Chi — giám đốc xác nhận lượt 2',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
-  sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
+  sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',khoa_ky:'Khoá kỳ / chốt tháng (mở khoá: chỉ Supreme / Admin)',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
 const LOAI_TK={ngan_hang:'Ngân hàng',tien_mat:'Tiền mặt',vay:'Tài khoản vay',khac:'Khác'};
 const KIOT={khong:'Không ảnh hưởng TK cửa hàng',da_tao:'Đã tạo phiếu trên Kiot (4A)',khong_tao:'Không tạo phiếu Kiot (4B)'};
 const IC={
@@ -1088,6 +1089,7 @@ const PAGES={
   // Báo cáo quản trị theo mẫu anh gửi 14/10/2026 — trước mắt 2 báo cáo (P&L + Dòng tiền); 8 nhóm đầy đủ làm dần (VIEC.md)
   pl:{ten:'1. Kết quả kinh doanh (P&L)',nv:'bao_cao',fn:()=>pageBCPL()},
   bc_dong_tien:{ten:'2. Dòng tiền & Ngân quỹ',nv:'bao_cao',fn:()=>pageBCLCTT()},
+  khoa_ky:{ten:'Khoá kỳ / chốt tháng',nv:'bao_cao',fn:()=>pageKhoaKy()},
   pl_thuc_thu:{ten:'P&L theo thực thu / thực chi (cũ)',nv:null,fn:()=>pagePL()},
   tai_san:{ten:'Tài sản & khấu hao',nv:null,fn:()=>pageTaiSan()},
   cd_phan_quyen:{ten:'Phân quyền',nv:'he_thong',cd:'Quản trị',fn:()=>pageCaiDat('nguoi_dung')},
@@ -2645,6 +2647,64 @@ function formTUHoan(tid,id){const t=S.cache.tu.find(x=>x.id===tid);const x=id?(t
 async function luuTUHoan(tid,id){const o=formData($('#f'));o.id=id;o.tam_ung_id=tid;o.so_tien=so(o.so_tien);if(!o.so_tien)return alert('Nhập số tiền');
   await save('kt_luu_tam_ung_hoan',{p_dong:o});S.f.tu_chon=tid;render()}
 
+// KHOÁ KỲ / CHỐT THÁNG (14/10/2026): tháng đã khoá → người dùng không thêm / sửa / xoá số tiền, ngày, tài khoản của phiếu trong tháng (chặn ở CSDL).
+// Danh sách việc tồn đọng từng tháng trước khi khoá · số chụp lúc khoá so với số hiện tại (job Kiot vẫn được sửa → báo nếu đổi).
+async function pageKhoaKy(){
+  const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const nay=homNay().slice(0,7),ds=await rpc('kt_ds_khoa_ky',{p_tu:MOC_TIEN.slice(0,7),p_den:nay});S.cache.kk=ds;
+  const f=S.f,g=coGhi(),ql=['supreme','admin'].includes((S.toi||{}).vi_tri);
+  const doi=x=>x.khoa&&x.luc_khoa&&['thu','chi','dc'].some(k=>Math.abs(+x.luc_khoa[k]-(+x.hien_tai[k]))>0.5)||x.khoa&&x.luc_khoa&&Object.keys(x.hien_tai.so_du||{}).some(k=>Math.abs(+(x.luc_khoa.so_du||{})[k]-(+x.hien_tai.so_du[k]))>0.5);
+  const viec=x=>(+x.chi_cho)+(+x.chi_chua_hd)+(+x.dc_chua_xn)+(+x.ket_lech);
+  const xongThang=x=>x.thang<nay,daKhoa=ds.filter(x=>x.khoa),choKhoa=ds.filter(x=>!x.khoa&&xongThang(x)),bienDong=ds.filter(doi);
+  const IC={k:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10V7a6 6 0 1 1 12 0v3h2v12H4V10zm2 0h8V7a4 4 0 1 0-8 0z"/></svg>',
+    m:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10V7a6 6 0 0 1 11.6-2.2l-1.9.7A4 4 0 0 0 8 7v3h12v12H4V10z"/></svg>',
+    w:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21 12 2l11 19zm10-3h2v-2h-2zm0-4h2v-4h-2z"/></svg>'};
+  const the=(c,ic,l1,v,s1)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
+  const thg=t=>'Tháng '+(+t.slice(5))+'/'+t.slice(0,4),chon=f.kk_chon&&ds.some(x=>x.thang===f.kk_chon)?f.kk_chon:null;
+  const so=(v,c)=>+v?`<span class="${c||''}">${fmt(v)}</span>`:'<span class="muted">0</span>';
+  el.innerHTML=`<div class="m-kpis m-k3">${the('ok','k','Đã khoá sổ',daKhoa.length?thg(daKhoa[0].thang):'Chưa khoá tháng nào',daKhoa.length+' tháng đã khoá')}
+      ${the(choKhoa.length?'warn':'ok','m','Tháng đã qua chưa khoá',fmt(choKhoa.length),choKhoa.map(x=>'T'+(+x.thang.slice(5))).join(', ')||'—')}
+      ${the(bienDong.length?'bad':'ok','w','Số đổi sau khi khoá',fmt(bienDong.length),bienDong.length?'tháng có số tiền / số dư khác lúc khoá':'không có')}</div>
+    <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
+      <div class="m-flt" style="align-items:center"><span class="badge">Khoá: không ai sửa được số tiền, ngày, tài khoản của phiếu trong tháng · mở khoá: Supreme / Admin</span></div>
+      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Tháng</th><th class="c">Trạng thái</th><th class="num">Tổng thu</th><th class="num">Tổng chi đã trả</th><th class="num" title="Phiếu chi chờ duyệt / chờ thanh toán">Chi chờ</th><th class="num" title="Phiếu chi đã trả chưa nhận hoá đơn đỏ">Chưa HĐ đỏ</th><th class="num" title="Điều chuyển chưa xác nhận">ĐC chưa XN</th><th class="num" title="Số lần kiểm két (số lần lệch)">Kiểm két</th><th class="c">Số sau khoá</th></tr>
+        ${ds.map(x=>`<tr class="click ${x.thang===chon?'on':''}" data-id="${x.thang}" onclick="xemKK('${x.thang}')"><td class="nw"><b>${thg(x.thang)}</b></td>
+          <td class="c">${x.khoa?pill('Đã khoá','ok'):xongThang(x)?pill('Chờ khoá','warn'):pill('Đang trong tháng','')}</td>
+          <td class="num">${fmt(x.hien_tai.thu)}</td><td class="num">${fmt(x.hien_tai.chi)}</td><td class="num">${so(x.chi_cho,'neg')}</td><td class="num">${so(x.chi_chua_hd)}</td><td class="num">${so(x.dc_chua_xn,'neg')}</td>
+          <td class="num">${fmt(x.ket_so)}${+x.ket_lech?` <span class="neg">(${fmt(x.ket_lech)})</span>`:''}</td>
+          <td class="c">${!x.khoa?'':doi(x)?pill('Đã đổi','bad'):pill('Khớp','ok')}</td></tr>`).join('')}</table></div></div></div>
+      <aside class="m-pn" id="kk-ct"></aside></div>`;
+  if(chon)xemKK(chon);
+}
+function xemKK(t){const x=S.cache.kk.find(r=>r.thang===t);if(!x)return;const g=coGhi(),ql=['supreme','admin'].includes((S.toi||{}).vi_tri),nay=homNay().slice(0,7);
+  const thg='Tháng '+(+t.slice(5))+'/'+t.slice(0,4),lk=x.luc_khoa||{},ht=x.hien_tai;
+  const dong=(ten,v,ok,go_)=>`<div>${ten}</div><div style="display:flex;align-items:center;gap:6px">${ok?pill('Xong','ok'):pill(fmt(v),'warn')}${go_&&!ok?`<span class="m-link" onclick="${go_}">Xem</span>`:''}</div>`;
+  const tkL=Object.keys(ht.so_du||{}).map(k=>({id:+k,ten:(tk(+k)||{}).ten||('TK '+k),nay:+ht.so_du[k],luc:lk.so_du?+lk.so_du[k]:null})).filter(r=>r.nay||r.luc);
+  const html=`<div class="m-pn-h"><h2>${thg}</h2>${x.khoa?pill('Đã khoá','ok'):pill('Chưa khoá','warn')}<span class="r"><button class="x" onclick="dongKKCT()">✕</button></span></div><div class="m-pn-b">
+    ${x.khoa?`<div class="muted" style="font-size:12px;margin-bottom:8px">Khoá bởi ${esc(x.khoa_boi||'')} · ${fmtDT(x.khoa_luc)}${x.ghi_chu?' · '+esc(x.ghi_chu):''}</div>`:''}
+    <b style="font-size:13px">Việc cần xong trước khi khoá</b>
+    <div class="m-kv" style="margin:6px 0 12px">${dong('Phiếu chi chờ duyệt / chờ thanh toán',x.chi_cho,!+x.chi_cho,`go('chi')`)}${dong('Phiếu chi đã trả chưa nhận HĐ đỏ',x.chi_chua_hd,!+x.chi_chua_hd,`go('chi')`)}
+      ${dong('Điều chuyển chưa xác nhận',x.dc_chua_xn,!+x.dc_chua_xn,`go('dieu_chuyen')`)}${dong('Kiểm két lệch sổ sách',x.ket_lech,!+x.ket_lech,`S.f.sq_tab='ket';go('dong_tien')`)}
+      <div>Tạm ứng chưa hoàn (cuối tháng)</div><div>${+x.tu_con?pill(fmt(x.tu_con)+' khoản','info'):pill('Không có','ok')}</div></div>
+    <b style="font-size:13px">Số liệu ${x.khoa?'lúc khoá → hiện tại':'hiện tại'}</b>
+    <div class="m-card" style="margin-top:6px"><table class="m-t"><tr><th>Khoản</th>${x.khoa?'<th class="num">Lúc khoá</th>':''}<th class="num">Hiện tại</th></tr>
+      ${[['Tổng thu','thu'],['Tổng chi đã trả','chi'],['Điều chuyển','dc']].map(([n,k])=>`<tr><td>${n}</td>${x.khoa?`<td class="num">${fmt(lk[k])}</td>`:''}<td class="num ${x.khoa&&Math.abs(+lk[k]-(+ht[k]))>0.5?'neg':''}"><b>${fmt(ht[k])}</b></td></tr>`).join('')}
+      ${tkL.map(r=>`<tr><td class="ten">Số dư cuối tháng · ${esc(r.ten)}</td>${x.khoa?`<td class="num">${r.luc==null?'—':fmt(r.luc)}</td>`:''}<td class="num ${x.khoa&&r.luc!=null&&Math.abs(r.luc-r.nay)>0.5?'neg':''}">${fmt(r.nay)}</td></tr>`).join('')}</table></div>
+    ${x.khoa?'<div class="muted" style="font-size:11.5px;margin-top:6px">Số đỏ = khác lúc khoá (thường do Kiot sửa / huỷ phiếu cũ — job tự động không bị chặn). Kiểm lại rồi mở khoá, sửa, khoá lại nếu cần.</div>':''}
+    ${!x.khoa&&g&&x.thang<nay?`<label class="m-f" style="margin-top:12px;display:block"><span>Ghi chú khi khoá</span><input class="m-in" id="kk-gc" style="width:100%" placeholder="vd: đã đối chiếu sao kê, kiểm két"></label>`:''}</div>
+    <div class="m-pn-f"><span style="margin-left:auto"></span><button class="m-btn" onclick="dongKKCT()">Đóng</button>
+      ${x.khoa?(ql?`<button class="m-btn" onclick="khoaThang('${t}',false)">Mở khoá</button>`:''):g&&x.thang<nay?`<button class="m-btn pri" onclick="khoaThang('${t}',true,${viecKK(x)})">Khoá sổ ${thg}</button>`:''}</div>`;
+  const p=$('#kk-ct');
+  if(p&&innerWidth>=1250){S.f.kk_chon=t;p.innerHTML=html;p.closest('.m-split').classList.add('co');document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',r.dataset.id===t))}
+  else modal(`<div class="m-pn" style="position:static;max-height:none;border:none">${html}</div>`,true);
+}
+const viecKK=x=>(+x.chi_cho)+(+x.chi_chua_hd)+(+x.dc_chua_xn)+(+x.ket_lech);
+function dongKKCT(){if($('#modal')){closeModal();return}S.f.kk_chon=null;const p=$('#kk-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
+async function khoaThang(t,khoa,con){const thg='tháng '+(+t.slice(5))+'/'+t.slice(0,4);
+  if(khoa&&!confirm((con?`Còn ${con} việc chưa xong trong ${thg}. `:'')+`Khoá sổ ${thg}? Sau khi khoá không ai sửa được số tiền, ngày, tài khoản của phiếu trong tháng.`))return;
+  if(!khoa&&!confirm(`Mở khoá sổ ${thg}?`))return;
+  await save('kt_khoa_thang',{p_thang:t,p_khoa:khoa,p_ghi_chu:($('#kk-gc')||{}).value||null},khoa?'Đã khoá sổ '+thg:'Đã mở khoá '+thg);render()}
+
 // TÀI SẢN — nhập trên app, khấu hao đường thẳng theo tháng
 const TT_TS={dang_dung:'Đang dùng',hong:'Hỏng',thanh_ly:'Đã thanh lý'};
 async function pageTaiSan(){
@@ -2769,17 +2829,68 @@ function veNap(){
       ${ky?`<div class="m-st">So với tồn đang có (${esc(ky)})</div><div class="m-kv">${[['Mã có số lượng khác',fmt(lech.filter(x=>x.cu!=null).length)],['Mã mới (kỳ trước không có)',fmt(lech.filter(x=>x.cu==null).length)],['Mã kỳ trước còn tồn, file mới không có',fmt(het.length)],['Chênh tổng giá trị',fmt(tgt-sumBy(truoc,x=>x.cuoi_tien))]].map(([a,b])=>`<div>${a}</div><div>${b}</div>`).join('')}</div>`:''}
       <div style="display:flex;gap:8px;justify-content:flex-end"><button class="m-btn" onclick="S.cache.kt_nap=null;render()">Huỷ</button>${coGhi('hoa_don_thue')?`<button class="m-btn pri" onclick="luuNap()">Lưu tồn kho sổ thuế →</button>`:'<span class="muted">Cần quyền sửa trang Hoá đơn & thuế để lưu</span>'}</div></div>`}
 async function luuNap(){const n=S.cache.kt_nap,ngay=($('#kt-ngay')||{}).value;if(!n||!ngay)return alert('Chọn ngày chốt tồn');
-  const dv=S.f.kt_dv||'CTY';if(!confirm(`Lưu ${n.ds.length} mã hàng làm tồn sổ thuế ${dvThueTen(dv)} kỳ ${ngay.slice(0,7)}? (kỳ này đã có thì thay bản cũ)`))return;
+  const dv=S.f.kt_dv||'CTY';if(!confirm(`Lưu ${n.ds.length} mã hàng làm tồn sổ thuế ${dvThueTen(dv)} kỳ ${ngay.slice(0,4)}-Q${Math.ceil(+ngay.slice(5,7)/3)}? (kỳ này đã có thì thay bản cũ)`))return;
   try{const r=await rpc('kt_nap_ton_thue',{p_hkd:dv,p_ngay_chot:ngay,p_ten_file:n.file,p_ds:n.ds.map(x=>({...x,ten:String(x.ten||''),nhom:String(x.nhom||''),dvt:String(x.dvt||'')}))});
     toast(`Đã lưu ${fmt(r.so_ma)} mã · kỳ ${r.ky}`);S.cache.kt_nap=null;S.f.kt_ky=r.ky;render()}catch(e){alert(e.message)}}
 function vungNap(){return `<label class="kt-up kt-drop" ondragover="event.preventDefault();this.classList.add('on')" ondragleave="this.classList.remove('on')" ondrop="event.preventDefault();this.classList.remove('on');if(event.dataTransfer.files[0])napFile3T(event.dataTransfer.files[0])">
   <input type="file" accept=".xlsx,.xls,.csv" hidden onchange="if(this.files[0])napFile3T(this.files[0])">${IC_XLS}<div><b>Kéo thả file Excel vào đây</b><br><span class="m-link">hoặc chọn file</span><br><span class="muted">File tồn kho 3TShop: mã hàng, tên hàng, số lượng tồn, giá vốn... — đọc ngay trên máy, không gửi file đi đâu</span></div></label>`}
+// KHO SỔ THUẾ — khối 3 "Đối chiếu & Chốt kỳ" đủ 4 bước (14/10/2026): nạp file → chênh lệch với tồn dự kiến → điều chỉnh → khoá quý
+const LY_DO_DCT=['Kiểm kê thừa / thiếu','Hàng hỏng, huỷ','Hoá đơn chưa ghi nhận / sai mã hàng','Xuất dùng nội bộ, biếu tặng','Khác'];
+function kt34(hkd,ky,tg,d){
+  const f=S.f,g=coGhi('hoa_don_thue'),khoa=d&&d.khoa,ql=['supreme','admin'].includes((S.toi||{}).vi_tri);
+  const xong=[!!(d&&d.co_file),!!(d&&d.co_file&&(d.so_lech===0||d.dieu_chinh.length)),!!(d&&d.co_file&&d.so_lech===0),!!khoa];
+  const buocDau=xong.indexOf(false)<0?4:xong.indexOf(false)+1,b=f.kt_b||buocDau;
+  const step=`<div class="kt-step">${['Nhập file 3TShop','So sánh & kiểm tra chênh lệch','Xử lý điều chỉnh','Xác nhận & khoá kỳ'].map((t,i)=>`<div class="${b===i+1?'on':''} ${xong[i]?'xong':''}" style="cursor:pointer" onclick="S.f.kt_b=${i+1};render()"><span>${xong[i]?'✓':i+1}</span>${t}</div>`).join('')}</div>`;
+  const banner=khoa?`<div class="m-st" style="color:var(--ok)">Kỳ ${esc(ky)} đã khoá — ${esc(khoa.khoa_boi||'')} ${fmtDT(khoa.khoa_luc)}${khoa.con_lech?` · lúc khoá còn ${fmt(khoa.con_lech)} mã lệch`:''}</div>`:'';
+  let body='';
+  if(b===1)body=`<div class="m-st">Bước 1: Nhập file tồn kho cuối kỳ từ 3TShop · ${dvThueTen(hkd)}</div>
+    <div class="tq2-2"><div>${khoa?'<div class="m-empty">Kỳ đang chọn đã khoá. Nạp file quý mới vẫn được (ngày chốt thuộc quý khác).</div>':''}${vungNap()}</div><div id="kt-nap">${S.cache.kt_nap?'':`<div class="m-kv">${[['Tồn đang dùng',ky?esc(ky):'Chưa có'],['Số mã hàng',fmt(tg.so_ma||0)],['Tổng SL tồn',fmt(tg.cuoi_sl||0)],['Tổng giá trị tồn',fmt(tg.cuoi_tien||0)],['Cập nhật lúc',tg.keo_luc?fmtDT(tg.keo_luc):'—']].map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div>`}</div></div>`;
+  else if(!d)body='<div class="m-empty">Chưa có kỳ để đối chiếu — nạp file ở bước 1</div>';
+  else if(b===2){const l=d.ds,[a,c,tr]=phanTrang('kdc',l.length,10);
+    S.cache.kdc_xuat=()=>xuatCSV('doi-chieu-ton-thue-'+hkd+'-'+ky,[['Mã',x=>x.ma],['Tên',x=>x.ten||''],['Tồn đầu',x=>x.dau],['Nhập HĐ',x=>x.nhap],['Xuất HĐ',x=>x.xuat],['Điều chỉnh',x=>x.dc],['Dự kiến',x=>x.du_kien],['File 3TShop',x=>x.file_sl??''],['Lệch',x=>x.lech]],l);
+    body=`<div class="m-st" style="display:flex;align-items:center;gap:8px">Bước 2: Tồn file 3TShop so với tồn dự kiến · ${fmt(d.so_ma)} mã · <b class="${d.so_lech?'neg':''}">${fmt(d.so_lech)} mã lệch</b>
+        <span style="margin-left:auto"></span>${l.length?`<button class="m-btn out" style="height:30px" onclick="S.cache.kdc_xuat()">${IC_XLS} Xuất Excel</button>`:''}</div>
+      <div class="muted" style="font-size:11.5px;margin-bottom:6px">Dự kiến = tồn đầu (${d.co_ky_truoc?'cuối '+esc(d.ky_truoc):'theo file — chưa có quý trước'}) + nhập theo HĐ đầu vào − xuất theo HĐ đầu ra + điều chỉnh. Lệch = file − dự kiến.</div>
+      <div class="scroll"><table class="m-t"><tr><th>Mã hàng</th><th>Tên hàng</th><th class="num">Tồn đầu</th><th class="num">Nhập HĐ</th><th class="num">Xuất HĐ</th><th class="num">Điều chỉnh</th><th class="num">Dự kiến</th><th class="num">File 3TShop</th><th class="num">Lệch</th>${g&&!khoa?'<th></th>':''}</tr>
+        ${l.slice(a,c).map(x=>`<tr><td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten||'')}</td><td class="num">${fmt(x.dau)}</td><td class="num">${fmt(x.nhap)}</td><td class="num">${fmt(x.xuat)}</td>
+          <td class="num">${x.dc?fmt(x.dc):''}</td><td class="num">${fmt(x.du_kien)}</td><td class="num">${x.file_sl==null?'<span class="muted">không có</span>':fmt(x.file_sl)}</td>
+          <td class="num ${Math.abs(x.lech)>0.0001?'neg':''}"><b>${Math.abs(x.lech)>0.0001?(x.lech>0?'+':'')+fmt(x.lech):'0'}</b></td>
+          ${g&&!khoa?`<td class="c">${Math.abs(x.lech)>0.0001?`<button class="m-btn" style="height:26px;font-size:11.5px" onclick="formDCT('${esc(x.ma)}',${x.lech})">Điều chỉnh</button>`:''}</td>`:''}</tr>`).join('')
+          ||`<tr><td colspan="10" class="m-empty">${d.co_file?'Không có mã lệch — tồn file khớp tồn dự kiến':'Chưa có file tồn cuối kỳ'}</td></tr>`}</table></div>
+      ${l.length>10?thanhTrang('kdc',l.length,10,tr,'mã'):''}`}
+  else if(b===3){const l=d.dieu_chinh;
+    body=`<div class="m-st" style="display:flex;align-items:center;gap:8px">Bước 3: Điều chỉnh hợp lệ · ${fmt(l.length)} dòng · còn ${fmt(d.so_lech)} mã lệch<span style="margin-left:auto"></span>${g&&!khoa?`<button class="m-btn pri" style="height:30px" onclick="formDCT('',0)">+ Thêm điều chỉnh</button>`:''}</div>
+      <div class="scroll"><table class="m-t"><tr><th>Mã hàng</th><th class="num">SL điều chỉnh</th><th>Lý do</th><th>Ghi chú</th><th>Người ghi</th>${g&&!khoa?'<th></th>':''}</tr>
+        ${l.map(x=>`<tr><td class="nw">${esc(x.ma)}</td><td class="num"><b>${x.sl>0?'+':''}${fmt(x.sl)}</b></td><td>${esc(x.ly_do)}</td><td class="ten">${esc(x.ghi_chu||'')}</td><td class="nw">${esc(x.tao_boi||'')} · ${fmtDT(x.tao_luc)}</td>
+          ${g&&!khoa?`<td class="c"><button class="m-btn" style="height:26px;color:var(--bad)" onclick="xoaDCT(${x.id})">✕</button></td>`:''}</tr>`).join('')||`<tr><td colspan="6" class="m-empty">Chưa có điều chỉnh — bấm "Điều chỉnh" trên dòng lệch ở bước 2</td></tr>`}</table></div>`}
+  else body=`<div class="m-st">Bước 4: Xác nhận & khoá kỳ ${esc(ky)}</div>
+    <div class="m-kv">${[['Đơn vị',dvThueTen(hkd)],['Kỳ',esc(ky)+' ('+fmtD(d.tu)+' – '+fmtD(d.den)+')'],['Số mã hàng',fmt(d.so_ma)],['Mã còn lệch',`<b class="${d.so_lech?'neg':''}">${fmt(d.so_lech)}</b>`],['Số điều chỉnh',fmt(d.dieu_chinh.length)],
+      ['Trạng thái',khoa?pill('Đã khoá','ok')+' '+esc(khoa.khoa_boi||'')+' '+fmtDT(khoa.khoa_luc):pill('Chưa khoá','warn')]].map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">${khoa?(ql?`<button class="m-btn" onclick="khoaKyThue('${hkd}','${ky}',false)">Mở khoá kỳ</button>`:'<span class="muted">Mở khoá: chỉ Supreme / Admin</span>')
+      :g?`<button class="m-btn pri" onclick="khoaKyThue('${hkd}','${ky}',true,${d.so_lech})">Xác nhận & khoá kỳ ${esc(ky)}</button>`:''}</div>
+    <div class="muted" style="font-size:11.5px;margin-top:6px">Khoá xong: không nạp lại file, không thêm / xoá điều chỉnh của kỳ này.</div>`;
+  return `<section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--ok)">3</span><b>Đối chiếu & Chốt kỳ</b><span class="muted">${ky?esc(ky)+' · ':''}${dvThueTen(hkd)}</span>${khoa?' '+pill('Đã khoá','ok'):''}</div>
+    ${step}${banner}${body}</section>`;
+}
+function formDCT(ma,lech){
+  modal(`<h2>Điều chỉnh tồn sổ thuế — ${esc(S.f.kt_ky_cur||'')}</h2><div class="form" id="f">
+    <label>Mã hàng<input name="ma" value="${esc(ma)}"></label><label>Số lượng (+ tăng / − giảm tồn dự kiến)<input name="sl" inputmode="decimal" value="${lech||''}"></label>
+    <label class="full">Lý do<select name="ly_do">${LY_DO_DCT.map(x=>`<option>${x}</option>`).join('')}</select></label>
+    <label class="full">Ghi chú<input name="ghi_chu" placeholder="vd: biên bản kiểm kê ngày…, số HĐ…"></label></div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuDCT()">Lưu</button></div>`)}
+async function luuDCT(){const o=formData($('#f'));o.hkd=S.f.kt_dv||'CTY';o.ky=S.f.kt_ky_cur;o.sl=Number(String(o.sl).trim().replace(',','.'));
+  if(!o.ma||!o.sl)return alert('Cần mã hàng và số lượng khác 0');await save('kt_thue_luu_dc',{p_dong:o},'Đã ghi điều chỉnh');render()}
+async function xoaDCT(id){if(!confirm('Xoá điều chỉnh này?'))return;await save('kt_thue_luu_dc',{p_dong:{id,xoa:true}},'Đã xoá');render()}
+async function khoaKyThue(hkd,ky,khoa,lech){
+  if(khoa&&!confirm(lech?`Còn ${lech} mã lệch chưa điều chỉnh. Vẫn khoá kỳ ${ky}?`:`Khoá kỳ ${ky}? Sau khi khoá không nạp lại file / sửa điều chỉnh được.`))return;
+  if(!khoa&&!confirm(`Mở khoá kỳ ${ky}?`))return;
+  await save('kt_thue_khoa_ky',{p_hkd:hkd,p_ky:ky,p_khoa:khoa},khoa?'Đã khoá kỳ '+ky:'Đã mở khoá');render()}
 async function pageKhoThue(){
   const el=$('#page'),f=S.f;el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const b=await rpc('kt_bc_thue',{p_tu:'2025-01-01',p_den:homNay()});
   const hkd=f.kt_dv||'CTY',kyL=b.xnt.filter(x=>x.hkd===hkd).map(x=>x.ky).sort().reverse(),ky=kyL.includes(f.kt_ky)?f.kt_ky:kyL[0];
   const qTu=ky?ky.slice(0,4)+'-'+String((+ky.slice(-1)-1)*3+1).padStart(2,'0')+'-01':null,qDen=ky?ymd(new Date(+ky.slice(0,4),(+ky.slice(-1))*3,0)):null;
-  const [ton,ps]=ky?await Promise.all([rpc('kt_thue_xnt_ct',{p_hkd:hkd,p_ky:ky,p_tim:f.kt_q||null}),rpc('kt_thue_ps',{p_hkd:hkd,p_tu:qTu,p_den:qDen,p_tim:f.kt_q||null})]):[[],[]];
+  const [ton,ps,dcx]=ky?await Promise.all([rpc('kt_thue_xnt_ct',{p_hkd:hkd,p_ky:ky,p_tim:f.kt_q||null}),rpc('kt_thue_ps',{p_hkd:hkd,p_tu:qTu,p_den:qDen,p_tim:f.kt_q||null}),/^\d{4}-Q[1-4]$/.test(ky)?rpc('kt_thue_doi_chieu',{p_hkd:hkd,p_ky:ky}):null]):[[],[],null];
   const tg=b.xnt.find(x=>x.hkd===hkd&&x.ky===ky)||{};f.kt_ky_cur=ky;S.cache.kt_ton=ton;
   const ttT=x=>+x.cuoi_sl<0?['Âm sổ','bad']:+x.cuoi_sl===0?['Hết hàng','bad']:+x.cuoi_sl<=2?['Sắp hết','warn']:['Bình thường','ok'];
   const tab=f.kt_tab||'tat_ca',lT={tat_ca:x=>true,con:x=>+x.cuoi_sl>2,sap_het:x=>+x.cuoi_sl>0&&+x.cuoi_sl<=2,het:x=>+x.cuoi_sl===0,am:x=>+x.cuoi_sl<0};
@@ -2794,8 +2905,8 @@ async function pageKhoThue(){
       ${buoc(3,'ok','Theo dõi tồn dự kiến','<div class="muted">Tồn dự kiến = Tồn đầu kỳ + Nhập − Xuất ± Điều chỉnh hợp lệ.</div>')}<span class="kt-mt">→</span>
       ${buoc(4,'warn','Đối chiếu & Chốt kỳ','<div class="muted">Nhận file tồn cuối kỳ mới từ 3TShop, so với tồn dự kiến, xử lý chênh lệch, khoá kỳ.</div>')}</div>
     <section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--info)">1</span><b>Tồn sổ thuế</b><span class="muted">Xem tồn theo mã hàng, nhóm hàng</span>
-        <span style="margin-left:auto;display:flex;gap:8px"><select class="m-in" onchange="S.f.kt_dv=this.value;S.f.kt_ky=null;S.f.kt_tr=1;render()">${DV_THUE.map(([h,t])=>`<option value="${h}" ${h===hkd?'selected':''}>${t}</option>`).join('')}</select>
-        <select class="m-in" onchange="S.f.kt_ky=this.value;S.f.kt_tr=1;render()">${kyL.map(x=>`<option ${x===ky?'selected':''}>${x}</option>`).join('')||'<option>—</option>'}</select></span></div>
+        <span style="margin-left:auto;display:flex;gap:8px"><select class="m-in" onchange="S.f.kt_dv=this.value;S.f.kt_ky=null;S.f.kt_b=null;S.f.kt_tr=1;render()">${DV_THUE.map(([h,t])=>`<option value="${h}" ${h===hkd?'selected':''}>${t}</option>`).join('')}</select>
+        <select class="m-in" onchange="S.f.kt_ky=this.value;S.f.kt_tr=1;S.f.kt_b=null;render()">${kyL.map(x=>`<option ${x===ky?'selected':''}>${x}</option>`).join('')||'<option>—</option>'}</select></span></div>
       ${!ky?`<div class="m-empty">${hkd==='CTY'?'Chưa có tồn kho sổ thuế của Công ty THT (Shidai) — file 3TShop Shidai có nhiều tab tồn kho, đang hỏi kế toán dùng tab nào (mục Cần giải đáp).':'Chưa có dữ liệu'}</div>`:`
       <div style="display:flex;gap:10px;align-items:stretch"><div class="m-kpis" style="grid-template-columns:repeat(4,minmax(0,1fr));flex:1;margin:0">${k4('info','ma','Tổng mã hàng',fmt(tg.so_ma))}${k4('ok','ton','Tổng số lượng tồn cuối',fmt(tg.cuoi_sl))}${k4('warn','vao','Tổng giá trị tồn cuối',fmt(tg.cuoi_tien))}${k4('bad','canh','Mã âm sổ',fmt(ton.filter(x=>+x.cuoi_sl<0).length)+' mã hàng',"S.f.kt_tab='am';S.f.kt_tr=1;render()")}</div>
         <input class="m-in" type="search" style="min-width:240px" placeholder="Tìm mã hàng, tên hàng..." value="${esc(f.kt_q||'')}" onchange="S.f.kt_q=this.value;S.f.kt_tr=1;render()"></div>
@@ -2805,17 +2916,13 @@ async function pageKhoThue(){
         ${trang.map((x,i)=>`<tr class="xn" onclick="xemNhanh('thue_ma','${esc(x.ma)}','${hkd}','')"><td>${a+i+1}</td><td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten||'')}</td><td>${esc(x.chung_loai||'')}</td><td>${esc(x.dvt||'')}</td><td class="num">${fmt(x.dau_sl)}</td><td class="num">${fmt(x.nhap_sl)}</td><td class="num">${fmt(x.xuat_sl)}</td><td class="num"><b>${fmt(x.cuoi_sl)}</b></td>
           <td class="num">${fmt(x.gia_nhap||(+x.cuoi_sl?Math.round(x.cuoi_tien/x.cuoi_sl):0))}</td><td class="num">${fmt(x.cuoi_tien)}</td><td class="c">${pill(...ttT(x))}</td></tr>`).join('')||'<tr><td colspan="12" class="m-empty">Không có mã hàng</td></tr>'}</table></div>
       ${thanhTrang('kt',l.length,moi,tr,'mã hàng'+(ton.length===5000?' (5000 mã giá trị lớn nhất)':''))}`}</section>
-    <div class="tq2-r2"><section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--info)">2</span><b>Phát sinh trong kỳ</b><span class="muted">Nhập – xuất theo hoá đơn ${ky||''}</span></div>
+    <div><section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--info)">2</span><b>Phát sinh trong kỳ</b><span class="muted">Nhập – xuất theo hoá đơn ${ky||''}</span></div>
         <div class="m-seg" style="margin-bottom:10px;width:max-content">${[['tat_ca','Tất cả'],['nhap','Nhập'],['xuat','Xuất']].map(([kk,t])=>`<button class="${tabP===kk?'on':''}" onclick="S.f.kt_ps='${kk}';S.f.kp_tr=1;render()">${t} (${ps.filter(x=>kk==='tat_ca'||(kk==='nhap'?x.loai==='Nhập':x.loai==='Xuất')).length})</button>`).join('')}</div>
         <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th class="c">Loại</th><th>Số chứng từ</th><th>Mã hàng</th><th>Tên hàng</th><th class="num">SL (+/-)</th><th class="num">Đơn giá</th><th class="num">Giá trị</th><th class="c">Trạng thái</th></tr>
           ${trangP.map(x=>`<tr class="xn" onclick="xemNhanh('thue_hd','${esc(x.so_hd||'')}','${hkd}','${x.ngay}')"><td class="nw">${fmtD(x.ngay)}</td><td class="c">${pill(x.loai,x.loai==='Xuất'?'bad':'ok')}</td><td class="nw m-link">${esc(soHD(x.so_hd))}</td><td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten||'')}</td>
             <td class="num ${x.sl<0?'neg-t':'pos-t'}">${x.sl>0?'+':''}${fmt(x.sl)}</td><td class="num">${fmt(x.don_gia)}</td><td class="num">${fmt(x.thanh_tien)}</td><td class="c">${pill(x.loai==='Xuất'?'Đã phát hành':'Có HĐ','ok')}</td></tr>`).join('')||'<tr><td colspan="9" class="m-empty">Không có phát sinh</td></tr>'}</table></div>
         ${thanhTrang('kp',lp.length,10,tr2,'dòng')}</section>
-      <section class="tq2"><div class="tq2-h"><span class="tq2-n" style="--c:var(--ok)">3</span><b>Đối chiếu & Chốt kỳ</b><span class="muted">Nhập file tồn cuối kỳ từ 3TShop và so sánh</span></div>
-        <div class="kt-step">${['Nhập file 3TShop','So sánh & kiểm tra chênh lệch','Xử lý điều chỉnh','Xác nhận & khoá kỳ'].map((t,i)=>`<div class="${i===0?'on':''}"><span>${i+1}</span>${t}</div>`).join('')}</div>
-        <div class="m-st">Bước 1: Nhập file tồn kho cuối kỳ từ 3TShop · ${dvThueTen(hkd)}</div>
-        <div class="tq2-2"><div>${vungNap()}</div><div id="kt-nap">${S.cache.kt_nap?'':`<div class="m-kv">${[['Tồn đang dùng',ky?esc(ky):'Chưa có'],['Số mã hàng',fmt(tg.so_ma||0)],['Tổng SL tồn',fmt(tg.cuoi_sl||0)],['Tổng giá trị tồn',fmt(tg.cuoi_tien||0)],['Cập nhật lúc',tg.keo_luc?fmtDT(tg.keo_luc):'—']].map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div>`}</div></div>
-        <div class="tq-note">Bước 3 (xử lý điều chỉnh) và 4 (khoá kỳ): đang làm — hiện lưu file là thay tồn kỳ đó.</div></section></div>`;
+      ${kt34(hkd,ky,tg,dcx)}</div>`;
 }
 // HOÁ ĐƠN & THUẾ — hộ: 3TShop · công ty tổng: meInvoice (12/10/2026)
 // HOÁ ĐƠN & THUẾ (09/10/2026): nguồn 3TShop — anh xuất ra Google Sheet (3TShop không có API), scripts/keo-3tshop.js đọc vào app.
@@ -3112,6 +3219,14 @@ const LOGIC=[
   'Mỗi khoản: người nhận, số tiền, hạn hoàn, gắn số phiếu chi đã chi. Hoàn ứng 3 cách: quyết toán bằng chứng từ chi phí / trả lại tiền / trừ vào lương. Không cho hoàn vượt số còn lại.',
   'Tab "Phiếu chi tạm ứng chưa theo dõi": phiếu chi có chữ tạm ứng / ứng lương / ứng trước chưa gắn khoản nào → bấm + Theo dõi để tạo nhanh.',
   'Quá hạn = còn phải hoàn và đã qua hạn hoàn.']],
+ ['Khoá kỳ / chốt tháng (14/10/2026)',[
+  'Tháng đã khoá: người dùng <b>không thêm / sửa / xoá</b> số tiền, ngày, tài khoản, loại, trạng thái của phiếu có ngày tiền trong tháng (Thu: ngày thu · Chi: ngày thanh toán · Điều chuyển · Kiểm két · Trả vay). Chặn ngay trong CSDL nên mọi màn hình đều bị chặn.',
+  'Sửa thông tin không đổi số (ghi chú, chứng từ đính kèm, nhận HĐ đỏ, Kiot 4A/4B) vẫn được.',
+  'Job tự động (kéo Kiot, meInvoice) KHÔNG bị chặn để không hỏng lần kéo. Lúc khoá app chụp tổng thu, tổng chi, số dư cuối tháng từng tài khoản; trang Khoá kỳ báo <b>Đã đổi</b> nếu số hiện tại khác lúc khoá.',
+  'Chỉ khoá được tháng đã kết thúc. Mở khoá: chỉ Supreme / Admin (ghi nhật ký).']],
+ ['Kho sổ thuế — đối chiếu & khoá quý (14/10/2026)',[
+  'Kỳ sổ thuế theo <b>quý</b> (2026-Q3…). Tồn dự kiến = tồn đầu (cuối quý trước; chưa có quý trước thì tồn đầu trong file) + nhập theo HĐ đầu vào − xuất theo HĐ đầu ra + điều chỉnh. Lệch = tồn file 3TShop − dự kiến.',
+  'Điều chỉnh: mã hàng, số lượng (+/−), lý do (kiểm kê, hỏng, HĐ chưa ghi / sai mã, xuất nội bộ, khác). Khoá quý: không nạp lại file, không sửa điều chỉnh; mở khoá chỉ Supreme / Admin.']],
  ['Thu từ Kiot (sổ quỹ)',[
   'App kế toán có <b>luồng kéo Kiot riêng</b> (không dùng chung app MKT/Sale), <b>15 phút 1 lần</b> (từ 14/10/2026, trước đó 3 tiếng). Kéo <b>sổ quỹ</b> Kiot (phiếu thu / chi của 3 chi nhánh) vào bảng riêng của app.',
   'Chỉ chép thành khoản Thu: phiếu <b>đã thanh toán</b>, số tiền dương, <b>không</b> thuộc nhóm "Chuyển rút" (chuyển quỹ nội bộ trong Kiot — nộp tiền quầy về két, chuyển quỹ ngoài...). Phiếu Kiot bị huỷ sau đó → khoản thu tự ẩn.',
