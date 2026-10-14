@@ -39,7 +39,7 @@ begin
   select coalesce(jsonb_agg(jsonb_build_object('bang','chi','id',c.id,'ngay',c.ngay_tt,'so_tien',c.so_tien,'mo_ta',left(c.noi_dung,90),
       'chi_tiet','Đã chi ' || to_char(c.ngay_tt,'DD/MM') || ' — chưa thấy phiếu chi khớp trên Kiot') order by c.ngay_tt), '[]')
     into dong from kt_chi c where kt_chua_kiot(c);
-  r := r || jsonb_build_object('ma','kiot_4a','ten','Phiếu chi chưa tạo trên KiotViet (4A)','ai','ke_toan','huong_dan','Tạo phiếu chi tương ứng trên Kiot — app tự nhận ở lần kéo Kiot sau (3 tiếng). Không cần tạo thì mở phiếu → "Không tạo phiếu Kiot (4B)" + lý do','ds',dong);
+  r := r || jsonb_build_object('ma','kiot_4a','ten','Phiếu chi chưa tạo trên KiotViet (4A)','ai','ke_toan','huong_dan','Tạo phiếu chi tương ứng trên Kiot — app tự nhận ở lần kéo Kiot sau (15 phút). Không cần tạo thì mở phiếu → "Không tạo phiếu Kiot (4B)" + lý do','ds',dong);
   -- 6. Điều chuyển chưa xác nhận
   select coalesce(jsonb_agg(jsonb_build_object('bang','dieu_chuyen','id',d.id,'ngay',d.ngay,'so_tien',d.so_tien,'mo_ta',left(d.noi_dung,90),
       'chi_tiet',coalesce((select ten from kt_tai_khoan where id=d.tk_di_id),'?')||' → '||coalesce((select ten from kt_tai_khoan where id=d.tk_nhan_id),'?')) order by d.ngay), '[]')

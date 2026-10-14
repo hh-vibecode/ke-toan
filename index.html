@@ -735,7 +735,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 11:03';
+const APP_VERSION='14/10/2026 13:54';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1761,7 +1761,7 @@ function xemChi(id){
     [x.ngay_tt&&x.trang_thai==='da_tt'?x.ngay_tt:null,'Thanh toán · '+(t.ten||''),''],[x.sua_luc,'Sửa gần nhất',x.sua_boi]].filter(r=>r[0]);
   const lienKet=`<div class="m-st">Trạng thái liên kết</div><div class="m-kv">
       <div>Hoá đơn đỏ</div><div>${!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok')+(x.ngay_nhan_hd?' '+fmtD(x.ngay_nhan_hd):''):pill('Chưa nhận','bad')+' <span class="muted">Yêu cầu nhận hoá đơn từ NCC</span>'}</div>
-      <div>KiotViet</div><div>${chuaKiot(x)?pill('Chưa cập nhật','warn')+' <span class="muted">Tạo phiếu chi tương ứng trên Kiot — app tự nhận ở lần kéo sau (3 tiếng / lần)</span>':x.kiot==='da_tao'?pill(x.nguon==='kiot'?'Đề xuất từ Kiot':'Đã cập nhật (4A)','ok'):x.kiot==='khong_tao'?pill('Không tạo phiếu Kiot (4B)','')+(x.kiot_ly_do?' '+esc(x.kiot_ly_do):''):pill('Không áp dụng','')}${x.kiot_ma?' · '+esc(x.kiot_ma):''}</div></div>`;
+      <div>KiotViet</div><div>${chuaKiot(x)?pill('Chưa cập nhật','warn')+' <span class="muted">Tạo phiếu chi tương ứng trên Kiot — app tự nhận ở lần kéo sau (15 phút / lần)</span>':x.kiot==='da_tao'?pill(x.nguon==='kiot'?'Đề xuất từ Kiot':'Đã cập nhật (4A)','ok'):x.kiot==='khong_tao'?pill('Không tạo phiếu Kiot (4B)','')+(x.kiot_ly_do?' '+esc(x.kiot_ly_do):''):pill('Không áp dụng','')}${x.kiot_ma?' · '+esc(x.kiot_ma):''}</div></div>`;
   let body='';
   if(tab==='chung')body=`${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
     <div class="m-st">Luồng duyệt</div>${luongDoc(x)}
@@ -1927,7 +1927,7 @@ function veCot(id,data,mau){const box=$('#'+id);if(!box)return;const W=Math.max(
 const kpiBox=(c,ic,l,v,s)=>`<div class="kpi" style="--c:var(--${c})"><div class="ic">${IC[ic]}</div><div><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div></div>`;
 const hb=(rows,nhan,giaTri,ghi)=>{const mx=Math.max(1,...rows.map(giaTri));return rows.length?rows.map(r=>`<div class="hbar" data-tip="${esc(nhan(r))}|${fmt(giaTri(r))}${ghi?'|'+ghi(r):''}"><div class="lb" title="${esc(nhan(r))}">${esc(nhan(r))}</div>
   <div class="tr"><div class="bar-fill" style="width:${Math.max(1,giaTri(r)/mx*78)}%"></div><div class="v">${fmtN(giaTri(r))}${ghi?' <span>'+esc(ghi(r))+'</span>':''}</div></div></div>`).join(''):'<div class="empty">Chưa có</div>'};
-const nguonKiot=b=>`<span class="badge">Nguồn: Kiot · tự kéo 3 tiếng/lần</span>`;
+const nguonKiot=b=>`<span class="badge">Nguồn: Kiot · tự kéo 15 phút/lần</span>`;
 
 // BÁO CÁO BÁN HÀNG
 async function pageBanHang(){
@@ -2549,7 +2549,7 @@ const LOGIC=[
   'Điều chuyển chưa xác nhận VẪN tính vào tồn (tiền đã thực chuyển); phần xác nhận chỉ để kế toán đánh dấu đã kiểm.',
   'Cũng có lựa chọn 4A / 4B như phiếu chi.']],
  ['Thu từ Kiot (sổ quỹ)',[
-  'App kế toán có <b>luồng kéo Kiot riêng</b> (không dùng chung app MKT/Sale), <b>3 tiếng 1 lần</b>. Kéo <b>sổ quỹ</b> Kiot (phiếu thu / chi của 3 chi nhánh) vào bảng riêng của app.',
+  'App kế toán có <b>luồng kéo Kiot riêng</b> (không dùng chung app MKT/Sale), <b>15 phút 1 lần</b> (từ 14/10/2026, trước đó 3 tiếng). Kéo <b>sổ quỹ</b> Kiot (phiếu thu / chi của 3 chi nhánh) vào bảng riêng của app.',
   'Chỉ chép thành khoản Thu: phiếu <b>đã thanh toán</b>, số tiền dương, <b>không</b> thuộc nhóm "Chuyển rút" (chuyển quỹ nội bộ trong Kiot — nộp tiền quầy về két, chuyển quỹ ngoài...). Phiếu Kiot bị huỷ sau đó → khoản thu tự ẩn.',
   'Loại thu theo mã phiếu Kiot: <b>TTHD</b> (thu tiền hoá đơn) = Thu bán hàng · <b>TTDH</b> (thu tiền đơn đặt hàng) và nhóm "Thu tiền đặt cọc" = Thu đặt cọc · <b>TT</b> (khách trả nợ) = Thu công nợ · còn lại (TNH...) = Thu khác.',
   'Tài khoản nhận ghép theo tài khoản Kiot (Danh mục → Tài khoản, cột "Bên Kiot"). Phiếu hình thức <b>Tiền mặt</b> luôn tính vào <b>Két tiền mặt</b>, kể cả khi Kiot gắn nhầm tài khoản ngân hàng (đối chiếu T9: 13 phiếu như vậy).',
@@ -2561,9 +2561,9 @@ const LOGIC=[
   'Thu <b>không qua Kiot</b> (nộp vốn, vay, hoàn BHXH...) nhập tay ở trang Thu. Tháng 9 các khoản này lấy từ sheet cũ; dòng sheet nào trùng phiếu Kiot (cùng số tiền, lệch ≤ 3 ngày) thì bỏ để không cộng 2 lần.',
   'Phiếu <b>chi</b> trên Kiot KHÔNG chép sang Chi (khoản chi đi qua đề nghị trên app) — giữ để đối chiếu nhánh 4A.']],
  ['Báo cáo kinh doanh từ Kiot (luồng mới 08/10/2026)',[
-  'App tự kéo từ Kiot <b>3 tiếng 1 lần</b>, chỉ phần Kiot sửa từ lần trước: khách hàng, nhà cung cấp, hàng hoá + tồn kho từng cửa hàng, hoá đơn bán + chi tiết, trả hàng, nhập hàng (chứng từ từ 01/09/2026).',
+  'App tự kéo từ Kiot <b>15 phút 1 lần</b>, chỉ phần Kiot sửa từ lần trước: khách hàng, nhà cung cấp, hàng hoá + tồn kho từng cửa hàng, hoá đơn bán + chi tiết, trả hàng, nhập hàng (chứng từ từ 01/09/2026).',
   '<b>Doanh thu bán hàng</b> = hoá đơn Kiot trạng thái <b>Hoàn thành</b>, theo ngày bán. Trả hàng trừ riêng.',
-  '<b>Giá vốn hàng bán</b> = số lượng × <b>giá vốn bình quân</b> của mặt hàng tại cửa hàng bán, <b>lấy lúc kéo về</b> (Kiot không trả giá vốn tại lúc bán). Kéo 3 tiếng/lần nên sát giá vốn lúc bán; hoá đơn tháng 9 kéo bù ngày 08/10 dùng giá vốn ngày 08/10 (gần đúng).',
+  '<b>Giá vốn hàng bán</b> = số lượng × <b>giá vốn bình quân</b> của mặt hàng tại cửa hàng bán, <b>lấy lúc kéo về</b> (Kiot không trả giá vốn tại lúc bán). Kéo 15 phút/lần nên sát giá vốn lúc bán; hoá đơn tháng 9 kéo bù ngày 08/10 dùng giá vốn ngày 08/10 (gần đúng).',
   '<b>Tồn kho</b> = số Kiot <b>hiện tại</b> (không phải tồn tại ngày cuối kỳ đang chọn). Giá trị tồn = tồn &gt; 0 × giá vốn bình quân, <b>chỉ cộng đơn vị gốc</b> của mỗi mặt hàng (Kiot tách đơn vị phụ như thùng / tập / bịch thành dòng riêng cùng một lượng hàng — trước 14/10/2026 app cộng cả dòng này nên giá trị tồn cao hơn Kiot; tồn chụp hằng ngày 09–13/10 vẫn còn số cũ).',
   '<b>Doanh thu theo nhóm hàng / mặt hàng</b> = tiền từng dòng hàng, <b>chưa trừ giảm giá trên tổng hoá đơn</b> và trả hàng → cộng lại sẽ lớn hơn doanh thu (Kiot cũng tính như vậy ở báo cáo hàng hoá).',
   '<b>Công nợ khách / NCC</b> trong báo cáo Khách hàng / NCC = số Kiot đang ghi. Khách: dương = khách còn nợ, âm = khách trả trước. NCC: giữ nguyên dấu Kiot (chờ kế toán xác nhận ý nghĩa dấu).',
@@ -2572,7 +2572,7 @@ const LOGIC=[
   'Trang <b>Cài đặt → Nhật ký kéo &amp; so khớp Kiot</b>: lịch chạy tự động, lịch sử từng lần kéo (OK / lỗi, kéo được gì), bảng so khớp doanh thu từng tháng và so khớp tồn kho.',
   '<b>So doanh thu tháng</b>: kéo LẠI toàn bộ hoá đơn + trả hàng của tháng từ Kiot, so <b>từng mã</b> với dữ liệu app (thiếu / thừa / lệch trạng thái, tiền) và tổng theo chi nhánh. Phần app thiếu / lệch được <b>tự ghi bù ngay</b>; phần app thừa chỉ báo, không xoá. Tự chạy 23:50 mỗi ngày cho tháng này + tháng trước; bấm tay được từng tháng hoặc cả năm.',
   'Cách tính giống Kiot: <b>Doanh thu</b> = tiền hàng − giảm giá hoá đơn (hoá đơn Hoàn thành) · <b>Trả hàng</b> = giá trị phiếu trả (trạng thái Đã trả) theo ngày trả · <b>Doanh thu thuần</b> = doanh thu − trả hàng.',
-  '<b>So tồn kho</b>: mỗi lần kéo đầy đủ hàng hoá (23:20 hoặc bấm "So tồn ngay"), app so tồn đang có với Kiot <b>trước khi</b> ghi đè. Lần kéo 3 tiếng lấy lại tồn của các mặt hàng vừa bán / trả / nhập; chuyển kho, kiểm kho chỉ cập nhật ở lần kéo đầy đủ ban đêm.',
+  '<b>So tồn kho</b>: mỗi lần kéo đầy đủ hàng hoá (23:20 hoặc bấm "So tồn ngay"), app so tồn đang có với Kiot <b>trước khi</b> ghi đè. Mỗi lần kéo (15 phút) lấy lại tồn của các mặt hàng vừa bán / trả / nhập; chuyển kho, kiểm kho chỉ cập nhật ở lần kéo đầy đủ ban đêm.',
   '<b>Giá vốn</b> app = giá vốn bình quân lúc kéo về (Kiot không trả giá vốn tại lúc bán) → lợi nhuận gộp có thể lệch báo cáo lợi nhuận của Kiot; doanh thu và tồn kho thì phải khớp.',
   '<b>Cảnh báo vào chuông</b> (người có quyền Nhật ký): lần kéo Kiot lỗi · quá 4 tiếng không kéo được · lịch so khớp 23:50 không chạy · tháng còn lệch app tự bù không được · tồn kho lần so gần nhất lệch &gt; 1% giá trị. Kiểm cuối mỗi lần kéo và mỗi giờ (phút 5); cùng một vấn đề chỉ báo lại sau 12 tiếng nếu vẫn còn.',
   'Dải trạng thái trên Tổng quan và các trang Kinh doanh / Công nợ: giờ cập nhật số Kiot gần nhất + kết quả soát 2 tháng gần nhất + lần so tồn; xanh = khớp, vàng = quá 4 tiếng chưa kéo, đỏ = lỗi hoặc còn lệch.']],
@@ -2595,7 +2595,7 @@ const LOGIC=[
   'Kho file <b>riêng tư</b>: chỉ người đăng nhập và có quyền xem trang đó mới mở được; mỗi lần xem app cấp link sống 5 phút. Xoá = ẩn khỏi phiếu, file vẫn còn, có nhật ký.',
   'Link Google Drive cũ (chuyển từ sheet) vẫn giữ và bấm mở được ở mục "Hồ sơ".']],
  ['Công nợ khách',[
-  '<b>Dùng số công nợ trên Kiot</b> (anh chốt 08/10/2026: "kiot là đủ"): dương = khách còn nợ, âm = khách trả trước. Là số <b>hiện tại</b>, tự cập nhật 3 tiếng 1 lần. Xem ở Tổng quan và Báo cáo → Khách hàng.',
+  '<b>Dùng số công nợ trên Kiot</b> (anh chốt 08/10/2026: "kiot là đủ"): dương = khách còn nợ, âm = khách trả trước. Là số <b>hiện tại</b>, tự cập nhật 15 phút 1 lần. Xem ở Tổng quan và Báo cáo → Khách hàng.',
   'Trang công nợ nhập tay (chuyển từ sheet cũ, phân loại COD / nợ / nợ NPP...) đã ẩn khỏi menu, dữ liệu cũ giữ nguyên để tra lại; không nhập mới.']],
  ['Quyền và nhật ký',[
   'Đăng nhập bằng <b>tài khoản + mật khẩu</b> riêng của app kế toán (không dùng chung tài khoản app MKT/Sale). Mật khẩu lưu dạng băm, không ai đọc lại được. Sai 5 lần liền → khoá 15 phút.',
@@ -2604,7 +2604,7 @@ const LOGIC=[
   'Chi — quyền (anh chốt 08/10/2026): <b>"Kế toán kiểm lượt 1 & thanh toán"</b> (Admin luôn có) · <b>"Giám đốc xác nhận lượt 2"</b> — KHÔNG đi theo Toàn quyền, phải tick riêng ở tài khoản (hiện: giám đốc; tài khoản anh Hải luôn có) · "Chỉ tạo đề nghị" (thấy phiếu mình — hiện không dùng, nhân viên đề xuất trên Kiot). Kiểm ở máy chủ, không chỉ ẩn nút.',
   'Mọi thêm / sửa / xoá đều ghi nhật ký: ai, lúc nào, nội dung. Xoá = ẩn khỏi báo cáo, không mất dữ liệu.']],
  ['Duyệt chi 2 lượt + đề xuất chi từ Kiot',[
-  'Anh chốt 08/10/2026: <b>nhân viên đề xuất chi trên Kiot</b> → app tự kéo về (3 tiếng / lần) thành phiếu <b>Chờ kế toán kiểm</b> → kế toán kiểm, <b>xác nhận lượt 1</b> → <b>Chờ giám đốc xác nhận</b> → giám đốc <b>xác nhận lại</b> → <b>Chờ thanh toán</b> → kế toán chi, ghi Đã thanh toán.',
+  'Anh chốt 08/10/2026: <b>nhân viên đề xuất chi trên Kiot</b> → app tự kéo về (15 phút / lần) thành phiếu <b>Chờ kế toán kiểm</b> → kế toán kiểm, <b>xác nhận lượt 1</b> → <b>Chờ giám đốc xác nhận</b> → giám đốc <b>xác nhận lại</b> → <b>Chờ thanh toán</b> → kế toán chi, ghi Đã thanh toán.',
   'Người đã kiểm lượt 1 không tự xác nhận lượt 2. Giám đốc có thể Từ chối hoặc Trả lại kế toán. Phiếu đã được giám đốc xác nhận: chỉ giám đốc đổi được số tiền.',
   'Phiếu từ Kiot: lấy phiếu CHI trên sổ quỹ Kiot từ 08/10/2026, bỏ chuyển quỹ nội bộ (nhóm "Chuyển rút", mã TTD_ / CTD_, nội dung có số tài khoản công ty). Người đề nghị = người tạo trên Kiot, cơ sở = chi nhánh Kiot, tài khoản gợi ý: tiền mặt → két, chuyển khoản → tài khoản Kiot đã ghép. Kiot không có trạng thái "chờ duyệt" (phiếu Kiot luôn ghi Đã thanh toán) — app là nơi duyệt.',
   'Chống tính 2 lần: phiếu app đã đánh dấu "Đã tạo phiếu Kiot (4A)" cùng số tiền, lệch ≤ 5 ngày → GHÉP, không tạo phiếu mới. Cùng số tiền ±5 ngày với phiếu app khác → vẫn tạo nhưng gắn nhãn đỏ <b>"Nghi trùng #…"</b> để kế toán Từ chối nếu là cùng 1 khoản.',
@@ -2698,7 +2698,7 @@ const KIOT_P=['tong_quan','ban_hang','khach_hang','ncc','hang_hoa','no_kh','no_n
 async function kiotFn(b){const r=await fetch(FN_KIOT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phien:S.phien,...b})});
   const j=await r.json().catch(()=>({}));if(!r.ok||j.loi)throw new Error(j.loi||'Lỗi '+r.status);return j}
 // [tên, lịch giờ VN, việc làm]
-const LICH_KT={'kt-kiot':['Kéo Kiot','3 tiếng/lần · 1:47, 4:47 … 22:47','Sổ quỹ 10 ngày → phiếu thu · khách, NCC, hàng hoá, hoá đơn, trả hàng, nhập hàng (phần Kiot sửa) · tồn các mặt hàng vừa bán / trả / nhập'],
+const LICH_KT={'kt-kiot':['Kéo Kiot','15 phút/lần · phút 02, 17, 32, 47 mỗi giờ','Sổ quỹ 10 ngày → phiếu thu · khách, NCC, hàng hoá, hoá đơn, trả hàng, nhập hàng (phần Kiot sửa) · tồn các mặt hàng vừa bán / trả / nhập'],
   'kt-kiot-hang-dem':['Kéo đầy đủ hàng hoá + so tồn','23:20 hằng ngày','Toàn bộ mặt hàng + tồn từng cơ sở (bắt cả chuyển kho, kiểm kho) · so tồn app với Kiot trước khi ghi đè'],
   'kt-ton-kho':['Chụp tồn cuối ngày','23:40 hằng ngày','Lưu giá trị tồn từng cơ sở; ngày cuối tháng lưu từng mã'],
   'kt-kiot-doi-chieu':['So khớp doanh thu','23:50 hằng ngày','Kéo lại hoá đơn + trả hàng tháng này và tháng trước, so từng mã, tự bù phần thiếu'],

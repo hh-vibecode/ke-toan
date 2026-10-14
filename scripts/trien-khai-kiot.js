@@ -1,4 +1,4 @@
-// Triển khai luồng kéo Kiot RIÊNG: secrets KT_* + Edge Function kt-kiot + lịch pg_cron 'kt-kiot' (phút 47, 3 tiếng / lần).
+// Triển khai luồng kéo Kiot RIÊNG: secrets KT_* + Edge Function kt-kiot + lịch pg_cron 'kt-kiot' (15 phút / lần: phút 2, 17, 32, 47 — anh chốt 14/10/2026; trước đó 3 tiếng).
 // Khoá đọc từ kt-keys.local.txt, KHÔNG in ra. KT_CRON_KEY sinh ngẫu nhiên, ghi thêm vào kt-keys.local.txt. Monsieur Claude
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const { docKhoa } = require('./khoa'); const { sql } = require('./sql');
@@ -21,9 +21,9 @@ const H = { Authorization: 'Bearer ' + K.SUPABASE_ACCESS_TOKEN };
   console.log('deploy kt-kiot:', d.status, (await d.text()).slice(0, 300));
   // 3. quyền: job chạy bằng service_role
   await sql(`grant execute on function public.kt_dong_bo_kiot(date) to service_role`);
-  // 4. lịch pg_cron — phút 47 mỗi 3 tiếng (UTC */3 → giờ VN 1:47, 4:47, 7:47, 10:47, 13:47, 16:47, 19:47, 22:47)
+  // 4. lịch pg_cron — 15 phút / lần, lệch giờ với sync-kiot-15p của app MKT (phút 5, 20, 35, 50)
   await sql(`select cron.unschedule('kt-kiot') where exists (select 1 from cron.job where jobname = 'kt-kiot')`);
-  await sql(`select cron.schedule('kt-kiot', '47 */3 * * *', $c$select net.http_post(url := 'https://${REF}.supabase.co/functions/v1/kt-kiot',
+  await sql(`select cron.schedule('kt-kiot', '2,17,32,47 * * * *', $c$select net.http_post(url := 'https://${REF}.supabase.co/functions/v1/kt-kiot',
     headers := jsonb_build_object('Content-Type', 'application/json', 'x-kt-cron', '${cron}'), body := '{}'::jsonb, timeout_milliseconds := 150000)$c$)`);
   console.log('lịch:', JSON.stringify(await sql(`select jobname, schedule, active from cron.job where jobname = 'kt-kiot'`)));
 })().catch(e => { console.error('DỪNG:', e.message); process.exit(1); });
