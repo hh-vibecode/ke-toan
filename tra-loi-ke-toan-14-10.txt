@@ -26,7 +26,6 @@ THU CHI & NGÂN QUỸ
 - Phiếu chưa đủ chắc sẽ hiện nhãn "Có HĐ gợi ý". Kế toán mở phiếu, vào tab KiotViet & Hoá đơn, bấm "Đúng HĐ này" để xác nhận. Nếu ghép nhầm thì bấm "Bỏ ghép".
 - Phiếu không tìm thấy hoá đơn nào vẫn nằm ở tab "Chưa nhận HĐ" để kế toán theo dõi và đòi hoá đơn từ nhà cung cấp.
 - Lưu ý: tên người nhận tiền trên phiếu chi thường là nhân viên ứng tiền. Kế toán ghi tên nhà cung cấp vào nội dung phiếu chi thì Hệ thống ghép tự động được nhiều hơn.
-- Hoá đơn mua vào của 2 hộ kinh doanh (Chánh Tâm, Hiền Thủy) vẫn lấy từ file 3TShop như trước.
 
 4. Link hồ sơ có cần thiết không, vì đã cho đính kèm file rồi?
 - Không cần. Hệ thống đã bỏ ô link hồ sơ khi lập phiếu.
