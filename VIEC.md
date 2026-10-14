@@ -92,6 +92,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 15 | **Chi tự động ngân hàng / thẻ Visa + khớp sao kê** (kế toán 14/10). Anh chốt hướng: vài ngày tải sao kê 1 lần → app tự gắn từng dòng sao kê với phiếu thu / chi đã khai;
 dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ mỗi ngân hàng 1 file sao kê mẫu. Bản nháp phần chi tự động / tách phiếu trả thẻ theo loại chi thật: `nhap/nhap-chi-tu-dong.sql` (CHƯA chạy) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
+| 16 | **HĐ mua vào 2 hộ (Chánh Tâm, Hiền Thủy)** — anh 14/10: thông tin "lấy từ file 3TShop như trước" đang SAI, xử lý sau. Đã bỏ dòng đó khỏi `tra-loi-ke-toan-14-10.txt`; chưa sửa chữ trên app (trang HĐ đầu vào, Logic) | chờ anh nói nguồn đúng |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 
