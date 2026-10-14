@@ -68,6 +68,15 @@ async function ghi(bang: string, rows0: any[]) {
     if (!r.ok) throw new Error(`Ghi ${bang} lỗi ${r.status} ${(await r.text()).slice(0, 200)}`);
   }
 }
+// 14/10/2026: danh mục nhóm hàng (cha / con) + kênh bán — vài chục dòng, kéo đầy đủ
+async function danhMuc() {
+  const nhom = await kiotHet('categories', { hierachicalData: 'false' });
+  await ghi('kt_kiot_nhom', nhom.map((c: any) => ({ id: c.categoryId, ten: c.categoryName, cha_id: c.parentId ?? null, sua_kiot: vn(c.modifiedDate ?? c.createdDate), keo_luc: new Date().toISOString() })));
+  const r = await fetch('https://public.kiotapi.com/salechannel', { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
+  const kenh = r.ok ? ((await r.json()).data || []) : [];
+  if (kenh.length) await ghi('kt_kiot_kenh', kenh.map((k: any) => ({ id: k.id, ten: k.name, keo_luc: new Date().toISOString() })));
+  return { nhom: nhom.length, kenh: kenh.length };
+}
 async function mocSua(bang: string) {   // mốc Kiot sửa mới nhất đã có trong bảng (giờ VN, dạng Kiot nhận)
   const r = await fetch(`${SB}/rest/v1/${bang}?select=sua_kiot&sua_kiot=not.is.null&order=sua_kiot.desc&limit=1`, { headers: sbH });
   const j = await r.json(); if (!j.length) return null;
@@ -95,9 +104,17 @@ const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, s
     doi: x => ({ id: x.id, ma: x.code, ngay: vn(x.purchaseDate), chi_nhanh: x.branchName ?? null, nv_ban: x.soldByName ?? null,
       khach_id: x.customerId ?? null, khach_ma: x.customerCode ?? null, khach_ten: x.customerName ?? null, ma_dat_hang: x.orderCode ?? null,
       tong: n0(x.total), da_tra: n0(x.totalPayment), trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null,
+      // 14/10/2026 (kế toán): kênh bán · ghi chú đơn (sales ghi đơn vị vận chuyển / thu COD) · ô COD · đơn đặt hàng gốc
+      kenh_id: x.saleChannelId ?? null, ghi_chu: x.description ?? null, cod: x.usingCod ?? null, dat_hang_id: x.orderId ?? null,
       chi_tiet: (x.invoiceDetails || []).map((d: any) => ({ sp: d.productId, ma: d.productCode, ten: d.productName, nhom: d.categoryName ?? null,
         sl: d.quantity, gia: n0(d.price), giam: n0(d.discount), tien: n0(d.subTotal), sl_tra: d.returnQuantity ?? 0 })),
       gia_von: null, sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
+  // 14/10/2026: ĐƠN ĐẶT HÀNG — "doanh thu đã đánh đơn" + "khách đã cọc chưa đi hàng" (Tổng quan)
+  dat_hang: { bang: 'kt_kiot_dat_hang', duong: 'orders', tham: {}, dayDu: (tu, den) => ({ fromPurchaseDate: tu, toPurchaseDate: den }), moc: (x, tu) => String(x.purchaseDate) >= tu,
+    doi: x => ({ id: x.id, ma: x.code, ngay: vn(x.purchaseDate), chi_nhanh: x.branchName ?? null, nv_ban: x.soldByName ?? null,
+      khach_id: x.customerId ?? null, khach_ma: x.customerCode ?? null, khach_ten: x.customerName ?? null, tong: n0(x.total), da_tra: n0(x.totalPayment),
+      trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null, kenh_id: x.SaleChannelId ?? x.saleChannelId ?? null, ghi_chu: x.description ?? null,
+      cod: x.usingCod ?? null, so_mh: (x.orderDetails || []).length, sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
   tra_hang: { bang: 'kt_kiot_tra_hang', duong: 'returns', tham: {}, dayDu: (tu, den) => ({ fromReturnDate: tu, toReturnDate: den }), moc: (x, tu) => String(x.returnDate) >= tu,
     doi: x => ({ id: x.id, ma: x.code, hoa_don_id: x.invoiceId ?? null, ngay: vn(x.returnDate), chi_nhanh: x.branchName ?? null,
       tong_tra: n0(x.returnTotal), phi_tra: n0(x.returnFee), da_tra: n0(x.totalPayment), trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null,
@@ -237,6 +254,7 @@ Deno.serve(async req => {
     const khoang = body.tu ? { tu: String(body.tu), den: String(body.den || MAI()), thu_tu: String(body.thu_tu || body.tu) } : undefined;
     const TU = khoang ? khoang.tu : MOC, DEN = khoang ? khoang.den : MAI();
     if (chay.includes('so_quy')) kq.so_quy = await soQuy(khoang);
+    if (dayDu.includes('hang') || chay.includes('danh_muc')) kq.danh_muc = await danhMuc();
     const phatSinh = new Set<number>();
     for (const k of chay.filter(k => LOAI[k])) {
       const L = LOAI[k]; const moc = dayDu.includes(k) ? null : await mocSua(L.bang);

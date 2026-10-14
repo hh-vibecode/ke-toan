@@ -560,6 +560,16 @@ table.m-t input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)
 /* điện thoại / màn hẹp (14/10/2026): quy tắc .m-split khai báo sau (380–440px cho khung chi tiết) đè lên @media 1250px → cột danh sách bị bóp còn 0 */
 @media (max-width:1250px){.m-split,.m-split.rong{grid-template-columns:minmax(0,1fr)!important}}
 @media (max-width:760px){.m-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.m-kpis+.m-btn{display:none}div:has(>.m-kpis){flex-direction:column}}
+/* Báo cáo quản trị (14/10/2026) */
+.bc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}.bc-bar .m-in{height:36px}
+.bc-tabs{margin-bottom:10px}
+table.bc-t td{padding-top:7px;padding-bottom:7px}table.bc-t td:first-child{min-width:250px}
+.bc-th2{font-size:10px;color:var(--muted);font-weight:500}.bc-tong{background:var(--sel-bg)}
+tr.bc-nhom td{font-weight:700;background:var(--bg2)}tr.bc-nhom2 td{font-weight:700}tr.bc-tong td{font-weight:700;background:var(--info-bg)}tr.bc-net td{font-weight:800;background:var(--warn-bg)}
+tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{padding-left:30px}tr.bc-con2 td:first-child{padding-left:44px;color:var(--text2)}
+.bc-mo{display:inline-block;width:16px;cursor:pointer;color:var(--muted)}.bc-so{display:inline-block;min-width:30px;color:var(--text2)}
+.bc-ghi{font-size:11.5px;margin-top:10px;line-height:1.6}
+.bc-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 10px}.bc-k>div{background:var(--bg2);border-radius:9px;padding:8px 10px}.bc-k span{display:block;font-size:11px;color:var(--muted)}.bc-k b{font-size:15px}
 .m-chon{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;margin-bottom:10px;border-radius:10px;background:var(--sel-bg);border:1.5px solid var(--accent);font-size:12.5px}
 .ld{margin:2px 0 10px}.ld-n{display:flex;gap:10px;position:relative;padding-bottom:12px}
 .ld-n:not(:last-child)::before{content:'';position:absolute;left:11px;top:25px;bottom:1px;width:2px;background:var(--border)}.ld-n.xong:not(:last-child)::before{background:var(--ok)}
@@ -744,7 +754,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 14:09';
+const APP_VERSION='14/10/2026 14:40';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -810,7 +820,7 @@ const tkOn=()=>S.dm.tai_khoan.filter(x=>x.hoat_dong), coSo=()=>S.dm.don_vi.filte
 // Phân quyền giống app MKT/Sale (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang (xem / sửa).
 const can=(p,ghi)=>!!S.toi&&(S.toi.toan_quyen||((S.toi.quyen||[]).includes(p)&&(!ghi||(S.toi.quyen||[]).includes(p+':ghi'))));
 const coGhi=p=>can(p||S.page,true);
-const coXem=p=>/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'||p==='cd_kiot'?can('nhat_ky'):p==='chi'?can('chi')||can('chi_de_nghi'):/^cd_/.test(p)||can(p);
+const coXem=p=>/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'||p==='cd_kiot'?can('nhat_ky'):p==='bc_dong_tien'?can('dong_tien')||can('pl'):p==='pl_thuc_thu'?can('pl'):p==='chi'?can('chi')||can('chi_de_nghi'):/^cd_/.test(p)||can(p);
 // Chi: tạo đề nghị (sửa trang Chi hoặc quyền chỉ đề nghị) · sửa phiếu x (phiếu mình còn chờ duyệt) · duyệt / thanh toán (chỉ quyền chi_duyet)
 const chiTao=()=>coGhi('chi')||can('chi_de_nghi'), chiDuyet=()=>can('chi_duyet');
 // Giám đốc xác nhận lượt 2: KHÔNG đi theo Admin — chỉ Supreme hoặc tick riêng (giống hàm SQL kt_co_quyen)
@@ -843,7 +853,7 @@ const dnDa=()=>{try{return JSON.parse(localStorage.getItem('kt_dn_ds')||'[]')}ca
 function renderGate(err){
   const h=location.hash;let tab=/^#(de-nghi|phieu=)/.test(h)?'phieu':err?'dang_nhap':null;
   if(!tab){try{tab=localStorage.getItem('kt_gate')}catch(e){}tab=tab==='dang_nhap'?'dang_nhap':'phieu'}
-  $('#app').innerHTML=`<div class="gt"><div class="gt-brand">${LOGO}<div><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div></div>
+  $('#app').innerHTML=`<div class="gt"><div class="gt-brand"><div><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div></div>
     <div class="gt-tabs"><button class="${tab==='phieu'?'on':''}" onclick="gateTab('phieu')">Đề nghị thanh toán</button><button class="${tab==='dang_nhap'?'on':''}" onclick="gateTab('dang_nhap')">Đăng nhập</button></div>
     <div class="gt-body" id="gt-body"></div></div>`;
   gateTab(tab,err);
@@ -1064,8 +1074,11 @@ const PAGES={
   xl_hd:{ten:'Xử lý hóa đơn',nv:'thue',fn:()=>pageHDList('xl')},
   kho_thue:{ten:'Kho sổ thuế',nv:'thue',fn:()=>pageKhoThue()},
   hoa_don_thue:{ten:'Đối chiếu & công việc thuế',nv:'thue',fn:()=>pageHoaDonThue()},
-  pl:{ten:'Lãi / lỗ (P&L)',nv:'bao_cao',fn:()=>pagePL()},
-  tai_san:{ten:'Tài sản & khấu hao',nv:'bao_cao',fn:()=>pageTaiSan()},
+  // Báo cáo quản trị theo mẫu anh gửi 14/10/2026 — trước mắt 2 báo cáo (P&L + Dòng tiền); 8 nhóm đầy đủ làm dần (VIEC.md)
+  pl:{ten:'1. Kết quả kinh doanh (P&L)',nv:'bao_cao',fn:()=>pageBCPL()},
+  bc_dong_tien:{ten:'2. Dòng tiền & Ngân quỹ',nv:'bao_cao',fn:()=>pageBCLCTT()},
+  pl_thuc_thu:{ten:'P&L theo thực thu / thực chi (cũ)',nv:null,fn:()=>pagePL()},
+  tai_san:{ten:'Tài sản & khấu hao',nv:null,fn:()=>pageTaiSan()},
   cd_phan_quyen:{ten:'Phân quyền',nv:'he_thong',cd:'Quản trị',fn:()=>pageCaiDat('nguoi_dung')},
   cd_tai_khoan:{ten:'Tài khoản tiền',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('tai_khoan')},
   cd_don_vi:{ten:'Cơ sở / bộ phận',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('don_vi')},
@@ -1133,7 +1146,7 @@ function shell(){
       <div class="sb-bb">${ks.map(k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`).join('')}</div></div>`:'';
   const tim=TIM[S.page]?`<label class="hd-tim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="${TIM[S.page][1]}" value="${esc(S.f[TIM[S.page][0]]||'')}" onchange="S.f['${TIM[S.page][0]}']=this.value;render()"></label>`:'';
   const ten=S.toi.ho_ten||'',vt=(VI_TRI[S.toi.vi_tri]||'').split(' (')[0],av=ten.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]).join('').toUpperCase();
-  $('#app').innerHTML=`<div class="lay"><aside class="sb"><div class="sb-brand">${LOGO}<div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
+  $('#app').innerHTML=`<div class="lay"><aside class="sb"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
       <nav class="sb-nav">${nav}</nav>${subs}
       <div class="sb-box sb-loc"><div class="sb-bh"><span>${ln.h}</span></div><div class="sb-bb">${ln.b}${ln.reset?`<button class="lc-r" onclick="datLaiLoc()">Đặt lại bộ lọc</button>`:''}</div></div>
       <div class="sb-ver">Bản ${APP_VERSION}</div></aside>
@@ -1259,6 +1272,7 @@ async function pageTongQuan(){
   const [tu0,den0]=kyTruoc(S.tu,S.den),k={p_tu:S.tu,p_den:S.den},k0={p_tu:tu0,p_den:den0},nam=S.den.slice(0,4)+'-01-01';
   const [b,b0,bh,bh0,hg,vay,noKH,noNCC,tq,bn]=await Promise.all([rpc('kt_bao_cao',k),rpc('kt_bao_cao',k0),rpc('kt_bc_ban_hang',k),rpc('kt_bc_ban_hang',k0),rpc('kt_bc_hang',k),rpc('kt_ds_vay',{}),
     coXem('no_kh')?rpc('kt_cong_no_dt',{p_loai:'kh'}):[],coXem('no_ncc')?rpc('kt_cong_no_dt',{p_loai:'ncc'}):[],rpc('kt_tq_bo_sung',{...k,p_tu0:tu0,p_den0:den0}),rpc('kt_bao_cao',{p_tu:nam<MOC?MOC:nam,p_den:S.den})]);
+  const dn=await rpc('kt_tq_don',k).catch(()=>({kenh:[],nhom:[],don_ky:[],coc_cho:[]}));S.cache.tq_don=dn;
   S.cache.dem=b.dem;S.cache.bc=b;const d=b.dem,pt=b.phai_tra||{};
   const thang=kyHienTai().startsWith('m:'),kyN=thang?`Tháng ${+S.tu.slice(5,7)}/${S.tu.slice(0,4)}`:`${fmtD(S.tu)} – ${fmtD(S.den)}`,soN=thang?'tháng trước':'kỳ trước',tN=thang?'So với T'+(+tu0.slice(5,7)):'So kỳ trước';
   const csSel=locCSAll()?null:locCS(),csOK=cn=>!csSel||csSel.includes(csCuaCN(cn));
@@ -1290,10 +1304,37 @@ async function pageTongQuan(){
       ${rows2.map(r=>{const r0=C0.rows.find(x=>x.key===r.key)||{},cn=(CS3.find(x=>x[0]===r.key)||[])[2],chon=csSel&&csSel.length===1&&csSel[0]===r.key;return `<tr class="click ${chon?'on':''}" title="${chon?'Bấm để bỏ lọc':'Bấm để lọc cả trang theo '+r.ten}" onclick="S.f.loc_cs=${chon?'null':`['${r.key}']`};shell()"><td><b>${r.ten}</b>${chon?' '+pill('Đang lọc','info'):''}</td><td class="num">${fmt(r.dt)}</td><td class="num">${fmt(r.gv)}</td><td class="num">${fmt(r.lg)}</td><td class="num"><span ${xnAttr('cp','',cn,'')}>${fmt(r.cp)}</span></td><td class="num"><b class="${r.ln<0?'neg-t':''}">${fmt(r.ln)}</b></td><td class="num">${pct(r.ln,r.dt)}</td><td class="num">${mui(r.ln,r0.ln)}</td></tr>`}).join('')}
       ${!csSel&&C1.chung?`<tr class="click" ${xnAttr('cp','','_chung','')}><td class="muted">Chi phí bộ phận chung</td><td></td><td></td><td></td><td class="num">${fmt(C1.chung)}</td><td class="num neg-t">${fmt(-C1.chung)}</td><td></td><td></td></tr>`:''}
       <tr class="tong"><td><b>Tổng cộng</b></td><td class="num"><b>${fmt(tg.dt)}</b></td><td class="num"><b>${fmt(tg.gv)}</b></td><td class="num"><b>${fmt(tg.lg)}</b></td><td class="num"><b>${fmt(tg.cp)}</b></td><td class="num"><b>${fmt(tg.ln)}</b></td><td class="num"><b>${pct(tg.ln,tg.dt)}</b></td><td class="num">${mui(K1.ln,K0.ln)}</td></tr></table></div>`);
-  const nh0=Object.fromEntries(bh0.theo_nhom.map(x=>[x.nhom,+x.dt])),tongN=sumBy(bh.theo_nhom,x=>x.dt),topN=bh.theo_nhom.slice(0,5),khacN=tongN-sumBy(topN,x=>x.dt),khac0=sumBy(bh0.theo_nhom,x=>x.dt)-sumBy(topN,x=>nh0[x.nhom]||0);
-  const s3=sec(3,'info','Doanh thu theo nhóm hàng',kyN,`<table class="m-t tq2-t"><tr><th>Nhóm hàng</th><th class="num">Doanh thu</th><th class="num">Tỷ trọng</th><th class="num">${tN}</th></tr>
-      ${topN.map(x=>`<tr ${xnAttr('nhom',x.nhom||'(không nhóm)',csSel&&csSel.length===1?(CS3.find(z=>z[0]===csSel[0])||[])[2]:null,'')}><td class="tq-ten" title="${esc(x.nhom||'')}">${esc(x.nhom||'(chưa nhóm)')}</td><td class="num">${fmt(x.dt)}</td><td class="num">${pct(x.dt,tongN)}</td><td class="num">${mui(+x.dt,nh0[x.nhom])}</td></tr>`).join('')}
-      ${khacN>0?`<tr><td>Khác</td><td class="num">${fmt(khacN)}</td><td class="num">${pct(khacN,tongN)}</td><td class="num">${mui(khacN,khac0)}</td></tr>`:''}</table>`);
+  // 14/10/2026 kế toán: doanh thu theo NHÓM HÀNG CHA (không lấy nhóm con) + cột lợi nhuận gộp / biên để nhìn nhanh nhóm nào lãi tốt
+  const nhC=Object.values(dn.nhom.filter(x=>csOK(x.cn)).reduce((o,x)=>{const r=o[x.nhom]=o[x.nhom]||{nhom:x.nhom,dt:0,gv:0};r.dt+=+x.dt;r.gv+=+x.gv;return o},{})).sort((a,c)=>c.dt-a.dt);
+  const tongN=sumBy(nhC,x=>x.dt),topN=nhC.slice(0,6),khacN=nhC.slice(6),kN={dt:sumBy(khacN,x=>x.dt),gv:sumBy(khacN,x=>x.gv)};
+  const s3=sec(3,'info','Doanh thu theo nhóm hàng (nhóm cha)',kyN,`<table class="m-t tq2-t"><tr><th>Nhóm hàng</th><th class="num">Doanh thu</th><th class="num">Tỷ trọng</th><th class="num">Lợi nhuận gộp</th><th class="num">Biên LN</th></tr>
+      ${topN.map(x=>`<tr><td class="tq-ten" title="${esc(x.nhom)}">${esc(x.nhom)}</td><td class="num">${fmt(x.dt)}</td><td class="num">${pct(x.dt,tongN)}</td><td class="num">${fmt(x.dt-x.gv)}</td><td class="num ${x.dt&&(x.dt-x.gv)/x.dt>=.4?'pos-t':''}">${pct(x.dt-x.gv,x.dt)}</td></tr>`).join('')||'<tr><td colspan="5" class="m-empty">Chưa có</td></tr>'}
+      ${kN.dt?`<tr><td>Khác (${khacN.length} nhóm)</td><td class="num">${fmt(kN.dt)}</td><td class="num">${pct(kN.dt,tongN)}</td><td class="num">${fmt(kN.dt-kN.gv)}</td><td class="num">${pct(kN.dt-kN.gv,kN.dt)}</td></tr>`:''}</table>
+      <div class="tq-note">Doanh thu dòng hàng đã trừ giảm giá hoá đơn, chưa trừ trả hàng · lợi nhuận gộp theo giá vốn bình quân Kiot (gần đúng)</div>`);
+  // 14/10/2026 kế toán + anh: tách DOANH THU THỰC TẾ (đã đi hàng) và DOANH THU TRÊN ĐƠN (chỉ đơn có cọc — luật cọc như app MKT/Sale)
+  const dk=dn.don_ky.filter(x=>csOK(x.cn)),dg=n=>({so:sumBy(dk.filter(x=>x.nhom===n),x=>x.so),tong:sumBy(dk.filter(x=>x.nhom===n),x=>x.tong),coc:sumBy(dk.filter(x=>x.nhom===n),x=>x.coc)});
+  const DI=dg('di_hang'),CO=dg('coc'),BG=dg('bao_gia'),HU=dg('huy'),cc=dn.coc_cho.filter(x=>csOK(x.cn)),cocT=x=>Math.min(+x.tong,Math.max(+x.da_tra,+x.tra_truoc));
+  const ccT=Object.values(cc.reduce((o,x)=>{const m=String(x.ngay).slice(0,7),r=o[m]=o[m]||{m,so:0,tong:0,coc:0};r.so++;r.tong+=+x.tong;r.coc+=cocT(x);return o},{})).sort((a,c)=>a.m<c.m?1:-1);
+  const ob=(c,ic,l,v,on,phu)=>`<div class="tq2-o ${on?'click':''}" ${on?`onclick="${on}" title="Bấm để xem chi tiết"`:''}><span class="m-ic" style="--c:var(--${c})">${ic}</span><div><div class="l">${l}</div><div class="v">${fmt(v)}</div>${phu?`<div class="tq-note" style="margin:0">${phu}</div>`:''}</div></div>`;
+  const sDT=sec('A','ok','Doanh thu thực tế & doanh thu trên đơn',kyN,`<div class="tq2-os tq-dn">
+      ${ob('ok',IC2.dt,'Doanh thu thực tế (đã đi hàng)',K1.dt,coXem('ban_hang')?"go('ban_hang')":'','hoá đơn − trả hàng')}
+      ${ob('info',IC2.lg,'Doanh thu trên đơn đã đánh (có cọc)',DI.tong+CO.tong,'',fmt(DI.so+CO.so)+' đơn đặt trong kỳ')}
+      ${ob('warn',IC2.gv,'Đã cọc · chưa đi hàng (đến hôm nay)',sumBy(cc,x=>x.tong),"xemDonTQ()",fmt(cc.length)+' đơn · cọc '+fmt(sumBy(cc,cocT)))}</div>
+    <table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đơn đặt hàng trong kỳ</th><th class="num">Số đơn</th><th class="num">Giá trị</th><th class="num">Tiền cọc</th></tr>
+      <tr><td>Đã đi hàng (ra hoá đơn)</td><td class="num">${fmt(DI.so)}</td><td class="num">${fmt(DI.tong)}</td><td></td></tr>
+      <tr><td>Đã cọc, chưa đi hàng</td><td class="num">${fmt(CO.so)}</td><td class="num">${fmt(CO.tong)}</td><td class="num">${fmt(CO.coc)}</td></tr>
+      <tr class="muted"><td>Phiếu tạm không có tiền (báo giá — không tính)</td><td class="num">${fmt(BG.so)}</td><td class="num">${fmt(BG.tong)}</td><td></td></tr>
+      <tr class="muted"><td>Đã huỷ</td><td class="num">${fmt(HU.so)}</td><td class="num">${fmt(HU.tong)}</td><td></td></tr></table>
+    ${ccT.length?`<table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đã cọc chưa đi hàng · theo tháng đặt</th><th class="num">Số đơn</th><th class="num">Giá trị đơn</th><th class="num">Tiền cọc</th></tr>
+      ${ccT.map(r=>`<tr class="click" onclick="xemDonTQ('${r.m}')"><td>Tháng ${+r.m.slice(5)}/${r.m.slice(0,4)}</td><td class="num">${fmt(r.so)}</td><td class="num">${fmt(r.tong)}</td><td class="num">${fmt(r.coc)}</td></tr>`).join('')}</table>`:''}
+    <div class="tq-note">Doanh thu thực tế = hoá đơn hoàn thành − trả hàng. Đơn đã cọc chưa đi hàng là doanh thu DỰ KIẾN — ghi nhận vào tháng xuất hoá đơn (đi hàng), không cộng vào tháng đặt.
+      Có cọc = đã trả tiền trên đơn hoặc khách đang có tiền trả trước trên Kiot (luật cọc như app MKT/Sale).</div>`,'rong2');
+  // nguồn doanh thu theo kênh bán (ô "kênh bán" trên hoá đơn Kiot)
+  const kn=Object.values(dn.kenh.filter(x=>csOK(x.cn)).reduce((o,x)=>{const r=o[x.ten]=o[x.ten]||{ten:x.ten,dt:0,so:0};r.dt+=+x.dt;r.so+=+x.so;return o},{})).sort((a,c)=>c.dt-a.dt),tongK=sumBy(kn,x=>x.dt);
+  const sKenh=sec('B','vio','Nguồn doanh thu theo kênh bán',kyN,`<table class="m-t tq2-t"><tr><th>Kênh</th><th class="num">Doanh thu</th><th class="num">Tỷ trọng</th><th class="num">Số HĐ</th></tr>
+      ${kn.slice(0,9).map(x=>`<tr><td class="tq-ten" title="${esc(x.ten)}">${esc(x.ten)}</td><td class="num">${fmt(x.dt)}</td><td class="num">${pct(x.dt,tongK)}</td><td class="num">${fmt(x.so)}</td></tr>`).join('')||'<tr><td colspan="4" class="m-empty">Chưa có</td></tr>'}
+      ${kn.length>9?`<tr><td>Khác (${kn.length-9} kênh)</td><td class="num">${fmt(sumBy(kn.slice(9),x=>x.dt))}</td><td class="num">${pct(sumBy(kn.slice(9),x=>x.dt),tongK)}</td><td class="num">${fmt(sumBy(kn.slice(9),x=>x.so))}</td></tr>`:''}</table>
+    <div class="tq-note">Theo ô kênh bán trên hoá đơn Kiot (doanh thu trước trả hàng)</div>`);
   const csT=cn=>(CS3.find(x=>x[0]===csCuaCN(cn))||[])[1]||cn||'';
   const tk=tq.top_kh.filter(x=>csOK(x.cn)),tongDT=sumBy(bh.theo_cn,x=>x.dt);
   const s4=sec(4,'ok','Top 5 khách hàng theo doanh thu',kyN,`<table class="m-t tq2-t"><tr><th>#</th><th>Khách hàng</th><th>Cơ sở</th><th class="num">Doanh thu</th><th class="num">Tỷ trọng</th></tr>
@@ -1329,10 +1370,20 @@ async function pageTongQuan(){
       ${cb('warn',IC2.dt,d.hd_do_chua_nhan||0,'Phiếu chi chưa nhận hoá đơn đỏ','Đã chi, chờ hoá đơn NCC',"S.f.chi_tt='hd_do';go('chi')")}
       ${cb('info',IC2.lg,lau,'Mặt hàng tồn lâu > 6 tháng','Giá trị: '+fmt(lauGT),(()=>{const m=tq.ton_cs.filter(x=>csOK(x.cn)).sort((a,b)=>b.lau_gt-a.lau_gt)[0];return m&&xnDuoc('ton_lau')?`xemNhanh('ton_lau','','${m.cn}','')`:''})())}
       ${cb('bad',IC2.ln,S.soLoi||0,'Lỗi đối soát cần xử lý','Phiếu nghi trùng, sai loại, lệch số dư…',"go('doi_soat')")}</div>`);
-  el.innerHTML=s1+`<div class="tq2-r2">${s2}${s3}</div><div class="tq2-r3">${s4}${s6.replace('<section class="tq2 ','<section class="tq2 rong2 ')}</div><div class="tq2-r4">${s7}${s8}${s9}</div>`+s10+
+  el.innerHTML=s1+`<div class="tq2-r2">${sDT.replace('<section class="tq2 ','<section class="tq2 rong2 ')}${sKenh}</div><div class="tq2-r2">${s2}${s3}</div><div class="tq2-r3">${s4}${s6.replace('<section class="tq2 ','<section class="tq2 rong2 ')}</div><div class="tq2-r4">${s7}${s8}${s9}</div>`+s10+
     `<div class="tq-note" style="margin-top:8px">Doanh thu, giá vốn: hoá đơn Kiot (giá vốn đã trừ hàng bị trả) · chi phí: thực chi · Kiot cập nhật ${b.kiot_keo_luc?fmtDT(b.kiot_keo_luc):'—'}</div>`;
   shellBadges();
 }
+// Danh sách đơn đã cọc chưa đi hàng (Tổng quan, 14/10/2026) — lọc theo tháng đặt (m) và cơ sở đang chọn
+function xemDonTQ(m){const csSel=locCSAll()?null:locCS(),ds=(S.cache.tq_don||{coc_cho:[]}).coc_cho.filter(x=>(!csSel||csSel.includes(csCuaCN(x.cn)))&&(!m||String(x.ngay).startsWith(m)));
+  const coc=x=>Math.min(+x.tong,Math.max(+x.da_tra,+x.tra_truoc));
+  modal(`<h2>Đơn đã cọc · chưa đi hàng${m?' · tháng '+(+m.slice(5))+'/'+m.slice(0,4):''}</h2>
+    <div class="bc-k" style="grid-template-columns:repeat(3,1fr)"><div><span>Số đơn</span><b>${fmt(ds.length)}</b></div><div><span>Giá trị đơn</span><b>${fmt(sumBy(ds,x=>x.tong))}</b></div><div><span>Tiền cọc</span><b>${fmt(sumBy(ds,coc))}</b></div></div>
+    <table class="m-t"><tr><th>Ngày đặt</th><th>Mã đơn</th><th>Khách</th><th>Cơ sở / NV</th><th class="num">Giá trị</th><th class="num">Cọc</th></tr>
+    ${ds.map(x=>`<tr><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.ma)}</td><td>${esc(x.khach||'')}${x.ghi_chu?`<div class="muted" style="font-size:11px">${esc(x.ghi_chu)}</div>`:''}</td><td class="nw">${esc((CS3.find(c=>c[0]===csCuaCN(x.cn))||[])[1]||x.cn||'')}<div class="muted" style="font-size:11px">${esc(x.nv||'')}</div></td>
+      <td class="num">${fmt(x.tong)}</td><td class="num">${fmt(coc(x))}${+x.da_tra>0?'':'<div class="muted" style="font-size:10.5px">trả trước của khách</div>'}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Không có</td></tr>'}</table>
+    <div class="tq-note">Cọc = tiền khách trả trên đơn, hoặc số dư trả trước của khách trên Kiot (1 khách nhiều đơn thì số dư này lặp lại ở từng đơn). Doanh thu ghi nhận khi đơn ra hoá đơn (đi hàng).</div>
+    <div class="acts"><button class="btn" onclick="xuatCSV('don-da-coc',[['Ngày đặt',x=>x.ngay],['Mã đơn',x=>x.ma],['Khách',x=>x.khach||''],['Chi nhánh',x=>x.cn||''],['NV bán',x=>x.nv||''],['Giá trị',x=>x.tong],['Đã trả trên đơn',x=>x.da_tra],['Trả trước của khách',x=>x.tra_truoc],['Ghi chú',x=>x.ghi_chu||'']],S.cache.tq_don.coc_cho)">Xuất Excel</button><button class="btn" onclick="closeModal()">Đóng</button></div>`,true)}
 // SỐ DƯ TÀI KHOẢN — biểu đồ thanh ngang 2 chiều quanh trục 0 (anh 05/10: bỏ 16 ô cho thoáng, đẩy xuống dưới cùng).
 // Dương = thanh xanh sang phải, âm = thanh đỏ sang trái. Tự ẩn tài khoản số dư 0 và không có giao dịch (bấm để hiện).
 // Rê chuột: sổ sách / sao kê / lệch. Bấm dòng: sang Dòng tiền & đối soát của tài khoản đó.
@@ -2098,6 +2149,151 @@ async function pageHangHoa(){
 }
 
 // P&L — THEO THỰC THU / THỰC CHI (anh chốt 08/10), kiểu bảng P&L Xero: hàng = khoản mục, cột = tháng
+// ── BÁO CÁO QUẢN TRỊ theo mẫu anh gửi 14/10/2026: tạm thời 2 báo cáo — 1. Kết quả kinh doanh (P&L) · 2. Dòng tiền & Ngân quỹ.
+// Kỳ: chọn NĂM → 12 tháng + Tổng năm · chọn 1 THÁNG → Kế hoạch / Thực hiện / % HT / % DT · KHOẢNG THÁNG → các tháng trong khoảng + Tổng.
+// Số liệu: kt_bc_pl2 / kt_bc_lctt (supabase-schema-kt-bao-cao-qt.sql). Kế hoạch (ngân sách) CHƯA có dữ liệu → để trống, không số giả.
+const NHOM_PL=[['ban_hang','Chi phí bán hàng'],['qldn','Chi phí quản lý doanh nghiệp'],['marketing','Chi phí marketing'],['cua_hang','Chi phí cửa hàng'],['van_chuyen','Chi phí đóng gói & vận chuyển'],['khac','Chi phí khác']];
+const BC_DV=[[1e3,'nghìn đồng'],[1e6,'triệu đồng'],[1,'đồng']];
+const thangSau=m=>{const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);return d.toISOString().slice(0,7)};
+const cuoiThang=m=>{const d=new Date(thangSau(m)+'-01T00:00:00Z');d.setUTCDate(0);return d.toISOString().slice(0,10)};
+const dsThang=(a,b)=>{const r=[];for(let m=a;m<=b;m=thangSau(m))r.push(m);return r};
+function bcKy(){const f=S.f,nay=homNay().slice(0,7),k=f.bc_kieu||'nam',nam=f.bc_nam||nay.slice(0,4);
+  if(k==='thang'){const m=f.bc_thang||nay;return {k,tu:m+'-01',den:cuoiThang(m),ms:[m],ten:'Tháng '+(+m.slice(5))+'/'+m.slice(0,4)}}
+  if(k==='khoang'){let a=f.bc_tu||nay.slice(0,4)+'-01',b=f.bc_den||nay;if(a>b)[a,b]=[b,a];return {k,tu:a+'-01',den:cuoiThang(b),ms:dsThang(a,b),ten:`T${+a.slice(5)}/${a.slice(0,4)} – T${+b.slice(5)}/${b.slice(0,4)}`}}
+  return {k:'nam',tu:nam+'-01-01',den:nam+'-12-31',ms:dsThang(nam+'-01',nam+'-12'),ten:'Năm '+nam}}
+const bcDv=()=>S.f.bc_dv||1e3;
+const bcSo=v=>{if(v==null||isNaN(v))return '';const x=Math.round(v/bcDv());return x<0?`(${Math.abs(x).toLocaleString('vi-VN')})`:x?x.toLocaleString('vi-VN'):'–'};
+const bcPct=(a,b)=>b?(Math.round(a*1000/b)/10).toLocaleString('vi-VN')+'%':'';
+function bcBar(tabs,tab){const f=S.f,k=f.bc_kieu||'nam',nay=homNay().slice(0,7),ky=bcKy();
+  const nams=[];for(let y=+nay.slice(0,4);y>=2026;y--)nams.push(String(y));
+  const chon=k==='nam'?`<select class="m-in" onchange="S.f.bc_nam=this.value;render()">${nams.map(y=>`<option ${y===(f.bc_nam||nay.slice(0,4))?'selected':''}>${y}</option>`).join('')}</select>`
+    :k==='thang'?`<input type="month" class="m-in" value="${f.bc_thang||nay}" min="2026-01" max="${nay}" onchange="S.f.bc_thang=this.value;render()">`
+    :`<input type="month" class="m-in" value="${ky.ms[0]}" min="2026-01" max="${nay}" onchange="S.f.bc_tu=this.value;render()"><span class="muted">đến</span><input type="month" class="m-in" value="${ky.ms[ky.ms.length-1]}" min="2026-01" max="${nay}" onchange="S.f.bc_den=this.value;render()">`;
+  return `<div class="bc-bar"><div class="m-seg">${[['nam','Cả năm'],['thang','1 tháng'],['khoang','Khoảng tháng']].map(([v,t])=>`<button class="${k===v?'on':''}" onclick="S.f.bc_kieu='${v}';render()">${t}</button>`).join('')}</div>${chon}
+    <select class="m-in" onchange="S.f.bc_dv=+this.value;render()">${BC_DV.map(([v,t])=>`<option value="${v}" ${v===bcDv()?'selected':''}>Đơn vị: ${t}</option>`).join('')}</select>
+    <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.bc_xuat&&S.cache.bc_xuat()">${IC_XLS} Xuất Excel</button></div>
+    <div class="m-seg bc-tabs">${tabs.map(([v,t])=>`<button class="${tab===v?'on':''}" onclick="S.f.${S.page}_tab='${v}';render()">${t}</button>`).join('')}</div>`}
+// bảng chung: rows = [{so, ten, v:{thang:giá trị}, kieu:'nhom'|'con'|'tong'|'net', mo, key, click, am}] · cot = 'thang' | 'mot' (1 tháng) | 'luy_ke' | danh sách cột tự do
+function bcBang(rows,ky,o={}){
+  const nay=homNay().slice(0,7),tl=ky.ms,mot=ky.k==='thang'&&!o.cot;
+  const tong=r=>r.tong!=null?r.tong:sumBy(tl,m=>r.v[m]||0);
+  let head,cell;
+  if(o.cot){head=o.cot.map(c=>`<th class="num">${c[1]}</th>`).join('');cell=r=>o.cot.map(c=>`<td class="num ${(r.v[c[0]]||0)<0?'neg-t':''}">${bcSo(r.v[c[0]])}</td>`).join('')}
+  else if(mot){head=`<th class="num">Kế hoạch</th><th class="num">Thực hiện</th><th class="num">% HT</th><th class="num">% DT</th>`;
+    cell=r=>{const v=r.v[tl[0]]||0;return `<td class="num muted">–</td><td class="num ${v<0?'neg-t':''}"><b>${bcSo(v)}</b></td><td class="num muted">–</td><td class="num">${o.dt&&r.kieu!=='so_du'?bcPct(['tong','net'].includes(r.kieu)?v:Math.abs(v),o.dt[tl[0]]):''}</td>`}}
+  else{head=tl.map(m=>`<th class="num">T${+m.slice(5)}/${m.slice(0,4)}<div class="bc-th2">${m>nay?'':'Thực hiện'}</div></th>`).join('')+(o.khongTong?'':`<th class="num bc-tong">${ky.k==='nam'?'Tổng năm':'Tổng kỳ'}</th>`);
+    cell=r=>{let lk=0;return tl.map(m=>{if(m>nay)return '<td></td>';let v=r.v[m];if(o.luyKe&&r.kieu!=='so_du'){lk+=v||0;v=lk}return `<td class="num ${(v||0)<0?'neg-t':''}">${v==null&&r.kieu==='so_du'?'<span class="muted">—</span>':bcSo(v)}</td>`}).join('')
+      +(o.khongTong?'':`<td class="num bc-tong ${tong(r)<0?'neg-t':''}"><b>${r.kieu==='so_du'?bcSo(r.tongSD):bcSo(tong(r))}</b></td>`)}}
+  return `<div class="m-card"><div class="scroll"><table class="m-t bc-t"><tr><th>Chỉ tiêu</th>${head}</tr>
+    ${rows.filter(r=>!r.an).map(r=>`<tr class="bc-${r.kieu||'con'} ${r.click?'click':''}" ${r.click?`onclick="${r.click}" title="Bấm để xem chi tiết"`:''}>
+      <td class="nw">${r.mo!=null?`<span class="bc-mo" onclick="event.stopPropagation();bcMo('${r.key}')">${r.mo?'▾':'▸'}</span>`:'<span class="bc-mo"></span>'}${r.so?`<span class="bc-so">${r.so}</span>`:''}${esc(r.ten)}</td>${cell(r)}</tr>`).join('')}</table></div></div>`}
+function bcMo(k){const s=S.f.bc_dong=S.f.bc_dong||{};s[k]=!bcMoOn(k);render()}
+const bcMoOn=k=>{const s=S.f.bc_dong||{};return k in s?s[k]:['dt','cp','hdkd'].includes(k)};
+const bcCS=()=>locCSAll()?null:locCS();
+const csTen3=k=>(CS3.find(x=>x[0]===k)||[])[1]||(k==='chung'?'Chung (văn phòng, kho tổng…)':k);
+const cong=(o,k,m,v)=>{o[k]=o[k]||{};o[k][m]=(o[k][m]||0)+(+v||0)};
+// ── 1. KẾT QUẢ KINH DOANH (P&L)
+async function pageBCPL(){
+  const el=$('#page'),ky=bcKy(),tab=S.f.pl_tab||'tong';el.innerHTML='<div class="m-empty">Đang tính...</div>';
+  const b=await rpc('kt_bc_pl2',{p_tu:ky.tu,p_den:ky.den});S.cache.pl2=b;
+  const sel=bcCS(),ok=cs=>!sel||sel.includes(cs),loai=Object.fromEntries(b.loai.map(l=>[l.id,l]));
+  const dtCS={},gvCS={},cpN={},cpL={},cpCS={};
+  for(const x of b.dt){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,x.dt);cong(gvCS,cs,x.thang,x.gv)}
+  for(const x of b.tra){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,-x.tra);cong(gvCS,cs,x.thang,-x.gv)}
+  for(const x of b.cp){const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung';const n=(loai[x.loai]||{}).nhom_pl||'khac';cong(cpCS,cs+'|'+n,x.thang,x.tien);
+    if(!ok(cs))continue;cong(cpN,n,x.thang,x.tien);cong(cpL,n+'|'+x.loai,x.thang,x.tien)}
+  if(!sel)for(const x of b.lai_vay){cong(cpN,'khac',x.thang,x.lai);cong(cpL,'khac|lai_vay',x.thang,x.lai)}
+  const csDS=CS3.map(c=>c[0]).filter(ok),sumO=(o,ks)=>{const r={};ks.forEach(k=>Object.entries(o[k]||{}).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
+  const am=o=>Object.fromEntries(Object.entries(o).map(([m,v])=>[m,-v])),cg=(...os)=>{const r={};os.forEach(o=>Object.entries(o).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
+  const DT=sumO(dtCS,csDS),GV=am(sumO(gvCS,csDS)),LG=cg(DT,GV),CP=am(sumO(cpN,NHOM_PL.map(n=>n[0]))),TT=cg(LG,CP),THUE=am(cpN.thue||{}),LR=cg(TT,THUE);
+  S.cache.pl_dt=DT;
+  const ct=tab==='ct';
+  const rows=[{so:'1.',ten:'Doanh thu thuần',v:DT,kieu:'nhom',mo:ct||bcMoOn('dt'),key:'dt'},
+    ...csDS.map((cs,i)=>({so:'1.'+(i+1),ten:csTen3(cs),v:dtCS[cs]||{},an:!(ct||bcMoOn('dt'))})),
+    {so:'2.',ten:'Giá vốn hàng bán',v:GV,kieu:'nhom',mo:ct||bcMoOn('gv'),key:'gv'},
+    ...csDS.map((cs,i)=>({so:'2.'+(i+1),ten:csTen3(cs),v:am(gvCS[cs]||{}),an:!(ct||bcMoOn('gv'))})),
+    {so:'3.',ten:'Lợi nhuận gộp',v:LG,kieu:'tong'},
+    {so:'4.',ten:'Chi phí',v:CP,kieu:'nhom',mo:ct||bcMoOn('cp'),key:'cp'},
+    ...NHOM_PL.flatMap(([n,t],i)=>[{so:'4.'+(i+1),ten:t,v:am(cpN[n]||{}),an:!(ct||bcMoOn('cp')),click:`plCT('${n}')`},
+      ...(ct?Object.keys(cpL).filter(k=>k.startsWith(n+'|')).map(k=>{const id=k.split('|')[1];return {ten:'· '+(id==='lai_vay'?'Lãi vay (trang Vay & lãi vay)':(loai[id]||{}).ten||id),v:am(cpL[k]),kieu:'con2'}}):[])]),
+    {so:'5.',ten:'Lợi nhuận trước thuế',v:TT,kieu:'tong'},
+    {so:'6.',ten:'Thuế (GTGT & TNCN)',v:THUE,kieu:'nhom',click:`plCT('thue')`},
+    {so:'7.',ten:'Lợi nhuận ròng',v:LR,kieu:'net'}];
+  let bang;
+  if(tab==='cs'){const cols=[...csDS,...(sel?[]:['chung'])],tg=v=>sumBy(ky.ms,m=>v[m]||0);
+    const r2=[{so:'1.',ten:'Doanh thu thuần',kieu:'nhom',v:Object.fromEntries(cols.map(c=>[c,tg(dtCS[c]||{})]))},
+      {so:'2.',ten:'Giá vốn hàng bán',kieu:'nhom',v:Object.fromEntries(cols.map(c=>[c,-tg(gvCS[c]||{})]))}];
+    r2.push({so:'3.',ten:'Lợi nhuận gộp',kieu:'tong',v:Object.fromEntries(cols.map(c=>[c,r2[0].v[c]+r2[1].v[c]]))});
+    const cpc=NHOM_PL.map(([n,t],i)=>({so:'4.'+(i+1),ten:t,v:Object.fromEntries(cols.map(c=>[c,-tg((cpCS[c+'|'+n])||{})-(c==='chung'&&n==='khac'?tg(sumO({x:Object.fromEntries(b.lai_vay.map(x=>[x.thang,x.lai]))},['x'])):0)]))}));
+    r2.push({so:'4.',ten:'Chi phí',kieu:'nhom',v:Object.fromEntries(cols.map(c=>[c,sumBy(cpc,r=>r.v[c])]))},...cpc);
+    const tt={so:'5.',ten:'Lợi nhuận trước thuế',kieu:'tong',v:Object.fromEntries(cols.map(c=>[c,r2[2].v[c]+r2[3].v[c]]))},th={so:'6.',ten:'Thuế (GTGT & TNCN)',kieu:'nhom',v:Object.fromEntries(cols.map(c=>[c,-tg(cpCS[c+'|thue']||{})]))};
+    r2.push(tt,th,{so:'7.',ten:'Lợi nhuận ròng',kieu:'net',v:Object.fromEntries(cols.map(c=>[c,tt.v[c]+th.v[c]]))});
+    r2.forEach(r=>r.v.tong=sumBy(cols,c=>r.v[c]||0));
+    r2.push({ten:'Biên lợi nhuận ròng',kieu:'con',v:{},bien:1});
+    const colsH=[...cols.map(c=>[c,csTen3(c)]),['tong','Tổng']];
+    bang=bcBang(r2.filter(r=>!r.bien),ky,{cot:colsH})+`<div class="muted bc-ghi">Chi phí chung (văn phòng, kho tổng, marketing chung…) chưa chia về cơ sở — chia theo % doanh số / tự nhập ở tab Phân bổ của từng phiếu chi.</div>`;
+    S.cache.bc_xuat=()=>xuatCSV('pl-so-sanh-co-so-'+ky.tu+'_'+ky.den,[['Chỉ tiêu',r=>(r.so||'')+' '+r.ten],...colsH.map(c=>[c[1],r=>Math.round(r.v[c[0]]||0)])],r2.filter(r=>!r.bien));
+  }else if(tab==='kh'){bang=`<div class="m-card m-empty">Chưa có kế hoạch (ngân sách) cho ${esc(ky.ten)}. Khi kế toán nhập kế hoạch theo tháng, cột Kế hoạch / % hoàn thành sẽ tự có số. Phần nhập kế hoạch nằm ở báo cáo 5. Chi phí & Ngân sách (làm sau).</div>`;S.cache.bc_xuat=null}
+  else{bang=bcBang(rows,ky,{dt:DT,luyKe:tab==='lk'});
+    S.cache.bc_xuat=()=>xuatCSV('pl-'+ky.tu+'_'+ky.den,[['Chỉ tiêu',r=>(r.so||'')+' '+r.ten],...ky.ms.map(m=>['T'+m.slice(5)+'/'+m.slice(0,4),r=>Math.round(r.v[m]||0)]),['Tổng',r=>Math.round(sumBy(ky.ms,m=>r.v[m]||0))]],rows)}
+  el.innerHTML=head('Báo cáo kết quả kinh doanh (P&L) <span class="badge" style="vertical-align:middle">'+esc(ky.ten)+'</span>','<span class="badge">Tổng hợp doanh thu, chi phí, lợi nhuận theo thời gian và theo cơ sở</span>')
+    +bcBar([['tong','P&L tổng hợp'],['ct','P&L chi tiết'],['cs','So sánh cơ sở'],['lk','Luỹ kế năm'],['kh','Thực tế / Kế hoạch']],tab)+bang
+    +`<div class="muted bc-ghi">Doanh thu thuần = hoá đơn Kiot hoàn thành − trả hàng (theo cơ sở bán) · Giá vốn = giá vốn bình quân Kiot lúc kéo (gần đúng) · Chi phí = phiếu chi đã thanh toán nhóm vận hành, theo tháng phân bổ (phiếu không phân bổ: tháng thanh toán) · không gồm nhập hàng (đã nằm trong giá vốn), trả gốc vay, đầu tư · Lãi vay lấy từ trang Vay & lãi vay${sel?' (ẩn khi lọc cơ sở)':''}. <a class="m-link" onclick="go('pl_thuc_thu')">Xem P&L theo thực thu / thực chi (cũ)</a></div>`;
+}
+// bấm nhóm chi phí → khung phải: thực hiện, % doanh thu, khoản mục con (loại chi, đơn vị), danh sách phiếu chi
+async function plCT(n){
+  const ky=bcKy(),b=S.cache.pl2,ids=b.loai.filter(l=>(l.nhom_pl||'khac')===n&&['Chi vận hành & quản lí','Chi thuế'].includes(l.nhom_bc)).map(l=>l.id);
+  const ten=n==='thue'?'Thuế (GTGT & TNCN)':(NHOM_PL.find(x=>x[0]===n)||[])[1];
+  modal(`<h2>${esc(ten)} · ${esc(ky.ten)}</h2><div class="m-empty">Đang tải...</div>`,true);
+  const sel=bcCS(),ok=cs=>!sel||sel.includes(cs);
+  let ds=ids.length?await rpc('kt_pl_ct',{p_loai:ids,p_tu:ky.tu,p_den:ky.den}):[];ds=ds.filter(x=>ok(x.dv?(csCuaDV(x.dv)||'chung'):'chung'));
+  const tong=sumBy(ds,x=>x.tien),dt=sumBy(ky.ms,m=>(S.cache.pl_dt||{})[m]||0),loai=Object.fromEntries(b.loai.map(l=>[l.id,l.ten]));
+  const nhom=(f)=>Object.entries(ds.reduce((o,x)=>(o[f(x)]=(o[f(x)]||0)+x.tien,o),{})).sort((a,c)=>c[1]-a[1]);
+  const bangCon=(t,arr)=>`<div class="m-st">${t}</div><table class="m-t"><tr><th>Khoản mục</th><th class="num">Thực hiện</th><th class="num">Tỷ trọng</th></tr>${arr.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${fmt(v)}</td><td class="num">${pct(v,tong)}</td></tr>`).join('')||'<tr><td colspan="3" class="m-empty">Không có</td></tr>'}</table>`;
+  $('#modal>div').innerHTML=`<h2>${esc(ten)} · ${esc(ky.ten)}</h2>
+    <div class="bc-k"><div><span>Kế hoạch</span><b class="muted">–</b></div><div><span>Thực hiện</span><b>${fmt(tong)}</b></div><div><span>% HT</span><b class="muted">–</b></div><div><span>% DT</span><b>${pct(tong,dt)||'–'}</b></div></div>
+    ${bangCon('Theo khoản mục (loại chi)',nhom(x=>loai[x.loai]||'Khác'))}${bangCon('Theo đơn vị chịu chi phí',nhom(x=>x.dv?((dv(x.dv)||{}).ten||'#'+x.dv):'Chưa chọn đơn vị'))}
+    <div class="m-st">Danh sách phiếu chi (${ds.length}) <span class="r">${ds.length?`<button class="m-btn sm" onclick="xuatCSV('chi-tiet-${n}',[['Ngày',x=>x.ngay],['Số phiếu',x=>x.so],['Nội dung',x=>x.nd],['Thụ hưởng',x=>x.th||''],['Loại',x=>S.cache.pl_loai[x.loai]||''],['Số tiền',x=>x.tien]],S.cache.pl_ct)">Xuất Excel</button>`:''}</span></div>
+    <table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Diễn giải</th><th class="num">Số tiền</th></tr>${ds.slice(0,200).map(x=>`<tr><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.so)}</td><td>${esc(x.nd)}${x.th?` <span class="muted">· ${esc(x.th)}</span>`:''}</td><td class="num">${fmt(x.tien)}</td></tr>`).join('')||'<tr><td colspan="4" class="m-empty">Không có phiếu</td></tr>'}
+    ${ds.length?`<tr class="tong"><td colspan="3"><b>Tổng cộng</b></td><td class="num"><b>${fmt(tong)}</b></td></tr>`:''}</table>
+    ${n==='khac'&&!sel?'<div class="muted bc-ghi">Lãi vay (từ trang Vay & lãi vay) cộng vào nhóm này trên bảng nhưng không nằm trong danh sách phiếu chi.</div>':''}
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`;
+  S.cache.pl_ct=ds;S.cache.pl_loai=loai}
+// ── 2. DÒNG TIỀN & NGÂN QUỸ (lưu chuyển tiền theo tháng — tiền thực thu / thực chi)
+async function pageBCLCTT(){
+  const el=$('#page'),ky=bcKy(),tab=S.f.bc_dong_tien_tab||'tong';el.innerHTML='<div class="m-empty">Đang tính...</div>';
+  const b=await rpc('kt_bc_lctt',{p_tu:ky.tu,p_den:ky.den});
+  const sel=bcCS(),ok=cs=>!sel||sel.includes(cs),loai=Object.fromEntries(b.loai.map(l=>[l.id,l])),thu={},chi={};
+  for(const x of b.thu){const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung';if(ok(cs))cong(thu,x.loai,x.thang,x.tien)}
+  for(const x of b.chi){const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung';if(ok(cs))cong(chi,x.loai,x.thang,x.tien)}
+  const am=o=>Object.fromEntries(Object.entries(o).map(([m,v])=>[m,-v])),cg=(...os)=>{const r={};os.forEach(o=>Object.entries(o||{}).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
+  const nhomChi=k=>{const l=loai[k]||{};return l.nhom_bc==='Chi đầu tư'?'dt':l.nhom_bc==='Chi tài chính'?'tc':'kd'};
+  const lThu=Object.keys(thu).sort((a,c)=>(+a)-(+c)),lChi=g=>Object.keys(chi).filter(k=>nhomChi(k)===g).sort((a,c)=>(+a)-(+c));
+  const TT=cg(...lThu.map(k=>thu[k])),CKD=am(cg(...lChi('kd').map(k=>chi[k]))),KD=cg(TT,CKD),DTU=am(cg(...lChi('dt').map(k=>chi[k]))),TC=am(cg(...lChi('tc').map(k=>chi[k]))),RONG=cg(KD,DTU,TC);
+  // số dư: chỉ khi không lọc cơ sở và tháng từ mốc tồn đầu
+  const rongTK=Object.fromEntries(b.rong.map(x=>[x.thang,+x.rong])),dau={},cuoi={};let sd=b.dau!=null&&!sel?+b.dau:null;
+  // mốc tồn đầu là ngày đầu tháng (01/09/2026) → số dư bắt đầu từ tháng chứa mốc
+  for(const m of ky.ms){if(sd==null||m<String(b.dau_ngay).slice(0,7)||m>homNay().slice(0,7)){dau[m]=null;cuoi[m]=null;continue}dau[m]=sd;sd+=rongTK[m]||0;cuoi[m]=sd}
+  const kd=bcMoOn('hdkd'),dt=bcMoOn('lcdt'),tc=bcMoOn('lctc'),ct=tab==='ct';
+  const tenL=k=>(loai[k]||{}).ten||'Khác',chiTenNgan=k=>tenL(k).replace(/^(OPEX|COGS|CAPEX|FINANCE|TAX)\s*-\s*/,'Chi ');
+  const ms=ky.ms.filter(m=>m<=homNay().slice(0,7));
+  const msSD=ms.filter(m=>dau[m]!=null);
+  const rows=[{so:'A.',ten:'Tiền đầu kỳ',v:dau,kieu:'so_du',tongSD:dau[msSD[0]],an:!!sel},
+    {so:'I.',ten:'Lưu chuyển tiền từ hoạt động kinh doanh',v:KD,kieu:'nhom',mo:ct||kd,key:'hdkd'},
+    {so:'1.',ten:'Tiền thu vào',v:TT,kieu:'nhom2',an:!(ct||kd)},...lThu.map(k=>({ten:'· '+tenL(k),v:thu[k],kieu:'con2',an:!(ct||kd)})),
+    {so:'2.',ten:'Tiền chi ra',v:CKD,kieu:'nhom2',an:!(ct||kd)},...lChi('kd').map(k=>({ten:'· '+chiTenNgan(k),v:am(chi[k]),kieu:'con2',an:!(ct||kd)})),
+    {so:'II.',ten:'Lưu chuyển tiền từ hoạt động đầu tư',v:DTU,kieu:'nhom',mo:ct||dt,key:'lcdt'},...lChi('dt').map(k=>({ten:'· '+chiTenNgan(k),v:am(chi[k]),kieu:'con2',an:!(ct||dt)})),
+    {so:'III.',ten:'Lưu chuyển tiền từ hoạt động tài chính',v:TC,kieu:'nhom',mo:ct||tc,key:'lctc'},...lChi('tc').map(k=>({ten:'· '+chiTenNgan(k)+' (gồm cả gốc + lãi)',v:am(chi[k]),kieu:'con2',an:!(ct||tc)})),
+    {so:'IV.',ten:'Lưu chuyển tiền thuần trong kỳ',v:RONG,kieu:'tong'},
+    {so:'V.',ten:'Tiền cuối kỳ',v:cuoi,kieu:'so_du',tongSD:cuoi[msSD[msSD.length-1]],an:!!sel}];
+  const bang=bcBang(rows,ky,{luyKe:tab==='lk'});
+  S.cache.bc_xuat=()=>xuatCSV('dong-tien-'+ky.tu+'_'+ky.den,[['Chỉ tiêu',r=>(r.so||'')+' '+r.ten],...ky.ms.map(m=>['T'+m.slice(5)+'/'+m.slice(0,4),r=>r.v[m]==null?'':Math.round(r.v[m])]),['Tổng',r=>r.kieu==='so_du'?Math.round(r.tongSD||0):Math.round(sumBy(ky.ms,m=>r.v[m]||0))]],rows);
+  const lech=!sel&&ky.ms.some(m=>dau[m]!=null&&Math.abs((RONG[m]||0)-(rongTK[m]||0))>=1);
+  el.innerHTML=head('Báo cáo dòng tiền & ngân quỹ <span class="badge" style="vertical-align:middle">'+esc(ky.ten)+'</span>','<span class="badge">Thực tế thu, chi bao nhiêu tiền và còn bao nhiêu</span>')
+    +bcBar([['tong','Dòng tiền tổng hợp'],['ct','Dòng tiền chi tiết'],['lk','Luỹ kế']],tab)+bang
+    +`<div class="muted bc-ghi">Tiền thực: phiếu thu đã duyệt (theo ngày thu) · phiếu chi đã thanh toán (theo ngày trả, không phân bổ tháng) · điều chuyển giữa các tài khoản công ty không tính (tự triệt tiêu).
+      Số dư đầu / cuối kỳ chỉ có từ mốc tồn đầu ${fmtD(b.moc)}${sel?' và ẩn khi lọc theo cơ sở (số dư là của tài khoản, không chia theo cơ sở)':''}.${lech?' <span class="neg-t">Có phiếu đã thu / chi chưa chọn tài khoản → số dư lệch với dòng lưu chuyển — xem trang Sổ quỹ.</span>':''}</div>`;
+}
 async function pagePL(){
   const el=$('#page');el.innerHTML=head('P&L',kyBar())+'<div class="empty">Đang tính...</div>';
   const b=await rpc('kt_bc_pl',{p_tu:S.tu,p_den:S.den});
@@ -2657,6 +2853,11 @@ const LOGIC=[
   '<b>Doanh thu theo nhóm hàng / mặt hàng</b> = tiền từng dòng hàng, <b>chưa trừ giảm giá trên tổng hoá đơn</b> và trả hàng → cộng lại sẽ lớn hơn doanh thu (Kiot cũng tính như vậy ở báo cáo hàng hoá).',
   '<b>Công nợ khách / NCC</b> trong báo cáo Khách hàng / NCC = số Kiot đang ghi. Khách: dương = khách còn nợ, âm = khách trả trước. NCC: giữ nguyên dấu Kiot (chờ kế toán xác nhận ý nghĩa dấu).',
   'Phiếu nhập trạng thái 4 (theo Kiot là đã huỷ) không tính.']],
+ ['Báo cáo quản trị (14/10/2026 — trước mắt P&L + Dòng tiền)',[
+  '<b>P&L (kết quả kinh doanh)</b>: 1 Doanh thu thuần = hoá đơn Kiot hoàn thành − trả hàng, theo cơ sở bán · 2 Giá vốn = giá vốn bình quân Kiot lúc kéo (gần đúng) · 3 Lợi nhuận gộp · 4 Chi phí = phiếu chi đã thanh toán nhóm vận hành, ghi theo <b>tháng phân bổ</b> (phiếu không phân bổ: tháng thanh toán), chia 6 nhóm theo loại chi (Lương & BHXH → bán hàng · Vận hành & quản lí → quản lý DN · Marketing · Mặt bằng → cửa hàng · Logistics → đóng gói & vận chuyển · Khác + lãi vay → khác) · 5 LN trước thuế · 6 Thuế (loại chi TAX) · 7 LN ròng. Không gồm nhập hàng (đã nằm trong giá vốn), trả gốc vay, đầu tư.',
+  'Chọn <b>cả năm</b> → 12 tháng + tổng năm · <b>1 tháng</b> → Kế hoạch / Thực hiện / % HT / % DT · <b>khoảng tháng</b> → các tháng + tổng. Bấm nhóm chi phí → khoản mục con + danh sách phiếu chi. Kế hoạch (ngân sách) chưa có dữ liệu → để trống. Chi phí chung (Tổng công ty, kho tổng, bộ phận) không chia về cơ sở trừ khi kế toán phân bổ ở phiếu chi.',
+  '<b>Dòng tiền</b>: tiền thực — phiếu thu đã duyệt (ngày thu), phiếu chi đã thanh toán (ngày trả, không phân bổ) xếp Hoạt động kinh doanh / Đầu tư / Tài chính (chi tài chính gồm cả gốc + lãi vay). Điều chuyển giữa tài khoản công ty tự triệt tiêu. Số dư đầu / cuối kỳ chỉ có từ mốc tồn đầu 01/09/2026, không chia theo cơ sở.',
+  '<b>Doanh thu thực tế vs doanh thu trên đơn</b> (Tổng quan): thực tế = hoá đơn đã đi hàng − trả hàng. Trên đơn = đơn đặt hàng Kiot có cọc (đã trả tiền trên đơn, hoặc khách đang có tiền trả trước — luật cọc như app MKT/Sale); phiếu tạm không dấu vết tiền = báo giá, không tính. Đơn đã cọc chưa đi hàng là doanh thu DỰ KIẾN, ghi nhận vào tháng xuất hoá đơn. Nguồn doanh thu theo kênh = ô kênh bán trên hoá đơn Kiot; doanh thu theo nhóm hàng CHA kèm lợi nhuận gộp.']],
  ['Nhật ký kéo & so khớp Kiot (14/10/2026)',[
   'Trang <b>Cài đặt → Nhật ký kéo &amp; so khớp Kiot</b>: lịch chạy tự động, lịch sử từng lần kéo (OK / lỗi, kéo được gì), bảng so khớp doanh thu từng tháng và so khớp tồn kho.',
   '<b>So doanh thu tháng</b>: kéo LẠI toàn bộ hoá đơn + trả hàng của tháng từ Kiot, so <b>từng mã</b> với dữ liệu app (thiếu / thừa / lệch trạng thái, tiền) và tổng theo chi nhánh. Phần app thiếu / lệch được <b>tự ghi bù ngay</b>; phần app thừa chỉ báo, không xoá. Tự chạy 23:50 mỗi ngày cho tháng này + tháng trước; bấm tay được từng tháng hoặc cả năm.',

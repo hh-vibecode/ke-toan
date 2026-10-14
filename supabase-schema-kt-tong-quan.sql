@@ -19,7 +19,7 @@ begin
   ban180 as (select distinct h.chi_nhanh cn, d->>'ma' ma from kt_kiot_hoa_don h cross join lateral jsonb_array_elements(h.chi_tiet) d
                where h.trang_thai = 1 and (h.ngay at time zone 'Asia/Ho_Chi_Minh')::date between p_den - 180 and p_den),
   ton as (select t->>'cn' cn, p.ma, coalesce(p.nhom, '(không nhóm)') nhom, (t->>'ton')::numeric sl, (t->>'ton')::numeric * coalesce((t->>'gia_von')::numeric, 0) gt
-            from kt_kiot_hang p cross join lateral jsonb_array_elements(p.ton) t where (t->>'ton')::numeric > 0)
+            from kt_kiot_hang p cross join lateral jsonb_array_elements(p.ton) t where p.dv_goc_id is null and (t->>'ton')::numeric > 0)   -- chỉ đơn vị gốc (14/10/2026: đơn vị quy đổi Kiot trùng lượng hàng)
   select jsonb_build_object(
     'top_kh', (select coalesce(jsonb_agg(jsonb_build_object('id', kh.khach_id, 'ma', kh.ma, 'ten', kh.ten, 'dt', kh.dt, 'so', kh.so, 'cn', kh.cn, 'dt0', coalesce(hd0.dt, 0)) order by kh.dt desc), '[]')
                  from kh left join hd0 on hd0.khach_id = kh.khach_id),

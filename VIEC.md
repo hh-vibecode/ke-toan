@@ -84,6 +84,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 8 | Kéo chứng từ cũ từ Google Drive lên app (`scripts/keo-chung-tu-drive.js [T9|tat_ca] [ghi]`, chạy lại không trùng) | **XONG 12/10** (2 tài khoản Drive): 1.884 file / 839 phiếu (~1,1 GB, ảnh gốc chưa nén; gói Supabase Pro). Còn 22 file cả 2 tài khoản không mở được · 80 file không phải ảnh/PDF hoặc > 15 MB · 2 lỗi — chạy lại không trùng |
 | 9 | Tồn kho: lịch `kt-kiot-hang-dem` 23:20 kéo đầy đủ hàng hoá + `kt-ton-kho` 23:40 chụp (`scripts/trien-khai-ton-kho.js`) | theo dõi nhật ký `chup_ton_kho`; làm màn hình xem tồn theo ngày khi cần |
 | 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
+| 12 | **Góp ý kế toán 14/10 còn lại** (ảnh chị Jaycie): (a) Sổ quỹ — tải sao kê ngân hàng hằng tuần để app tự khớp + cảnh báo lệch (CHỜ file sao kê mẫu từng ngân hàng); (b) két tiền mặt — kiểm quỹ cuối ngày nhập số đếm + ảnh sổ, so sổ sách; (c) Phải thu — tách "COD đang chờ thu" / "chưa lấy hàng" từ ô COD + ghi chú đơn (đã kéo cột `cod`, `ghi_chu` về `kt_kiot_hoa_don` / `kt_kiot_dat_hang`), cần quy định sales ghi chú; (d) kiểm cột "Người phụ trách" công nợ đang lấy NV nào; (e) NCC: chi phí vận chuyển / hải quan vào giá vốn, NCC nước ngoài — CHỜ chị mô tả quy trình | xem nhật ký 14/10 (5) |
+| 13 | **8 nhóm báo cáo quản trị** (anh gửi 14/10): 1 P&L ✓ · 2 Hiệu suất KD & đơn hàng (đã chốt bao nhiêu đơn, doanh số chưa ghi nhận) · 3 Dòng tiền & ngân quỹ ✓ · 4 Công nợ & dòng tiền dự kiến · 5 Chi phí & ngân sách (nhập kế hoạch → cột Kế hoạch / % HT của P&L) · 6 Hàng tồn & hiệu quả hàng hoá · 7 Vay vốn & chi phí tài chính · 8 Hiệu quả theo cơ sở / kênh bán | trước mắt chỉ P&L + Dòng tiền (anh 14/10); dữ liệu đơn đặt / cọc / kênh đã kéo sẵn cho 2 và 8 |
+| 14 | Cài đặt → Loại thu / chi: chưa có ô sửa **nhóm P&L** (`kt_loai.nhom_pl`) — đang sửa bằng SQL; Lương & BHXH tạm vào "Chi phí bán hàng" (chờ kế toán xác nhận) | |
 | 10 | Theo dõi trang **Cài đặt → Nhật ký kéo & so khớp Kiot** (14/10): lịch `kt-kiot-doi-chieu` 23:50 so tháng này + trước; lần kéo đầy đủ 23:20 tự so tồn; lần kéo 3 tiếng lấy lại tồn mặt hàng vừa phát sinh (`ton_cap_nhat` trong nhật ký) | lần kéo đầy đủ hàng ~90 giây (giới hạn Edge Function 150 giây ở gói thường / 400 giây gói Pro) — nếu lỗi hết giờ thì tách so tồn ra lần riêng |
 | 11 | Khoá `KT_CRON_KEY` bị in ra kết quả lệnh trong phiên cloud 14/10 (xem nhật ký) | chờ anh quyết có đổi khoá không (đổi xong phải chép khoá mới vào `kt-keys.local.txt` trên máy anh) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
@@ -134,6 +137,20 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (5)** — (phiên cloud, nối tiếp phiên VS Code "App kế toán" hết lượt 14:19 giữa chừng — đọc lại nhật ký phiên đó, 3 ảnh góp ý chị Jaycie).
+  Phiên VS Code đã xong đợt 1–3 (commit e77c22b, c6174e4, c901cc7, 8d4a279) nhưng còn dở phần kéo thêm Kiot (file chưa commit trên máy anh: `supabase-schema-kt-kiot-don.sql`,
+  sửa `kt-kiot`, `scripts/keo-bu-kiot-them.js` — đã làm lại trên cloud, **máy anh cần bỏ các file sửa dở đó trước khi `git pull`**).
+  (1) **Kéo thêm Kiot**: bảng `kt_kiot_dat_hang` (đơn đặt hàng, 2.012 đơn 2026), `kt_kiot_kenh` (20 kênh), `kt_kiot_nhom` (85 nhóm cha/con), hoá đơn thêm `kenh_id` `ghi_chu` `cod` `dat_hang_id`
+  (kéo bù 7.600 HĐ, giữ nguyên giá vốn); `kt-kiot` v13 kéo đơn đặt 15 phút / lần, danh mục nhóm + kênh ở lần kéo đầy đủ đêm.
+  (2) **Tổng quan**: ô A "Doanh thu thực tế & doanh thu trên đơn" (thực tế = HĐ đi hàng − trả; trên đơn = đơn có cọc, luật cọc như app MKT/Sale: trả tiền trên đơn hoặc khách có nợ âm;
+  đơn đặt trong kỳ chia đi hàng / cọc chưa đi / báo giá / huỷ; đã cọc chưa đi hàng theo tháng đặt, bấm xem từng đơn + xuất Excel) · ô B nguồn doanh thu theo kênh bán ·
+  nhóm hàng CHA + lợi nhuận gộp + biên (`kt_tq_don`). **Sửa lỗi**: phiên VS Code viết lại `kt_tq_bo_sung` trên bản cũ → tồn kho Tổng quan lại cộng trùng đơn vị quy đổi → đã sửa lại (file + CSDL).
+  (3) **Báo cáo quản trị theo mẫu anh**: menu chỉ còn 1 P&L + 2 Dòng tiền (Tài sản, P&L thực thu cũ vẫn mở bằng link). P&L 7 dòng (DT theo cơ sở, GV, LN gộp, 6 nhóm chi phí, LN trước thuế, Thuế, LN ròng),
+  chọn năm / 1 tháng (Kế hoạch – Thực hiện – %HT – %DT) / khoảng tháng, tab tổng hợp / chi tiết / so sánh cơ sở / luỹ kế / thực tế–kế hoạch (chưa có kế hoạch → trống), bấm nhóm chi phí → khoản mục + phiếu chi,
+  đơn vị nghìn / triệu / đồng, xuất Excel. Dòng tiền: HĐKD / đầu tư / tài chính, tiền đầu–cuối kỳ từ mốc 01/09. SQL `supabase-schema-kt-bao-cao-qt.sql` (`kt_bc_pl2`, `kt_pl_ct`, `kt_bc_lctt`, cột `kt_loai.nhom_pl`,
+  thêm loại chi "TAX - Thuế (GTGT, TNCN)").
+  (4) Gỡ logo (menu trái + màn đầu), giữ chữ TÂN HƯNG THỊNH. (5) Kiểm: chụp Tổng quan, P&L (năm / tháng / khoảng / so sánh cơ sở / bấm chi phí), Dòng tiền bằng tài khoản tạm (đã xoá); chạy thật 1 lần kéo Kiot v13 OK.
+  **Chưa làm / chờ**: xem mục 2 dòng 12–14. Lưu ý số liệu: phần lớn doanh thu hoá đơn KHÔNG ghi kênh bán trên Kiot (bán tại quầy) · Shidai chưa có phiếu chi gắn đơn vị Shidai nên chi phí Shidai = 0 (đang ở "Chung").
 - **14/10/2026 (4)** — Anh: "các bước duyệt hiện ra dễ click hơn, xem cả giai đoạn phiếu như luồng duyệt của Lark". Trang Phiếu chi:
   cột **Luồng duyệt · thao tác** (4 chấm Đề nghị → KT kiểm → GĐ xác nhận → Thanh toán, chữ "Chờ … · N ngày", rê chuột xem ai / lúc nào) + nút **✓ Kiểm / ✓ Duyệt / ↩ / ✕ / Thanh toán…**
   ngay trên dòng (đúng người đúng bước) · **tick nhiều phiếu duyệt / từ chối 1 lần** · tab **Chờ tôi xử lý** (mở sẵn khi có phiếu chờ mình) · khung chi tiết có **dòng thời gian dọc**.
