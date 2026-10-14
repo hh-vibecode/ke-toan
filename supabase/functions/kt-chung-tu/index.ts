@@ -1,6 +1,7 @@
 // Edge Function kt-chung-tu — cấp link ký tên (5 phút) để TẢI LÊN / XEM / TẢI VỀ chứng từ trong bucket riêng tư 'kt-chung-tu'.
 // Trang web gửi phiên đăng nhập; hàm kiểm phiên + quyền theo trang / dòng (kt_quyen_chung_tu) bằng service_role rồi mới ký link.
 // Body: {phien, viec:'tai_len', bang, dong_id, ten}  → {duong_dan, url}   (trình duyệt PUT file vào url)
+//       {viec:'tai_len_phieu', ma, ten} → {duong_dan, url}   (phiếu đề nghị công khai — kiểm bằng mã phiếu, không cần phiên)
 //       {phien, viec:'xem', ids:[...], tai_ve?:bool} → {ds:[{id, url}]}
 // Monsieur Claude
 const SB = Deno.env.get('SUPABASE_URL')!, SK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -24,6 +25,16 @@ Deno.serve(async req => {
     if (b.viec === 'tai_len') {
       await quyen(b.phien, b.bang, true, [Number(b.dong_id)]);
       const duong = `${b.bang}/${Number(b.dong_id)}/${Date.now()}_${sach(String(b.ten || 'tep'))}`;
+      const r = await fetch(`${SB}/storage/v1/object/upload/sign/${BUCKET}/${duong}`, { method: 'POST', headers: H, body: '{}' });
+      if (!r.ok) throw new Error('Ký link tải lên lỗi ' + r.status);
+      const j = await r.json();
+      return tra({ duong_dan: duong, url: `${SB}/storage/v1${j.url}` });
+    }
+    if (b.viec === 'tai_len_phieu') {   // phiếu đề nghị công khai (14/10/2026): không đăng nhập — mã phiếu bí mật, 3 giờ, tối đa 15 file
+      const q = await fetch(`${SB}/rest/v1/rpc/kt_quyen_ct_phieu`, { method: 'POST', headers: H, body: JSON.stringify({ p_ma: String(b.ma || '') }) });
+      if (!q.ok) { const j = await q.json().catch(() => ({})); throw new Error(j.message || 'Mã phiếu không đúng'); }
+      const id = Number(await q.json());
+      const duong = `chi/${id}/${Date.now()}_${sach(String(b.ten || 'tep'))}`;
       const r = await fetch(`${SB}/storage/v1/object/upload/sign/${BUCKET}/${duong}`, { method: 'POST', headers: H, body: '{}' });
       if (!r.ok) throw new Error('Ký link tải lên lỗi ' + r.status);
       const j = await r.json();

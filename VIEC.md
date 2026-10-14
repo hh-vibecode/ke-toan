@@ -108,6 +108,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
   → **kế toán kiểm, xác nhận lượt 1** → **giám đốc xác nhận lại (lượt 2)** → kế toán thanh toán. Người kiểm lượt 1 không tự xác nhận lượt 2.
   Quyền `chi_duyet` = kế toán kiểm + thanh toán (Admin có); `chi_gd` = giám đốc xác nhận — KHÔNG đi theo Admin, chỉ Supreme cấp / bỏ và đặt lại mật khẩu
   tài khoản có `chi_gd`. `chi_de_nghi` (nhân viên tạo trên app) giữ nhưng KHÔNG dùng — anh: "nhân viên m quan tâm làm gì". SQL: `supabase-schema-kt-duyet-2-cap.sql`.
+  **Từ 14/10: bộ phận gửi Phiếu đề nghị thanh toán ngay trên màn đầu app (không cần tài khoản, link `#de-nghi`) — thay link Google Form; vào cùng luồng 2 lượt.**
   Phiếu chi Kiot trước 08/10 KHÔNG kéo. Chống trùng: ghép phiếu app đánh dấu 4A cùng số tiền ±5 ngày; trùng khác → nhãn "Nghi trùng".
   Anh chốt 09/10: "Đã thanh toán luôn" KHÔNG cần giám đốc xác nhận · phiếu Kiot tự sinh (TTTH trả hàng, PCPN trả NCC) CÓ qua đủ 2 lượt.
 - **File khoá `kt-keys.local.txt` chỉ chứa khoá app kế toán** (anh chốt 09/10, đã dọn: bỏ Pancake / Meta / OpenAI / mật khẩu CSDL / link app MKT).
@@ -133,6 +134,16 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (3)** — **Phiếu đề nghị thanh toán ngay trên app** (kế toán chị Jaycie đề xuất bỏ link Google Form ngoài; anh: "tách màn ra 1 phần phiếu vs 1 phần để đăng nhập,
+  phiếu đẩy dữ liệu về để duyệt chi, đảm bảo dữ liệu đầy đủ"). Màn đầu 2 phần: **Đề nghị thanh toán** (không cần tài khoản) | **Đăng nhập**. Link gửi bộ phận: link app + `#de-nghi`.
+  14 mục như form cũ (+ hình thức nhận tiền, tiền bằng chữ để soát số 0, nhiều đơn vị chịu phí tự chia đều) → `kt_chi` 'Chờ kế toán kiểm', nguồn `phieu`, chuông kế toán → luồng 2 lượt.
+  Hồ sơ ảnh / PDF lên kho riêng tư bằng mã phiếu bí mật (3 giờ, ≤ 15 file); người gửi có link theo dõi `#phieu=<mã>` (trạng thái 4 bước, không lộ STK); máy gửi nhớ 20 phiếu.
+  An toàn: kiểm hết ở SQL, bảng vẫn khoá anon, 10 phiếu / giờ / IP + 60 / giờ toàn hệ thống, chặn bấm gửi 2 lần (30 phút), ô bẫy máy tự điền.
+  File: `supabase-schema-kt-de-nghi-cong-khai.sql` (bảng `kt_chi_phieu`, hàm `kt_gui_de_nghi` `kt_dm_de_nghi` `kt_them_ct_phieu` `kt_xem_de_nghi`), Edge Function `kt-chung-tu` v5 (việc `tai_len_phieu`),
+  `scripts/trien-khai-de-nghi.js`. Trang Chi: lọc nguồn "Phiếu đề nghị (link công khai)"; trang Logic.
+  Kiểm: API 29/29 (chặn 12 kiểu dữ liệu sai, chèn trạng thái "đã TT", mã sai, ghi hồ sơ sang phiếu khác; anon không đọc được bảng) + giao diện máy tính / điện thoại gửi thật 1 phiếu có hồ sơ.
+  Dữ liệu thử (3 phiếu "THỬ NGHIỆM HỆ THỐNG", hồ sơ, chuông) đã xoá — chuông thử tồn tại vài giây, kế toán có thể đã thấy nháy 1 thông báo. Số phiếu chi nhảy qua vài số (1530–1533) do phiếu thử.
+  Chưa làm: bỏ hẳn luồng nhân viên đề xuất chi trên Kiot (vẫn chạy song song — nếu 1 khoản vừa đề xuất Kiot vừa gửi phiếu thì nhãn "Nghi trùng" bắt khi cùng số tiền ±5 ngày).
 - **14/10/2026 (2)** — Anh: "chủ động up đi" → đẩy thẳng `main` (bản 09:35 live). Anh: "duy trì đối chiếu với Kiot, có vấn đề báo t hoặc báo vào app" →
   **cảnh báo vào chuông** (`supabase-schema-kt-kiot-canh-bao.sql`, hàm `kt_canh_bao_kiot`, lịch `kt-kiot-canh-bao` phút 5 mỗi giờ + gọi cuối mỗi lần chạy `kt-kiot` v12):
   kéo lỗi · quá 4 tiếng không kéo được · lịch so 23:50 không chạy · tháng còn lệch không tự bù được · tồn lệch > 1%. Báo người có quyền Nhật ký, cùng vấn đề 12 tiếng báo 1 lần;
