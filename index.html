@@ -744,7 +744,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 14:08';
+const APP_VERSION='14/10/2026 14:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -754,7 +754,7 @@ const TRANG_TIEN=['tong_quan','dong_tien','thu','chi','dieu_chuyen','pl'];
 const NGAN_HANG=['Vietcombank','BIDV','VietinBank','Agribank','Techcombank','MB Bank','VPBank','ACB','Sacombank','TPBank','VIB','HDBank','SHB','MSB','OCB','SeABank','Eximbank','LPBank','Nam A Bank','Bắc Á Bank','ABBank','PVcomBank','BaoViet Bank','Kienlongbank','Saigonbank','VietABank','NCB','Viet Capital Bank','Cake','Timo','Tiền mặt'];
 const TT_CHI={cho_duyet:['Chờ kế toán kiểm','warn'],cho_gd:['Chờ GĐ xác nhận','teal'],cho_tt:['Chờ thanh toán','info'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối thanh toán','bad']};
 const MAU_TAB={cua_toi:'bad',cho_duyet:'warn',cho_gd:'teal',nghi_trung:'bad',nghi_loai:'bad',cho_tt:'info',qua_han:'bad',da_tt:'ok',tu_choi:'grey',hd_do:'vio',tat_ca:'accent'};
-const TT_THU={cho_duyet:['Chờ duyệt','warn'],da_duyet:['Đã duyệt','ok'],tu_choi:['Từ chối','bad']};
+const TT_THU={cho_duyet:['Chưa thu','warn'],da_duyet:['Đã thu','ok'],tu_choi:['Đã huỷ','bad']};   // 14/10 kế toán: phiếu thu chỉ Đã thu / Chưa thu
 const NGUON={tay:'Nhập',kiot:'Kiot',sheet_cu:'Sheet cũ',app:'App'};
 const PL_NO={cod:'Đơn hàng COD',no:'Đơn hàng nợ',no_npp:'Đơn hàng nợ NPP',cho_xu_ly:'Đơn chờ xử lý',tra_hang:'Đơn sẽ trả hàng'};
 // anh 09/10: tài khoản anh hiển thị là Admin (bên trong vẫn vi_tri 'supreme' = chủ app: cấp / bỏ quyền giám đốc xác nhận chi)
@@ -1421,42 +1421,84 @@ async function luuTT(id,ng,v){try{await rpc('kt_luu_ton_thuc_te',{p_tai_khoan_id
 
 // ── THU ────────────────────────────────────────────────────────────────────
 async function pageThu(){
-  const el=$('#page');el.innerHTML=head('Thu',kyBar())+'<div class="empty">Đang tải...</div>';
-  const ds=await rpc('kt_ds',{p_bang:'thu',p_tu:S.tu,p_den:S.den});S.cache.thu=ds;
-  const f=S.f;const q=(f.thu_q||'').toLowerCase();
-  const l=ds.filter(x=>(!f.thu_loai||x.loai_id==f.thu_loai)&&(!f.thu_dv||x.don_vi_id==f.thu_dv)&&(!f.thu_tk||x.tai_khoan_id==f.thu_tk)
-    &&(!f.thu_nguon||x.nguon===f.thu_nguon)&&(!q||(x.noi_dung+' '+(x.ghi_chu||'')).toLowerCase().includes(q)));
-  const sel=(k,list,trong)=>`<select class="sel ${f[k]?'on':''}" onchange="S.f.${k}=this.value;render()">${opts(list,f[k],trong)}</select>`;
-  el.innerHTML=head('Thu',kyBar()+(coGhi()?'<button class="btn pri" onclick="formThu()">+ Thêm khoản thu</button>':''))+
-    `<div class="bar">${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Mọi loại thu')}${sel('thu_dv',S.dm.don_vi.filter(x=>x.la_co_so),'Mọi cơ sở')}
-      ${sel('thu_tk',S.dm.tai_khoan,'Mọi tài khoản')}<select class="sel ${f.thu_nguon?'on':''}" onchange="S.f.thu_nguon=this.value;render()"><option value="">Mọi nguồn</option>${optsObj({tay:'Nhập',kiot:'Kiot',sheet_cu:'Sheet cũ'},f.thu_nguon)}</select>
-      <input type="search" class="sel" placeholder="Tìm nội dung" value="${esc(f.thu_q||'')}" onchange="S.f.thu_q=this.value;render()">
-      <span class="badge">${l.length} khoản · ${fmt(sumBy(l,x=>x.so_tien))}</span></div>
-    ${soQuy(l,x=>x.ngay,x=>`<div class="li li3" onclick="formThu(${x.id})"><div class="m"><div class="t1">${esc(x.noi_dung)}${ghim('thu',x)}</div>
-        <div class="t2">${esc((dv(x.don_vi_id)||{}).ten||'')} · ${esc((tk(x.tai_khoan_id)||{}).ten||'')} · ${esc((lo(x.loai_id)||{}).ten||'')}</div></div>
-      <div class="s"><span class="badge">${esc(NGUON[x.nguon]||x.nguon)}</span> ${x.trang_thai!=='da_duyet'?vb(...TT_THU[x.trang_thai]):''}</div>
-      <div class="a pos">+${fmt(x.so_tien)}</div></div>`,'Chưa có khoản thu trong kỳ')}`;
+  // PHIẾU THU — giao diện mẫu (kế toán 14/10/2026: "giao diện hơi kì", trạng thái chỉ Đã thu / Chưa thu): thẻ số · tab · lọc · bảng + khung chi tiết khi bấm
+  const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const [tu0,den0]=kyTruoc(S.tu,S.den);
+  const [ds,ds0]=await Promise.all([rpc('kt_ds',{p_bang:'thu',p_tu:S.tu,p_den:S.den}),rpc('kt_ds',{p_bang:'thu',p_tu:tu0,p_den:den0})]);S.cache.thu=ds;
+  const f=S.f,q=(f.thu_q||'').toLowerCase();f.thu_tt=f.thu_tt||'tat_ca';
+  const csOK=x=>locCSAll()||locCS().includes(csCuaDV(x.don_vi_id)),tkOK=x=>locTK().length===LOC_TK.length||(x.tai_khoan_id&&locTK().includes(tkNhom(x.tai_khoan_id)));
+  const nen=ds.filter(x=>csOK(x)&&tkOK(x)),nen0=ds0.filter(x=>csOK(x)&&tkOK(x));
+  const loc={tat_ca:x=>true,da_thu:x=>x.trang_thai==='da_duyet',chua_thu:x=>x.trang_thai==='cho_duyet',kiot:x=>x.nguon==='kiot',tay:x=>x.nguon!=='kiot'};
+  const nhan={tat_ca:'Tất cả',da_thu:'Đã thu',chua_thu:'Chưa thu',kiot:'Từ Kiot',tay:'Nhập trên app'};
+  const l=nen.filter(loc[f.thu_tt]).filter(x=>(!f.thu_loai||x.loai_id==f.thu_loai)&&(!f.thu_tk||x.tai_khoan_id==f.thu_tk)&&(!q||[x.noi_dung,x.ghi_chu].join(' ').toLowerCase().includes(q)));
+  const da=nen.filter(loc.da_thu),da0=nen0.filter(loc.da_thu),tien=a=>sumBy(a,x=>x.so_tien),theoLoai=t=>da.filter(x=>((lo(x.loai_id)||{}).ten||'')===t);
+  const pt=(a,b)=>{if(!b)return '';const p=(a-b)/Math.abs(b)*100;return `<span class="${p>=0?'pos-t':'neg-t'}">${p>=0?'↑':'↓'} ${Math.round(Math.abs(p))}%</span> so với kỳ trước`};
+  const IC={vi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H4zm0 4h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm11 3v2h3v-2z"/></svg>',
+    ban:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h2l2.4 10.4A2 2 0 0 0 9.3 16H18v-2H9.3l-.3-1.2L19 12l1.5-6H6.2L5.8 4zM9 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm8 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>',
+    no:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h12v3H3zM3 10h8v3H3zM14 11h7l-3-3h3l3 3-3 3h-3l3-3h-7zM3 15h10v3H3z"/></svg>',
+    coc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 3 6v6c0 5 3.8 9.7 9 11 5.2-1.3 9-6 9-11V6zm-1 14-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10z"/></svg>',
+    gio:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4 3.3 2-.9 1.6L11 13.3V6h2z"/></svg>',
+    khac:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm3 8h8v2H9zm0 4h8v2H9z"/></svg>'};
+  const the=(c,ic,l1,v,s1,s2,key)=>`<div class="m-k ${key?'click':''} ${key&&f.thu_tt===key?'on':''}" style="--c:var(--${c})" ${key?`onclick="S.f.thu_tt='${key}';S.f.thu_tr=1;render()"`:''}><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${fmt(v)}</div><div class="s">${s1||''}</div>${s2?`<div class="s" style="margin-top:4px">${s2}</div>`:''}</div></div>`;
+  const tm=sumBy(da.filter(x=>tkNhom(x.tai_khoan_id)==='tien_mat'),x=>x.so_tien);
+  const moi=f.thu_moi||20,[a,b,tr]=phanTrang('thu',l.length,moi),trang=l.slice(a,b);
+  const chon=f.thu_chon&&l.some(x=>x.id===f.thu_chon)?f.thu_chon:null;
+  const soPT=x=>{const m=String(x.noi_dung||'').match(/Kiot (\S+)$/);return m?m[1]:'PT'+String(x.id).padStart(6,'0')};
+  const ndGon=x=>String(x.noi_dung||'').replace(/ · Kiot \S+$/,'');
+  const csTen=x=>{const c=csCuaDV(x.don_vi_id);return c?(CS3.find(z=>z[0]===c)||[])[1]:((dv(x.don_vi_id)||{}).ten||'')};
+  const ttP=x=>x.trang_thai==='da_duyet'?pill('Đã thu','ok'):x.trang_thai==='cho_duyet'?pill('Chưa thu','warn'):pill('Đã huỷ','bad');
+  const cols=[['Ngày',x=>x.ngay],['Số phiếu',soPT],['Nội dung',ndGon],['Cơ sở',csTen],['Tài khoản',x=>(tk(x.tai_khoan_id)||{}).ten||''],['Loại thu',x=>(lo(x.loai_id)||{}).ten||''],['Số tiền',x=>x.so_tien],['Trạng thái',x=>x.trang_thai==='da_duyet'?'Đã thu':'Chưa thu'],['Nguồn',x=>NGUON[x.nguon]||x.nguon]];
+  S.cache.thu_xuat=()=>xuatCSV('phieu-thu-'+S.tu+'_'+S.den,cols,l);
+  const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.thu_tr=1;render()">${opts(list,f[k],trong)}</select>`;
+  el.innerHTML=`<div class="m-kpis m-k3">
+      ${the('ok','vi',(kyHienTai().startsWith('m:')?'Tổng thu tháng '+(+S.tu.slice(5,7)):'Tổng thu trong kỳ'),tien(da),pt(tien(da),tien(da0)),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tm)}</b><span>Ngân hàng:</span><b>${fmt(tien(da)-tm)}</b></div>`,'da_thu')}
+      ${the('info','ban','Thu bán hàng',tien(theoLoai('Thu bán hàng')),theoLoai('Thu bán hàng').length+' phiếu','')}
+      ${the('teal','no','Thu công nợ',tien(theoLoai('Thu công nợ')),theoLoai('Thu công nợ').length+' phiếu','')}
+      ${the('vio','coc','Thu đặt cọc',tien(theoLoai('Thu đặt cọc')),theoLoai('Thu đặt cọc').length+' phiếu','')}
+      ${the('grey','khac','Thu khác',tien(da.filter(x=>!['Thu bán hàng','Thu công nợ','Thu đặt cọc'].includes((lo(x.loai_id)||{}).ten))),'Lãi NH, hoàn tiền, vốn góp…','')}
+      ${the('warn','gio','Chưa thu',tien(nen.filter(loc.chua_thu)),nen.filter(loc.chua_thu).length+' phiếu','','chua_thu')}</div>
+    <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
+      <div class="m-seg" style="margin-bottom:10px">${Object.keys(nhan).map(k=>`<button class="${f.thu_tt===k?'on':''}" onclick="S.f.thu_tt='${k}';S.f.thu_tr=1;render()">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
+      <div class="m-flt" style="align-items:center"><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span>
+        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
+        ${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Tất cả loại thu')}${sel('thu_tk',S.dm.tai_khoan,'Tất cả tài khoản')}
+        <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.thu_xuat()">${IC_XLS} Xuất Excel</button>${coGhi('thu')?`<button class="m-btn pri" onclick="formThu()">+ Tạo phiếu thu</button>`:''}</div>
+      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Cơ sở</th><th>Tài khoản nhận</th><th>Loại thu</th><th class="num">Số tiền</th><th class="c">Trạng thái</th><th class="c">Nguồn</th></tr>
+        ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="formThu(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw m-link">${esc(soPT(x))}</td>
+          <td class="ten">${esc(ndGon(x))}${ghim('thu',x)}</td><td class="nw">${esc(csTen(x))}</td><td class="nw">${esc((tk(x.tai_khoan_id)||{}).ten||'')}</td><td class="nw">${esc((lo(x.loai_id)||{}).ten||'')}</td>
+          <td class="num"><b class="pos-t">+${fmt(x.so_tien)}</b></td><td class="c">${ttP(x)}</td><td class="c">${pill(NGUON[x.nguon]||x.nguon,x.nguon==='kiot'?'info':'')}</td></tr>`).join('')||'<tr><td colspan="9" class="m-empty">Chưa có khoản thu trong kỳ</td></tr>'}</table></div>
+        ${thanhTrang('thu',l.length,moi,tr,'phiếu')}</div></div>
+      <aside class="m-pn" id="thu-ct"></aside></div>`;
+  if(chon)formThu(chon);
 }
 function formThu(id){
   const x=id?S.cache.thu.find(t=>t.id===id):{ngay:homNay(),trang_thai:'da_duyet'};
-  const ro=!coGhi()||x.nguon==='kiot';
-  const m=modal(`<h2>${id?'Khoản thu':'Thêm khoản thu'}${x.nguon==='kiot'?' <span class="badge">từ Kiot — chỉ xem</span>':''}</h2>
+  const ro=!coGhi('thu')||x.nguon==='kiot';
+  const html=`<div class="m-pn-h"><h2>${id?esc((String(x.noi_dung||'').match(/Kiot (\S+)$/)||[])[1]||'PT'+String(id).padStart(6,'0')):'Tạo phiếu thu'}</h2>${pill('Phiếu thu','ok')}${x.nguon==='kiot'?' '+pill('Từ Kiot — chỉ xem','info'):''}
+      <span class="r"><button class="x" onclick="dongThuCT()">✕</button></span></div><div class="m-pn-b">
     <div class="form" id="f">
       <label>Ngày thu<input type="date" name="ngay" value="${x.ngay}" min="${MOC_TIEN}"></label>
       <label>Số tiền${moneyIn('so_tien',x.so_tien)}</label>
       <label>Loại thu<select name="loai_id" onchange="goiYNoiDungThu()">${opts(loai('thu'),x.loai_id,'— chọn —')}</select></label>
       <label>Cơ sở<select name="don_vi_id" onchange="goiYNoiDungThu()">${opts(coSo(),x.don_vi_id,'— chọn —')}</select></label>
       <label>Tài khoản nhận<select name="tai_khoan_id">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label>
-      <label>Trạng thái<select name="trang_thai">${optsObj({da_duyet:'Đã duyệt',cho_duyet:'Chờ duyệt',tu_choi:'Từ chối'},x.trang_thai)}</select></label>
+      <label>Trạng thái<select name="trang_thai">${optsObj({da_duyet:'Đã thu',cho_duyet:'Chưa thu'},x.trang_thai==='tu_choi'?'cho_duyet':x.trang_thai)}</select></label>
       <label class="full">Nội dung<input name="noi_dung" list="dl-ndthu" value="${esc(x.noi_dung||'')}"></label>
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
     </div>
+    ${x.nguon==='kiot'?`<div class="muted" style="font-size:11.5px;margin-top:8px">Phiếu thu tạo trên KiotViet, app tự kéo về 15 phút / lần — sửa trên Kiot.</div>`:''}
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
-    ${ctBox('thu',id,coGhi('thu'))}
-    <div class="acts">${id&&!ro?`<button class="btn bad left" onclick="xoa('thu',${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button>
-      ${ro?'':`<button class="btn pri" onclick="luuThu(${id||'null'})">Lưu</button>`}</div>`);
-  if(ro)m.querySelectorAll('input,select').forEach(e=>e.disabled=true);
+    ${ctBox('thu',id,coGhi('thu'))}</div>
+    <div class="m-pn-f">${id&&!ro?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('thu',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongThuCT()">Đóng</button>
+      ${ro?'':`<button class="m-btn pri" onclick="luuThu(${id||'null'})">Lưu</button>`}</div>`;
+  const p=$('#thu-ct');let box;
+  if(p&&innerWidth>=1250&&id){S.f.thu_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');box=p;
+    document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',+r.dataset.id===id))}
+  else box=modal(`<div class="m-pn" style="position:static;max-height:none;border:none">${html}</div>`,true);
+  if(ro)box.querySelectorAll('#f input,#f select').forEach(e=>e.disabled=true);
+  setTimeout(ganCT,0);
 }
+function dongThuCT(){if($('#modal')){closeModal();return}S.f.thu_chon=null;const p=$('#thu-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
 // Kiểu sổ quỹ: gom theo ngày, mỗi ngày 1 tiêu đề kèm tổng tiền
 function soQuy(list,ngay,row,trong){if(!list.length)return `<div class="card"><div class="empty">${trong}</div></div>`;
   const g={};list.forEach(x=>(g[ngay(x)]=g[ngay(x)]||[]).push(x));
@@ -1468,7 +1510,7 @@ function goiYNoiDungThu(){const f=$('#f');const nd=f.querySelector('[name=noi_du
   nd.value=[d&&d.ten,l&&l.ten].filter(Boolean).join(' - ');nd.dataset.auto=1}
 async function luuThu(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);
   if(!o.so_tien||!o.loai_id||!o.tai_khoan_id||!o.noi_dung)return alert('Cần đủ: số tiền, loại thu, tài khoản, nội dung');
-  const nid=await save('kt_luu_thu',{p_dong:o});if(!id)ctGuiMoi('thu',nid);await render();if(!id&&nid)formThu(nid)}
+  const nid=await save('kt_luu_thu',{p_dong:o});if(!id)ctGuiMoi('thu',nid);S.f.thu_chon=nid||id;await render();if(!id&&nid&&!$("#thu-ct"))formThu(nid)}
 async function xoa(bang,id){if(!confirm('Xoá khoản này? (ẩn khỏi báo cáo, vẫn còn trong nhật ký)'))return;await save('kt_xoa',{p_bang:bang,p_id:id},'Đã xoá');render()}
 
 // ── CHI ────────────────────────────────────────────────────────────────────
