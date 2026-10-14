@@ -756,7 +756,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 15:58';
+const APP_VERSION='14/10/2026 16:07';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1026,11 +1026,8 @@ function setKy(k,silent){
   if(k!=='tuy')[S.tu,S.den]=[tu<MOC?MOC:tu,den];
   if(!silent)render();
 }
-function kyBar(){
-  return `<div class="seg">${[['thang','Tháng này'],['thang_truoc','Tháng trước'],['7','7 ngày'],['nam','Năm nay']].map(([k,l])=>
-    `<button class="${S.ky===k?'on':''}" onclick="setKy('${k}')">${l}</button>`).join('')}</div>
-    <input type="date" class="sel ${S.ky==='tuy'?'on':''}" value="${S.tu}" min="${MOC}" onchange="S.ky='tuy';S.tu=this.value;render()">
-    <input type="date" class="sel ${S.ky==='tuy'?'on':''}" value="${S.den}" min="${MOC}" onchange="S.ky='tuy';S.den=this.value;render()">${canhBaoMoc()}`;
+function kyBar(){   // 14/10/2026: chọn kỳ chỉ ở ô đầu trang (1 bộ lọc ngày) — trang cũ chỉ còn nhãn nhắc mốc dữ liệu
+  return canhBaoMoc();
 }
 // Kỳ chọn trước mốc dữ liệu → nhắc ngắn (không đoạn dài): tiền vào / ra có từ 01/05, số dư tài khoản từ 01/09
 function canhBaoMoc(){if(!TRANG_TIEN.includes(S.page))return '';
@@ -1118,18 +1115,19 @@ const locTT=()=>S.f.loc_ttno||TT_NO.map(x=>x[0]);
 function batTat(k,v,all){const cur=(S.f[k]||all).slice();const i=cur.indexOf(v);if(i>=0)cur.splice(i,1);else cur.push(v);S.f[k]=cur.length===all.length?null:cur;shell()}
 function datLaiLoc(){['loc_cs','loc_tk','loc_nhom','loc_ttno'].forEach(k=>S.f[k]=null);setKy('thang',true);shell()}
 // kỳ: danh sách tháng 2026 (từ mốc dữ liệu) + 7 ngày + cả năm
-function kyHienTai(){const m=S.tu&&S.tu.slice(0,7);if(S.ky==='nam')return 'nam';if(S.ky==='7')return '7';if(m&&S.tu.slice(8)==='01'&&S.den.slice(0,7)===m)return 'm:'+m;return 'tuy'}
-function chonKy(v){if(v==='nam'||v==='7')return setKy(v,true),shell();if(v.startsWith('m:')){const m=v.slice(2),t=homNay(),cuoi=ymd(new Date(+m.slice(0,4),+m.slice(5,7),0));
-  S.tu=m+'-01';S.den=cuoi>t?t:cuoi;S.ky=m===t.slice(0,7)?'thang':'tuy';shell()}}
+function kyHienTai(){const m=S.tu&&S.tu.slice(0,7);if(S.ky==='nam')return 'nam';if(S.ky==='7')return '7';if(S.ky==='tuy')return 'tuy';if(m&&S.tu.slice(8)==='01'&&S.den.slice(0,7)===m)return 'm:'+m;return 'tuy'}
+function chonKy(v){if(v==='tuy'){S.ky='tuy';shell();return}if(v==='nam'||v==='7')return setKy(v,true),shell();if(v.startsWith('m:')){const m=v.slice(2),t=homNay(),cuoi=ymd(new Date(+m.slice(0,4),+m.slice(5,7),0));
+  S.tu=m+'-01';S.den=cuoi>t?t:cuoi;S.ky='thang';shell()}}
 function optKy(){const t=homNay(),ds=[];for(let d=new Date(+MOC.slice(0,4),+MOC.slice(5,7)-1,1);ymd(d).slice(0,7)<=t.slice(0,7);d=new Date(d.getFullYear(),d.getMonth()+1,1))ds.push(ymd(d).slice(0,7));
   const v=kyHienTai();return ds.reverse().map(m=>`<option value="m:${m}" ${v==='m:'+m?'selected':''}>Tháng ${+m.slice(5)}/${m.slice(0,4)}</option>`).join('')+
-    `<option value="7" ${v==='7'?'selected':''}>7 ngày qua</option><option value="nam" ${v==='nam'?'selected':''}>Năm ${t.slice(0,4)}</option>${v==='tuy'?`<option value="tuy" selected>${fmtD(S.tu)} – ${fmtD(S.den)}</option>`:''}`}
+    `<option value="7" ${v==='7'?'selected':''}>7 ngày qua</option><option value="nam" ${v==='nam'?'selected':''}>Năm ${t.slice(0,4)}</option><option value="tuy" ${v==='tuy'?'selected':''}>Khoảng tuỳ chọn…</option>`}
+// ô ngày cho khoảng tuỳ chọn (chỉ hiện khi chọn "Khoảng tuỳ chọn…")
+const kyTuy=()=>kyHienTai()==='tuy'?`<input type="date" class="hd-ky hd-ng" value="${S.tu}" min="${MOC}" max="${S.den}" onchange="S.ky='tuy';S.tu=this.value;shell()"><span class="muted">→</span><input type="date" class="hd-ky hd-ng" value="${S.den}" min="${S.tu}" onchange="S.ky='tuy';S.den=this.value;shell()">`:'';
 const chk=(on,t,fn)=>`<label class="lc-c"><input type="checkbox" ${on?'checked':''} onchange="${fn}"><span>${t}</span></label>`;
 function locNhanh(nv){
-  const ky=`<select class="lc-s" onchange="chonKy(this.value)">${optKy()}</select>`;
   const cs=`<div class="lc-g"><div class="lc-h">${locCSAll()?'Tất cả cơ sở':locCS().length+' cơ sở'}</div>${CS3.map(([k,t])=>chk(locCS().includes(k),t,`batTat('loc_cs','${k}',CS3.map(x=>x[0]))`)).join('')}</div>`;
   if(nv==='tong_quan')return {h:'Cơ sở kinh doanh',b:`<div class="lc-list">${[['','Tất cả cơ sở'],...CS3.map(x=>[x[0],x[1]])].map(([k,t])=>`<div class="lc-i ${(k===''?locCSAll():locCS().length===1&&locCS()[0]===k)?'on':''}" onclick="S.f.loc_cs=${k?`['${k}']`:'null'};shell()">${IC_SB.so}<span>${t}</span></div>`).join('')}</div>`,reset:false};
-  let b=ky+cs;
+  let b=cs;   // 14/10: bỏ ô kỳ ở đây — chỉ còn 1 ô kỳ ở đầu trang
   if(nv==='thu_chi')b+=`<div class="lc-g"><div class="lc-h">${locTK().length===LOC_TK.length?'Tất cả tài khoản':locTK().length+' loại tài khoản'}</div>${LOC_TK.map(([k,t])=>chk(locTK().includes(k),t,`batTat('loc_tk','${k}',LOC_TK.map(x=>x[0]))`)).join('')}</div>`;
   if(nv==='cong_no')b+=`<div class="lc-g"><div class="lc-h">Nhóm khách hàng</div>${NHOM_KH.map(([k,t])=>chk(locNhom().includes(k),t,`batTat('loc_nhom','${k}',NHOM_KH.map(x=>x[0]))`)).join('')}</div>
     <div class="lc-g"><div class="lc-h">Trạng thái công nợ</div>${TT_NO.map(([k,t])=>chk(locTT().includes(k),t,`batTat('loc_ttno','${k}',TT_NO.map(x=>x[0]))`)).join('')}</div>`;
@@ -1155,7 +1153,7 @@ function shell(){
     <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
     <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
       <div class="hd-t"><h1>${esc(nvO.ten||'')}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
-      <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>
+      <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         <select class="hd-cs" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([k,t])=>`<option value="${k}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===k?'selected':''}>${t}</option>`).join('')}</select>
         ${tim}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
           <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
@@ -1511,8 +1509,7 @@ async function pageThu(){
       ${the('warn','gio','Chưa thu',tien(nen.filter(loc.chua_thu)),nen.filter(loc.chua_thu).length+' phiếu','','chua_thu')}</div>
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
       <div class="m-seg" style="margin-bottom:10px">${Object.keys(nhan).map(k=>`<button class="${f.thu_tt===k?'on':''}" onclick="S.f.thu_tt='${k}';S.f.thu_tr=1;render()">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
-      <div class="m-flt" style="align-items:center"><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span>
-        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
+      <div class="m-flt" style="align-items:center">        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
         ${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Tất cả loại thu')}${sel('thu_tk',S.dm.tai_khoan,'Tất cả tài khoản')}
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.thu_xuat()">${IC_XLS} Xuất Excel</button>${coGhi('thu')?`<button class="m-btn pri" onclick="formThu()">+ Tạo phiếu thu</button>`:''}</div>
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Cơ sở</th><th>Tài khoản nhận</th><th>Loại thu</th><th class="num">Số tiền</th><th class="c">Trạng thái</th><th class="c">Nguồn</th></tr>
@@ -1703,8 +1700,7 @@ async function pageChi(){
       </div>
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
       <div class="m-seg" style="margin-bottom:10px">${Object.keys(nhan).filter(k=>!['nghi_trung','nghi_loai','tu_choi','cua_toi'].includes(k)||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()" style="--c:var(--${MAU_TAB[k]||'accent'})">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
-      <div class="m-flt" style="align-items:center"><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span>
-        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
+      <div class="m-flt" style="align-items:center">        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
         ${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Tất cả loại chi')}${sel('chi_nguon',[{id:'phieu',ten:'Phiếu đề nghị (link công khai)'},{id:'kiot',ten:'Đề xuất từ Kiot'},{id:'app',ten:'Tạo trên app'},{id:'sheet_cu',ten:'Chuyển từ sheet cũ'},{id:'bo_sung',ten:'Sheet cũ — cần bổ sung'},{id:'claude_soat',ten:'Tự gán loại — cần soát'}],'Tất cả nguồn')}
         ${sel('chi_tk',S.dm.tai_khoan,'Tất cả tài khoản')}
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.chi_xuat()">${IC_XLS} Xuất Excel</button>${chiTao()?`<button class="m-btn pri" onclick="formChi()">+ Tạo phiếu chi</button>`:''}</div>
@@ -2217,7 +2213,9 @@ const BC_DV=[[1e3,'nghìn đồng'],[1e6,'triệu đồng'],[1,'đồng']];
 const thangSau=m=>{const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);return d.toISOString().slice(0,7)};
 const cuoiThang=m=>{const d=new Date(thangSau(m)+'-01T00:00:00Z');d.setUTCDate(0);return d.toISOString().slice(0,10)};
 const dsThang=(a,b)=>{const r=[];for(let m=a;m<=b;m=thangSau(m))r.push(m);return r};
-function bcKy(){const f=S.f,nay=homNay().slice(0,7),k=f.bc_kieu||'nam',nam=f.bc_nam||nay.slice(0,4);
+function bcKy(){const f=S.f,nay=homNay().slice(0,7),v=kyHienTai(),k=v==='nam'?'nam':v.startsWith('m:')?'thang':'khoang',nam=(S.den||nay).slice(0,4);
+  // 14/10/2026: kỳ lấy từ ô kỳ đầu trang — tháng → 1 tháng · năm → cả năm · 7 ngày / tuỳ chọn → các tháng phủ khoảng đó
+  f.bc_thang=v.startsWith('m:')?v.slice(2):f.bc_thang;f.bc_tu=(S.tu||nay).slice(0,7);f.bc_den=(S.den||nay).slice(0,7);
   if(k==='thang'){const m=f.bc_thang||nay;return {k,tu:m+'-01',den:cuoiThang(m),ms:[m],ten:'Tháng '+(+m.slice(5))+'/'+m.slice(0,4)}}
   if(k==='khoang'){let a=f.bc_tu||nay.slice(0,4)+'-01',b=f.bc_den||nay;if(a>b)[a,b]=[b,a];return {k,tu:a+'-01',den:cuoiThang(b),ms:dsThang(a,b),ten:`T${+a.slice(5)}/${a.slice(0,4)} – T${+b.slice(5)}/${b.slice(0,4)}`}}
   return {k:'nam',tu:nam+'-01-01',den:nam+'-12-31',ms:dsThang(nam+'-01',nam+'-12'),ten:'Năm '+nam}}
@@ -2229,7 +2227,7 @@ function bcBar(tabs,tab){const f=S.f,k=f.bc_kieu||'nam',nay=homNay().slice(0,7),
   const chon=k==='nam'?`<select class="m-in" onchange="S.f.bc_nam=this.value;render()">${nams.map(y=>`<option ${y===(f.bc_nam||nay.slice(0,4))?'selected':''}>${y}</option>`).join('')}</select>`
     :k==='thang'?`<input type="month" class="m-in" value="${f.bc_thang||nay}" min="2026-01" max="${nay}" onchange="S.f.bc_thang=this.value;render()">`
     :`<input type="month" class="m-in" value="${ky.ms[0]}" min="2026-01" max="${nay}" onchange="S.f.bc_tu=this.value;render()"><span class="muted">đến</span><input type="month" class="m-in" value="${ky.ms[ky.ms.length-1]}" min="2026-01" max="${nay}" onchange="S.f.bc_den=this.value;render()">`;
-  return `<div class="bc-bar"><div class="m-seg">${[['nam','Cả năm'],['thang','1 tháng'],['khoang','Khoảng tháng']].map(([v,t])=>`<button class="${k===v?'on':''}" onclick="S.f.bc_kieu='${v}';render()">${t}</button>`).join('')}</div>${chon}
+  return `<div class="bc-bar"><span class="badge">Kỳ: ${ky.ten} — đổi ở ô kỳ trên cùng</span>
     <select class="m-in" onchange="S.f.bc_dv=+this.value;render()">${BC_DV.map(([v,t])=>`<option value="${v}" ${v===bcDv()?'selected':''}>Đơn vị: ${t}</option>`).join('')}</select>
     <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.bc_xuat&&S.cache.bc_xuat()">${IC_XLS} Xuất Excel</button></div>
     <div class="m-seg bc-tabs">${tabs.map(([v,t])=>`<button class="${tab===v?'on':''}" onclick="S.f.${S.page}_tab='${v}';render()">${t}</button>`).join('')}</div>`}
@@ -2510,7 +2508,7 @@ async function pageHDList(kieu){
   const ten={vao:'Hóa đơn đầu vào',ra:'Hóa đơn đầu ra',xl:'Hóa đơn điều chỉnh / thay thế'}[kieu];
   el.innerHTML=`${kieu==='vao'?`<div class="th-bn">${IC_T.canh}<div><b>Công ty THT: tự kéo từ MISA Xử lý hóa đơn mỗi đêm (00:35)</b> · 2 hộ kinh doanh: hóa đơn mua vào trong file 3TShop. Hoá đơn MISA tự ghép với phiếu chi cùng số tiền — xem ở Phiếu chi → Chưa nhận HĐ.</div></div>`:''}
     ${kieu==='xl'?`<div class="th-bn">${IC_T.xl}<div>Lập / điều chỉnh / thay thế / huỷ hoá đơn thực hiện trên MISA meInvoice — app chỉ đọc và theo dõi. Danh sách dưới là hoá đơn công ty có liên kết hoá đơn gốc.</div></div>`:''}
-    <div class="m-flt"><div class="m-f"><span>Thời gian</span><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span></div>
+    <div class="m-flt">
       <div class="m-f"><span>Đơn vị</span><select onchange="S.f['${k}_dv']=this.value;S.f['${k}_tr']=1;render()"><option value="">Tất cả đơn vị</option>${DV_THUE.map(([h,t])=>`<option value="${h}" ${f[k+'_dv']===h?'selected':''}>${t}</option>`).join('')}</select></div>
       <div class="m-f"><span>&nbsp;</span><input class="m-in" type="search" placeholder="Số HĐ, ${dt.toLowerCase()}, MST, mặt hàng" value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()"></div>
       <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache['${k}_xuat']()">${IC_XLS} Xuất Excel</button></div>
