@@ -137,6 +137,12 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (7)** — Anh: cột "Người phụ trách" công nợ → "cho t thêm người, tạo bộ phận trong phân quyền, tham khảo phân quyền Sale app MKT/Sale".
+  Trước đây cột này = NV bán hoá đơn gần nhất trên Kiot (NCC: trống). Làm: bảng `kt_nhan_su` (tên chuẩn, bộ phận theo danh mục "Bộ phận đề nghị", tên trên Kiot) + `kt_cong_no_pt` (gán tay),
+  `supabase-schema-kt-nhan-su.sql` (`kt_ds_nhan_su`, `kt_luu_nhan_su` quyền Phân quyền sửa, `kt_gan_phu_trach` quyền KH / NCC sửa, `kt_cong_no_dt` thêm nv_id / nv_gan / nv_kiot).
+  Cài đặt → Phân quyền: khối "Nhân sự phụ trách theo bộ phận" (thêm / sửa / cho nghỉ, gợi ý tên NV bán trên Kiot chưa có — bấm là thêm). Công nợ: ô chọn người phụ trách trên dòng
+  (trống = theo Kiot, chữ nghiêng), tick nhiều dòng gán 1 lần, lọc "Người phụ trách" thay ô lọc "Nguồn" của ảnh mẫu (không lọc gì). Kiểm bằng tài khoản tạm (thêm, gán 1, gán loạt, bỏ gán) — đã dọn.
+  Danh sách nhân sự đang TRỐNG — anh / kế toán tự thêm (bấm gợi ý tên Kiot).
 - **14/10/2026 (6)** — Anh: "lương BHXH có mục OPEX đàng hoàng mà… ảnh mẫu form là AI làm, phải linh hoạt lắp dữ liệu dropdown của form cũ vào — rà lại".
   **Sai của Claude**: P&L ép theo 6 nhóm chữ của ảnh mẫu (tự xếp Lương & BHXH vào "chi phí bán hàng") và tự thêm loại chi "TAX - Thuế" để có dòng Thuế của mẫu.
   Sửa: P&L mỗi loại chi OPEX của danh mục là 1 dòng (Lương & BHXH, Marketing, Mặt bằng, Logistics, Vận hành & Quản lí, Khác) → 5 dòng (DT, GV, LN gộp, Chi phí, LN ròng); xoá loại TAX (0 phiếu)

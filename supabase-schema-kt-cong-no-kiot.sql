@@ -1,4 +1,5 @@
 -- CÔNG NỢ KHÁCH / NHÀ CUNG CẤP THEO SỐ KIOT + TUỔI NỢ (13/10/2026) — Monsieur Claude
+-- 14/10/2026: kt_cong_no_dt được định nghĩa lại (thêm người phụ trách theo Nhân sự) ở supabase-schema-kt-nhan-su.sql
 -- Trang "Công nợ & Thanh toán" theo giao diện mẫu kế toán: bảng khách / NCC còn nợ + khung chi tiết.
 -- SỐ NỢ = kt_kiot_khach.cong_no / kt_kiot_ncc.cong_no (số Kiot — anh chốt 08/10). KHÔNG cộng "tong − da_tra" từng hoá đơn:
 -- khách trả nợ bằng phiếu thu riêng nên Kiot không trừ vào hoá đơn (13/10: nợ khách 640 tr nhưng hoá đơn "chưa trả" 5,24 tỷ).
