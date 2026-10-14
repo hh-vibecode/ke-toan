@@ -764,7 +764,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 16:09';
+const APP_VERSION='14/10/2026 16:13';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1307,9 +1307,7 @@ async function pageTongQuan(){
       ${the('ok','lg','Lợi nhuận gộp',K1.lg,K0.lg,true,'Biên lợi nhuận gộp: ',pct(K1.lg,K1.dt),coXem('pl')?"go('pl')":'')}
       ${the('vio','cp','Chi phí hoạt động',K1.cp,K0.cp,false,'Tỷ lệ chi phí HĐ/DT: ',pct(K1.cp,K1.dt),xnDuoc('cp')?`xemNhanh('cp','',${csSel&&csSel.length===1?`'${(CS3.find(x=>x[0]===csSel[0])||[])[2]}'`:'null'},'')`:'')}
       ${the('teal','ln','Lợi nhuận sau chi phí (ước tính)',K1.ln,K0.ln,true,'Biên lợi nhuận: ',pct(K1.ln,K1.dt),coXem('pl')?"go('pl')":'')}
-      ${theCoc()}</div>
-    <div class="tq-don"><b>Đơn đặt trong kỳ</b>${[['Đã đi hàng',DI,'ok',''],['Đã cọc · chưa đi hàng',CO,'warn',"xemDonTQ()"],['Báo giá (chưa cọc — không tính)',BG,'grey',''],['Đã huỷ',HU,'bad','']].map(([t,r,c,on])=>`<span class="tq-don-i ${on?'click':''}" ${on?`onclick="${on}"`:''} style="--c:var(--${c})"><i></i>${t}: <b>${fmt(r.so)}</b> đơn · ${fmtN(r.tong)}${r.coc?' · cọc '+fmtN(r.coc):''}</span>`).join('')}${ccT.length>1?`<span class="muted">· chưa đi hàng theo tháng đặt: ${ccT.map(r=>`<span class="xn" onclick="xemDonTQ('${r.m}')">T${+r.m.slice(5)} ${fmtN(r.tong)}</span>`).join(', ')}</span>`:''}</div>
-    <div class="tq-note">Doanh thu thực tế = hoá đơn hoàn thành − trả hàng. Đã cọc · chưa đi hàng = đơn ĐẶT trong kỳ đến hôm nay chưa ra hoá đơn — doanh thu DỰ KIẾN, ghi nhận vào tháng đi hàng. Có cọc = đã trả tiền trên đơn hoặc khách có tiền trả trước trên Kiot (luật như app MKT/Sale).</div>`,'tq2-1');
+      ${theCoc()}</div></div>`,'tq2-1');
   const rows2=C1.rows.filter(r=>!csSel||csSel.includes(r.key)),tg={dt:sumBy(rows2,r=>r.dt),gv:sumBy(rows2,r=>r.gv),lg:sumBy(rows2,r=>r.lg),cp:sumBy(rows2,r=>r.cp)+(csSel?0:C1.chung)};tg.ln=tg.lg-tg.cp;
   const s2=sec(2,'info','Kết quả kinh doanh theo cơ sở',kyN,`<div class="scroll"><table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num">Doanh thu</th><th class="num">Giá vốn</th><th class="num">Lợi nhuận gộp</th><th class="num">Chi phí HĐ</th><th class="num">Lợi nhuận (ước tính)</th><th class="num">Biên LN</th><th class="num">${tN}</th></tr>
       ${rows2.map(r=>{const r0=C0.rows.find(x=>x.key===r.key)||{},cn=(CS3.find(x=>x[0]===r.key)||[])[2],chon=csSel&&csSel.length===1&&csSel[0]===r.key;return `<tr class="click ${chon?'on':''}" title="${chon?'Bấm để bỏ lọc':'Bấm để lọc cả trang theo '+r.ten}" onclick="S.f.loc_cs=${chon?'null':`['${r.key}']`};shell()"><td><b>${r.ten}</b>${chon?' '+pill('Đang lọc','info'):''}</td><td class="num">${fmt(r.dt)}</td><td class="num">${fmt(r.gv)}</td><td class="num">${fmt(r.lg)}</td><td class="num"><span ${xnAttr('cp','',cn,'')}>${fmt(r.cp)}</span></td><td class="num"><b class="${r.ln<0?'neg-t':''}">${fmt(r.ln)}</b></td><td class="num">${pct(r.ln,r.dt)}</td><td class="num">${mui(r.ln,r0.ln)}</td></tr>`}).join('')}
