@@ -18,13 +18,15 @@ begin
            from ct group by 1 order by sum((d->>'tien')::numeric) desc limit 5),
   ban180 as (select distinct h.chi_nhanh cn, d->>'ma' ma from kt_kiot_hoa_don h cross join lateral jsonb_array_elements(h.chi_tiet) d
                where h.trang_thai = 1 and (h.ngay at time zone 'Asia/Ho_Chi_Minh')::date between p_den - 180 and p_den),
-  ton as (select t->>'cn' cn, p.ma, (t->>'ton')::numeric sl, (t->>'ton')::numeric * coalesce((t->>'gia_von')::numeric, 0) gt
+  ton as (select t->>'cn' cn, p.ma, coalesce(p.nhom, '(không nhóm)') nhom, (t->>'ton')::numeric sl, (t->>'ton')::numeric * coalesce((t->>'gia_von')::numeric, 0) gt
             from kt_kiot_hang p cross join lateral jsonb_array_elements(p.ton) t where (t->>'ton')::numeric > 0)
   select jsonb_build_object(
     'top_kh', (select coalesce(jsonb_agg(jsonb_build_object('id', kh.khach_id, 'ma', kh.ma, 'ten', kh.ten, 'dt', kh.dt, 'so', kh.so, 'cn', kh.cn, 'dt0', coalesce(hd0.dt, 0)) order by kh.dt desc), '[]')
                  from kh left join hd0 on hd0.khach_id = kh.khach_id),
     'top_sp', (select coalesce(jsonb_agg(jsonb_build_object('ma', ma, 'ten', ten, 'sl', sl, 'dt', dt, 'cn', cn) order by dt desc), '[]') from sp),
-    'ton_cs', (select coalesce(jsonb_agg(jsonb_build_object('cn', cn, 'gt', gt, 'so_ma', so_ma, 'lau_so', lau_so, 'lau_gt', lau_gt) order by gt desc), '[]') from (
+    -- 14/10 (kế toán): thêm 3 nhóm hàng tồn nhiều tiền nhất ở từng kho
+    'ton_cs', (select coalesce(jsonb_agg(jsonb_build_object('cn', cn, 'gt', gt, 'so_ma', so_ma, 'lau_so', lau_so, 'lau_gt', lau_gt,
+        'nhom_top', (select coalesce(jsonb_agg(jsonb_build_object('nhom', n.nhom, 'gt', n.gt) order by n.gt desc), '[]') from (select nhom, sum(gt) gt from ton t2 where t2.cn = x.cn group by 1 order by 2 desc limit 3) n)) order by gt desc), '[]') from (
                  select t.cn, sum(t.gt) gt, count(*) so_ma, count(*) filter (where b.ma is null) lau_so, coalesce(sum(t.gt) filter (where b.ma is null), 0) lau_gt
                    from ton t left join ban180 b on b.cn = t.cn and b.ma = t.ma group by 1) x)) into r;
   return r;
