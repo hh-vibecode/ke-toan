@@ -1,0 +1,58 @@
+TRẢ LỜI CÂU HỎI CỦA KẾ TOÁN (góp ý 3 ảnh, 14/10/2026)
+
+TỔNG QUAN
+
+1. Dữ liệu đang được kéo mấy tiếng 1 lần?
+- Doanh thu, hoá đơn, công nợ, phiếu thu chi Kiot: Hệ thống kéo 15 phút 1 lần.
+- Hàng hoá và tồn kho: kéo đầy đủ mỗi đêm lúc 23:20.
+- Hệ thống so khớp lại với Kiot mỗi đêm lúc 23:50. Nếu lệch hoặc lỗi, Hệ thống báo bằng chuông trên app.
+
+2. Doanh thu đã cọc chưa đi hàng sẽ được tính vào doanh thu tháng mấy?
+- Hệ thống tính vào tháng đi hàng (tháng xuất hoá đơn trên Kiot), không tính theo tháng đặt hay tháng cọc.
+- Trên Tổng quan, các đơn này nằm riêng ở mục "Đã cọc - chưa đi hàng", lọc theo kỳ đang chọn (đơn đặt trong kỳ, đến hôm nay chưa ra hoá đơn).
+- Khi đi hàng, đơn mới được chuyển sang doanh thu thực tế.
+
+THU CHI & NGÂN QUỸ
+
+3. Mục chưa nhận hoá đơn là hệ thống tự lấy thông tin trên MISA meInvoice chứ không lấy ở link Google Sheet đúng không?
+- Đúng, Hệ thống không lấy từ Google Sheet. Hoá đơn mua vào lấy từ MISA "Xử lý hóa đơn" (meInvoice chỉ có hoá đơn bán ra).
+- Hoá đơn mua vào của Công ty THT được kéo tự động mỗi đêm lúc 00:35. Hiện đã có đủ từ tháng 1 đến tháng 10/2026.
+- Hệ thống tự ghép hoá đơn với phiếu chi đã thanh toán khi:
+  + cùng số tiền;
+  + ngày hoá đơn gần ngày trả tiền;
+  + một phiếu chỉ khớp đúng một hoá đơn;
+  + tên nhà cung cấp trùng với tên người nhận tiền hoặc nội dung phiếu chi.
+- Ghép xong, phiếu chi tự chuyển sang "Đã nhận HĐ".
+- Phiếu chưa đủ chắc sẽ hiện nhãn "Có HĐ gợi ý". Kế toán mở phiếu, vào tab KiotViet & Hoá đơn, bấm "Đúng HĐ này" để xác nhận. Nếu ghép nhầm thì bấm "Bỏ ghép".
+- Phiếu không tìm thấy hoá đơn nào vẫn nằm ở tab "Chưa nhận HĐ" để kế toán theo dõi và đòi hoá đơn từ nhà cung cấp.
+- Lưu ý: tên người nhận tiền trên phiếu chi thường là nhân viên ứng tiền. Kế toán ghi tên nhà cung cấp vào nội dung phiếu chi thì Hệ thống ghép tự động được nhiều hơn.
+- Hoá đơn mua vào của 2 hộ kinh doanh (Chánh Tâm, Hiền Thủy) vẫn lấy từ file 3TShop như trước.
+
+4. Link hồ sơ có cần thiết không, vì đã cho đính kèm file rồi?
+- Không cần. Hệ thống đã bỏ ô link hồ sơ khi lập phiếu.
+- Các phiếu cũ đã có link vẫn xem được ở tab Chứng từ của phiếu.
+
+SỔ QUỸ & SỐ DƯ TÀI KHOẢN
+
+5. Idea là hằng tuần up sao kê lên để hệ thống tự kiểm tra và cảnh báo chênh lệch?
+- Hệ thống làm được:
+  + tự khớp từng dòng sao kê với phiếu thu chi đã khai;
+  + báo chênh lệch số dư;
+  + gom các khoản chưa khai báo ra một chỗ riêng để kế toán bổ sung thông tin.
+- Để làm, Hệ thống cần mỗi ngân hàng 1 file sao kê mẫu để biết định dạng.
+
+CÔNG NỢ - PHẢI THU KHÁCH HÀNG
+
+6. Cột người phụ trách công nợ sẽ nhảy theo tên sales đánh đơn đúng không?
+- Đúng. Mặc định Hệ thống lấy nhân viên bán của hoá đơn Kiot gần nhất của khách đó.
+- Nếu tên Kiot đã được gắn với một người trong Cài đặt > Phân quyền > Nhân sự, Hệ thống hiện tên người đó.
+- Kế toán vẫn đổi tay được người phụ trách cho từng khách. Khi đã gán tay, Hệ thống ưu tiên tên gán tay.
+
+7. Có tận dụng được phần ghi chú đơn (gửi qua đơn vị vận chuyển nào, có thu COD không) không?
+- Có. Hệ thống đã kéo về ô COD và ghi chú của từng hoá đơn và đơn đặt.
+- Để Hệ thống tự tách được "COD đang chờ thu" và "chưa lấy hàng", sales cần ghi theo một mẫu cố định, ví dụ bắt đầu bằng "COD" hoặc "CHUA LAY".
+- Đơn sỉ hiện đang ghi khá đủ. Các cửa hàng chưa ghi nên phần này sẽ còn thiếu.
+
+8. Khi tạo phiếu thu của khách trên app có tự link sang Kiot được không, hay phải tạo phiếu thu trên Kiot?
+- Phải tạo trên Kiot, vì Kiot không cho phần mềm ngoài tạo phiếu thu.
+- Sau khi tạo trên Kiot, Hệ thống tự kéo về trong khoảng 15 phút và cập nhật công nợ.

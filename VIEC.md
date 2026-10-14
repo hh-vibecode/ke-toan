@@ -141,7 +141,7 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 ## 5. NHẬT KÝ (mới nhất trước)
 
 - **14/10/2026 (8)** — phiên cloud (tiếp):
-  (a) **Trả lời 8 câu hỏi của kế toán (3 ảnh)** gửi anh, xưng "Hệ thống". Đính chính 1 câu đã trả lời sai trước đó: tab "Chưa nhận HĐ" KHÔNG tự lấy từ MISA
+  (a) **Trả lời 8 câu hỏi của kế toán (3 ảnh)** gửi anh, xưng "Hệ thống" — bản chữ thường để copy: `tra-loi-ke-toan-14-10.txt`. Đính chính 1 câu đã trả lời sai trước đó: tab "Chưa nhận HĐ" KHÔNG tự lấy từ MISA
   (lúc đó kế toán tự tick) → anh: "xử lý luôn" → làm (c).
   (b) **Tổng quan**: ô "Đã cọc · chưa đi hàng" theo BỘ LỌC THỜI GIAN (anh: "phải theo bộ lọc time chứ") = đơn ĐẶT trong kỳ mà đến hôm nay chưa ra hoá đơn
   (trước: mọi đơn cọc đang chờ, không theo kỳ). Bấm ô → danh sách đúng kỳ.
