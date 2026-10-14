@@ -756,7 +756,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 15:33';
+const APP_VERSION='14/10/2026 15:45';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1603,6 +1603,21 @@ function luongDong(x){const ds=luongChi(x),cur=ds.find(b=>b.tt==='dang'||b.tt===
   return `<div class="dy-h"><div class="dy" title="${esc(ds.map(tip).join('\n'))}">${ds.map((b,i)=>(i?`<b class="${b.tt==='xong'||b.tt==='dang'||b.tt==='loi'?'xong':''}"></b>`:'')+`<i class="${b.tt}">${LC_IC[b.tt]}</i>`).join('')}</div></div>
     <div class="dy-t">${chu}${ds.quaHan?' '+pill('Quá hạn','bad'):''}</div>${(n=>n?`<div class="dy-n">${n}</div>`:'')(nutNhanh(x))}`}
 // dòng thời gian dọc trong khung chi tiết
+// HOÁ ĐƠN ĐẦU VÀO MISA (Xử lý hóa đơn) ↔ phiếu chi (14/10/2026): app tự ghép khi cùng số tiền, ngày gần, tên NCC khớp tên thụ hưởng / nội dung;
+// chưa chắc thì GỢI Ý để kế toán bấm xác nhận. Dữ liệu: kt_hd_vao_goi_y (supabase-schema-kt-hd-vao.sql)
+const hdvGoiY=id=>(((S.cache.hdv||{}).goi_y)||[]).filter(h=>h.chi_id===id);
+const hdvGhep=id=>(((S.cache.hdv||{}).da_ghep)||[]).filter(h=>h.chi_id===id);
+function hdvHtml(x){
+  const g=coGhi('chi'),dg=hdvGhep(x.id),gy=x.hd_do_nhan?[]:hdvGoiY(x.id),ten=h=>`${esc(h.ky_hieu||'')} số ${esc(h.so_hd||'')} · ${fmtD(h.ngay)} · ${esc(h.ncc||'')} · <b>${fmt(h.tong)}</b>`;
+  return (dg.length?`<div style="margin-top:6px;font-size:12px">${dg.map(h=>`<div>HĐ MISA: ${ten(h)} <span class="muted">(${h.cach==='tu_dong'?'app tự ghép':'xác nhận bởi '+esc(h.boi||'')})</span>
+      ${g?` <button class="m-btn out" style="height:24px;padding:0 8px" onclick="ghepHD(${x.id},'${esc(h.hd_ma)}',true)">Bỏ ghép</button>`:''}</div>`).join('')}</div>`:'')+
+    (gy.length?`<div style="margin-top:6px;font-size:12px"><div class="muted">Hoá đơn đầu vào MISA có thể khớp (cùng số tiền, ngày gần):</div>${gy.map(h=>`<div>${ten(h)}
+      ${g?` <button class="m-btn out" style="height:24px;padding:0 8px" onclick="ghepHD(${x.id},'${esc(h.hd_ma)}')">✓ Đúng HĐ này</button>`:''}</div>`).join('')}</div>`:'');
+}
+async function ghepHD(chi,hd,bo){
+  if(bo&&!confirm('Bỏ ghép hoá đơn này? Phiếu chi sẽ quay về "Chưa nhận HĐ" nếu không còn hoá đơn nào.'))return;
+  try{await rpc('kt_ghep_hd_tay',{p_chi:chi,p_hd:hd,p_bo:!!bo});toast(bo?'Đã bỏ ghép':'Đã ghép hoá đơn — phiếu chuyển sang Đã nhận HĐ');S.f.chi_chon=chi;go('chi')}catch(e){toast(e.message,true)}
+}
 function luongDoc(x){const ds=luongChi(x);
   return `<div class="ld">${ds.map(b=>`<div class="ld-n ${b.tt}"><div class="ld-i">${LC_IC[b.tt]||''}</div><div class="ld-b">
     <div class="t">${esc(b.ten)} ${b.tt==='dang'?pill('Đang chờ'+(b.cho?' '+b.cho+' ngày':''),b.cho>=3?'bad':'warn'):b.tt==='loi'?pill('Từ chối','bad'):b.tt==='xong'?pill('Xong','ok'):b.tt==='bo'?pill('Bỏ qua',''):''}</div>
@@ -1646,7 +1661,8 @@ async function pageChi(){
   // bảng (Loại, Hoá đơn, KiotViet dạng nhãn) + phân trang · khung chi tiết 5 tab bên phải. Giữ nguyên duyệt 2 lượt / thanh toán / chứng từ.
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const [tu0,den0]=kyTruoc(S.tu,S.den);
-  const [ds,ds0]=await Promise.all([rpc('kt_ds',{p_bang:'chi',p_tu:S.tu,p_den:S.den}),rpc('kt_ds',{p_bang:'chi',p_tu:tu0,p_den:den0})]);S.cache.chi=ds;
+  const [ds,ds0,hv]=await Promise.all([rpc('kt_ds',{p_bang:'chi',p_tu:S.tu,p_den:S.den}),rpc('kt_ds',{p_bang:'chi',p_tu:tu0,p_den:den0}),
+    rpc('kt_hd_vao_goi_y',{}).catch(()=>({goi_y:[],da_ghep:[]}))]);S.cache.chi=ds;S.cache.hdv=hv;
   const f=S.f;f.chi_tt=f.chi_tt||(ds.some(viecCuaToi)?'cua_toi':'tat_ca');const q=(f.chi_q||'').toLowerCase();   // như Lark: mở ra thấy ngay phiếu chờ mình
   const loc={cua_toi:viecCuaToi,tat_ca:x=>true,cho_duyet:x=>x.trang_thai==='cho_duyet',cho_gd:x=>x.trang_thai==='cho_gd',nghi_trung:x=>!!x.nghi_trung&&x.trang_thai!=='tu_choi',nghi_loai:x=>!!x.nghi_loai,cho_tt:x=>x.trang_thai==='cho_tt',da_tt:x=>x.trang_thai==='da_tt',
     tu_choi:x=>x.trang_thai==='tu_choi'||x.trang_thai==='tu_choi_tt',hd_do:x=>x.trang_thai==='da_tt'&&x.co_hd_do&&!x.hd_do_nhan&&x.ngay_tt>=MOC_SODU,chua_kiot:chuaKiot,qua_han:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&x.han_tt&&x.han_tt<homNay()};
@@ -1672,7 +1688,7 @@ async function pageChi(){
   const soPhieu=x=>x.kiot_ma||'PC'+String(x.id).padStart(6,'0');
   const csTen=x=>[...new Set((x.phan_bo||[]).map(p=>{const c=csCuaDV(p.don_vi_id);return c?(CS3.find(z=>z[0]===c)||[])[1]:((dv(p.don_vi_id)||{}).ten||'')}))].join(', ');
   const ttPill=x=>{const m={cho_duyet:['Chờ kiểm','warn'],cho_gd:['Chờ GĐ duyệt','warn'],cho_tt:['Chưa thanh toán','warn'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối TT','bad']}[x.trang_thai]||['—',''];return pill(...m)};
-  const hdPill=x=>!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok'):pill('Chưa nhận','bad');
+  const hdPill=x=>!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok'):hdvGoiY(x.id).length?pill('Có HĐ gợi ý','info'):pill('Chưa nhận','bad');
   const kiPill=x=>chuaKiot(x)?pill('Chưa cập nhật','warn'):x.kiot==='da_tao'?pill(x.nguon==='kiot'?'Từ Kiot':'Đã cập nhật','ok'):x.kiot==='khong_tao'?pill('Không tạo (4B)',''):pill('Không áp dụng','');
   const cols=[['Ngày',x=>x.ngay_tt||x.ngay_de_nghi],['Số phiếu',soPhieu],['Nội dung',x=>x.noi_dung],['Nhà cung cấp / thụ hưởng',x=>x.thu_huong_ten||''],['Cơ sở',csTen],['Số tiền',x=>x.so_tien],
     ['Trạng thái TT',x=>(TT_CHI[x.trang_thai]||[''])[0]],['Hoá đơn',x=>!x.co_hd_do?'Không cần':x.hd_do_nhan?'Đã nhận':'Chưa nhận'],['KiotViet',x=>chuaKiot(x)?'Chưa cập nhật KiotViet':(KIOT[x.kiot]||'')],['Loại chi',x=>(lo(x.loai_id)||{}).ten||''],['Người đề nghị',x=>x.nguoi_de_nghi||'']];
@@ -1908,7 +1924,7 @@ function xemChi(id){
   const ls=[[x.tao_luc,'Tạo phiếu',x.tao_boi],[x.kiem_luc,'Kế toán kiểm (lượt 1)',x.kiem_boi],[x.duyet_luc,x.trang_thai==='tu_choi'?'Từ chối':'Giám đốc xác nhận (lượt 2)',x.nguoi_duyet],
     [x.ngay_tt&&x.trang_thai==='da_tt'?x.ngay_tt:null,'Thanh toán · '+(t.ten||''),''],[x.sua_luc,'Sửa gần nhất',x.sua_boi]].filter(r=>r[0]);
   const lienKet=`<div class="m-st">Trạng thái liên kết</div><div class="m-kv">
-      <div>Hoá đơn đỏ</div><div>${!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok')+(x.ngay_nhan_hd?' '+fmtD(x.ngay_nhan_hd):''):pill('Chưa nhận','bad')+' <span class="muted">Yêu cầu nhận hoá đơn từ NCC</span>'}</div>
+      <div>Hoá đơn đỏ</div><div>${!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok')+(x.ngay_nhan_hd?' '+fmtD(x.ngay_nhan_hd):''):pill('Chưa nhận','bad')+' <span class="muted">Yêu cầu nhận hoá đơn từ NCC</span>'}${hdvHtml(x)}</div>
       <div>KiotViet</div><div>${chuaKiot(x)?pill('Chưa cập nhật','warn')+' <span class="muted">Tạo phiếu chi tương ứng trên Kiot — app tự nhận ở lần kéo sau (15 phút / lần)</span>':x.kiot==='da_tao'?pill(x.nguon==='kiot'?'Đề xuất từ Kiot':'Đã cập nhật (4A)','ok'):x.kiot==='khong_tao'?pill('Không tạo phiếu Kiot (4B)','')+(x.kiot_ly_do?' '+esc(x.kiot_ly_do):''):pill('Không áp dụng','')}${x.kiot_ma?' · '+esc(x.kiot_ma):''}</div></div>`;
   let body='';
   if(tab==='chung')body=`${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
@@ -2447,7 +2463,7 @@ async function luuTS(id){const o=formData($('#f'));o.id=id;o.nguyen_gia=so(o.ngu
   const nid=await save('kt_luu_tai_san',{p_dong:o});if(!o.id)ctGuiMoi('tai_san',nid);render()}
 
 // ── HOÁ ĐƠN & THUẾ theo ảnh mẫu kế toán (13/10/2026): Tổng quan · HĐ đầu vào · HĐ đầu ra · Xử lý HĐ · Kho sổ thuế · Đối chiếu & công việc thuế ──
-// Đơn vị: CTY = Công ty THT (= Shidai; HĐ bán từ MISA meInvoice) · CT / HT = 2 hộ kinh doanh (3TShop). HĐ đầu vào MISA (meInvoice Bot) chưa nối xong.
+// Đơn vị: CTY = Công ty THT (= Shidai; HĐ bán từ MISA meInvoice) · CT / HT = 2 hộ kinh doanh (3TShop). HĐ đầu vào công ty: MISA Xử lý hóa đơn (kt-meinvoice-bot, 14/10).
 const DV_THUE=[['CTY','Công ty THT (Shidai)','SD'],['CT','HKD Chánh Tâm','CT'],['HT','HKD Hiền Thủy','HT']];
 const dvThueOK=h=>locCSAll()||locCS().includes((DV_THUE.find(x=>x[0]===h)||[])[2]);
 const dvThueTen=h=>(DV_THUE.find(x=>x[0]===h)||[,h])[1];
@@ -2493,7 +2509,7 @@ async function pageHDList(kieu){
   S.cache[k+'_xuat']=()=>xuatCSV(k+'-'+S.tu+'_'+S.den,cols,ds);
   const tt=x=>laDC(x)?pill(/thay thế/i.test(x.ghi_chu)?'Thay thế':'Điều chỉnh','warn'):pill(kieu==='vao'?'Đã nhận':'Đã phát hành','ok');
   const ten={vao:'Hóa đơn đầu vào',ra:'Hóa đơn đầu ra',xl:'Hóa đơn điều chỉnh / thay thế'}[kieu];
-  el.innerHTML=`${kieu==='vao'?`<div class="th-bn">${IC_T.canh}<div><b>Hóa đơn đầu vào từ MISA (Xử lý hóa đơn) đang kết nối</b> — đã đăng nhập được, còn bước lấy dữ liệu. Tạm thời hiển thị hóa đơn mua vào trong file 3TShop của từng đơn vị.</div></div>`:''}
+  el.innerHTML=`${kieu==='vao'?`<div class="th-bn">${IC_T.canh}<div><b>Công ty THT: tự kéo từ MISA Xử lý hóa đơn mỗi đêm (00:35)</b> · 2 hộ kinh doanh: hóa đơn mua vào trong file 3TShop. Hoá đơn MISA tự ghép với phiếu chi cùng số tiền — xem ở Phiếu chi → Chưa nhận HĐ.</div></div>`:''}
     ${kieu==='xl'?`<div class="th-bn">${IC_T.xl}<div>Lập / điều chỉnh / thay thế / huỷ hoá đơn thực hiện trên MISA meInvoice — app chỉ đọc và theo dõi. Danh sách dưới là hoá đơn công ty có liên kết hoá đơn gốc.</div></div>`:''}
     <div class="m-flt"><div class="m-f"><span>Thời gian</span><span class="m-in" style="display:inline-flex;align-items:center">${fmtD(S.tu)} - ${fmtD(S.den)}</span></div>
       <div class="m-f"><span>Đơn vị</span><select onchange="S.f['${k}_dv']=this.value;S.f['${k}_tr']=1;render()"><option value="">Tất cả đơn vị</option>${DV_THUE.map(([h,t])=>`<option value="${h}" ${f[k+'_dv']===h?'selected':''}>${t}</option>`).join('')}</select></div>
@@ -2966,7 +2982,7 @@ const LOGIC=[
   'Tính: mọi ký hiệu (hoá đơn giá trị gia tăng, nến, chuyển khoản). KHÔNG tính 2 ký hiệu máy tính tiền Hong Kong Center / Saikung Hot Pot (dịch vụ khác — anh chốt 12/10/2026).',
   'Phạm vi app KHÔNG gồm 2 nhà hàng AMHP (Saikung / Hongkong — anh chốt 12/10/2026): đã bỏ 2 đơn vị nhà hàng, ẩn phiếu chi vận hành / tháo dỡ và phiếu thu Kiot của nhà hàng (đều trước 01/09/2026, không ảnh hưởng số dư); phiếu Kiot đã ẩn không bao giờ bị chép lại. Chi tiếp khách ở nhà hàng ngoài vẫn tính (chi phí bán đồ thờ).',
   'Shidai = công ty THT (anh chốt 12/10/2026). Hoá đơn bán công ty lấy từ meInvoice (bản Shidai trong file 3TShop trùng ~96% nên bỏ, tránh tính 2 lần); hoá đơn mua Shidai (nhập từ Hiền Thủy) lấy từ 3TShop. Cột công ty so với doanh thu Kiot "Tổng kho sỉ Shidai".',
-  'Mỗi hoá đơn công ty 1 dòng (API danh sách chỉ có tổng tiền, không có từng mặt hàng). Hoá đơn mua vào + chi tiết dòng hàng: cần API "meInvoice Bot" (chưa đăng ký).']],
+  'Mỗi hoá đơn công ty 1 dòng (API danh sách chỉ có tổng tiền, không có từng mặt hàng). Hoá đơn MUA VÀO công ty: tự kéo mỗi đêm 00:35 từ MISA "Xử lý hóa đơn" (tháng trước + tháng này; bỏ HĐ đã bị thay thế / huỷ). App tự ghép với phiếu chi đã thanh toán có HĐ đỏ khi: cùng số tiền (lệch ≤ 1.000đ), ngày HĐ trong khoảng 45 ngày trước – 60 ngày sau ngày trả, chỉ 1 phiếu ↔ 1 hoá đơn, tên NCC khớp tên thụ hưởng hoặc nội dung phiếu ≥ 50%. Không đủ chắc → hiện "Có HĐ gợi ý" để kế toán bấm xác nhận / bỏ ghép.']],
  ['Chuông thông báo',[
   'Chuông trên thanh menu (thay báo Zalo, không đẩy về điện thoại — anh chốt 08/10/2026). Số đỏ = chưa đọc, tự cập nhật mỗi phút khi đang mở app. Bấm 1 thông báo → mở đúng phiếu.',
   'Chi: phiếu mới / từ Kiot / mở lại → kế toán. Kế toán xác nhận lượt 1 → giám đốc. Giám đốc xác nhận → kế toán (thanh toán) + người tạo phiếu. Giám đốc trả lại → kế toán. Đã thanh toán / bị từ chối → người tạo (và người đã kiểm). Nhiều đề xuất Kiot cùng lúc gộp 1 thông báo.',

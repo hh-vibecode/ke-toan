@@ -46,7 +46,7 @@ Kiot API đọc được (08/10): customers 7.641 (có công nợ) · suppliers 
 
 ## 1C. 7 NGHIỆP VỤ (anh gửi bản chốt + giao diện mẫu 12/10/2026 tối)
 
-**Giao diện bên trong theo mẫu (anh 13/10: "không giữ form cũ")**: Tổng quan 10 khối XONG · Phiếu chi (6 thẻ + bảng + khung chi tiết phải) XONG · Công nợ phải thu / phải trả (số Kiot + tuổi nợ FIFO, `supabase-schema-kt-cong-no-kiot.sql`) XONG. Tiếp: Phiếu thu, Điều chuyển, Sổ quỹ, Hoá đơn & Thuế, Kinh doanh. MISA hoá đơn đầu vào: đăng nhập OK (`MEINVOICE_BOT_*`), bước JWT chưa xong — tạm dừng theo anh.
+**Giao diện bên trong theo mẫu (anh 13/10: "không giữ form cũ")**: Tổng quan 10 khối XONG · Phiếu chi (6 thẻ + bảng + khung chi tiết phải) XONG · Công nợ phải thu / phải trả (số Kiot + tuổi nợ FIFO, `supabase-schema-kt-cong-no-kiot.sql`) XONG. Tiếp: Phiếu thu, Điều chuyển, Sổ quỹ, Hoá đơn & Thuế, Kinh doanh. MISA hoá đơn đầu vào: XONG 14/10 — `kt-meinvoice-bot` tự kéo mỗi đêm + tự ghép phiếu chi (nhật ký 14/10 (8)).
 **Giai đoạn 1 XONG 13/10**: menu trái 7 nghiệp vụ, xếp các trang đang có vào đúng nghiệp vụ (chụp màn hình kiểm máy tính + điện thoại). Tiếp: 2 Tổng quan theo mẫu → 3 Thu–Chi khung chi tiết bên phải → 4 Công nợ → 5 Kinh doanh phân tích → 6 Hoá đơn & Thuế (kho sổ thuế 4 bước) → 7 Báo cáo quản trị & chốt kỳ.
 Nguyên tắc: vào nghiệp vụ nào là màn hình THAO TÁC luôn (không có tổng quan con); danh sách + khung chi tiết bên phải; bộ lọc nhanh kỳ / cơ sở / tài khoản.
 
@@ -60,7 +60,7 @@ Nguyên tắc: vào nghiệp vụ nào là màn hình THAO TÁC luôn (không c�
 | 6 | Báo cáo quản trị & Chốt kỳ | P&L | chi phí · ngân sách · phân bổ · chốt kỳ |
 | 7 | Hệ thống & Cài đặt | Cài đặt (phân quyền, danh mục, logic, giải đáp) | gom về 1 nghiệp vụ |
 
-MISA hoá đơn đầu vào: API riêng "meInvoice Bot" (`/meinvoicebot/v1/...`: HĐ đầu vào + đầu ra CÓ chi tiết dòng hàng) — Client ID hiện tại bị từ chối (401) → anh đăng ký thêm sản phẩm này trên developer.misa.vn.
+MISA hoá đơn đầu vào: API riêng "meInvoice Bot" / "Xử lý hóa đơn" (`/meinvoicebot/v1/...`) — anh đã đăng ký, kéo được từ 14/10 (xem nhật ký 14/10 (8) + mục KINH NGHIỆM trong đó).
 
 **13/10 chiều — LÀM LẠI SÁT ẢNH MẪU NÉT (anh: "y thằng mẫu", không giữ form cũ)**: khung chung (logo Tân Hưng Thịnh, menu trái + mục con + Bộ lọc nhanh, đầu trang tên nghiệp vụ / tháng / cơ sở / tìm / tài khoản, font Inter) ·
 Tổng quan 10 khối (`kt_tq_bo_sung`) · Phiếu chi (6 thẻ, tab, bảng nhãn, khung 5 tab) · Công nợ (tab, lọc có nhãn, bảng + phân trang, khung 4 tab; hạn nợ tạm 30 ngày trong `kt_cai_dat`) ·
@@ -88,6 +88,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 13 | **8 nhóm báo cáo quản trị** (anh gửi 14/10): 1 P&L ✓ · 2 Hiệu suất KD & đơn hàng (đã chốt bao nhiêu đơn, doanh số chưa ghi nhận) · 3 Dòng tiền & ngân quỹ ✓ · 4 Công nợ & dòng tiền dự kiến · 5 Chi phí & ngân sách (nhập kế hoạch → cột Kế hoạch / % HT của P&L) · 6 Hàng tồn & hiệu quả hàng hoá · 7 Vay vốn & chi phí tài chính · 8 Hiệu quả theo cơ sở / kênh bán | trước mắt chỉ P&L + Dòng tiền (anh 14/10); dữ liệu đơn đặt / cọc / kênh đã kéo sẵn cho 2 và 8 |
 | 10 | Theo dõi trang **Cài đặt → Nhật ký kéo & so khớp Kiot** (14/10): lịch `kt-kiot-doi-chieu` 23:50 so tháng này + trước; lần kéo đầy đủ 23:20 tự so tồn; lần kéo 3 tiếng lấy lại tồn mặt hàng vừa phát sinh (`ton_cap_nhat` trong nhật ký) | lần kéo đầy đủ hàng ~90 giây (giới hạn Edge Function 150 giây ở gói thường / 400 giây gói Pro) — nếu lỗi hết giờ thì tách so tồn ra lần riêng |
 | 11 | Khoá `KT_CRON_KEY` bị in ra kết quả lệnh trong phiên cloud 14/10 (xem nhật ký) | chờ anh quyết có đổi khoá không (đổi xong phải chép khoá mới vào `kt-keys.local.txt` trên máy anh) |
+| 14 | Theo dõi lịch `kt-meinvoice-bot` 00:35 (nhật ký `keo_misabot` / `keo_misabot_loi`, `ghep_hd_vao`) + kế toán xem phiếu "Có HĐ gợi ý" ở Phiếu chi → Chưa nhận HĐ | 14/10: 22 phiếu tự ghép; còn ~80 phiếu (cả năm) có HĐ gợi ý chờ kế toán bấm. Luật ghép có thể cần chỉnh theo phản hồi kế toán |
+| 15 | **Chi tự động ngân hàng / thẻ Visa + khớp sao kê** (kế toán 14/10). Anh chốt hướng: vài ngày tải sao kê 1 lần → app tự gắn từng dòng sao kê với phiếu thu / chi đã khai;
+dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ mỗi ngân hàng 1 file sao kê mẫu. Bản nháp phần chi tự động / tách phiếu trả thẻ theo loại chi thật: `nhap/nhap-chi-tu-dong.sql` (CHƯA chạy) |
 | 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
@@ -136,6 +139,29 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **14/10/2026 (8)** — phiên cloud (tiếp):
+  (a) **Trả lời 8 câu hỏi của kế toán (3 ảnh)** gửi anh, xưng "Hệ thống". Đính chính 1 câu đã trả lời sai trước đó: tab "Chưa nhận HĐ" KHÔNG tự lấy từ MISA
+  (lúc đó kế toán tự tick) → anh: "xử lý luôn" → làm (c).
+  (b) **Tổng quan**: ô "Đã cọc · chưa đi hàng" theo BỘ LỌC THỜI GIAN (anh: "phải theo bộ lọc time chứ") = đơn ĐẶT trong kỳ mà đến hôm nay chưa ra hoá đơn
+  (trước: mọi đơn cọc đang chờ, không theo kỳ). Bấm ô → danh sách đúng kỳ.
+  (c) **HĐ ĐẦU VÀO CÔNG TY từ MISA "Xử lý hóa đơn"**: Edge Function `kt-meinvoice-bot` + `supabase-schema-kt-hd-vao.sql` + `scripts/trien-khai-meinvoice-bot.js`
+  (`[sql] [lich] [thu|nap YYYY-MM YYYY-MM] [khong_ghep]`). Lưu `kt_thue_hd` (CTY, vao, mỗi HĐ 1 dòng, nguồn `misabot:YYYY-MM`, `ma_ngoai` = InvoiceId, `dong` = số dòng hàng,
+  `ma` để trống cho khỏi lẫn kho sổ thuế). Đã nạp T1–T10/2026: 987 HĐ. Lịch pg_cron `kt-meinvoice-bot` 00:35 VN (tháng trước + tháng này).
+  **Tự ghép phiếu chi** (`kt_ghep_hd_vao`, chạy sau mỗi lần kéo): phiếu đã TT, có HĐ đỏ, chưa nhận ↔ HĐ cùng số tiền (lệch ≤ 1.000đ), ngày HĐ trong [ngày trả − 45, + 60],
+  1 phiếu ↔ đúng 1 HĐ, tên NCC khớp tên thụ hưởng HOẶC nội dung / ghi chú phiếu ≥ 50% → tick "đã nhận HĐ" + bảng `kt_chi_hd` (người ghép "Hệ thống"). Lần đầu: 22 phiếu.
+  Còn lại hiện nhãn "Có HĐ gợi ý" trên Phiếu chi; khung chi tiết → tab KiotViet & Hoá đơn có nút "✓ Đúng HĐ này" / "Bỏ ghép" (`kt_ghep_hd_tay`, quyền sửa trang Chi).
+  Trang Hoá đơn đầu vào: nguồn "MISA Xử lý HĐ". Kiểm bằng tài khoản tạm (đã xoá). CHƯA kiểm: bấm "Đúng HĐ này" thật (không muốn đổi dữ liệu thật khi chưa có kế toán xem).
+  **KINH NGHIỆM (cho phiên sau)**:
+  · Tài liệu API MISA đọc được KHÔNG cần đăng nhập: `GET https://developer.misa.vn/backend/api/products/docs/MEINVOICEBOT` (JSON, có cả mã lỗi); danh sách sản phẩm `/backend/api/products`.
+  · Base `https://developer.misa.vn/apis/meinvoicebot/v1`. Luồng: `POST validateuser` (header ClientID, CompanyTaxCode, UserName; body {PassWord}) → Data = "{CompanyID};{securetoken}"
+    → `POST auth/jwttoken` header `securetoken` = **PHẦN SAU dấu ";"** (13/10 bên máy anh lỗi 500 ở đây) → `GET subscribers/code/{MST}` (Data.Id) → `GET {Id}/organizations`
+    → `GET {Id}/{orgId}/invoices/v2/modified?take=100&skip=&from=&to=&IsFilterInvDate=true` → Data = {Total, Data:[HĐ]}. Tài khoản = MST / USER / PASS của meInvoice; Client ID riêng (secrets `KT_MEINVOICE_BOT_*`).
+  · Lệnh GET chỉ gửi header `ClientId` + `Authorization`. Gửi cả `ClientID` lẫn `ClientId` → fetch GỘP thành "id, id" → MISA trả 422 "Bạn không có quyền thực hiện chức năng này" (mất 3 lần thử mới ra).
+  · Mạng phiên cloud mặc định chặn developer.misa.vn → anh mở trong cài đặt môi trường (Allowed domains) 14/10. KHÔNG dùng Edge Function làm "proxy" để lách (đã bị chặn, đúng).
+  · Phiên cloud không có `KT_CRON_KEY` trong file khoá: script lấy khoá từ lệnh của lịch `kt-meinvoice` trong `cron.job`, KHÔNG in ra.
+  · Tên thụ hưởng trên phiếu chi thường là NHÂN VIÊN ứng tiền, không phải NCC → ghép HĐ phải so cả nội dung phiếu. Không có extension unaccent / pg_trgm (Supabase dùng chung — không cài):
+    bỏ dấu bằng `kt_bo_dau` (translate).
 
 - **14/10/2026 (7)** — Anh: cột "Người phụ trách" công nợ → "cho t thêm người, tạo bộ phận trong phân quyền, tham khảo phân quyền Sale app MKT/Sale".
   Trước đây cột này = NV bán hoá đơn gần nhất trên Kiot (NCC: trống). Làm: bảng `kt_nhan_su` (tên chuẩn, bộ phận theo danh mục "Bộ phận đề nghị", tên trên Kiot) + `kt_cong_no_pt` (gán tay),
