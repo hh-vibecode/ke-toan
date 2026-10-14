@@ -756,7 +756,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 15:45';
+const APP_VERSION='14/10/2026 15:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1320,7 +1320,6 @@ async function pageTongQuan(){
   const ob=(c,ic,l,v,on,phu)=>`<div class="tq2-o ${on?'click':''}" ${on?`onclick="${on}" title="Bấm để xem chi tiết"`:''}><span class="m-ic" style="--c:var(--${c})">${ic}</span><div><div class="l">${l}</div><div class="v">${fmt(v)}</div>${phu?`<div class="tq-note" style="margin:0">${phu}</div>`:''}</div></div>`;
   const sDT=sec('A','ok','Doanh thu thực tế & doanh thu trên đơn',kyN,`<div class="tq2-os tq-dn">
       ${ob('ok',IC2.dt,'Doanh thu thực tế (đã đi hàng)',K1.dt,coXem('ban_hang')?"go('ban_hang')":'','hoá đơn − trả hàng')}
-      ${ob('info',IC2.lg,'Doanh thu trên đơn đã đánh (có cọc)',DI.tong+CO.tong,'',fmt(DI.so+CO.so)+' đơn đặt trong kỳ')}
       ${ob('warn',IC2.gv,'Đã cọc · chưa đi hàng (đặt trong kỳ)',sumBy(cc,x=>x.tong),"xemDonTQ()",fmt(cc.length)+' đơn · cọc '+fmt(sumBy(cc,cocT)))}</div>
     <table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đơn đặt hàng trong kỳ</th><th class="num">Số đơn</th><th class="num">Giá trị</th><th class="num">Tiền cọc</th></tr>
       <tr><td>Đã đi hàng (ra hoá đơn)</td><td class="num">${fmt(DI.so)}</td><td class="num">${fmt(DI.tong)}</td><td></td></tr>
