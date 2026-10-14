@@ -756,7 +756,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 15:00';
+const APP_VERSION='14/10/2026 15:33';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1315,13 +1315,13 @@ async function pageTongQuan(){
       <div class="tq-note">Doanh thu dòng hàng đã trừ giảm giá hoá đơn, chưa trừ trả hàng · lợi nhuận gộp theo giá vốn bình quân Kiot (gần đúng)</div>`);
   // 14/10/2026 kế toán + anh: tách DOANH THU THỰC TẾ (đã đi hàng) và DOANH THU TRÊN ĐƠN (chỉ đơn có cọc — luật cọc như app MKT/Sale)
   const dk=dn.don_ky.filter(x=>csOK(x.cn)),dg=n=>({so:sumBy(dk.filter(x=>x.nhom===n),x=>x.so),tong:sumBy(dk.filter(x=>x.nhom===n),x=>x.tong),coc:sumBy(dk.filter(x=>x.nhom===n),x=>x.coc)});
-  const DI=dg('di_hang'),CO=dg('coc'),BG=dg('bao_gia'),HU=dg('huy'),cc=dn.coc_cho.filter(x=>csOK(x.cn)),cocT=x=>Math.min(+x.tong,Math.max(+x.da_tra,+x.tra_truoc));
+  const DI=dg('di_hang'),CO=dg('coc'),BG=dg('bao_gia'),HU=dg('huy'),cc=dn.coc_cho.filter(x=>csOK(x.cn)&&String(x.ngay)>=S.tu&&String(x.ngay)<=S.den),cocT=x=>Math.min(+x.tong,Math.max(+x.da_tra,+x.tra_truoc));
   const ccT=Object.values(cc.reduce((o,x)=>{const m=String(x.ngay).slice(0,7),r=o[m]=o[m]||{m,so:0,tong:0,coc:0};r.so++;r.tong+=+x.tong;r.coc+=cocT(x);return o},{})).sort((a,c)=>a.m<c.m?1:-1);
   const ob=(c,ic,l,v,on,phu)=>`<div class="tq2-o ${on?'click':''}" ${on?`onclick="${on}" title="Bấm để xem chi tiết"`:''}><span class="m-ic" style="--c:var(--${c})">${ic}</span><div><div class="l">${l}</div><div class="v">${fmt(v)}</div>${phu?`<div class="tq-note" style="margin:0">${phu}</div>`:''}</div></div>`;
   const sDT=sec('A','ok','Doanh thu thực tế & doanh thu trên đơn',kyN,`<div class="tq2-os tq-dn">
       ${ob('ok',IC2.dt,'Doanh thu thực tế (đã đi hàng)',K1.dt,coXem('ban_hang')?"go('ban_hang')":'','hoá đơn − trả hàng')}
       ${ob('info',IC2.lg,'Doanh thu trên đơn đã đánh (có cọc)',DI.tong+CO.tong,'',fmt(DI.so+CO.so)+' đơn đặt trong kỳ')}
-      ${ob('warn',IC2.gv,'Đã cọc · chưa đi hàng (đến hôm nay)',sumBy(cc,x=>x.tong),"xemDonTQ()",fmt(cc.length)+' đơn · cọc '+fmt(sumBy(cc,cocT)))}</div>
+      ${ob('warn',IC2.gv,'Đã cọc · chưa đi hàng (đặt trong kỳ)',sumBy(cc,x=>x.tong),"xemDonTQ()",fmt(cc.length)+' đơn · cọc '+fmt(sumBy(cc,cocT)))}</div>
     <table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đơn đặt hàng trong kỳ</th><th class="num">Số đơn</th><th class="num">Giá trị</th><th class="num">Tiền cọc</th></tr>
       <tr><td>Đã đi hàng (ra hoá đơn)</td><td class="num">${fmt(DI.so)}</td><td class="num">${fmt(DI.tong)}</td><td></td></tr>
       <tr><td>Đã cọc, chưa đi hàng</td><td class="num">${fmt(CO.so)}</td><td class="num">${fmt(CO.tong)}</td><td class="num">${fmt(CO.coc)}</td></tr>
@@ -1329,7 +1329,7 @@ async function pageTongQuan(){
       <tr class="muted"><td>Đã huỷ</td><td class="num">${fmt(HU.so)}</td><td class="num">${fmt(HU.tong)}</td><td></td></tr></table>
     ${ccT.length?`<table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đã cọc chưa đi hàng · theo tháng đặt</th><th class="num">Số đơn</th><th class="num">Giá trị đơn</th><th class="num">Tiền cọc</th></tr>
       ${ccT.map(r=>`<tr class="click" onclick="xemDonTQ('${r.m}')"><td>Tháng ${+r.m.slice(5)}/${r.m.slice(0,4)}</td><td class="num">${fmt(r.so)}</td><td class="num">${fmt(r.tong)}</td><td class="num">${fmt(r.coc)}</td></tr>`).join('')}</table>`:''}
-    <div class="tq-note">Doanh thu thực tế = hoá đơn hoàn thành − trả hàng. Đơn đã cọc chưa đi hàng là doanh thu DỰ KIẾN — ghi nhận vào tháng xuất hoá đơn (đi hàng), không cộng vào tháng đặt.
+    <div class="tq-note">Doanh thu thực tế = hoá đơn hoàn thành − trả hàng. Đã cọc · chưa đi hàng = đơn ĐẶT trong kỳ đang lọc mà đến hôm nay vẫn chưa ra hoá đơn — doanh thu DỰ KIẾN — ghi nhận vào tháng xuất hoá đơn (đi hàng), không cộng vào tháng đặt.
       Có cọc = đã trả tiền trên đơn hoặc khách đang có tiền trả trước trên Kiot (luật cọc như app MKT/Sale).</div>`,'rong2');
   // nguồn doanh thu theo kênh bán (ô "kênh bán" trên hoá đơn Kiot)
   const kn=Object.values(dn.kenh.filter(x=>csOK(x.cn)).reduce((o,x)=>{const r=o[x.ten]=o[x.ten]||{ten:x.ten,dt:0,so:0};r.dt+=+x.dt;r.so+=+x.so;return o},{})).sort((a,c)=>c.dt-a.dt),tongK=sumBy(kn,x=>x.dt);
@@ -1377,9 +1377,9 @@ async function pageTongQuan(){
   shellBadges();
 }
 // Danh sách đơn đã cọc chưa đi hàng (Tổng quan, 14/10/2026) — lọc theo tháng đặt (m) và cơ sở đang chọn
-function xemDonTQ(m){const csSel=locCSAll()?null:locCS(),ds=(S.cache.tq_don||{coc_cho:[]}).coc_cho.filter(x=>(!csSel||csSel.includes(csCuaCN(x.cn)))&&(!m||String(x.ngay).startsWith(m)));
+function xemDonTQ(m){const csSel=locCSAll()?null:locCS(),ds=(S.cache.tq_don||{coc_cho:[]}).coc_cho.filter(x=>(!csSel||csSel.includes(csCuaCN(x.cn)))&&(m?String(x.ngay).startsWith(m):String(x.ngay)>=S.tu&&String(x.ngay)<=S.den));
   const coc=x=>Math.min(+x.tong,Math.max(+x.da_tra,+x.tra_truoc));
-  modal(`<h2>Đơn đã cọc · chưa đi hàng${m?' · tháng '+(+m.slice(5))+'/'+m.slice(0,4):''}</h2>
+  modal(`<h2>Đơn đã cọc · chưa đi hàng${m?' · tháng '+(+m.slice(5))+'/'+m.slice(0,4):' · đặt '+fmtD(S.tu)+' – '+fmtD(S.den)}</h2>
     <div class="bc-k" style="grid-template-columns:repeat(3,1fr)"><div><span>Số đơn</span><b>${fmt(ds.length)}</b></div><div><span>Giá trị đơn</span><b>${fmt(sumBy(ds,x=>x.tong))}</b></div><div><span>Tiền cọc</span><b>${fmt(sumBy(ds,coc))}</b></div></div>
     <table class="m-t"><tr><th>Ngày đặt</th><th>Mã đơn</th><th>Khách</th><th>Cơ sở / NV</th><th class="num">Giá trị</th><th class="num">Cọc</th></tr>
     ${ds.map(x=>`<tr><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.ma)}</td><td>${esc(x.khach||'')}${x.ghi_chu?`<div class="muted" style="font-size:11px">${esc(x.ghi_chu)}</div>`:''}</td><td class="nw">${esc((CS3.find(c=>c[0]===csCuaCN(x.cn))||[])[1]||x.cn||'')}<div class="muted" style="font-size:11px">${esc(x.nv||'')}</div></td>
@@ -2900,7 +2900,7 @@ const LOGIC=[
   '<b>P&L (kết quả kinh doanh)</b>: 1 Doanh thu thuần = hoá đơn Kiot hoàn thành − trả hàng, theo 3 cơ sở bán · 2 Giá vốn = giá vốn bình quân Kiot lúc kéo (gần đúng) · 3 Lợi nhuận gộp · 4 Chi phí = phiếu chi đã thanh toán, <b>mỗi loại chi OPEX của danh mục là 1 dòng</b> (Lương & BHXH, Marketing, Mặt bằng, Logistics, Vận hành & Quản lí, Khác — thêm / đổi loại chi ở Cài đặt là báo cáo tự đổi), ghi theo <b>tháng phân bổ</b> (phiếu không phân bổ: tháng thanh toán), + lãi vay từ trang Vay nếu có · 5 Lợi nhuận ròng. Không gồm nhập hàng (đã nằm trong giá vốn), chi tài chính (gốc + lãi chưa tách), đầu tư.',
   'Chọn <b>cả năm</b> → 12 tháng + tổng năm · <b>1 tháng</b> → thực hiện + % doanh thu · <b>khoảng tháng</b> → các tháng + tổng. Bấm 1 loại chi phí → theo đơn vị + danh sách phiếu chi. Chi phí đơn vị "Toàn Công Ty" / bộ phận không thuộc cơ sở nào nằm ở cột Chung khi so sánh cơ sở. Ảnh mẫu do AI vẽ chỉ dùng làm bố cục — dòng, cột theo danh mục thật.',
   '<b>Dòng tiền</b>: tiền thực — phiếu thu đã duyệt (ngày thu), phiếu chi đã thanh toán (ngày trả, không phân bổ) xếp Hoạt động kinh doanh / Đầu tư / Tài chính (chi tài chính gồm cả gốc + lãi vay). Điều chuyển giữa tài khoản công ty tự triệt tiêu. Số dư đầu / cuối kỳ chỉ có từ mốc tồn đầu 01/09/2026, không chia theo cơ sở.',
-  '<b>Doanh thu thực tế vs doanh thu trên đơn</b> (Tổng quan): thực tế = hoá đơn đã đi hàng − trả hàng. Trên đơn = đơn đặt hàng Kiot có cọc (đã trả tiền trên đơn, hoặc khách đang có tiền trả trước — luật cọc như app MKT/Sale); phiếu tạm không dấu vết tiền = báo giá, không tính. Đơn đã cọc chưa đi hàng là doanh thu DỰ KIẾN, ghi nhận vào tháng xuất hoá đơn. Nguồn doanh thu theo kênh = ô kênh bán trên hoá đơn Kiot; doanh thu theo nhóm hàng CHA kèm lợi nhuận gộp.']],
+  '<b>Doanh thu thực tế vs doanh thu trên đơn</b> (Tổng quan): thực tế = hoá đơn đã đi hàng − trả hàng. Trên đơn = đơn đặt hàng Kiot có cọc (đã trả tiền trên đơn, hoặc khách đang có tiền trả trước — luật cọc như app MKT/Sale); phiếu tạm không dấu vết tiền = báo giá, không tính. Đã cọc · chưa đi hàng theo bộ lọc thời gian: đơn ĐẶT trong kỳ mà đến hôm nay vẫn chưa ra hoá đơn — doanh thu DỰ KIẾN, ghi nhận vào tháng xuất hoá đơn. Nguồn doanh thu theo kênh = ô kênh bán trên hoá đơn Kiot; doanh thu theo nhóm hàng CHA kèm lợi nhuận gộp.']],
  ['Nhật ký kéo & so khớp Kiot (14/10/2026)',[
   'Trang <b>Cài đặt → Nhật ký kéo &amp; so khớp Kiot</b>: lịch chạy tự động, lịch sử từng lần kéo (OK / lỗi, kéo được gì), bảng so khớp doanh thu từng tháng và so khớp tồn kho.',
   '<b>So doanh thu tháng</b>: kéo LẠI toàn bộ hoá đơn + trả hàng của tháng từ Kiot, so <b>từng mã</b> với dữ liệu app (thiếu / thừa / lệch trạng thái, tiền) và tổng theo chi nhánh. Phần app thiếu / lệch được <b>tự ghi bù ngay</b>; phần app thừa chỉ báo, không xoá. Tự chạy 23:50 mỗi ngày cho tháng này + tháng trước; bấm tay được từng tháng hoặc cả năm.',
