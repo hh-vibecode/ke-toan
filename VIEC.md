@@ -141,6 +141,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (9)** — phiên VS Code (anh): bỏ ô "Doanh thu trên đơn đã đánh" · **chỉ còn 1 bộ lọc ngày** = ô kỳ đầu trang (thêm "Khoảng tuỳ chọn…" hiện 2 ô ngày); bỏ ô kỳ ở Bộ lọc nhanh, ô khoảng ngày trên hàng lọc Phiếu chi / thu / HĐ, dải Tháng này… của trang cũ (`kyBar()` chỉ còn nhãn mốc); Báo cáo quản trị lấy kỳ từ ô đầu trang (`bcKy`: tháng → 1 tháng, năm → cả năm, khác → các tháng phủ khoảng) · **Tổng quan**: gộp khối A vào khối 1 (6 ô, thêm ô Đã cọc · chưa đi hàng), bỏ dải đơn đặt; hàng: cơ sở + kênh · nhóm hàng (2 cột) + top KH · tồn kho (2 cột) + vay · dòng tiền + công nợ (2 cột) · bản trả lời kế toán bỏ dòng HĐ mua vào 2 hộ (mục 16). `git stash` trên máy anh còn bản kéo đơn đặt / kênh / nhóm làm dở (cloud đã làm) — chờ anh cho xoá.
+
 - **14/10/2026 (8)** — phiên cloud (tiếp):
   (a) **Trả lời 8 câu hỏi của kế toán (3 ảnh)** gửi anh, xưng "Hệ thống" — bản chữ thường để copy: `tra-loi-ke-toan-14-10.txt`. Đính chính 1 câu đã trả lời sai trước đó: tab "Chưa nhận HĐ" KHÔNG tự lấy từ MISA
   (lúc đó kế toán tự tick) → anh: "xử lý luôn" → làm (c).
