@@ -134,6 +134,14 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **14/10/2026 (4)** — Anh: "các bước duyệt hiện ra dễ click hơn, xem cả giai đoạn phiếu như luồng duyệt của Lark". Trang Phiếu chi:
+  cột **Luồng duyệt · thao tác** (4 chấm Đề nghị → KT kiểm → GĐ xác nhận → Thanh toán, chữ "Chờ … · N ngày", rê chuột xem ai / lúc nào) + nút **✓ Kiểm / ✓ Duyệt / ↩ / ✕ / Thanh toán…**
+  ngay trên dòng (đúng người đúng bước) · **tick nhiều phiếu duyệt / từ chối 1 lần** · tab **Chờ tôi xử lý** (mở sẵn khi có phiếu chờ mình) · khung chi tiết có **dòng thời gian dọc**.
+  Nút nhanh KHÔNG đọc form của khung chi tiết (hàm cũ doiTTChi đọc form đang mở — dùng cho phiếu khác sẽ ghi nhầm tài khoản / loại chi). Luật vẫn ở `kt_luu_chi` (không đổi SQL).
+  Sửa kèm: ô tick đầu dòng trước đây chỉ để trang trí và bị khung chi tiết tự tick → nay là chọn nhiều phiếu; **điện thoại**: trang có khung chi tiết (Phiếu chi, Công nợ…)
+  bị bóp cột danh sách còn 0 (CSS khai báo sau đè @media, lỗi từ 13/10) → sửa; thẻ chỉ số 2 cột trên điện thoại.
+  Kiểm: tài khoản tạm Kế toán + Giám đốc bấm thật trên 3 phiếu thử (kiểm lẻ, kiểm loạt, GĐ duyệt, trả lại, từ chối loạt; KT không thấy nút duyệt lượt 2) — đã dọn phiếu, chuông, nhật ký thử.
+  Chuông thử gửi tới kế toán / giám đốc thật tồn tại vài giây trước khi dọn. Số phiếu chi nhảy thêm (tới ~1560) do phiếu thử.
 - **14/10/2026 (3)** — **Phiếu đề nghị thanh toán ngay trên app** (kế toán chị Jaycie đề xuất bỏ link Google Form ngoài; anh: "tách màn ra 1 phần phiếu vs 1 phần để đăng nhập,
   phiếu đẩy dữ liệu về để duyệt chi, đảm bảo dữ liệu đầy đủ"). Màn đầu 2 phần: **Đề nghị thanh toán** (không cần tài khoản) | **Đăng nhập**. Link gửi bộ phận: link app + `#de-nghi`.
   14 mục như form cũ (+ hình thức nhận tiền, tiền bằng chữ để soát số 0, nhiều đơn vị chịu phí tự chia đều) → `kt_chi` 'Chờ kế toán kiểm', nguồn `phieu`, chuông kế toán → luồng 2 lượt.
