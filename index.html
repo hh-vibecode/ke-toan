@@ -768,7 +768,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='14/10/2026 16:40';
+const APP_VERSION='15/10/2026 14:13';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3439,6 +3439,18 @@ async function pageKiotLog(){
       <td>${pillDC(x.d)}</td><td class="nw muted">${x.d?fmtDT(x.d.luc):''}</td><td>${sua?`<button class="btn sm" onclick="event.stopPropagation();kiotChay(this,{doi_chieu:{thang:['${x.m}']}})">So lại</button>`:''}</td></tr>`).join('')}
     <tr class="tong"><td><b>Cộng các tháng đã soát</b></td><td class="num"><b>${fmt(sumBy(soRoi,x=>x.K.so_hd))}</b></td><td class="num"><b>${fmt(sumBy(soRoi,x=>x.A.so_hd))}</b></td><td class="num"><b>${fmt(sumBy(soRoi,x=>x.K.doanh_thu))}</b></td><td class="num"><b>${fmt(sumBy(soRoi,x=>x.A.doanh_thu))}</b></td>
       <td class="num"><b>${fmt(sumBy(soRoi,x=>x.K.tra_hang))}</b></td><td class="num"><b>${fmt(sumBy(soRoi,x=>x.A.tra_hang))}</b></td><td class="num"><b>${fmt(tk.K)}</b></td><td class="num"><b>${fmt(tk.A)}</b></td><td class="num"><b>${tien(tk.K-tk.A)}</b></td><td></td><td></td><td></td></tr></table></div>`;
+  // ── 14/10/2026: sổ quỹ · phiếu nhập · đơn đặt (cùng lần so tháng) + công nợ KH / NCC (lịch đêm)
+  const o2=(g,k)=>{if(!g)return '<td class="c muted" colspan="2">chưa so</td>';const n=g.thieu.length+g.thua.length+g.lech.length;
+    return `<td class="num">${fmt(g.kiot)} / ${fmt(g.app)}</td><td class="c" title="${esc([...g.thieu.map(x=>'thiếu '+x),...g.lech.map(x=>'lệch '+x),...g.thua.map(x=>'app thừa '+x)].join(', '))}">${n?pill(n+(g.thua.length?' lệch':' đã bù'),g.thua.length?'bad':'info'):pill('Khớp','ok')}</td>`};
+  const bang2=`<div class="sec" style="flex-wrap:wrap">So khớp sổ quỹ, phiếu nhập, đơn đặt <span class="badge">số phiếu Kiot / app · rê chuột xem mã</span></div>
+    <div class="card scroll"><table class="m-t"><tr><th>Tháng</th><th class="num">Sổ quỹ</th><th class="c"></th><th class="num">Thu Kiot / app</th><th class="num">Chi Kiot / app</th><th class="num">Phiếu nhập</th><th class="c"></th><th class="num">Đơn đặt</th><th class="c"></th></tr>
+    ${dong.filter(x=>x.d&&x.d.ket_qua.sq).map(x=>{const q=x.d.ket_qua,sq=q.sq;return `<tr><td class="nw"><b>Tháng ${+x.m.slice(5)}/${x.m.slice(0,4)}</b></td>${o2(sq)}
+      <td class="num">${sq?fmt(sq.tien_kiot)+' / '+fmt(sq.tien_app):''}</td><td class="num">${sq?fmt(sq.chi_kiot)+' / '+fmt(sq.chi_app):''}</td>${o2(q.nh)}${o2(q.dh)}</tr>`}).join('')}</table></div>`;
+  const cn=(r.cong_no||[])[0];
+  const bang3=`<div class="sec" style="flex-wrap:wrap">So khớp công nợ với Kiot <span class="badge">${cn?'lần gần nhất '+fmtDT(cn.luc):'chưa so — lịch đêm 23:50'}</span></div>`+(cn?`<div class="card scroll"><table class="m-t"><tr><th></th><th class="num">Số KH / NCC Kiot / app</th><th class="num">Tổng nợ Kiot</th><th class="num">Tổng nợ app</th><th class="num">Lệch</th><th class="c">Trạng thái</th></tr>
+    ${[['Khách hàng (phải thu)','kh'],['Nhà cung cấp (phải trả)','ncc']].map(([t,k])=>{const g=cn.ket_qua[k]||{},n=(g.thieu||[]).length+(g.lech||[]).length+(g.thua||[]).length;
+      return `<tr><td><b>${t}</b></td><td class="num">${fmt(g.kiot)} / ${fmt(g.app)}</td><td class="num">${fmt(g.no_kiot)}</td><td class="num">${fmt(g.no_app)}</td><td class="num">${tien(g.no_kiot-g.no_app)}</td>
+        <td class="c" title="${esc((g.lech||[]).map(l=>l.ma).join(', '))}">${n?pill(n+' đã ghi đè theo Kiot','info'):pill('Khớp','ok')}</td></tr>`}).join('')}</table></div>`:'');
   // ── tồn kho
   const tonA=ton?ton.ket_qua.app||{}:{},tg=k=>sumBy(tonK,([,v])=>+(v[k]||0)),tgA=k=>sumBy(Object.entries(tonA).filter(([cn])=>cnOK(cn)),([,v])=>+(v[k]||0));
   const tonH=!ton?'<div class="card m-empty">Chưa so lần nào — lần kéo đầy đủ hàng hoá 23:20 sẽ tự so (hoặc bấm So tồn ngay)</div>':
@@ -3464,7 +3476,7 @@ async function pageKiotLog(){
     ${ds.map(x=>{const k=x.kq||{},l=loiChay(x);return `<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc((LICH_KT[lichCua(x)]||[x.viec])[0])}</td><td class="nw muted">${esc(x.nguoi||'')}</td>
       <td style="font-size:11.5px">${l?`<span class="neg-t">${esc(String(k.loi||'').slice(0,240))}</span>${k.da_xong?'<br><span class="muted">Đã xong trước lỗi: '+tomTatChay({...x,kq:k.da_xong})+'</span>':''}`:tomTatChay(x)}</td>
       <td class="num">${k.giay??''}</td><td>${l?pill('Lỗi','bad'):pill('OK','ok')}</td></tr>`}).join('')||'<tr><td colspan="6" class="m-empty">Chưa có</td></tr>'}</table></div>`;
-  el.innerHTML=top+kp+bang+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS
+  el.innerHTML=top+kp+bang+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS
     +`<div class="sec">Lịch chạy tự động <span class="badge">${r.lich.length} lịch</span></div>`+lich+ls;
 }
 async function kiotChay(b,body,hoi){

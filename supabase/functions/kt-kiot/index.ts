@@ -11,6 +11,7 @@
 // SO KHỚP VỚI KIOT (14/10/2026, anh: "làm log lịch sử kéo + dash so sánh khớp Kiot từng tháng"):
 //   {"doi_chieu":{"thang":["2026-09"]}} (bỏ trống = tháng này + tháng trước) → kéo LẠI toàn bộ hoá đơn + trả hàng của tháng từ Kiot,
 //   so từng mã với bảng app (thiếu / thừa / lệch trạng thái-tiền) + tổng theo chi nhánh → ghi kt_kiot_doi_chieu → tự ghi bù phần thiếu / lệch.
+//   (14/10 tối) so thêm SỔ QUỸ, PHIẾU NHẬP, ĐƠN ĐẶT cùng tháng (thiếu / lệch → ghi bù, sổ quỹ chép lại sang kt_thu) + CÔNG NỢ KH / NCC (lịch đêm) → loại 'cong_no'.
 //   Kéo đầy đủ hàng hoá (lịch đêm, hoặc {"day_du":["hang"]}) → so tồn kho app với Kiot TRƯỚC khi ghi đè → ghi kt_kiot_doi_chieu loại 'ton'.
 //   Trang web gọi được (Cài đặt → Nhật ký kéo Kiot) bằng {"phien": ...} — hàm kt_quyen_keo kiểm phiên + quyền nhat_ky (sửa).
 // Đơn vị quy đổi (14/10/2026): Kiot trả mỗi đơn vị phụ (thùng, tập...) thành 1 dòng hàng riêng có masterUnitId, tồn = tồn gốc ÷ quy đổi
@@ -127,15 +128,16 @@ const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, s
       sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
 };
 
+const doiSQ = (x: any) => ({ id: x.id, ma: x.code, ngay: vn(x.transDate), chi_nhanh: x.branch ?? null, la_thu: x.amount > 0,
+  so_tien: Math.abs(Math.round(x.amount)), phuong_thuc: x.method ?? null, tai_khoan: x.accountId ? String(x.accountId) : null, doi_tac: x.partnerName ?? null,
+  nhom: x.cashGroup ?? null, noi_dung: x.description ?? null, chung_tu_goc: x.origin ?? null, trang_thai: String(x.status), goc: x, keo_luc: new Date().toISOString() });
 async function soQuy(khoang?: { tu: string, den: string, thu_tu: string }) {
   const vnNow = new Date(Date.now() + 7 * 3600e3);
   // endDate của Kiot KHÔNG gồm chính ngày đó → lấy tới ngày mai để có phiếu hôm nay
   const den = new Date(vnNow.getTime() + 864e5).toISOString().slice(0, 10), tuD = new Date(vnNow.getTime() - SO_NGAY * 864e5).toISOString().slice(0, 10);
   const tu = khoang ? khoang.tu : (tuD < MOC ? MOC : tuD);
   const cf = await kiotHet('cashflow', { startDate: tu, endDate: khoang ? khoang.den : den, includeAccount: 'true', includeBranch: 'true', includeUser: 'true' });
-  await ghi('kt_kiot_so_quy', cf.map(x => ({ id: x.id, ma: x.code, ngay: vn(x.transDate), chi_nhanh: x.branch ?? null, la_thu: x.amount > 0,
-    so_tien: Math.abs(Math.round(x.amount)), phuong_thuc: x.method ?? null, tai_khoan: x.accountId ? String(x.accountId) : null, doi_tac: x.partnerName ?? null,
-    nhom: x.cashGroup ?? null, noi_dung: x.description ?? null, chung_tu_goc: x.origin ?? null, trang_thai: String(x.status), goc: x, keo_luc: new Date().toISOString() })));
+  await ghi('kt_kiot_so_quy', cf.map(doiSQ));
   const d = await sb('rpc/kt_dong_bo_kiot', { p_tu: khoang ? khoang.thu_tu : tu }, 'return=representation');
   return { tu, den: khoang ? khoang.den : den, so_phieu: cf.length, dong_bo: d.ok ? await d.json() : 'lỗi ' + d.status };
 }
@@ -168,16 +170,56 @@ async function doiChieuThang(m: string, nguoi: string) {
   };
   const h = soMa(hdK, db.hd || [], x => Math.round(x.total)), t = soMa(thK, db.th || [], x => Math.round(x.returnTotal || 0));
   const ma = (ds: any[]) => ds.slice(0, 50).map((x: any) => Array.isArray(x) ? x[x.length - 1] : x.code);
-  const so_lech = h.thieu.length + h.thua.length + h.lech.length + t.thieu.length + t.thua.length + t.lech.length;
+  // 14/10/2026 (anh: so khớp thêm sổ quỹ, phiếu nhập, đơn đặt, đếm số dòng): kéo lại cả tháng từ Kiot, so từng mã, tự ghi bù phần thiếu / lệch.
+  // Chạy thử 14/10: sổ quỹ T9 thiếu 4 phiếu ghi lùi ngày + 1 phiếu huỷ muộn (lần kéo 15 phút chỉ lấy 10 ngày); phiếu nhập chưa từng sửa bị lọt.
+  const sqK = (await kiotHet('cashflow', { startDate: tu, endDate: den, includeAccount: 'true', includeBranch: 'true', includeUser: 'true' })).filter(x => trong(x.transDate));
+  const nhK = (await kiotHet('purchaseorders', { fromPurchaseDate: tu, toPurchaseDate: den })).filter(x => trong(x.purchaseDate));
+  const dhK = (await kiotHet('orders', { fromPurchaseDate: tu, toPurchaseDate: den })).filter(x => trong(x.purchaseDate));
+  const db2 = await rpcJ('kt_kiot_dc_db2', { p_tu: tu, p_den: den });   // sq: [id, trạng thái, tiền, là thu, chi nhánh, mã] · nh / dh: [id, trạng thái, tổng, chi nhánh, mã]
+  const s = soMa(sqK, db2.sq || [], x => Math.abs(Math.round(x.amount))), n = soMa(nhK, db2.nh || [], x => Math.round(x.total)), dd = soMa(dhK, db2.dh || [], x => Math.round(x.total));
+  const sqTien = (ds: any[], thu: boolean) => ds.filter(x => String(x.status) === '0' && (x.amount > 0) === thu).reduce((t, x) => t + Math.abs(Math.round(x.amount)), 0);
+  const sqTienA = (ds: any[], thu: boolean) => ds.filter((r: any) => String(r[1]) === '0' && !!r[3] === thu).reduce((t: number, r: any) => t + Number(r[2]), 0);
+  const tong = (ds: any[], f: (x: any) => number) => ds.reduce((t, x) => t + f(x), 0);
+  const suaS = [...s.thieu, ...s.lech], suaN = [...n.thieu, ...n.lech], suaD = [...dd.thieu, ...dd.lech];
+  if (suaS.length) { await ghi('kt_kiot_so_quy', suaS.map(doiSQ)); await rpcJ('kt_dong_bo_kiot', { p_tu: tu }); }   // chép lại phiếu thu sang kt_thu (ghi đè theo mã, không trùng)
+  if (suaN.length) await ghi('kt_kiot_nhap_hang', suaN.map(LOAI.nhap_hang.doi));
+  if (suaD.length) await ghi('kt_kiot_dat_hang', suaD.map(LOAI.dat_hang.doi));
+  const nhom = (x: any, dsA: any[], kiot: number, app: number) => ({ kiot: x.k, app: dsA.length, thieu: ma(x.thieu), thua: ma(x.thua), lech: ma(x.lech), tien_kiot: kiot, tien_app: app });
+  const lech2 = s.thieu.length + s.thua.length + s.lech.length + n.thieu.length + n.thua.length + n.lech.length + dd.thieu.length + dd.thua.length + dd.lech.length;
+  const sua2 = suaS.length + suaN.length + suaD.length;
+  const them2 = {
+    sq: { ...nhom({ ...s, k: sqK.length }, db2.sq || [], sqTien(sqK, true), sqTienA(db2.sq || [], true)), chi_kiot: sqTien(sqK, false), chi_app: sqTienA(db2.sq || [], false) },
+    nh: nhom({ ...n, k: nhK.length }, db2.nh || [], tong(nhK.filter(x => x.status === 3), x => Math.round(x.total)), tong((db2.nh || []).filter((r: any) => Number(r[1]) === 3), (r: any) => Number(r[2]))),
+    dh: nhom({ ...dd, k: dhK.length }, db2.dh || [], tong(dhK, x => Math.round(x.total)), tong(db2.dh || [], (r: any) => Number(r[2]))) };
+  const so_lech = h.thieu.length + h.thua.length + h.lech.length + t.thieu.length + t.thua.length + t.lech.length + lech2;
   // tự ghi bù phiếu thiếu / lệch (đúng như lần kéo đầy đủ) — phiếu app thừa KHÔNG xoá, chỉ báo
   const suaH = [...h.thieu, ...h.lech], suaT = [...t.thieu, ...t.lech];
   if (suaH.length) await ghi('kt_kiot_hoa_don', suaH.map(LOAI.hoa_don.doi));
   if (suaT.length) await ghi('kt_kiot_tra_hang', suaT.map(LOAI.tra_hang.doi));
   if (suaH.length) await rpcJ('kt_tinh_gia_von', { p_tat_ca: false });
   const ket_qua = { tu, den, kiot, app, hd: { kiot: hdK.length, app: (db.hd || []).length, thieu: ma(h.thieu), thua: ma(h.thua), lech: ma(h.lech) },
-    th: { kiot: thK.length, app: (db.th || []).length, thieu: ma(t.thieu), thua: ma(t.thua), lech: ma(t.lech) } };
-  await sb('kt_kiot_doi_chieu', { nguoi, loai: 'thang', thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length, ket_qua });
-  return { thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length };
+    th: { kiot: thK.length, app: (db.th || []).length, thieu: ma(t.thieu), thua: ma(t.thua), lech: ma(t.lech) }, ...them2 };
+  await sb('kt_kiot_doi_chieu', { nguoi, loai: 'thang', thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length + sua2, ket_qua });
+  return { thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length + sua2 };
+}
+
+// Công nợ (14/10/2026): kéo lại toàn bộ khách + NCC, so công nợ từng người với app — Kiot không đổi "ngày sửa" khách khi nợ đổi
+//   nên lần kéo 15 phút có thể sót. Lệch / thiếu → ghi đè theo Kiot. Chỉ chạy ở lịch đêm (hoặc bấm "So lại" có cong_no).
+async function doiChieuCongNo(nguoi: string) {
+  const db = await rpcJ('kt_kiot_cn_db', {});   // kh / ncc: [id, công nợ, mã]
+  const kq: any = {}; let so_lech = 0, so_sua = 0;
+  for (const [k, duong, L] of [['kh', 'customers', LOAI.khach], ['ncc', 'suppliers', LOAI.ncc]] as const) {
+    const dsK = await kiotHet(duong, L.tham), mA = new Map((db[k] || []).map((r: any) => [Number(r[0]), r]));
+    const thieu = dsK.filter(x => !mA.has(Number(x.id))), lech = dsK.filter(x => { const r: any = mA.get(Number(x.id)); return r && Number(r[1]) !== (n0(x.debt) ?? 0); });
+    const mK = new Set(dsK.map(x => Number(x.id))), thua = (db[k] || []).filter((r: any) => !mK.has(Number(r[0])));
+    const sua = [...thieu, ...lech]; if (sua.length) await ghi(L.bang, sua.map(L.doi));
+    kq[k] = { kiot: dsK.length, app: (db[k] || []).length, no_kiot: dsK.reduce((t, x) => t + (n0(x.debt) ?? 0), 0), no_app: (db[k] || []).reduce((t: number, r: any) => t + Number(r[1]), 0),
+      thieu: thieu.slice(0, 50).map(x => x.code), thua: thua.slice(0, 50).map((r: any) => r[2]), lech: lech.slice(0, 50).map(x => ({ ma: x.code, kiot: n0(x.debt), app: Number((mA.get(Number(x.id)) as any)[1]) })) };
+    so_lech += thieu.length + lech.length + thua.length; so_sua += sua.length;
+  }
+  const ngay = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+  await sb('kt_kiot_doi_chieu', { nguoi, loai: 'cong_no', thang: ngay, khop: so_lech === 0, so_lech, so_sua, ket_qua: kq });
+  return { so_lech, so_sua };
 }
 
 // Tồn kho: ds = toàn bộ hàng Kiot vừa kéo; so với bảng app TRƯỚC khi ghi đè. Giá trị tồn = Σ tồn > 0 × giá vốn, chỉ dòng đơn vị gốc.
@@ -244,6 +286,7 @@ Deno.serve(async req => {
       const ds: string[] = (body.doi_chieu.thang || [d.toISOString().slice(0, 7), nay]).filter((m: string) => /^\d{4}-\d{2}$/.test(m)).slice(0, 3);
       kq.doi_chieu = [];
       for (const m of ds) kq.doi_chieu.push(await doiChieuThang(m, nguoi));
+      if (nguoi === 'Kiot (tự kéo)' || body.doi_chieu.cong_no) kq.cong_no = await doiChieuCongNo(nguoi);   // lịch đêm 23:50 hoặc bấm có cong_no
       kq.giay = Math.round((Date.now() - batDau) / 1000);
       await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'doi_chieu_kiot', du_lieu: kq });
       await sb('rpc/kt_canh_bao_kiot', {});   // có vấn đề → chuông app (supabase-schema-kt-kiot-canh-bao.sql)
