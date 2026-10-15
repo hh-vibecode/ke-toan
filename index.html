@@ -768,7 +768,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='15/10/2026 14:31';
+const APP_VERSION='15/10/2026 14:41';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1824,7 +1824,7 @@ function vietQR(bin,stk,tien,nd){const tlv=(i,v)=>i+String(v.length).padStart(2,
   return p+c.toString(16).toUpperCase().padStart(4,'0')}
 let QR_LIB=null;
 async function napQR(){if(QR_LIB)return QR_LIB;await new Promise((ok,loi)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';sc.onload=ok;sc.onerror=()=>loi(new Error('Không tải được thư viện QR'));document.head.appendChild(sc)});QR_LIB=window.qrcode;return QR_LIB}
-function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');if(!stk||!/^\d{6,20}$/.test(stk))return '';
+function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');if(!stk||!/^\d{6,20}$/.test(stk))return `<div class="m-st">Mã QR chuyển khoản</div><div class="muted" style="font-size:12px">${stk?'Số tài khoản "'+esc(x.thu_huong_stk)+'" không hợp lệ':'Phiếu chưa có số tài khoản người nhận'} — bấm Chỉnh sửa, điền người thụ hưởng, ngân hàng, số tài khoản để có mã QR quét chuyển khoản.</div>`;
   const bin=binNH(x.thu_huong_nh),so='PC'+String(x.id).padStart(6,'0');
   if(!bin)return `<div class="m-st">Mã QR chuyển khoản</div><div class="muted" style="font-size:12px">Không nhận ra ngân hàng "${esc(x.thu_huong_nh||'')}" để tạo QR — sửa tên ngân hàng trên phiếu (vd Vietcombank, MB Bank, Techcombank).</div>`;
   const nd=boDau(so+' '+ndChi(x)).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,25);
@@ -1868,6 +1868,8 @@ async function xuatCSV(ten,cols,rows){
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=ten+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}}
 const TUOI=[['b1','≤ 30 ngày','ok'],['b2','31–60 ngày','warn'],['b3','61–90 ngày','bad'],['b4','Trên 90 ngày','bad']];
 const nhomTuoi=x=>x.no<=0?null:x.tuoi==null?'b4':x.tuoi<=30?'b1':x.tuoi<=60?'b2':x.tuoi<=90?'b3':'b4';
+// biểu tượng bút sửa (15/10: ký tự bút hiện thành dấu gạch trên máy kế toán → dùng hình vẽ)
+const IC_SUA='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align:-2px"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>';
 const IC_XLS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l8 8M16 8l-8 8"/></svg>';
 // trạng thái 1 khách / NCC theo hạn nợ (số ngày được nợ: cài đặt han_no_*_ngay, tạm 30 — chờ kế toán chốt)
 function ttCongNo(x){if(!(x.no>0))return x.no<0?['Trả trước','info']:['Đã thanh toán','ok'];if(x.qua_han==null)return ['Quá hạn','bad'];
@@ -1893,7 +1895,7 @@ async function nhanSuHtml(){
     return `<div class="card ns-k"><div class="ns-h"><b>${esc(bp.ten)}</b><span class="badge">${ds.filter(n=>n.dang_lam).length} người</span></div>
       <table class="m-t">${ds.map(n=>`<tr class="${n.dang_lam?'':'muted'}"><td><b>${esc(n.ten)}</b>${n.dang_lam?'':' '+pill('Đã nghỉ','')}${(n.ten_kiot||[]).length?`<div class="muted" style="font-size:11px">Trên Kiot: ${esc(n.ten_kiot.join(', '))}</div>`:''}</td>
         <td class="nw muted" style="font-size:11.5px">${n.so_kh?n.so_kh+' khách':''}${n.so_kh&&n.so_ncc?' · ':''}${n.so_ncc?n.so_ncc+' NCC':''}</td>
-        <td class="nw" style="text-align:right">${sua?`<button class="btn sm" onclick="formNS(${n.id})">✏ Sửa</button> <button class="btn sm ${n.dang_lam?'bad':'ok'}" onclick="nghiNS(${n.id},${!n.dang_lam})">${n.dang_lam?'Cho nghỉ':'Cho làm lại'}</button>`:''}</td></tr>`).join('')||'<tr><td class="m-empty">Chưa có ai</td></tr>'}</table></div>`};
+        <td class="nw" style="text-align:right">${sua?`<button class="btn sm" onclick="formNS(${n.id})">${IC_SUA} Sửa</button> <button class="btn sm ${n.dang_lam?'bad':'ok'}" onclick="nghiNS(${n.id},${!n.dang_lam})">${n.dang_lam?'Cho nghỉ':'Cho làm lại'}</button>`:''}</td></tr>`).join('')||'<tr><td class="m-empty">Chưa có ai</td></tr>'}</table></div>`};
   return `<div class="sec" style="flex-wrap:wrap">Nhân sự phụ trách theo bộ phận <span class="badge">người phụ trách công nợ khách / NCC</span>
       ${sua?'<button class="btn pri" style="margin-left:auto" onclick="formNS()">+ Thêm nhân sự</button>':''}</div>
     <div class="ns-g">${bps.map(khoi).join('')}</div>
@@ -2071,7 +2073,7 @@ function xemChi(id){
   let body='';
   if(tab==='chung')body=`${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
     <div class="m-st">Luồng duyệt</div>${luongDoc(x)}
-    <div class="m-st">Thông tin phiếu chi ${sua?`<span class="r"><button class="m-btn out" style="height:30px" onclick="formChi(${id})">✏ Chỉnh sửa</button></span>`:''}</div>
+    <div class="m-st">Thông tin phiếu chi ${sua?`<span class="r"><button class="m-btn out" style="height:30px" onclick="formChi(${id})">${IC_SUA} Chỉnh sửa</button></span>`:''}</div>
     ${kv4([['Ngày chi',fmtD(x.ngay_tt||x.ngay_de_nghi),'Loại chi',esc(l.ten||'')],['Số phiếu',esc(so),'Nội dung',esc(ndChi(x))],['Nhà cung cấp',nccChiO(x),'Người thụ hưởng',esc([x.thu_huong_ten,x.thu_huong_nh,x.thu_huong_stk].filter(Boolean).join(' · '))],
       ['Cơ sở chính',esc(csTen),'Số tiền','<b>'+fmt(x.so_tien)+'</b>'],['Phương thức',esc(t.ten||''),'Hạn mong muốn',fmtD(x.han_tt)],['Người đề nghị',esc(x.nguoi_de_nghi||'')+' · '+fmtD(x.ngay_de_nghi),'Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||'')],
       ['Kế toán kiểm',x.kiem_boi?esc(x.kiem_boi)+' ('+fmtDT(x.kiem_luc)+')':'','Người duyệt',x.nguoi_duyet?esc(x.nguoi_duyet)+' ('+fmtDT(x.duyet_luc)+')':'']])}
@@ -2240,7 +2242,7 @@ async function pageCongNo(){
     <div class="card scroll"><table><tr><th>Ngày GD cuối</th><th>Cơ sở</th><th>Khách hàng</th><th>Phân loại</th><th class="num">Phát sinh</th><th class="num">Trả hàng</th><th class="num">Đã thu</th><th class="num">Còn nợ</th><th></th></tr>
     ${l.map(x=>`<tr><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc((dv(x.don_vi_id)||{}).ten||'')}</td><td>${esc(x.khach)}${x.ghi_chu?`<div class="muted" style="font-size:11px">${esc(x.ghi_chu)}</div>`:''}</td>
       <td class="nw">${esc(PL_NO[x.phan_loai]||'')}</td><td class="num">${fmt(x.so_tien)}</td><td class="num">${x.tra_hang?fmt(x.tra_hang):''}</td><td class="num">${x.da_thu?fmt(x.da_thu):''}</td>
-      <td class="num"><b>${fmt(x.con_no)}</b></td><td class="nw">${coGhi()?`<button class="btn sm" onclick="formThuHoi(${x.id})">Thu hồi</button> <button class="btn sm" onclick="formNo(${x.id})">✏</button>`:''}</td></tr>`).join('')||'<tr><td colspan="9" class="empty">Không có công nợ</td></tr>'}</table></div>`;
+      <td class="num"><b>${fmt(x.con_no)}</b></td><td class="nw">${coGhi()?`<button class="btn sm" onclick="formThuHoi(${x.id})">Thu hồi</button> <button class="btn sm" onclick="formNo(${x.id})">${IC_SUA}</button>`:''}</td></tr>`).join('')||'<tr><td colspan="9" class="empty">Không có công nợ</td></tr>'}</table></div>`;
 }
 function formNo(id){
   const x=id?S.cache.no.find(n=>n.id===id):{ngay:homNay(),phan_loai:'no',tra_hang:0};
@@ -2738,10 +2740,10 @@ function xemVay(id){const v=S.cache.vay.find(x=>x.id===id);if(!v)return;const g=
     <div style="display:flex;align-items:center;margin:14px 0 6px"><b style="font-size:13px">Lịch trả / các lần trả</b><span style="margin-left:auto"></span>${g?`<button class="m-btn" style="height:28px;font-size:11.5px" onclick="formVayTra(${v.id})">+ Thêm lần trả</button>`:''}</div>
     <div class="m-card"><table class="m-t"><tr><th>Ngày</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="c">Trạng thái</th>${g?'<th></th>':''}</tr>
       ${(v.lan_tra||[]).map(t=>`<tr><td class="nw">${fmtD(t.ngay)}</td><td class="num">${fmt(t.goc)}</td><td class="num">${fmt(t.lai)}</td><td class="c">${t.da_tra?pill('Đã trả','ok'):t.ngay<nay?pill('Quá hạn','bad'):pill('Dự kiến','warn')}</td>
-        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formVayTra(${v.id},${t.id})">✏</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?5:4}" class="m-empty">Chưa có — thêm lịch trả dự kiến hoặc lần đã trả</td></tr>`}</table></div>
+        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formVayTra(${v.id},${t.id})">${IC_SUA}</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?5:4}" class="m-empty">Chưa có — thêm lịch trả dự kiến hoặc lần đã trả</td></tr>`}</table></div>
     <div class="muted" style="font-size:11.5px;margin-top:6px">Tiền trả thật vẫn ghi ở Phiếu chi. Ở đây theo dõi dư nợ, tách gốc / lãi cho báo cáo lãi lỗ.</div>
     ${ctBox('vay',v.id,g)}</div>
-    <div class="m-pn-f">${g?`<button class="m-btn" onclick="formVay(${v.id})">✏ Sửa khoản vay</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongVayCT()">Đóng</button></div>`;
+    <div class="m-pn-f">${g?`<button class="m-btn" onclick="formVay(${v.id})">${IC_SUA} Sửa khoản vay</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongVayCT()">Đóng</button></div>`;
   const p=$('#vay-ct');
   if(p&&innerWidth>=1250){S.f.vay_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',+r.dataset.id===id))}
   else modal(`<div class="m-pn" style="position:static;max-height:none;border:none">${html}</div>`,true);
@@ -2811,9 +2813,9 @@ function xemTU(id){const x=S.cache.tu.find(t=>t.id===id);if(!x)return;const g=co
     <div style="display:flex;align-items:center;margin:14px 0 6px"><b style="font-size:13px">Các lần hoàn ứng</b><span style="margin-left:auto"></span>${g&&x.con>0?`<button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="formTUHoan(${x.id})">+ Ghi hoàn ứng</button>`:''}</div>
     <div class="m-card"><table class="m-t"><tr><th>Ngày</th><th>Hình thức</th><th class="num">Số tiền</th>${g?'<th></th>':''}</tr>
       ${(x.hoan||[]).map(h=>`<tr><td class="nw">${fmtD(h.ngay)}</td><td>${esc(HT_HOAN[h.hinh_thuc]||h.hinh_thuc)}${h.ghi_chu?`<div class="muted">${esc(h.ghi_chu)}</div>`:''}</td><td class="num">${fmt(h.so_tien)}</td>
-        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formTUHoan(${x.id},${h.id})">✏</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?4:3}" class="m-empty">Chưa hoàn lần nào</td></tr>`}</table></div>
+        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formTUHoan(${x.id},${h.id})">${IC_SUA}</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?4:3}" class="m-empty">Chưa hoàn lần nào</td></tr>`}</table></div>
     ${ctBox('tam_ung',x.id,g)}</div>
-    <div class="m-pn-f">${g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('tam_ung',${x.id})">Xoá</button><button class="m-btn" onclick="formTU(${x.id})">✏ Sửa</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongTUCT()">Đóng</button></div>`;
+    <div class="m-pn-f">${g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('tam_ung',${x.id})">Xoá</button><button class="m-btn" onclick="formTU(${x.id})">${IC_SUA} Sửa</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongTUCT()">Đóng</button></div>`;
   const p=$('#tu-ct');
   if(p&&innerWidth>=1250){S.f.tu_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',+r.dataset.id===id))}
   else modal(`<div class="m-pn" style="position:static;max-height:none;border:none">${html}</div>`,true);
@@ -3353,7 +3355,7 @@ async function pageGiaiDap(){
     (l.length?nhom.map(n=>`<div class="sec">${esc(n)}</div>`+l.filter(x=>x.nhom===n).map(x=>`<div class="panel cauhoi ${x.tra_loi?'xong':''}" id="ch${x.id}">
       <h4>${esc(x.tieu_de)} <span class="badge ${x.hoi_ai==='anh'?'':'warn'}" style="margin-left:auto">${x.hoi_ai==='anh'?'Hỏi anh Hải':'Hỏi kế toán'}</span></h4>
       <div class="gt">${esc(x.giai_thich)}</div>
-      ${x.tra_loi?`<div class="tl"><b>Trả lời:</b> ${esc(x.tra_loi)}<div class="muted" style="font-size:11px;margin-top:3px">${esc(x.tra_loi_boi||'')} · ${fmtDT(x.tra_loi_luc)} <a href="#" onclick="event.preventDefault();suaTL(${x.id})">✏ Sửa</a></div></div>`:oTraLoi(x)}
+      ${x.tra_loi?`<div class="tl"><b>Trả lời:</b> ${esc(x.tra_loi)}<div class="muted" style="font-size:11px;margin-top:3px">${esc(x.tra_loi_boi||'')} · ${fmtDT(x.tra_loi_luc)} <a href="#" onclick="event.preventDefault();suaTL(${x.id})">${IC_SUA} Sửa</a></div></div>`:oTraLoi(x)}
     </div>`).join('')).join(''):'<div class="panel empty">Không còn câu nào ở mục này</div>');
 }
 function oTraLoi(x){return `<div class="tl-form">${(x.lua_chon||[]).map((c,i)=>`<button class="btn sm" onclick="chonTL(${x.id},${i})">${esc(c)}</button>`).join('')}
@@ -3573,7 +3575,7 @@ async function pageCaiDat(mod){
       ${ds.map(x=>`<tr><td><b>${esc(x.ho_ten)}</b>${x.vi_tri==='supreme'?' <span class="badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff">Admin</span>':''}</td>
         <td><code>${esc(x.ten_dang_nhap)}</code></td><td>${qtxt(x)}</td><td class="nw">${fmtDT(x.dang_nhap_luc)}</td>
         <td>${!x.hoat_dong?vb('Đã khoá','grey'):x.dang_khoa?vb('Tạm khoá (sai MK)','warn'):vb('Đang hoạt động','ok')}</td>
-        <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">✏ Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">✏ Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+        <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
     c.insertAdjacentHTML('beforeend',await nhanSuHtml().catch(e=>`<div class="empty neg">${esc(e.message)}</div>`));
   }else if(S.f.cd==='nhat_ky'){
     const ds=await rpc('kt_ds_nhat_ky');
