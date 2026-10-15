@@ -58,7 +58,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   finally {
     // DỌN SẠCH
     if (id) {
-      const ds = await sql(`select duong_dan from kt_chung_tu where bang = 'chi' and dong_id = ${id}`);
+      const ds = await sql(`select name duong_dan from storage.objects where bucket_id = 'kt-chung-tu' and name like 'chi/${id}/%'`);   // cả file tải lên mà bị từ chối ghi
       for (const d of ds) await fetch(`${SB}/storage/v1/object/kt-chung-tu/${d.duong_dan}`, { method: 'DELETE', headers: { apikey: K.SERVICE_ROLE_KEY, Authorization: 'Bearer ' + K.SERVICE_ROLE_KEY } });
       await sql(`delete from kt_chung_tu where bang = 'chi' and dong_id = ${id}; delete from kt_thong_bao where bang = 'chi' and dong_id = ${id};
         delete from kt_nhat_ky where bang = 'kt_chi' and dong_id = ${id}; delete from kt_chi_phieu where chi_id = ${id}; delete from kt_chi where id = ${id}`);
