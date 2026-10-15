@@ -95,6 +95,7 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | 16 | **HĐ mua vào 2 hộ (Chánh Tâm, Hiền Thủy)** — anh 14/10: thông tin "lấy từ file 3TShop như trước" đang SAI, xử lý sau. Đã bỏ dòng đó khỏi `tra-loi-ke-toan-14-10.txt`; chưa sửa chữ trên app (trang HĐ đầu vào, Logic) | chờ anh nói nguồn đúng |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
+- **Số phiên bản (15/10/2026, anh)**: góc trái dưới hiện "Phiên bản v1.N · ngày giờ", N tăng 1 mỗi lần sửa index.html (kiểu app Driver). Trước mỗi commit index.html chạy `scripts/dong-dau.js` (cả phiên cloud).
 - **Trang Logic (15/10/2026, anh)**: bảng kiểu Google Sheet theo nghiệp vụ — mảng `LOGIC2` trong index.html, mỗi dòng [nghiệp vụ, mục, quy tắc ngắn, ghi chú, ngày]. **Đổi logic nào → sửa / thêm đúng dòng đó trong cùng commit.** Không viết đoạn văn dài.
 
 - **App riêng, tách biệt hoàn toàn** khỏi MKT/Sale và QC CSKH (anh chốt 1/10/2026). Xem `CLAUDE.md` mục Tách biệt.
@@ -141,6 +142,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **15/10/2026 (10)** — Số phiên bản theo số lần sửa: v1.77 (= số commit của index.html), script `scripts/dong-dau.js` đóng dấu số + giờ.
 
 - **15/10/2026 (9)** — Anh: "tách riêng khoản vay, chỉ tính chi phí nếu là lãi vay". Trang Vay = sổ khoản vay: bảng mới `kt_vay_nhan` (các lần nhận tiền / giải ngân) + `kt_vay_tra` thêm tài khoản, phiếu chi gốc; `kt_v_bien_dong` thêm kiểu `vay` (nhận +, trả gốc+lãi −) → số dư tài khoản. 98 phiếu trả gốc (5,05 tỷ) chuyển khỏi Phiếu chi sang 7 khoản vay (phiếu cũ ẩn + ghi chú + nhật ký `chuyen_sang_vay`; kiểm trong lệnh: tổng + từng tài khoản số dư không đổi). P&L: lãi vay = lãi trang Vay + phiếu chi loại Lãi vay & phí tài chính (trước đây phiếu chi lãi KHÔNG vào P&L). Dòng tiền: hoạt động tài chính thêm nhận tiền vay / trả nợ vay. `kt_vay.so_tien` được = 0 (hạn mức / hợp đồng). (`supabase-schema-kt-vay-tach.sql`). **Cần kế toán**: nhập các lần giải ngân cho 7 khoản (hiện "Thiếu giải ngân", dư nợ chưa có).
 

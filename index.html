@@ -783,7 +783,9 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='15/10/2026 15:59';
+// số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
+const APP_SO='1.77';
+const APP_VERSION='15/10/2026 16:12';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1197,7 +1199,7 @@ function shell(){
   $('#app').innerHTML=`<div class="lay"><aside class="sb"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
       <nav class="sb-nav">${nav}</nav>${subs}
       <div class="sb-box sb-loc"><div class="sb-bh"><span>${ln.h}</span></div><div class="sb-bb">${ln.b}${ln.reset?`<button class="lc-r" onclick="datLaiLoc()">Đặt lại bộ lọc</button>`:''}</div></div>
-      <div class="sb-ver">Bản ${APP_VERSION}</div></aside>
+      <div class="sb-ver" title="Cập nhật lúc ${APP_VERSION} — F5 nếu số khác bản mới nhất">Phiên bản <b>v${APP_SO}</b> · ${APP_VERSION.slice(0,5)} ${APP_VERSION.slice(11)}</div></aside>
     <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
     <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
       <div class="hd-t"><h1>${esc(nvO.ten||'')}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
