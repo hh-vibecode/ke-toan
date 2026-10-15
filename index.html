@@ -759,6 +759,11 @@ table.m-t tr.on td{background:var(--sel-bg)}
 .kk-mg label{grid-template-columns:58px minmax(0,1fr)!important;text-transform:none;letter-spacing:0;font-weight:600}.kk-mg input{width:100%!important;min-width:0!important;box-sizing:border-box}
 .kt-step>div.xong:not(.on) span{background:var(--ok);color:#fff}
 .bb{color:var(--bad);margin-left:3px;font-weight:700}
+/* Logic dạng bảng kiểu Google Sheet (15/10) */
+.lg-t{border-collapse:collapse;width:100%}.lg-t th,.lg-t td{border:1px solid var(--border);padding:7px 10px;vertical-align:top;font-size:12.5px;text-align:left}
+.lg-t th{background:var(--bg2);position:sticky;top:0;z-index:1;font-weight:700}.lg-t tr:hover td{background:var(--sel-bg)}
+.lg-t td.lg-muc{font-weight:700;background:var(--bg2);color:var(--text)}.lg-t td.lg-gc{color:var(--text2)}.lg-t td.lg-stt,.lg-t td.lg-ngay{color:var(--muted)}
+.lg-t th.num,.lg-t td.num{text-align:right}
 </style>
 </head>
 <body>
@@ -769,7 +774,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='15/10/2026 14:54';
+const APP_VERSION='15/10/2026 15:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3380,191 +3385,122 @@ async function luuTL(id){const v=$('#tl'+id).value.trim();if(!v)return alert('Ch
   try{await rpc('kt_tra_loi_cau_hoi',{p_id:id,p_tra_loi:v});toast('Đã lưu trả lời');render()}catch(e){alert(e.message)}}
 
 // ── CÀI ĐẶT ────────────────────────────────────────────────────────────────
-// LOGIC: diễn giải đúng các luật trong supabase-schema-kt.sql (kt_bao_cao, kt_dong_tien, kt_luu_chi...).
 // Sửa luật ở SQL thì sửa luôn mục tương ứng ở đây — để người khác đọc là hiểu app đang tính thế nào.
-const LOGIC=[
- ['Phạm vi dữ liệu',[
-  '<b>Luồng CHUẨN từ 01/09/2026; trước đó là số THAM KHẢO, làm phiên phiến</b> (anh chốt 09/10/2026) — việc / câu hỏi chỉ dính trước T9 được đóng tạm, HĐ đỏ chưa nhận chỉ đếm từ 01/09.',
-  'Anh chốt 09/10/2026: xử lý <b>cả năm 2026</b>. Có: <b>Kiot từ 01/01</b> (bán hàng, hoá đơn, trả hàng, nhập hàng, sổ quỹ → tiền vào) · <b>chi từ 01/01</b> (file Đề nghị: tab tháng + tab chính; tab 7.DATA CHI) · <b>điều chuyển từ 01/05</b> · <b>số dư tài khoản từ 01/09</b>.',
-  'Trước 01/09 sheet KHÔNG ghi tiền vào ngoài Kiot (lãi, hộ kinh doanh trả tiền, giám đốc nộp...) và không có sổ của 7 tài khoản → tiền vào thiếu phần đó, không tính được số dư từng tài khoản (tính ngược ra số âm). Tháng 1–4 chưa có điều chuyển. Đang hỏi kế toán / chờ sao kê ngân hàng.',
-  'Tháng 1–3 kế toán chi từ 5 tài khoản cũ (VCB HT, VCB CT, VCB SD, BIDV HT, TECH Cá Nhân) → đã thêm vào danh mục ở trạng thái NGỪNG DÙNG; 3 tài khoản Kiot đã xoá ghép vào VCB HT / CT / SD theo 4 số cuối trong phiếu Kiot gốc.',
-  'LOẠI CHI tháng 1–4 (sheet không ghi): Claude tự gán theo mẫu phiếu T5 trở đi (anh cho phép 09/10) — (1) cùng người thụ hưởng ≥2 phiếu và ≥80% cùng loại; (2) nội dung + bộ phận + đơn vị chịu CP + cỡ tiền giống nhất. Chấm thử trên T8–T9: tin cao đúng 95%, vừa 77%, thấp 58%. Phiếu có nhãn "Claude gán loại · tin …"; lọc Chi → nguồn "Claude gán loại — cần soát"; kế toán lưu phiếu là nhãn mất.',
-  'Bộ lọc kỳ có "Năm nay". Kỳ trước 01/09 → nhãn "Trước 01/09: thiếu thu ngoài Kiot · số dư từ 01/09" (thẻ tồn đầu kỳ, biểu đồ số dư, trang đối soát không hiện số sai).',
-  'Mỗi tài khoản có <b>tồn đầu</b> tại 1 ngày mốc (mặc định 01/09/2026 — tồn đầu tháng 9 lấy theo sheet cũ, kế toán soát lại; xem bảng tài khoản bên dưới). Phát sinh trước ngày mốc không tính — đã nằm trong tồn đầu.']],
- ['Tiền vào · Tiền ra · Tồn',[
-  '<b>Tiền vào</b> = tổng các khoản Thu ở trạng thái <b>Đã duyệt</b>, tính theo <b>ngày thu</b>. Gồm thu từ Kiot (tự kéo) và thu ngoài (nhập trên app).',
-  '<b>Tiền ra</b> = tổng các phiếu Chi ở trạng thái <b>Đã thanh toán</b>, tính theo <b>ngày thanh toán</b> (không phải ngày đề nghị). Phiếu chờ duyệt, chờ thanh toán, bị từ chối: không tính.',
-  '<b>Điều chuyển nội bộ KHÔNG tính</b> vào Tiền vào / Tiền ra. Điều chuyển chỉ làm giảm tài khoản đi, tăng tài khoản nhận. (Sheet cũ cộng cả điều chuyển nên tiền vào / ra bị đội lên.)',
-  '<b>Tồn tài khoản</b> = tồn đầu + thu − chi + điều chuyển nhận − điều chuyển đi. <b>Tồn công ty</b> = tổng tồn các tài khoản.',
-  'Tài khoản tồn âm được đếm và báo đỏ ở Tổng quan — thường là thiếu phiếu thu hoặc điều chuyển.']],
- ['Tiền ra theo ngày nào',[
-  'Mặc định <b>Chi theo ngày trả</b> (ngày thanh toán) — đúng dòng tiền thật, tồn tài khoản luôn tính theo cách này.',
-  'Nút <b>Chi theo ngày dùng DV</b> ở Tổng quan: tính tiền ra theo ngày sử dụng dịch vụ / ngày giao hàng — <b>giống dashboard sheet cũ</b>, để so số với báo cáo cũ. Chỉ đổi tiền ra, chi theo loại, theo cơ sở.']],
- ['Đối soát (trang Dòng tiền)',[
-  '<b>Tồn sổ sách</b> theo ngày = tồn đầu kỳ + cộng dồn phát sinh từng ngày.',
-  '<b>Tồn thực tế</b> nhập theo sao kê ngân hàng / đếm két. <b>Lệch</b> = sổ sách − thực tế; khác 0 thì tô đỏ để tìm phiếu thiếu.']],
- ['Báo cáo theo cơ sở',[
-  '<b>Thu</b> của cơ sở = các khoản thu ghi cơ sở đó.',
-  '<b>Chi phí riêng</b> (loại chi có cách chia "Riêng"): tính cho đơn vị chịu chi phí ghi trên phiếu. Phiếu chia nhiều đơn vị thì tính theo số tiền từng đơn vị; tổng phân bổ bắt buộc bằng số tiền phiếu.',
-  '<b>Chi phí chung</b> (loại chi có cách chia "Theo tỉ lệ thu"): chia cho các cơ sở theo <b>tỉ lệ thu của từng cơ sở trong kỳ</b>, không theo đơn vị ghi trên phiếu (giống sheet cũ).',
-  'Kỳ không có khoản thu nào → chi phí chung nằm ở dòng <b>"Chưa phân bổ"</b> (sheet cũ báo lỗi #DIV/0!).']],
- ['Luồng Chi (đề nghị → duyệt → thanh toán)',[
-  '<b>Luồng duyệt kiểu Lark (14/10/2026)</b>: mỗi phiếu chi hiện 4 bước Đề nghị → Kế toán kiểm → Giám đốc xác nhận → Thanh toán (xanh = xong, cam = đang chờ + số ngày chờ, đỏ = từ chối, mờ = bỏ qua). Nút duyệt ngay trên dòng (chỉ hiện đúng người, đúng bước): kế toán <b>✓ Kiểm</b> / ✕, giám đốc <b>✓ Duyệt</b> / ↩ trả lại / ✕, kế toán <b>Thanh toán…</b> (mở khung để chọn tài khoản, loại chi). Tick nhiều phiếu → duyệt / từ chối một lần. Tab <b>Chờ tôi xử lý</b> mở sẵn khi có phiếu chờ mình. Luật vẫn kiểm ở máy chủ (người kiểm lượt 1 không tự duyệt lượt 2).',
-  '<b>Phiếu đề nghị thanh toán công khai (14/10/2026, thay link Google Form cũ)</b>: màn đầu của app có 2 phần — <b>Đề nghị thanh toán</b> (ai cũng gửi được, không cần tài khoản) và <b>Đăng nhập</b>. Link gửi bộ phận: link app thêm <code>#de-nghi</code>. Phiếu gồm đủ 14 mục như form cũ (người đề nghị, bộ phận, nội dung, ngày sử dụng, số tiền, hình thức nhận, thụ hưởng, ngân hàng, STK, đơn vị chịu chi phí — nhiều đơn vị tự chia đều, hạn mong muốn, hoá đơn đỏ, ghi chú, hồ sơ ảnh / PDF). Gửi xong vào thẳng mục <b>Chờ kế toán kiểm</b> (nguồn "Phiếu đề nghị"), chuông báo kế toán, đi tiếp 2 lượt như phiếu khác. Người gửi nhận <b>link theo dõi</b> để xem trạng thái và tải thêm hồ sơ trong 3 giờ.',
-  'An toàn phiếu công khai: mọi kiểm tra nằm ở máy chủ; tối đa 10 phiếu / giờ / máy và 60 phiếu / giờ toàn hệ thống; gửi trùng (cùng người + số tiền + nội dung trong 30 phút) bị chặn; người gửi chỉ xem được phiếu của mình qua mã bí mật — không xem được dữ liệu nào khác.',
-  'Bước 1: người đề nghị nhập phiếu (chọn bộ phận, đơn vị chịu chi phí, người thụ hưởng — gõ tên người đã từng nhận tiền thì tự điền ngân hàng + số tài khoản).',
-  'Bước 3: duyệt / từ chối. Bước 4: thanh toán — bắt buộc chọn ngày thanh toán, tài khoản chi, loại chi (không còn khoản chi thiếu loại như sheet cũ).',
-  'Kế toán tự chi được tick "Đã thanh toán luôn" khi tạo phiếu — vẫn ghi người duyệt là người tạo.',
-  'Nếu khoản chi ảnh hưởng tài khoản cửa hàng trên Kiot: chọn <b>"Đã tạo phiếu trên Kiot" (4A)</b> hoặc <b>"Không tạo" (4B) — bắt buộc ghi lý do</b>.',
-  'Hoá đơn đỏ: phiếu đã thanh toán có hoá đơn đỏ mà chưa đánh dấu "Đã nhận" → đếm ở thẻ "HĐ đỏ chưa nhận".']],
- ['Điều chuyển',[
-  'Nhập: ngày, tài khoản đi, tài khoản nhận (phải khác nhau), số tiền. Kế toán tick "Đã xác nhận" sau khi kiểm.',
-  'Điều chuyển chưa xác nhận VẪN tính vào tồn (tiền đã thực chuyển); phần xác nhận chỉ để kế toán đánh dấu đã kiểm.',
-  'Cũng có lựa chọn 4A / 4B như phiếu chi.']],
- ['Kiểm két cuối ngày (14/10/2026)',[
-  'Thủ quỹ đếm két (có thể đếm theo mệnh giá) + chụp sổ quỹ đính kèm. App lấy <b>số dư sổ sách cuối ngày đó</b> của tài khoản tiền mặt và tính chênh lệch = số đếm − sổ sách.',
-  'Số đếm được lưu làm <b>tồn thực tế</b> → Đối soát lỗi nhóm "Số dư sổ sách lệch số dư thực tế" tự báo nếu lệch. Phiếu sửa muộn → chênh lệch tính lại theo phiếu hiện tại.',
-  'Mỗi tài khoản 1 lần / ngày (đếm lại thì ghi đè, nhật ký giữ lần trước).']],
- ['Tạm ứng & hoàn ứng (14/10/2026)',[
-  'Sổ theo dõi ai đang cầm tiền ứng. <b>Không đổi số dư tài khoản</b>: tiền ứng ra vẫn đi bằng Phiếu chi, nhân viên trả lại tiền thì ghi Phiếu thu.',
-  'Mỗi khoản: người nhận, số tiền, hạn hoàn, gắn số phiếu chi đã chi. Hoàn ứng 3 cách: quyết toán bằng chứng từ chi phí / trả lại tiền / trừ vào lương. Không cho hoàn vượt số còn lại.',
-  'Tab "Phiếu chi tạm ứng chưa theo dõi": phiếu chi có chữ tạm ứng / ứng lương / ứng trước chưa gắn khoản nào → bấm + Theo dõi để tạo nhanh.',
-  'Quá hạn = còn phải hoàn và đã qua hạn hoàn.']],
- ['Quỹ ngoài cửa hàng (quỹ lặt vặt) — 15/10/2026',[
-  'Mỗi cửa hàng giữ quỹ lặt vặt (Tiền Quỹ Ngoài trên Kiot). Chi lặt vặt ghi phiếu Kiot từ Quỹ ngoài → app <b>không</b> tạo đề xuất chi cho từng phiếu.',
-  'Hết quỹ → đề nghị "thanh toán quỹ ngoài" = phiếu hoàn quỹ: chi phí ghi <b>1 lần</b> ở phiếu này (tránh tính 2 lần). Khung chi tiết kê các phiếu Kiot Quỹ ngoài từ lần hoàn trước, so tổng với số đề nghị.',
-  'Kế toán đánh dấu / bỏ đánh dấu phiếu hoàn quỹ ở khung chi tiết phiếu chi.']],
- ['Phân bổ theo % doanh số tháng — 15/10/2026',[
-  'Bấm "Chia theo % doanh số thực đạt tháng" → phiếu được đánh dấu tháng đó; mỗi đêm 00:15 hệ thống chia lại theo doanh thu thuần Kiot mới nhất của 3 cửa hàng (đến hết tháng sau). Tháng đã khoá sổ thì thôi chia lại.',
-  'Sửa tay số chia → bỏ đánh dấu, giữ đúng số đã nhập.']],
- ['Báo cáo quản trị 3–8 (15/10/2026)',[
-  '<b>3. Hiệu suất đơn hàng</b>: đơn đặt tạo trong kỳ, chia nhóm như Tổng quan (huỷ / đã đi hàng = Hoàn thành / đã cọc = có trả tiền hoặc khách có tiền trả trước / còn lại = báo giá). Doanh số chờ ghi nhận = đơn đã cọc chưa đi hàng mọi thời điểm.',
-  '<b>4. Dòng tiền dự kiến</b> 8 tuần từ hôm nay: số dư hiện tại + thu bình quân − chi bình quân (8 tuần qua) − lịch trả vay. Là ước tính; phiếu chi chờ theo hạn mong muốn hiện riêng.',
-  '<b>5. Ngân sách</b>: kế toán nhập theo tháng × loại chi; thực tế = phiếu chi đã trả theo tháng phân bổ (như P&L).',
-  '<b>6. Hàng tồn</b>: tồn hiện tại Kiot (giá vốn); tồn chậm = còn tồn, 90 ngày không bán; số ngày tồn = giá trị tồn ÷ giá vốn hoá đơn bình quân / ngày trong kỳ.',
-  '<b>7. Vay</b>: dư nợ, gốc / lãi theo lịch trả đã đánh dấu + phiếu chi loại tài chính.',
-  '<b>8. Theo cơ sở</b>: doanh thu thuần, giá vốn (đã trừ giá vốn hàng trả như P&L), chi phí theo đơn vị chịu chi phí; Chung = chi phí chưa chia cho cửa hàng.']],
- ['Khoá kỳ / chốt tháng (14/10/2026)',[
-  'Tháng đã khoá: người dùng <b>không thêm / sửa / xoá</b> số tiền, ngày, tài khoản, loại, trạng thái của phiếu có ngày tiền trong tháng (Thu: ngày thu · Chi: ngày thanh toán · Điều chuyển · Kiểm két · Trả vay). Chặn ngay trong CSDL nên mọi màn hình đều bị chặn.',
-  'Sửa thông tin không đổi số (ghi chú, chứng từ đính kèm, nhận HĐ đỏ, Kiot 4A/4B) vẫn được.',
-  'Job tự động (kéo Kiot, meInvoice) KHÔNG bị chặn để không hỏng lần kéo. Lúc khoá app chụp tổng thu, tổng chi, số dư cuối tháng từng tài khoản; trang Khoá kỳ báo <b>Đã đổi</b> nếu số hiện tại khác lúc khoá.',
-  'Chỉ khoá được tháng đã kết thúc. Mở khoá: chỉ Supreme / Admin (ghi nhật ký).']],
- ['Kho sổ thuế — đối chiếu & khoá quý (14/10/2026)',[
-  'Kỳ sổ thuế theo <b>quý</b> (2026-Q3…). Tồn dự kiến = tồn đầu (cuối quý trước; chưa có quý trước thì tồn đầu trong file) + nhập theo HĐ đầu vào − xuất theo HĐ đầu ra + điều chỉnh. Lệch = tồn file 3TShop − dự kiến.',
-  'Điều chỉnh: mã hàng, số lượng (+/−), lý do (kiểm kê, hỏng, HĐ chưa ghi / sai mã, xuất nội bộ, khác). Khoá quý: không nạp lại file, không sửa điều chỉnh; mở khoá chỉ Supreme / Admin.']],
- ['Thu từ Kiot (sổ quỹ)',[
-  'App kế toán có <b>luồng kéo Kiot riêng</b> (không dùng chung app MKT/Sale), <b>15 phút 1 lần</b> (từ 14/10/2026, trước đó 3 tiếng). Kéo <b>sổ quỹ</b> Kiot (phiếu thu / chi của 3 chi nhánh) vào bảng riêng của app.',
-  'Chỉ chép thành khoản Thu: phiếu <b>đã thanh toán</b>, số tiền dương, <b>không</b> thuộc nhóm "Chuyển rút" (chuyển quỹ nội bộ trong Kiot — nộp tiền quầy về két, chuyển quỹ ngoài...). Phiếu Kiot bị huỷ sau đó → khoản thu tự ẩn.',
-  'Loại thu theo mã phiếu Kiot: <b>TTHD</b> (thu tiền hoá đơn) = Thu bán hàng · <b>TTDH</b> (thu tiền đơn đặt hàng) và nhóm "Thu tiền đặt cọc" = Thu đặt cọc · <b>TT</b> (khách trả nợ) = Thu công nợ · còn lại (TNH...) = Thu khác.',
-  'Tài khoản nhận ghép theo tài khoản Kiot (Danh mục → Tài khoản, cột "Bên Kiot"). Phiếu hình thức <b>Tiền mặt</b> luôn tính vào <b>Két tiền mặt</b>, kể cả khi Kiot gắn nhầm tài khoản ngân hàng (đối chiếu T9: 13 phiếu như vậy).',
-  'Phiếu là <b>chuyển nội bộ</b> không tính thu: mã <b>TTD_ / CTD_</b> (2 chiều lệnh chuyển quỹ Kiot, kể cả khi Kiot để trống nhóm) và phiếu có nội dung chứa <b>số tài khoản của chính công ty</b> (vd "ck từ TECH CN …").',
-  'Phiếu Kiot nội dung <b>"cân bằng quỹ"</b> = chỉ chỉnh số quỹ cho khớp, <b>không tính thu</b> (anh trả lời 09/10/2026).',
-  'Tiền mặt tính theo <b>ngày bán</b> trên Kiot; sheet cũ ghi theo <b>ngày nộp két</b> và đã trừ khoản chi lặt vặt tại quầy. Vì vậy từng ngày có thể lệch, cả tháng lệch đúng bằng: chi tiền mặt tại quầy trên Kiot − tiền mặt bán cuối tháng trước nộp đầu tháng này.',
-  'Cơ sở ghép theo chi nhánh Kiot: Đồ thờ Hiền Thủy · Đồ Thờ Chánh Tâm · Tổng kho sỉ Shidai (= BP Sỉ Shidai).',
-  'Khoản thu từ Kiot chỉ xem, không sửa tay — sai thì sửa bên Kiot, lần kéo sau tự cập nhật.',
-  'Thu <b>không qua Kiot</b> (nộp vốn, vay, hoàn BHXH...) nhập tay ở trang Thu. Tháng 9 các khoản này lấy từ sheet cũ; dòng sheet nào trùng phiếu Kiot (cùng số tiền, lệch ≤ 3 ngày) thì bỏ để không cộng 2 lần.',
-  'Phiếu <b>chi</b> trên Kiot KHÔNG chép sang Chi (khoản chi đi qua đề nghị trên app) — giữ để đối chiếu nhánh 4A.']],
- ['Báo cáo kinh doanh từ Kiot (luồng mới 08/10/2026)',[
-  'App tự kéo từ Kiot <b>15 phút 1 lần</b>, chỉ phần Kiot sửa từ lần trước: khách hàng, nhà cung cấp, hàng hoá + tồn kho từng cửa hàng, hoá đơn bán + chi tiết, trả hàng, nhập hàng (chứng từ từ 01/09/2026).',
-  '<b>Doanh thu bán hàng</b> = hoá đơn Kiot trạng thái <b>Hoàn thành</b>, theo ngày bán. Trả hàng trừ riêng.',
-  '<b>Giá vốn hàng bán</b> = số lượng × <b>giá vốn bình quân</b> của mặt hàng tại cửa hàng bán, <b>lấy lúc kéo về</b> (Kiot không trả giá vốn tại lúc bán). Kéo 15 phút/lần nên sát giá vốn lúc bán; hoá đơn tháng 9 kéo bù ngày 08/10 dùng giá vốn ngày 08/10 (gần đúng).',
-  '<b>Tồn kho</b> = số Kiot <b>hiện tại</b> (không phải tồn tại ngày cuối kỳ đang chọn). Giá trị tồn = tồn &gt; 0 × giá vốn bình quân, <b>chỉ cộng đơn vị gốc</b> của mỗi mặt hàng (Kiot tách đơn vị phụ như thùng / tập / bịch thành dòng riêng cùng một lượng hàng — trước 14/10/2026 app cộng cả dòng này nên giá trị tồn cao hơn Kiot; tồn chụp hằng ngày 09–13/10 vẫn còn số cũ).',
-  '<b>Doanh thu theo nhóm hàng / mặt hàng</b> = tiền từng dòng hàng, <b>chưa trừ giảm giá trên tổng hoá đơn</b> và trả hàng → cộng lại sẽ lớn hơn doanh thu (Kiot cũng tính như vậy ở báo cáo hàng hoá).',
-  '<b>Công nợ khách / NCC</b> trong báo cáo Khách hàng / NCC = số Kiot đang ghi. Khách: dương = khách còn nợ, âm = khách trả trước. NCC: giữ nguyên dấu Kiot (chờ kế toán xác nhận ý nghĩa dấu).',
-  'Phiếu nhập trạng thái 4 (theo Kiot là đã huỷ) không tính.']],
- ['Báo cáo quản trị (14/10/2026 — trước mắt P&L + Dòng tiền)',[
-  '<b>P&L (kết quả kinh doanh)</b>: 1 Doanh thu thuần = hoá đơn Kiot hoàn thành − trả hàng, theo 3 cơ sở bán · 2 Giá vốn = giá vốn bình quân Kiot lúc kéo (gần đúng) · 3 Lợi nhuận gộp · 4 Chi phí = phiếu chi đã thanh toán, <b>mỗi loại chi OPEX của danh mục là 1 dòng</b> (Lương & BHXH, Marketing, Mặt bằng, Logistics, Vận hành & Quản lí, Khác — thêm / đổi loại chi ở Cài đặt là báo cáo tự đổi), ghi theo <b>tháng phân bổ</b> (phiếu không phân bổ: tháng thanh toán), + lãi vay từ trang Vay nếu có · 5 Lợi nhuận ròng. Không gồm nhập hàng (đã nằm trong giá vốn), chi tài chính (gốc + lãi chưa tách), đầu tư.',
-  'Chọn <b>cả năm</b> → 12 tháng + tổng năm · <b>1 tháng</b> → thực hiện + % doanh thu · <b>khoảng tháng</b> → các tháng + tổng. Bấm 1 loại chi phí → theo đơn vị + danh sách phiếu chi. Chi phí đơn vị "Toàn Công Ty" / bộ phận không thuộc cơ sở nào nằm ở cột Chung khi so sánh cơ sở. Ảnh mẫu do AI vẽ chỉ dùng làm bố cục — dòng, cột theo danh mục thật.',
-  '<b>Dòng tiền</b>: tiền thực — phiếu thu đã duyệt (ngày thu), phiếu chi đã thanh toán (ngày trả, không phân bổ) xếp Hoạt động kinh doanh / Đầu tư / Tài chính (chi tài chính gồm cả gốc + lãi vay). Điều chuyển giữa tài khoản công ty tự triệt tiêu. Số dư đầu / cuối kỳ chỉ có từ mốc tồn đầu 01/09/2026, không chia theo cơ sở.',
-  '<b>Doanh thu thực tế vs doanh thu trên đơn</b> (Tổng quan): thực tế = hoá đơn đã đi hàng − trả hàng. Trên đơn = đơn đặt hàng Kiot có cọc (đã trả tiền trên đơn, hoặc khách đang có tiền trả trước — luật cọc như app MKT/Sale); phiếu tạm không dấu vết tiền = báo giá, không tính. Đã cọc · chưa đi hàng theo bộ lọc thời gian: đơn ĐẶT trong kỳ mà đến hôm nay vẫn chưa ra hoá đơn — doanh thu DỰ KIẾN, ghi nhận vào tháng xuất hoá đơn. Nguồn doanh thu theo kênh = ô kênh bán trên hoá đơn Kiot; doanh thu theo nhóm hàng CHA kèm lợi nhuận gộp.']],
- ['Nhật ký kéo & so khớp Kiot (14/10/2026)',[
-  'Trang <b>Cài đặt → Nhật ký kéo &amp; so khớp Kiot</b>: lịch chạy tự động, lịch sử từng lần kéo (OK / lỗi, kéo được gì), bảng so khớp doanh thu từng tháng và so khớp tồn kho.',
-  '<b>So doanh thu tháng</b>: kéo LẠI toàn bộ hoá đơn + trả hàng của tháng từ Kiot, so <b>từng mã</b> với dữ liệu app (thiếu / thừa / lệch trạng thái, tiền) và tổng theo chi nhánh. Phần app thiếu / lệch được <b>tự ghi bù ngay</b>; phần app thừa chỉ báo, không xoá. Tự chạy 23:50 mỗi ngày cho tháng này + tháng trước; bấm tay được từng tháng hoặc cả năm.',
-  'Cách tính giống Kiot: <b>Doanh thu</b> = tiền hàng − giảm giá hoá đơn (hoá đơn Hoàn thành) · <b>Trả hàng</b> = giá trị phiếu trả (trạng thái Đã trả) theo ngày trả · <b>Doanh thu thuần</b> = doanh thu − trả hàng.',
-  '<b>So tồn kho</b>: mỗi lần kéo đầy đủ hàng hoá (23:20 hoặc bấm "So tồn ngay"), app so tồn đang có với Kiot <b>trước khi</b> ghi đè. Mỗi lần kéo (15 phút) lấy lại tồn của các mặt hàng vừa bán / trả / nhập; chuyển kho, kiểm kho chỉ cập nhật ở lần kéo đầy đủ ban đêm.',
-  '<b>Giá vốn</b> app = giá vốn bình quân lúc kéo về (Kiot không trả giá vốn tại lúc bán) → lợi nhuận gộp có thể lệch báo cáo lợi nhuận của Kiot; doanh thu và tồn kho thì phải khớp.',
-  '<b>Cảnh báo vào chuông</b> (người có quyền Nhật ký): lần kéo Kiot lỗi · quá 4 tiếng không kéo được · lịch so khớp 23:50 không chạy · tháng còn lệch app tự bù không được · tồn kho lần so gần nhất lệch &gt; 1% giá trị. Kiểm cuối mỗi lần kéo và mỗi giờ (phút 5); cùng một vấn đề chỉ báo lại sau 12 tiếng nếu vẫn còn.',
-  'Dải trạng thái trên Tổng quan và các trang Kinh doanh / Công nợ: giờ cập nhật số Kiot gần nhất + kết quả soát 2 tháng gần nhất + lần so tồn; xanh = khớp, vàng = quá 4 tiếng chưa kéo, đỏ = lỗi hoặc còn lệch.']],
- ['Quỹ tiền mặt 3 cửa hàng (đối chiếu cuối ngày)',[
-  'Từ sổ quỹ Kiot, chỉ phiếu <b>tiền mặt</b>: thu tại quầy − chi tại quầy − nộp về két / quỹ khác (Chuyển rút) + nhận thêm = tiền <b>còn giữ ở quầy</b> (cộng dồn trong kỳ).',
-  'Cuối ngày nộp đủ thì "còn giữ" về 0. Số khác 0 kéo dài = tiền chưa nộp hoặc thiếu phiếu.']],
- ['P&L — lãi / lỗ (theo thực thu / thực chi, anh chốt 08/10/2026)',[
-  'Phân bổ chi phí (kế toán 14/10/2026): lập phiếu chỉ chọn 1 đơn vị chịu chi phí (Tổng công ty / HT / CT / SD). Sau đó kế toán (quyền duyệt chi) vào chi tiết phiếu → tab Phân bổ chi phí & kỳ ghi nhận: chia cho đơn vị (tự nhập, chia đều, hoặc % doanh số thực đạt tháng = hoá đơn Kiot hoàn thành − trả hàng của từng cơ sở) và chia ra nhiều tháng. Lãi / lỗ ghi chi phí theo tháng phân bổ; dòng tiền và số dư vẫn trừ đúng ngày thanh toán.',
-  '<b>Doanh thu</b> = khoản thu đã duyệt loại Thu bán hàng + Thu đặt cọc + Thu công nợ (theo ngày thu). <b>Thu khác</b> (vốn góp, lãi NH, hoàn tiền) để riêng ở phần ngoài hoạt động.',
-  '<b>Giá vốn</b> = chi đã thanh toán nhóm "Chi nhập hàng". <b>Chi phí hoạt động</b> = chi nhóm "Chi vận hành & quản lí". Chi tài chính, chi đầu tư để riêng.',
-  '<b>Lợi nhuận ròng</b> = tổng thu − tổng chi (không gồm điều chuyển). Chi tài chính hiện gồm CẢ trả gốc vay — khi trang Vay & lãi vay có đủ dữ liệu sẽ tách gốc / lãi.',
-  'Phần "Tham chiếu Kiot" (doanh thu hoá đơn, giá vốn hàng bán) để so — không cộng vào lợi nhuận.']],
- ['Vay & lãi vay · Tài sản (nhập trên app)',[
-  'Vay: nhập khoản vay (số tiền, lãi suất, đáo hạn) và các lần trả / lịch trả (gốc, lãi). Dư nợ = số vay − gốc đã trả. Tiền trả thật vẫn ghi ở trang Chi.',
-  'Tài sản: khấu hao <b>đường thẳng theo tháng</b>: mỗi tháng = nguyên giá / số tháng khấu hao; giá trị còn lại = nguyên giá − khấu hao luỹ kế tới hôm nay.']],
- ['Chứng từ (ảnh / PDF)',[
-  'Lưu và xem <b>ngay trên app</b> (anh chốt 08/10/2026): phiếu Thu, Chi, Điều chuyển, Vay, Tài sản đều có ô "Chứng từ đính kèm" — thêm nhiều ảnh / PDF, bấm ảnh để xem to, tải về từng file hoặc cả phiếu.',
-  'Thêm chứng từ: bấm ô <b>＋</b>, <b>kéo thả</b> file vào phiếu, hoặc <b>dán (Ctrl+V)</b> ảnh chụp màn hình. Phiếu MỚI chọn ảnh luôn trong form, bấm Lưu là tự tải lên. Nén + tải chạy <b>ngầm</b> (ô hiện % ), đóng phiếu vẫn tải tiếp; ô lỗi bấm để thử lại (anh chốt 08/10/2026).',
-  'Danh sách Thu / Chi / Điều chuyển có <b>ghim giấy + số chứng từ</b>: bấm là mở thẳng trình xem ảnh.',
-  'Ảnh tự <b>nén trên máy trước khi tải lên</b> (cạnh dài tối đa 2000px, ~400–600 KB, vẫn đọc rõ hoá đơn); PDF giữ nguyên; tối đa 15 MB / file.',
-  'Kho file <b>riêng tư</b>: chỉ người đăng nhập và có quyền xem trang đó mới mở được; mỗi lần xem app cấp link sống 5 phút. Xoá = ẩn khỏi phiếu, file vẫn còn, có nhật ký.',
-  'Link Google Drive cũ (chuyển từ sheet) vẫn giữ và bấm mở được ở mục "Hồ sơ".']],
- ['Công nợ khách',[
-  '<b>Dùng số công nợ trên Kiot</b> (anh chốt 08/10/2026: "kiot là đủ"): dương = khách còn nợ, âm = khách trả trước. Là số <b>hiện tại</b>, tự cập nhật 15 phút 1 lần. Xem ở Tổng quan và Báo cáo → Khách hàng.',
-  'Trang công nợ nhập tay (chuyển từ sheet cũ, phân loại COD / nợ / nợ NPP...) đã ẩn khỏi menu, dữ liệu cũ giữ nguyên để tra lại; không nhập mới.']],
- ['Quyền và nhật ký',[
-  'Đăng nhập bằng <b>tài khoản + mật khẩu</b> riêng của app kế toán (không dùng chung tài khoản app MKT/Sale). Mật khẩu lưu dạng băm, không ai đọc lại được. Sai 5 lần liền → khoá 15 phút.',
-  'Phân quyền: tick <b>Toàn quyền</b>, hoặc tick từng trang — <b>Xem</b> và <b>Nhập / sửa</b> riêng (anh bỏ ô Vị trí 05/10/2026). Quyền kiểm ở máy chủ (hàm SQL), không chỉ ẩn nút trên trang.',
-  'Hiện tại: anh Hải, giám đốc, kế toán — đều Admin toàn quyền (anh chốt 05/10/2026). Riêng tài khoản anh Hải là chủ app: chỉ anh cấp / bỏ quyền giám đốc xác nhận chi.',
-  'Chi — quyền (anh chốt 08/10/2026): <b>"Kế toán kiểm lượt 1 & thanh toán"</b> (Admin luôn có) · <b>"Giám đốc xác nhận lượt 2"</b> — KHÔNG đi theo Toàn quyền, phải tick riêng ở tài khoản (hiện: giám đốc; tài khoản anh Hải luôn có) · "Chỉ tạo đề nghị" (thấy phiếu mình — hiện không dùng, nhân viên đề xuất trên Kiot). Kiểm ở máy chủ, không chỉ ẩn nút.',
-  'Mọi thêm / sửa / xoá đều ghi nhật ký: ai, lúc nào, nội dung. Xoá = ẩn khỏi báo cáo, không mất dữ liệu.']],
- ['Duyệt chi 2 lượt + đề xuất chi từ Kiot',[
-  'Anh chốt 08/10/2026: <b>nhân viên đề xuất chi trên Kiot</b> → app tự kéo về (15 phút / lần) thành phiếu <b>Chờ kế toán kiểm</b> → kế toán kiểm, <b>xác nhận lượt 1</b> → <b>Chờ giám đốc xác nhận</b> → giám đốc <b>xác nhận lại</b> → <b>Chờ thanh toán</b> → kế toán chi, ghi Đã thanh toán.',
-  'Người đã kiểm lượt 1 không tự xác nhận lượt 2. Giám đốc có thể Từ chối hoặc Trả lại kế toán. Phiếu đã được giám đốc xác nhận: chỉ giám đốc đổi được số tiền.',
-  'Phiếu từ Kiot: lấy phiếu CHI trên sổ quỹ Kiot từ 08/10/2026, bỏ chuyển quỹ nội bộ (nhóm "Chuyển rút", mã TTD_ / CTD_, nội dung có số tài khoản công ty). Người đề nghị = người tạo trên Kiot, cơ sở = chi nhánh Kiot, tài khoản gợi ý: tiền mặt → két, chuyển khoản → tài khoản Kiot đã ghép. Kiot không có trạng thái "chờ duyệt" (phiếu Kiot luôn ghi Đã thanh toán) — app là nơi duyệt.',
-  'Chống tính 2 lần: phiếu app đã đánh dấu "Đã tạo phiếu Kiot (4A)" cùng số tiền, lệch ≤ 5 ngày → GHÉP, không tạo phiếu mới. Cùng số tiền ±5 ngày với phiếu app khác → vẫn tạo nhưng gắn nhãn đỏ <b>"Nghi trùng #…"</b> để kế toán Từ chối nếu là cùng 1 khoản.',
-  'Phiếu Kiot bị huỷ → phiếu app chưa thanh toán tự chuyển Từ chối. Phiếu Kiot sửa số tiền khi app còn chờ kế toán kiểm (chưa ai sửa) → cập nhật theo. Báo cáo tiền chỉ cộng phiếu Đã thanh toán.',
-  '"Đã thanh toán luôn" (kế toán tự chi, không qua duyệt) — anh chốt 09/10/2026: KHÔNG cần giám đốc xác nhận.',
-  'Phiếu chi Kiot tự sinh khi trả hàng (TTTH) / trả NCC lúc nhập hàng (PCPN) cũng qua đủ 2 lượt (anh chốt 09/10/2026).']],
- ['Luật loại chi (Claude chốt) + nghi sai loại',[
-  'Anh chốt 09/10/2026: các khoản cùng nội dung bị gán lệch loại → Claude quyết 1 loại theo bản chất khoản chi. TRƯỚC ngày áp dụng app: Claude đã tự sửa phiếu cũ (37 phiếu, có nhật ký để hoàn tác). TỪ ngày áp dụng: phiếu chọn loại khác luật → nhãn đỏ "Nghi sai loại" (tab ở trang Chi + Việc cần làm), kế toán bấm Đổi / Giữ — app KHÔNG tự sửa.',
-  '<b>Trả thẻ tín dụng công ty (sao kê, phí lãi thẻ)</b> → FINANCE - Tài chính - vay,lãi.',
-  '<b>Phí dịch vụ ngân hàng</b> → OPEX - Vận hành & Quản lí.',
-  '<b>Mua hàng nhập: phí chuyển tiền NN, vận chuyển TQ</b> → COGS - Giá vốn & Nhập Hàng.',
-  '<b>NCC hàng hoá (Thảo Nến)</b> → COGS - Giá vốn & Nhập Hàng.',
-  '<b>Tiền điện</b> → OPEX - Vận hành & Quản lí.',
-  '<b>Bù quỹ ngoài cửa hàng</b> → OPEX - Vận hành & Quản lí.',
-  '<b>Chưa rõ nguyên nhân</b> → OPEX - Khác.',
-  '<b>Chuyển tiền mặt cho bà Bùi Thị Hiền</b> → OPEX - Khác.',
-  'Trả thẻ tín dụng công ty để "Tài chính" vì là trả khoản vay ngắn hạn (không đoán thẻ quẹt mua gì). Phí dịch vụ ngân hàng là chi phí quản lý, không phải lãi vay. Phí chuyển tiền nước ngoài / vận chuyển hàng TQ tính vào giá vốn hàng nhập.']],
- ['Hoá đơn & thuế (3TShop)',[
-  '3TShop không có API (anh 09/10/2026): anh xuất ra Google Sheet → app đọc (scripts/keo-3tshop.js — file Drive đọc bằng đăng nhập Drive chỉ đọc, file xuất bản đọc qua link). Chạy lại không trùng: mỗi lần thay nguyên dữ liệu của file đó.',
-  '2 hộ kinh doanh + công ty: Hiền Thủy ↔ Kiot "Đồ thờ Hiền Thủy" · Chánh Tâm ↔ "Đồ Thờ Chánh Tâm" · Công ty THT = Shidai ↔ "Tổng kho sỉ Shidai" (anh chốt 12/10/2026). Hiền Thủy / Chánh Tâm: file quý 3TShop (tab XNT_QUY tồn kho, HD_XUAT hoá đơn bán, HD_NHAP hàng nhập). Công ty: hoá đơn bán từ meInvoice, hoá đơn mua từ file 3TShop Shidai (NHẬP HT) — tồn kho sổ thuế công ty chưa lấy (đang hỏi tab nào).',
-  'Bảng hoá đơn đọc theo TÊN cột (mỗi kỳ phần mềm xuất mẫu khác — vd Hiền Thủy quý 3 là bảng kê 36 cột). Tỷ lệ xuất hoá đơn = tổng hoá đơn bán (chưa thuế) / tổng hoá đơn Kiot cùng cửa hàng cùng tháng.',
-  'Ngày hoá đơn ngoài 01/01/2025 → hôm nay coi là gõ sai: không tính vào báo cáo theo tháng, liệt kê ở trang Đối soát lỗi.']],
- ['Hoá đơn công ty tổng (MISA meInvoice)',[
-  'meInvoice = hoá đơn của CÔNG TY TỔNG (đi theo dòng tiền tài khoản công ty); hoá đơn các HỘ lấy từ 3TShop (anh chốt 12/10/2026). App kéo tự động mỗi đêm 00:25 qua MISA Open API, CHỈ ĐỌC — nạp lại tháng này + tháng trước để bắt hoá đơn điều chỉnh / thay thế.',
-  'Tính: mọi ký hiệu (hoá đơn giá trị gia tăng, nến, chuyển khoản). KHÔNG tính 2 ký hiệu máy tính tiền Hong Kong Center / Saikung Hot Pot (dịch vụ khác — anh chốt 12/10/2026).',
-  'Phạm vi app KHÔNG gồm 2 nhà hàng AMHP (Saikung / Hongkong — anh chốt 12/10/2026): đã bỏ 2 đơn vị nhà hàng, ẩn phiếu chi vận hành / tháo dỡ và phiếu thu Kiot của nhà hàng (đều trước 01/09/2026, không ảnh hưởng số dư); phiếu Kiot đã ẩn không bao giờ bị chép lại. Chi tiếp khách ở nhà hàng ngoài vẫn tính (chi phí bán đồ thờ).',
-  'Shidai = công ty THT (anh chốt 12/10/2026). Hoá đơn bán công ty lấy từ meInvoice (bản Shidai trong file 3TShop trùng ~96% nên bỏ, tránh tính 2 lần); hoá đơn mua Shidai (nhập từ Hiền Thủy) lấy từ 3TShop. Cột công ty so với doanh thu Kiot "Tổng kho sỉ Shidai".',
-  'Mỗi hoá đơn công ty 1 dòng (API danh sách chỉ có tổng tiền, không có từng mặt hàng). Hoá đơn MUA VÀO công ty: tự kéo mỗi đêm 00:35 từ MISA "Xử lý hóa đơn" (tháng trước + tháng này; bỏ HĐ đã bị thay thế / huỷ). App tự ghép với phiếu chi đã thanh toán có HĐ đỏ khi: cùng số tiền (lệch ≤ 1.000đ), ngày HĐ trong khoảng 45 ngày trước – 60 ngày sau ngày trả, chỉ 1 phiếu ↔ 1 hoá đơn, tên NCC khớp tên thụ hưởng hoặc nội dung phiếu ≥ 50%. Không đủ chắc → hiện "Có HĐ gợi ý" để kế toán bấm xác nhận / bỏ ghép.']],
- ['Chuông thông báo',[
-  'Chuông trên thanh menu (thay báo Zalo, không đẩy về điện thoại — anh chốt 08/10/2026). Số đỏ = chưa đọc, tự cập nhật mỗi phút khi đang mở app. Bấm 1 thông báo → mở đúng phiếu.',
-  'Chi: phiếu mới / từ Kiot / mở lại → kế toán. Kế toán xác nhận lượt 1 → giám đốc. Giám đốc xác nhận → kế toán (thanh toán) + người tạo phiếu. Giám đốc trả lại → kế toán. Đã thanh toán / bị từ chối → người tạo (và người đã kiểm). Nhiều đề xuất Kiot cùng lúc gộp 1 thông báo.',
-  'Điều chuyển mới tạo trên app → người sửa được trang Điều chuyển (để xác nhận). Đã xác nhận → người tạo. Không báo cho chính người vừa thao tác; dữ liệu kéo từ Kiot / sheet cũ không sinh thông báo. Thông báo đã đọc quá 90 ngày tự dọn.']],
- ['Kéo bù từ sheet cũ (08/10/2026)',[
-  'Các khoản chi phát sinh trên Google Sheet sau 05/10 được kéo tạm vào app, ghi chú bắt đầu bằng <b>[Kéo từ sheet cũ 08/10 …]</b>, người đề nghị "Chưa rõ (sheet cũ)" — nhãn tím <b>"Kéo từ sheet cũ — cần bổ sung"</b>. Kế toán sửa dần (người đề nghị, chứng từ); sửa phiếu xong nhãn tự mất. Lọc nhanh: trang Chi → ô nguồn.',
-  'Ghép với phiếu đã có theo <b>nội dung + số tiền</b> (không theo số dòng, vì tab sheet bị xếp lại); không bao giờ hạ trạng thái phiếu đã có; chỉ lấy khoản phát sinh từ 01/09.']],
- ['Hạn chế nhập tay',[
-  'Tài khoản, cơ sở, bộ phận, loại thu, loại chi, phân loại công nợ, ngân hàng: chỉ <b>chọn</b> từ danh sách (danh mục sửa ở Cài đặt) — hết lỗi tên ghi nhiều kiểu.',
-  'Ngày mặc định hôm nay; số tiền tự thêm dấu chấm; người thụ hưởng, người đề nghị, khách công nợ, nội dung thu có gợi ý từ dữ liệu cũ.']],
+// LOGIC dạng bảng (anh 15/10/2026: "dài như sớ, làm bảng kiểu GG sheet theo nghiệp vụ"). Mỗi dòng 1 quy tắc ngắn.
+// [nghiệp vụ, mục, quy tắc, ghi chú / ví dụ, cập nhật]. Thêm / đổi logic → sửa đúng dòng ở đây.
+const LG_NV=[['chung','Dữ liệu chung'],['thu_chi','Thu chi & Ngân quỹ'],['cong_no','Công nợ'],['thue','Hoá đơn & Thuế'],['bao_cao','Báo cáo & Chốt kỳ'],['kiot','Kéo & so khớp Kiot']];
+const LOGIC2=[
+ // ── DỮ LIỆU CHUNG
+ ['chung','Phạm vi dữ liệu','Số chuẩn tính từ 01/09/2026; trước đó là số tham khảo.','Việc / câu hỏi chỉ dính trước T9 đóng tạm; HĐ đỏ chưa nhận đếm từ 01/09.','09/10'],
+ ['chung','Phạm vi dữ liệu','Có dữ liệu cả năm 2026: Kiot và chi từ 01/01, điều chuyển từ 01/05, số dư tài khoản từ 01/09.','Trước 01/09 sheet cũ không ghi thu ngoài Kiot (lãi, hộ trả tiền, GĐ nộp…) → kỳ trước 01/09 có nhãn cảnh báo, không hiện số dư.','09/10'],
+ ['chung','Phạm vi dữ liệu','Mỗi tài khoản có tồn đầu tại 1 ngày mốc (mặc định 01/09/2026); phát sinh trước mốc không tính.','Xem bảng "Mốc tồn đầu" ở tab Danh mục.','05/10'],
+ ['chung','Phạm vi dữ liệu','Không gồm 2 nhà hàng AMHP (Saikung / Hongkong).','Đã ẩn phiếu thu / chi của nhà hàng (trước 01/09, không ảnh hưởng số dư).','12/10'],
+ ['chung','Phạm vi dữ liệu','Shidai = Công ty THT (Tổng kho sỉ Shidai trên Kiot).','','12/10'],
+ ['chung','Phạm vi dữ liệu','Loại chi tháng 1–4 (sheet không ghi) do hệ thống tự gán theo mẫu phiếu từ T5.','Phiếu có nhãn "tự gán loại · tin …"; lọc Chi → nguồn "Tự gán loại — cần soát"; kế toán lưu phiếu là nhãn mất.','09/10'],
+ ['chung','Phân quyền','Đăng nhập tài khoản + mật khẩu riêng của app kế toán; sai 5 lần khoá 15 phút.','Không dùng chung tài khoản app MKT/Sale.','05/10'],
+ ['chung','Phân quyền','Supreme / Admin toàn quyền; người khác tick từng trang: Xem / Nhập-sửa.','Quyền kiểm ở máy chủ, không chỉ ẩn nút.','05/10'],
+ ['chung','Phân quyền','Quyền chi: "Kế toán kiểm lượt 1 & thanh toán" · "Giám đốc xác nhận lượt 2" (tick riêng, không theo Toàn quyền) · "Chỉ tạo đề nghị".','Tài khoản anh Hải luôn có quyền GĐ xác nhận.','08/10'],
+ ['chung','Phân quyền','Trang mới phải tick quyền riêng: Tạm ứng & hoàn ứng, Khoá kỳ / chốt tháng.','Báo cáo quản trị 3–8 theo quyền trang P&L.','15/10'],
+ ['chung','Nhật ký','Mọi thêm / sửa / xoá ghi nhật ký (ai, lúc nào, nội dung). Xoá = ẩn, không mất dữ liệu.','','05/10'],
+ ['chung','Chứng từ','Thu, Chi, Điều chuyển, Vay, Tạm ứng, Kiểm két đều đính kèm được ảnh / PDF / Excel / Word.','Kéo thả, Ctrl+V, hoặc chọn file; ảnh tự nén; tối đa 15 MB / file.','08/10'],
+ ['chung','Chứng từ','Kho file riêng tư: chỉ người có quyền xem trang mới mở được; link xem sống 5 phút.','','08/10'],
+ ['chung','Chuông thông báo','Chuông trên menu báo việc cần làm theo đúng người; bấm thông báo mở đúng phiếu.','Chi: phiếu mới → kế toán; KT kiểm → GĐ; GĐ duyệt → KT thanh toán + người tạo.','08/10'],
+ ['chung','Nhập liệu','Ô bắt buộc có dấu * đỏ; thiếu thì không lưu được.','Phiếu cũ thiếu thông tin: sửa lại phải điền đủ.','15/10'],
+ ['chung','Nhập liệu','Tài khoản, cơ sở, bộ phận, loại thu / chi, ngân hàng chỉ chọn từ danh sách.','Danh mục sửa ở Cài đặt.','05/10'],
+ ['chung','Xuất Excel','Mọi nút Xuất Excel ra file .xlsx: cột tiền là số (#,##0), cột ngày là ngày, có lọc cột.','Cột mã phiếu / số tài khoản giữ dạng chữ.','15/10'],
+ // ── THU CHI & NGÂN QUỸ
+ ['thu_chi','Tiền vào / ra / tồn','Tiền vào = phiếu thu Đã thu, theo ngày thu.','','05/10'],
+ ['thu_chi','Tiền vào / ra / tồn','Tiền ra = phiếu chi Đã thanh toán, theo ngày thanh toán.','Phiếu chờ duyệt / chờ thanh toán / từ chối không tính.','05/10'],
+ ['thu_chi','Tiền vào / ra / tồn','Điều chuyển nội bộ không tính vào thu / chi; chỉ giảm TK đi, tăng TK nhận.','Sheet cũ cộng cả điều chuyển nên thu / chi bị đội.','05/10'],
+ ['thu_chi','Tiền vào / ra / tồn','Tồn TK = tồn đầu + thu − chi + điều chuyển nhận − điều chuyển đi.','TK tồn âm báo đỏ — thường do thiếu phiếu.','05/10'],
+ ['thu_chi','Phiếu thu','Trạng thái chỉ có Đã thu / Chưa thu.','','14/10'],
+ ['thu_chi','Phiếu thu','Thu từ Kiot tự kéo 15 phút / lần, chỉ xem — sai thì sửa trên Kiot.','Thu ngoài Kiot (vốn, vay, hoàn BHXH…) nhập tay trên app.','14/10'],
+ ['thu_chi','Phiếu thu','Bấm thẻ số (Thu bán hàng / công nợ / đặt cọc / khác) → bảng lọc đúng khoản đó.','','15/10'],
+ ['thu_chi','Phiếu thu','Lọc theo tài khoản → hiện tổng đã thu của tài khoản đó.','Phiếu chi tương tự: tổng đã chi.','15/10'],
+ ['thu_chi','Phiếu chi — luồng duyệt','Đề nghị → Kế toán kiểm → Giám đốc xác nhận → Thanh toán.','Người kiểm lượt 1 không tự xác nhận lượt 2; GĐ có thể từ chối / trả lại.','08/10'],
+ ['thu_chi','Phiếu chi — luồng duyệt','Thanh toán bắt buộc: ngày thanh toán, tài khoản chi, loại chi.','','05/10'],
+ ['thu_chi','Phiếu chi — luồng duyệt','Kế toán tự chi tick "Đã thanh toán luôn" — không cần GĐ xác nhận.','','09/10'],
+ ['thu_chi','Phiếu chi — luồng duyệt','Ảnh hưởng tài khoản cửa hàng trên Kiot: chọn Đã tạo phiếu Kiot (4A) hoặc Không tạo (4B, ghi lý do).','','05/10'],
+ ['thu_chi','Phiếu chi — đề nghị','Đề nghị công khai qua link app #de-nghi, không cần tài khoản; vào thẳng mục Chờ kế toán kiểm.','Tối đa 10 phiếu / giờ / máy; chặn gửi trùng trong 30 phút.','14/10'],
+ ['thu_chi','Phiếu chi — đề nghị','Hình thức nhận tiền: Chuyển khoản → bắt buộc ngân hàng + số tài khoản; Tiền mặt → không cần.','','15/10'],
+ ['thu_chi','Phiếu chi — đề nghị','Đơn vị chịu chi phí lúc đề nghị: chọn 1 (Tổng công ty / HT / CT / SD); chia nhiều đơn vị làm ở tab Phân bổ.','','14/10'],
+ ['thu_chi','Phiếu chi — hiển thị','Thẻ số tính đúng kỳ: Tổng chi = phiếu trong kỳ (không tính từ chối); Đã thanh toán = trả trong kỳ.','','15/10'],
+ ['thu_chi','Phiếu chi — hiển thị','Nhà cung cấp = người bán trên HĐ đã ghép → thụ hưởng (nếu khác người đề nghị) → đối tác Kiot.','Thụ hưởng = người đề nghị → "Hoàn cho NV".','15/10'],
+ ['thu_chi','Phiếu chi — hiển thị','Cột Loại chi tách riêng; phiếu Kiot chưa phân loại hiện nhóm Kiot.','','15/10'],
+ ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn).','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung.','15/10'],
+ ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi trên sổ quỹ Kiot (từ 08/10) tự thành đề xuất Chờ kế toán kiểm.','Bỏ chuyển quỹ nội bộ (Chuyển rút, mã TTD_/CTD_).','08/10'],
+ ['thu_chi','Phiếu chi — từ Kiot','Phiếu app đã đánh 4A cùng số tiền, lệch ≤ 5 ngày → ghép, không tạo mới; trùng nghi ngờ → nhãn "Nghi trùng".','','08/10'],
+ ['thu_chi','Phiếu chi — từ Kiot','Phiếu Kiot bị huỷ → phiếu app chưa thanh toán tự chuyển Từ chối.','','08/10'],
+ ['thu_chi','Quỹ ngoài cửa hàng','Phiếu Kiot chi bằng Quỹ ngoài KHÔNG tạo đề xuất chi.','Tránh tính 2 lần với phiếu hoàn quỹ.','15/10'],
+ ['thu_chi','Quỹ ngoài cửa hàng','Chi phí quỹ ngoài ghi 1 lần ở phiếu hoàn quỹ ("thanh toán quỹ ngoài từ … đến …").','Lọc: Phiếu chi → nguồn "Phiếu hoàn Quỹ ngoài cửa hàng".','15/10'],
+ ['thu_chi','Quỹ ngoài cửa hàng','Mở phiếu hoàn quỹ → bảng kê phiếu Kiot Quỹ ngoài từ lần hoàn trước, báo khớp / lệch với số đề nghị.','Phiếu mới không có chữ "quỹ ngoài" → kế toán chọn cửa hàng ở khung chi tiết.','15/10'],
+ ['thu_chi','Loại chi','Phiếu chọn loại khác luật đã chốt → nhãn "Nghi sai loại", kế toán bấm Đổi / Giữ.','Thẻ tín dụng → FINANCE; phí NH, tiền điện, bù quỹ ngoài → OPEX Vận hành; phí CK nước ngoài, vận chuyển TQ → COGS.','09/10'],
+ ['thu_chi','Điều chuyển','Nhập ngày, TK đi, TK nhận (khác nhau), số tiền; kế toán xác nhận ngay trên dòng.','Chưa xác nhận vẫn tính vào tồn.','14/10'],
+ ['thu_chi','Sổ quỹ & kiểm két','Thủ quỹ đếm két cuối ngày (đếm theo mệnh giá được) + ảnh sổ quỹ; app so với sổ sách cuối ngày.','Lệch → Đối soát lỗi tự báo. Mỗi TK 1 lần / ngày, đếm lại thì ghi đè.','14/10'],
+ ['thu_chi','Sổ quỹ & kiểm két','Quỹ tiền mặt 3 cửa hàng (Kiot): thu quầy − chi quầy − nộp về két = tiền còn giữ ở quầy.','Cuối ngày nộp đủ thì về 0.','09/10'],
+ ['thu_chi','Tạm ứng & hoàn ứng','Sổ theo dõi ai đang cầm tiền ứng; không đổi số dư (tiền ra bằng Phiếu chi, trả lại bằng Phiếu thu).','','14/10'],
+ ['thu_chi','Tạm ứng & hoàn ứng','Hoàn ứng 3 cách: chứng từ chi phí / trả lại tiền / trừ lương; không cho hoàn vượt số còn lại.','Quá hạn = còn phải hoàn và đã qua hạn.','14/10'],
+ ['thu_chi','Vay','Nhập khoản vay + lịch trả (gốc, lãi); dư nợ = số vay − gốc đã trả.','Tiền trả thật vẫn ghi ở Phiếu chi.','05/10'],
+ // ── CÔNG NỢ
+ ['cong_no','Công nợ khách','Dùng số công nợ Kiot: dương = khách còn nợ, âm = khách trả trước.','Tự cập nhật 15 phút / lần.','08/10'],
+ ['cong_no','Công nợ NCC','Giữ nguyên dấu Kiot: âm = công ty đang nợ NCC.','','14/10'],
+ ['cong_no','Công nợ cũ','Trang công nợ nhập tay (sheet cũ) đã ẩn, chỉ để tra lại.','','08/10'],
+ // ── HOÁ ĐƠN & THUẾ
+ ['thue','Nguồn hoá đơn','Hộ Hiền Thủy, Chánh Tâm: file 3TShop (anh xuất ra Google Sheet / kéo thả trên app).','Đọc theo tên cột.','09/10'],
+ ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 hằng đêm), HĐ mua từ MISA Xử lý hoá đơn (00:35).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
+ ['thue','Ghép HĐ mua','HĐ mua tự ghép phiếu chi đã trả: cùng số tiền (lệch ≤ 1.000đ), ngày trong −45 / +60 ngày, tên NCC khớp ≥ 50%.','Không chắc → "Có HĐ gợi ý" để kế toán bấm ghép.','14/10'],
+ ['thue','Kho sổ thuế','Kỳ theo quý. Tồn dự kiến = tồn đầu + nhập theo HĐ vào − xuất theo HĐ ra + điều chỉnh.','Lệch = tồn file 3TShop − dự kiến.','14/10'],
+ ['thue','Kho sổ thuế','4 bước: nạp file → so lệch → điều chỉnh (có lý do) → khoá quý.','Khoá xong không nạp lại / sửa điều chỉnh; mở khoá: Supreme / Admin.','14/10'],
+ ['thue','Ngày hoá đơn','Ngày HĐ ngoài 01/01/2025 → hôm nay coi là gõ sai, liệt kê ở Đối soát lỗi.','','09/10'],
+ // ── BÁO CÁO & CHỐT KỲ
+ ['bao_cao','P&L','Doanh thu thuần = HĐ Kiot hoàn thành − trả hàng.','','14/10'],
+ ['bao_cao','P&L','Giá vốn = giá vốn Kiot lúc kéo về − giá vốn hàng trả (theo tỷ lệ HĐ gốc).','Gần đúng; Kiot không trả giá vốn tại lúc bán.','14/10'],
+ ['bao_cao','P&L','Chi phí = phiếu chi đã trả, ghi theo tháng phân bổ (không phân bổ: tháng thanh toán).','Mỗi loại chi OPEX là 1 dòng.','14/10'],
+ ['bao_cao','Dòng tiền','Tiền thực: thu đã thu (ngày thu), chi đã trả (ngày trả) — chia Kinh doanh / Đầu tư / Tài chính.','Số dư đầu / cuối chỉ có từ mốc 01/09.','14/10'],
+ ['bao_cao','Doanh thu trên Tổng quan','Thực tế = HĐ đã đi hàng − trả hàng. Đã cọc chưa đi hàng = đơn đặt có cọc chưa ra HĐ (doanh thu dự kiến).','Đơn không dấu vết tiền = báo giá, không tính.','14/10'],
+ ['bao_cao','Phân bổ chi phí','Chia phiếu cho đơn vị (tự nhập / chia đều / % doanh số tháng) và ra nhiều tháng ở tab Phân bổ của phiếu.','Chỉ kế toán (quyền duyệt chi) sửa.','14/10'],
+ ['bao_cao','Phân bổ chi phí','Chọn "% doanh số tháng" → mỗi đêm 00:15 hệ thống chia lại theo doanh số mới nhất đến hết tháng sau.','Sửa tay → giữ số đã sửa; tháng đã khoá thì không chia lại.','15/10'],
+ ['bao_cao','Báo cáo 3–8','3 Hiệu suất đơn hàng: đơn đặt trong kỳ chia huỷ / đã đi hàng / đã cọc / báo giá.','','15/10'],
+ ['bao_cao','Báo cáo 3–8','4 Dòng tiền dự kiến 8 tuần: số dư + thu bình quân − chi bình quân − lịch trả vay.','Ước tính theo 8 tuần qua.','15/10'],
+ ['bao_cao','Báo cáo 3–8','5 Ngân sách: nhập theo tháng × loại chi; so với chi thực tế.','','15/10'],
+ ['bao_cao','Báo cáo 3–8','6 Hàng tồn: tồn chậm = còn tồn, 90 ngày không bán; số ngày tồn = giá trị tồn ÷ giá vốn bán / ngày.','','15/10'],
+ ['bao_cao','Báo cáo 3–8','7 Vay: dư nợ, gốc / lãi đã trả, chi loại tài chính theo tháng.','','15/10'],
+ ['bao_cao','Báo cáo 3–8','8 Theo cơ sở: doanh thu thuần, giá vốn, lãi gộp, chi phí theo đơn vị chịu chi phí.','"Chung" = chi phí chưa chia cho cửa hàng.','15/10'],
+ ['bao_cao','Khoá sổ tháng','Tháng đã khoá: không thêm / sửa / xoá số tiền, ngày, TK, loại của phiếu trong tháng.','Sửa ghi chú, chứng từ, HĐ đỏ, 4A/4B vẫn được.','14/10'],
+ ['bao_cao','Khoá sổ tháng','Job Kiot / meInvoice vẫn chạy; số đổi sau khoá → trang Khoá kỳ báo "Đã đổi".','','14/10'],
+ ['bao_cao','Khoá sổ tháng','Chỉ khoá tháng đã kết thúc; mở khoá: Supreme / Admin.','','14/10'],
+ // ── KIOT
+ ['kiot','Kéo Kiot','Luồng kéo riêng của app kế toán, 15 phút / lần (phút 2, 17, 32, 47).','Chỉ đọc Kiot.','14/10'],
+ ['kiot','Kéo Kiot','Sổ quỹ lấy 10 ngày gần nhất; hoá đơn, trả hàng, nhập, đơn đặt, khách, NCC, hàng hoá lấy phần mới sửa.','','14/10'],
+ ['kiot','Thu từ Kiot','Chỉ chép thành thu: phiếu đã thanh toán, không phải Chuyển rút / TTD_ / CTD_ / "cân bằng quỹ".','Phiếu Kiot huỷ sau đó → khoản thu tự ẩn.','09/10'],
+ ['kiot','Thu từ Kiot','Loại thu theo mã: TTHD = bán hàng · TTDH / nhóm đặt cọc = đặt cọc · TT = công nợ · còn lại = thu khác.','','09/10'],
+ ['kiot','Thu từ Kiot','Phiếu tiền mặt luôn vào Két tiền mặt; chuyển khoản ghép theo cột "Bên Kiot" của tài khoản.','','09/10'],
+ ['kiot','So khớp Kiot','23:50 mỗi đêm so lại tháng này + tháng trước: hoá đơn, trả hàng, sổ quỹ, phiếu nhập, đơn đặt — thiếu / lệch tự bù.','App thừa chỉ báo, không xoá.','15/10'],
+ ['kiot','So khớp Kiot','So công nợ toàn bộ khách / NCC mỗi đêm; lệch ghi đè theo Kiot.','','15/10'],
+ ['kiot','So khớp Kiot','Kéo đầy đủ hàng hoá 23:20 → so tồn kho trước khi ghi đè.','','14/10'],
+ ['kiot','Cảnh báo','Chuông báo: kéo lỗi, quá 4 tiếng không kéo được, lịch so khớp không chạy, còn lệch không tự bù được.','Cùng vấn đề chỉ báo lại sau 12 tiếng.','14/10'],
 ];
+function veLogic(c){
+  const f=S.f,tab=f.lg_tab||'chung',q=(f.lg_q||'').toLowerCase().trim();
+  const ds=q?LOGIC2.filter(r=>r.join(' ').toLowerCase().includes(q)):LOGIC2.filter(r=>r[0]===tab);
+  const tenNV=k=>(LG_NV.find(x=>x[0]===k)||[])[1]||k;
+  let rows='',i=0;const nhom=[];ds.forEach(r=>{const g=(q?r[0]+'|':'')+r[1];const z=nhom[nhom.length-1];if(z&&z.g===g)z.r.push(r);else nhom.push({g,r:[r]})});
+  nhom.forEach(z=>z.r.forEach((r,j)=>{i++;rows+=`<tr><td class="c lg-stt">${i}</td>${j===0?`<td class="lg-muc" rowspan="${z.r.length}">${q?`<div class="muted" style="font-size:11px">${esc(tenNV(r[0]))}</div>`:''}${esc(r[1])}</td>`:''}<td>${r[2]}</td><td class="lg-gc">${r[3]||''}</td><td class="c nw lg-ngay">${r[4]||''}</td></tr>`}));
+  const lc=S.dm.loai.filter(x=>x.nhom==='chi'&&x.hoat_dong);
+  const danhMuc=tab==='danh_muc'&&!q;
+  c.innerHTML=`<div class="m-flt" style="align-items:center"><div class="m-seg">${[...LG_NV,['danh_muc','Danh mục đang áp dụng']].map(([k,t])=>`<button class="${!q&&tab===k?'on':''}" onclick="S.f.lg_tab='${k}';S.f.lg_q='';render()">${t}${k!=='danh_muc'?`<span class="c">${LOGIC2.filter(r=>r[0]===k).length}</span>`:''}</button>`).join('')}</div>
+      <input class="m-in" type="search" placeholder="Tìm quy tắc…" value="${esc(f.lg_q||'')}" onchange="S.f.lg_q=this.value;render()" style="margin-left:auto;min-width:220px"></div>
+    ${danhMuc?`<div class="sec">Cách chia từng loại chi</div><div class="m-card"><div class="scroll"><table class="lg-t"><tr><th>Loại chi</th><th>Nhóm báo cáo</th><th>Cách chia theo cơ sở</th></tr>${lc.map(x=>`<tr><td>${esc(x.ten)}</td><td>${esc(x.nhom_bc||'')}</td><td>${x.cach_chia==='ty_le_thu'?'Theo tỉ lệ thu':'Riêng (theo phiếu)'}</td></tr>`).join('')}</table></div></div>
+      <div class="sec">Mốc tồn đầu từng tài khoản</div><div class="m-card"><div class="scroll"><table class="lg-t"><tr><th>Tài khoản</th><th>Ngày mốc</th><th class="num">Tồn đầu</th></tr>${S.dm.tai_khoan.filter(x=>x.hoat_dong).map(x=>`<tr><td>${esc(x.ten)}</td><td>${fmtD(x.ngay_ton_dau)}</td><td class="num">${fmt(x.ton_dau)}</td></tr>`).join('')}</table></div></div>`
+    :`<div class="m-card"><div class="scroll"><table class="lg-t"><tr><th class="c" style="width:44px">STT</th><th style="width:190px">Mục</th><th>Quy tắc</th><th style="width:32%">Ghi chú / ví dụ</th><th class="c" style="width:80px">Cập nhật</th></tr>
+      ${rows||'<tr><td colspan="5" class="m-empty">Không thấy quy tắc nào</td></tr>'}</table></div></div>`}`;
+}
+
 async function pageCaiDat(mod){
   const el=$('#page');S.f.cd=mod;
   el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · '+PAGES[S.page].cd+'</span>')+'<div id="cd"></div>';
   const c=$('#cd');const qt=can('danh_muc',true);
-  if(S.f.cd==='logic'){
-    const lc=S.dm.loai.filter(x=>x.nhom==='chi'&&x.hoat_dong);
-    c.innerHTML=`<div class="doc">${LOGIC.map(([t,ls],i)=>`<h3>${i+1}. ${t}</h3><div class="rule"><ul>${ls.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}
-      <h3>${LOGIC.length+1}. Cách chia từng loại chi (đang áp dụng)</h3>
-      <div class="card scroll"><table><tr><th>Loại chi</th><th>Nhóm báo cáo</th><th>Cách chia theo cơ sở</th></tr>${lc.map(x=>`<tr><td>${esc(x.ten)}</td><td>${esc(x.nhom_bc||'')}</td><td>${x.cach_chia==='ty_le_thu'?'Theo tỉ lệ thu':'Riêng (theo phiếu)'}</td></tr>`).join('')}</table></div>
-      <h3>${LOGIC.length+2}. Mốc tồn đầu từng tài khoản</h3>
-      <div class="card scroll"><table><tr><th>Tài khoản</th><th>Ngày mốc</th><th class="num">Tồn đầu</th></tr>${S.dm.tai_khoan.filter(x=>x.hoat_dong).map(x=>`<tr><td>${esc(x.ten)}</td><td>${fmtD(x.ngay_ton_dau)}</td><td class="num">${fmt(x.ton_dau)}</td></tr>`).join('')}</table></div></div>`;
+  if(S.f.cd==='logic'){veLogic(c);
   }else if(S.f.cd==='tai_khoan'){
     c.innerHTML=`${qt?'<div class="bar"><button class="btn pri" onclick="formDM(\'tai_khoan\')">+ Thêm tài khoản</button></div>':''}<div class="card scroll"><table><tr><th>Tài khoản</th><th>Loại</th><th>Ngày mốc</th><th class="num">Tồn đầu</th><th>Bên Kiot</th><th>Trạng thái</th></tr>
       ${S.dm.tai_khoan.map(x=>`<tr class="${qt?'click':''}" ${qt?`onclick="formDM('tai_khoan',${x.id})"`:''}><td>${esc(x.ten)}</td><td>${esc(LOAI_TK[x.loai])}</td><td>${fmtD(x.ngay_ton_dau)}</td><td class="num">${fmt(x.ton_dau)}</td><td>${esc((x.kiot_ma||[]).join(', '))}</td><td>${x.hoat_dong?vb('Đang dùng','ok'):vb('Tắt','grey')}</td></tr>`).join('')}</table></div>`;

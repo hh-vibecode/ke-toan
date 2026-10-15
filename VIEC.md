@@ -95,6 +95,7 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | 16 | **HĐ mua vào 2 hộ (Chánh Tâm, Hiền Thủy)** — anh 14/10: thông tin "lấy từ file 3TShop như trước" đang SAI, xử lý sau. Đã bỏ dòng đó khỏi `tra-loi-ke-toan-14-10.txt`; chưa sửa chữ trên app (trang HĐ đầu vào, Logic) | chờ anh nói nguồn đúng |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
+- **Trang Logic (15/10/2026, anh)**: bảng kiểu Google Sheet theo nghiệp vụ — mảng `LOGIC2` trong index.html, mỗi dòng [nghiệp vụ, mục, quy tắc ngắn, ghi chú, ngày]. **Đổi logic nào → sửa / thêm đúng dòng đó trong cùng commit.** Không viết đoạn văn dài.
 
 - **App riêng, tách biệt hoàn toàn** khỏi MKT/Sale và QC CSKH (anh chốt 1/10/2026). Xem `CLAUDE.md` mục Tách biệt.
 - **Tên:** thư mục / repo `ke-toan`. **Tiền tố:** `kt_` (bảng, hàm) · `kt-` (lịch chạy, workflow). Đã đăng ký vào sổ quy ước chung 1/10/2026.
@@ -140,6 +141,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **15/10/2026 (5)** — Trang Logic làm lại thành bảng kiểu GG Sheet: 6 tab nghiệp vụ + tab Danh mục, ô tìm, 83 dòng quy tắc ngắn (gộp + cập nhật logic mới: quỹ ngoài, phân bổ % doanh số, QR, ô bắt buộc, khoá sổ, so khớp Kiot; sửa dòng cũ sai "phiếu chi Kiot không chép sang Chi"). Phiếu chi: lọc + nhãn "Phiếu hoàn Quỹ ngoài cửa hàng".
 
 - **15/10/2026 (4)** — Anh: "phần bắt buộc gắn * hết". Dấu * + kiểm đủ trước khi lưu: Phiếu chi (thêm ô Hình thức nhận tiền như phiếu đề nghị công khai — chuyển khoản bắt buộc ngân hàng + số TK 6–20 số, báo nếu không nhận ra ngân hàng → không có QR; tiền mặt ẩn 2 ô), Thanh toán, Phiếu thu (thêm bắt buộc ngày + cơ sở), Điều chuyển, Tạm ứng, Vay. Phiếu cũ thiếu thông tin: sửa lại phải điền đủ mới lưu được. Phiếu chưa có STK: chỗ QR hiện dòng nhắc. Nút sửa dùng hình bút vẽ (ký tự bút hiện thành gạch trên máy kế toán).
 
