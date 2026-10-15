@@ -784,8 +784,8 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.77';
-const APP_VERSION='15/10/2026 16:12';
+const APP_SO='1.78';
+const APP_VERSION='15/10/2026 16:30';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -919,6 +919,11 @@ function gateTab(t,err){
 }
 // mở phiếu đề xuất trong cửa sổ khi đã đăng nhập (cùng phiếu với màn đầu)
 function moDeXuat(){modal('<div style="display:flex;justify-content:flex-end"><button class="m-btn" style="height:30px" onclick="closeModal()">✕ Đóng</button></div><div class="gt-body" id="gt-body" style="border:none;padding:4px 2px"></div>',true);dnForm()}
+// phiếu đề nghị: báo ngay ngân hàng + số TK có tạo được mã QR chuyển khoản cho kế toán không (15/10)
+function dnQR(){const o=$('#dn-qr');if(!o)return;const v=k=>(($('#dn [name='+k+']')||{}).value||'').trim(),nh=v('thu_huong_nh'),stk=v('thu_huong_stk').replace(/[\s.\-]/g,'');
+  if(!nh||!stk){o.innerHTML='';return}
+  o.innerHTML=!binNH(nh)?'<span class="neg-t">Không nhận ra ngân hàng "'+esc(nh)+'" — chọn tên trong gợi ý để kế toán có mã QR chuyển khoản</span>'
+    :!/^\d{6,20}$/.test(stk)?'<span class="neg-t">Số tài khoản chỉ gồm 6–20 chữ số</span>':'<span class="pos-t">✓ Kế toán sẽ có mã QR chuyển khoản cho phiếu này</span>'}
 async function dnForm(){
   const b=$('#gt-body');if(!b)return;
   if(!DN.dm){b.innerHTML='<div class="empty">Đang tải...</div>';try{DN.dm=await rpc('kt_dm_de_nghi',{},true)}catch(e){b.innerHTML=`<div class="empty neg">${esc(e.message)}</div>`;return}}
@@ -926,21 +931,22 @@ async function dnForm(){
   const da=dnDa().slice(0,5),h=homNay();
   b.innerHTML=`<div class="gt-h"><div><h1>Phiếu đề nghị thanh toán</h1><div class="muted">Ai cũng gửi được, không cần tài khoản. Gửi xong phiếu vào thẳng mục chờ kế toán kiểm.</div></div></div>
     ${da.length?`<div class="gt-da"><b>Phiếu đã gửi từ máy này</b>${da.map(x=>`<a onclick="location.hash='phieu=${x.ma}';gateTab('phieu')">#${x.id} · ${esc(String(x.nd).slice(0,40))} · ${fmt(x.tien)} đ</a>`).join('')}</div>`:''}
-    <div class="form" id="dn" oninput="$('#dn-err').textContent=''">
-      <label>1. Họ và tên người đề nghị *<input name="nguoi_de_nghi" maxlength="80" value="${esc(ten)}" autocomplete="name"></label>
-      <label>2. Bộ phận *<select name="bo_phan_id">${opts(DN.dm.bo_phan,null,'— chọn bộ phận —')}</select></label>
-      <label class="full">3. Nội dung chi (hạng mục, lý do) *<textarea name="noi_dung" rows="2" maxlength="1000" placeholder="vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online"></textarea></label>
-      <label>4. Ngày sử dụng dịch vụ / nhận hàng *<input type="date" name="ngay_su_dung" value="${h}"></label>
-      <label>5. Số tiền đề nghị (đồng) *<input name="so_tien" inputmode="numeric" style="text-align:right" oninput="fmtMoney(this);dnPb()"><span class="dn-chu" id="dn-chu"></span></label>
-      <label>6. Hình thức nhận tiền *<select name="hinh_thuc" onchange="dnHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat">Tiền mặt</option></select></label>
-      <label>7. Người / đơn vị thụ hưởng *<input name="thu_huong_ten" maxlength="150"></label>
-      <label class="dn-ck">8. Ngân hàng thụ hưởng *<input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
-      <label class="dn-ck">9. Số tài khoản thụ hưởng *<input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
+    <div class="form" id="dn" oninput="$('#dn-err').textContent='';dnQR()">
+      <label><span>1. Họ và tên người đề nghị${BB}</span><input name="nguoi_de_nghi" maxlength="80" value="${esc(ten)}" autocomplete="name"></label>
+      <label><span>2. Bộ phận${BB}</span><select name="bo_phan_id">${opts(DN.dm.bo_phan,null,'— chọn bộ phận —')}</select></label>
+      <label class="full"><span>3. Nội dung chi (hạng mục, lý do)${BB}</span><textarea name="noi_dung" rows="2" maxlength="1000" placeholder="vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online"></textarea></label>
+      <label><span>4. Ngày sử dụng dịch vụ / nhận hàng${BB}</span><input type="date" name="ngay_su_dung" value="${h}"></label>
+      <label><span>5. Số tiền đề nghị (đồng)${BB}</span><input name="so_tien" inputmode="numeric" style="text-align:right" oninput="fmtMoney(this);dnPb()"><span class="dn-chu" id="dn-chu"></span></label>
+      <label><span>6. Hình thức nhận tiền${BB}</span><select name="hinh_thuc" onchange="dnHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat">Tiền mặt</option></select></label>
+      <label><span>7. Người / đơn vị thụ hưởng${BB}</span><input name="thu_huong_ten" maxlength="150"></label>
+      <label class="dn-ck"><span>8. Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
+      <label class="dn-ck"><span>9. Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
+      <div class="dn-ck full" id="dn-qr" style="font-size:11.5px;margin-top:-4px"></div>
       <div class="full dn-pb"><div class="dn-l">10. Đơn vị chịu chi phí * <span class="muted">— chọn 1 (kế toán phân bổ thêm sau nếu cần)</span></div>
         <div class="dn-dv">${(DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)).length?DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)):DN.dm.don_vi.map(d=>[d.id,d.ten])).map(([i,t])=>`<label class="chk"><input type="radio" name="dv" value="${i}" onchange="dnPb()"> ${esc(t)}</label>`).join('')}</div>
         <div id="dn-chia"></div></div>
       <label>11. Mong muốn thanh toán trước ngày<input type="date" name="han_tt" min="${h}"></label>
-      <label>12. Có hoá đơn đỏ (VAT) không? *<select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
+      <label><span>12. Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
       <label class="full">13. Ghi chú<input name="ghi_chu" maxlength="500"></label>
       <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <span class="muted">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
         <label class="dn-drop" id="dn-drop">+ Chọn ảnh / PDF / Excel / Word<input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="dnThemFile(this.files);this.value=''"></label>
@@ -1849,7 +1855,7 @@ const NH_BIN=[[/vietcombank|vietconbank|\bvcb\b|ngoai thuong/,'970436'],[/vietin
   [/seabank|dong nam a/,'970440'],[/\bshb\b|sai gon ha noi/,'970443'],[/\bmsb\b|maritime|hang hai/,'970426'],[/\bvib\b|quoc te/,'970441'],[/abbank|ab bank|an binh/,'970425'],
   [/bac a|bacabank/,'970409'],[/\bocb\b|ocbbank|phuong dong/,'970448'],[/hdbank|hd bank/,'970437'],[/eximbank|xuat nhap khau/,'970431'],[/lpbank|lienviet|loc phat/,'970449'],
   [/nam a|namabank/,'970428'],[/kienlong|kien long/,'970452'],[/pvcombank|pvcom/,'970412'],[/viet a\b|vietabank/,'970427'],[/\bncb\b|quoc dan/,'970419'],
-  [/\bscb\b/,'970429'],[/ban viet|bvbank|vccb/,'970454'],[/\bcake\b/,'546034'],[/\btimo\b/,'963388'],[/\bubank\b/,'546035']];
+  [/\bscb\b/,'970429'],[/ban viet|bvbank|vccb|viet capital/,'970454'],[/baoviet|bao viet/,'970438'],[/saigonbank|saigon bank/,'970400'],[/\bcake\b/,'546034'],[/\btimo\b/,'963388'],[/\bubank\b/,'546035']];
 const boDau=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');
 const binNH=t=>{const s=' '+boDau(t).toLowerCase().replace(/[^a-z0-9]+/g,' ')+' ';const m=NH_BIN.find(([r])=>r.test(s));return m?m[1]:null};
 function vietQR(bin,stk,tien,nd){const tlv=(i,v)=>i+String(v.length).padStart(2,'0')+v;
