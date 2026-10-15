@@ -747,7 +747,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 .pbf{display:flex;flex-direction:column;gap:6px}.pbf label{display:grid;grid-template-columns:130px 1fr 54px;gap:8px;align-items:center;font-size:12.5px}.pbf label input{height:32px}
 .pbf em{font-style:normal;font-size:11.5px;color:var(--muted);text-align:right}.pbf-t{text-align:right;font-size:12.5px}.pbf-nut{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin-top:8px}.pbf-nut .m-btn{height:32px;font-size:12px}
 /* khối 1 gộp doanh thu thực tế + đã cọc (14/10) */
-.tq2-1 .tq2-kq{grid-template-columns:repeat(6,minmax(0,1fr))}
+.tq2-1 .tq2-kq{grid-template-columns:repeat(5,minmax(0,1fr))}
 .tq-don{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;background:var(--bg2)}
 .tq-don-i{display:inline-flex;align-items:center;gap:6px}.tq-don-i i{width:8px;height:8px;border-radius:50%;background:var(--c)}.tq-don-i.click:hover{color:var(--accent)}
 .tq2-r3>.tq2.rong2{grid-column:span 2}
@@ -764,6 +764,12 @@ table.m-t tr.on td{background:var(--sel-bg)}
 .lg-t th{background:var(--bg2);position:sticky;top:0;z-index:1;font-weight:700}.lg-t tr:hover td{background:var(--sel-bg)}
 .lg-t td.lg-muc{font-weight:700;background:var(--bg2);color:var(--text)}.lg-t td.lg-gc{color:var(--text2)}.lg-t td.lg-stt,.lg-t td.lg-ngay{color:var(--muted)}
 .lg-t th.num,.lg-t td.num{text-align:right}
+/* Tổng quan 15/10: nhóm tồn dạng dòng có thanh % · cột cọc theo cơ sở */
+.tq-nhom .nh{display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:10px;align-items:center;font-size:12px;padding:3px 6px;margin:2px 0;border-radius:5px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--vio) 13%,transparent) var(--p),transparent var(--p))}
+.tq-nhom .nh span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:none;font-weight:600}.tq-nhom .nh span.xn:hover{text-decoration:underline}
+.tq-nhom .nh b{font-weight:600;text-align:right}.tq-nhom .nh em{font-style:normal;color:var(--muted);text-align:right;font-size:11px}
+.tq-coc,.tq-coc-h{background:color-mix(in srgb,var(--warn) 7%,transparent)}.tq-coc.click:hover{background:color-mix(in srgb,var(--warn) 15%,transparent)}
 </style>
 </head>
 <body>
@@ -774,7 +780,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='15/10/2026 15:09';
+const APP_VERSION='15/10/2026 15:25';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1324,13 +1330,14 @@ async function pageTongQuan(){
       ${the('warn','gv','Giá vốn hàng bán',K1.gv,K0.gv,false,'Tỷ lệ giá vốn: ',pct(K1.gv,K1.dt),"document.querySelector('.tq2-r2').scrollIntoView({behavior:'smooth'})")}
       ${the('ok','lg','Lợi nhuận gộp',K1.lg,K0.lg,true,'Biên lợi nhuận gộp: ',pct(K1.lg,K1.dt),coXem('pl')?"go('pl')":'')}
       ${the('vio','cp','Chi phí hoạt động',K1.cp,K0.cp,false,'Tỷ lệ chi phí HĐ/DT: ',pct(K1.cp,K1.dt),xnDuoc('cp')?`xemNhanh('cp','',${csSel&&csSel.length===1?`'${(CS3.find(x=>x[0]===csSel[0])||[])[2]}'`:'null'},'')`:'')}
-      ${the('teal','ln','Lợi nhuận sau chi phí (ước tính)',K1.ln,K0.ln,true,'Biên lợi nhuận: ',pct(K1.ln,K1.dt),coXem('pl')?"go('pl')":'')}
-      ${theCoc()}</div></div>`,'tq2-1');
+      ${the('teal','ln','Lợi nhuận sau chi phí (ước tính)',K1.ln,K0.ln,true,'Biên lợi nhuận: ',pct(K1.ln,K1.dt),coXem('pl')?"go('pl')":'')}</div></div>`,'tq2-1');
   const rows2=C1.rows.filter(r=>!csSel||csSel.includes(r.key)),tg={dt:sumBy(rows2,r=>r.dt),gv:sumBy(rows2,r=>r.gv),lg:sumBy(rows2,r=>r.lg),cp:sumBy(rows2,r=>r.cp)+(csSel?0:C1.chung)};tg.ln=tg.lg-tg.cp;
-  const s2=sec(2,'info','Kết quả kinh doanh theo cơ sở',kyN,`<div class="scroll"><table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num">Doanh thu</th><th class="num">Giá vốn</th><th class="num">Lợi nhuận gộp</th><th class="num">Chi phí HĐ</th><th class="num">Lợi nhuận (ước tính)</th><th class="num">Biên LN</th><th class="num">${tN}</th></tr>
-      ${rows2.map(r=>{const r0=C0.rows.find(x=>x.key===r.key)||{},cn=(CS3.find(x=>x[0]===r.key)||[])[2],chon=csSel&&csSel.length===1&&csSel[0]===r.key;return `<tr class="click ${chon?'on':''}" title="${chon?'Bấm để bỏ lọc':'Bấm để lọc cả trang theo '+r.ten}" onclick="S.f.loc_cs=${chon?'null':`['${r.key}']`};shell()"><td><b>${r.ten}</b>${chon?' '+pill('Đang lọc','info'):''}</td><td class="num">${fmt(r.dt)}</td><td class="num">${fmt(r.gv)}</td><td class="num">${fmt(r.lg)}</td><td class="num"><span ${xnAttr('cp','',cn,'')}>${fmt(r.cp)}</span></td><td class="num"><b class="${r.ln<0?'neg-t':''}">${fmt(r.ln)}</b></td><td class="num">${pct(r.ln,r.dt)}</td><td class="num">${mui(r.ln,r0.ln)}</td></tr>`}).join('')}
-      ${!csSel&&C1.chung?`<tr class="click" ${xnAttr('cp','','_chung','')}><td class="muted">Chi phí bộ phận chung</td><td></td><td></td><td></td><td class="num">${fmt(C1.chung)}</td><td class="num neg-t">${fmt(-C1.chung)}</td><td></td><td></td></tr>`:''}
-      <tr class="tong"><td><b>Tổng cộng</b></td><td class="num"><b>${fmt(tg.dt)}</b></td><td class="num"><b>${fmt(tg.gv)}</b></td><td class="num"><b>${fmt(tg.lg)}</b></td><td class="num"><b>${fmt(tg.cp)}</b></td><td class="num"><b>${fmt(tg.ln)}</b></td><td class="num"><b>${pct(tg.ln,tg.dt)}</b></td><td class="num">${mui(K1.ln,K0.ln)}</td></tr></table></div>`);
+  const s2F=()=>sec(2,'info','Kết quả kinh doanh theo cơ sở',kyN,`<div class="scroll"><table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num">Doanh thu</th><th class="num">Giá vốn</th><th class="num">Lợi nhuận gộp</th><th class="num">Chi phí HĐ</th><th class="num">Lợi nhuận (ước tính)</th><th class="num">Biên LN</th><th class="num">${tN}</th><th class="num tq-coc-h" title="Đơn đặt trong kỳ đã có cọc, chưa xuất hoá đơn — doanh thu dự kiến">Đã cọc · chưa đi hàng</th></tr>
+      ${rows2.map(r=>{const r0=C0.rows.find(x=>x.key===r.key)||{},cn=(CS3.find(x=>x[0]===r.key)||[])[2],chon=csSel&&csSel.length===1&&csSel[0]===r.key;return `<tr class="click ${chon?'on':''}" title="${chon?'Bấm để bỏ lọc':'Bấm để lọc cả trang theo '+r.ten}" onclick="S.f.loc_cs=${chon?'null':`['${r.key}']`};shell()"><td><b>${r.ten}</b>${chon?' '+pill('Đang lọc','info'):''}</td><td class="num">${fmt(r.dt)}</td><td class="num">${fmt(r.gv)}</td><td class="num">${fmt(r.lg)}</td><td class="num"><span ${xnAttr('cp','',cn,'')}>${fmt(r.cp)}</span></td><td class="num"><b class="${r.ln<0?'neg-t':''}">${fmt(r.ln)}</b></td><td class="num">${pct(r.ln,r.dt)}</td><td class="num">${mui(r.ln,r0.ln)}</td>${cocO(cc.filter(x=>csCuaCN(x.cn)===r.key))}</tr>`}).join('')}
+      ${!csSel&&C1.chung?`<tr class="click" ${xnAttr('cp','','_chung','')}><td class="muted">Chi phí bộ phận chung</td><td></td><td></td><td></td><td class="num">${fmt(C1.chung)}</td><td class="num neg-t">${fmt(-C1.chung)}</td><td></td><td></td><td class="tq-coc"></td></tr>`:''}
+      <tr class="tong"><td><b>Tổng cộng</b></td><td class="num"><b>${fmt(tg.dt)}</b></td><td class="num"><b>${fmt(tg.gv)}</b></td><td class="num"><b>${fmt(tg.lg)}</b></td><td class="num"><b>${fmt(tg.cp)}</b></td><td class="num"><b>${fmt(tg.ln)}</b></td><td class="num"><b>${pct(tg.ln,tg.dt)}</b></td><td class="num">${mui(K1.ln,K0.ln)}</td>${cocO(cc,true)}</tr></table></div>`);
+  // ô Đã cọc · chưa đi hàng: giá trị đơn + số đơn · đã cọc; bấm xem từng đơn
+  const cocO=(ds,b)=>`<td class="num tq-coc click" onclick="event.stopPropagation();xemDonTQ()" title="Bấm xem từng đơn">${ds.length?`${b?'<b>':''}${fmt(sumBy(ds,x=>x.tong))}${b?'</b>':''}<div class="muted" style="font-size:11px">${ds.length} đơn · cọc ${fmtN(sumBy(ds,cocT))}</div>`:'<span class="muted">–</span>'}</td>`;
   // 14/10/2026 kế toán: doanh thu theo NHÓM HÀNG CHA (không lấy nhóm con) + cột lợi nhuận gộp / biên để nhìn nhanh nhóm nào lãi tốt
   const nhC=Object.values(dn.nhom.filter(x=>csOK(x.cn)).reduce((o,x)=>{const r=o[x.nhom]=o[x.nhom]||{nhom:x.nhom,dt:0,gv:0};r.dt+=+x.dt;r.gv+=+x.gv;return o},{})).sort((a,c)=>c.dt-a.dt);
   const tongN=sumBy(nhC,x=>x.dt),topN=nhC.slice(0,6),khacN=nhC.slice(6),kN={dt:sumBy(khacN,x=>x.dt),gv:sumBy(khacN,x=>x.gv)};
@@ -1371,9 +1378,9 @@ async function pageTongQuan(){
   const s5=sec(5,'warn','Top 5 mặt hàng bán chạy',kyN,`<table class="m-t tq2-t"><tr><th>#</th><th>Mã hàng</th><th>Tên hàng</th><th>Cơ sở</th><th class="num">SL bán</th><th class="num">Doanh thu</th></tr>
       ${sp.map((x,i)=>`<tr ${xnAttr('sp',x.ma,null,'')}><td>${i+1}</td><td class="nw">${esc(x.ma)}</td><td class="tq-ten" title="${esc(x.ten)}">${esc(x.ten)}</td><td class="nw">${esc(csT(x.cn))}</td><td class="num">${fmt(x.sl)}</td><td class="num">${fmt(x.dt)}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Chưa có</td></tr>'}</table>`);
   const tc=CS3.filter(c=>!csSel||csSel.includes(c[0])).map(([key,ten,cn])=>({ten,cn_k:cn,...(tq.ton_cs.find(x=>cung(x.cn,cn))||{gt:0,so_ma:0,lau_so:0})}));
-  const s6=sec(6,'vio','Tồn kho nội bộ','cuối '+fmtD(S.den).slice(3),`<table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num">Tồn kho (giá vốn)</th><th class="num">Số mặt hàng</th><th class="num">Hàng tồn > 6 tháng</th><th>Nhóm tồn nhiều nhất</th></tr>
-      ${tc.map(r=>`<tr ${xnAttr('ton_lau','',r.cn_k,'')}><td><b>${r.ten}</b></td><td class="num">${fmt(r.gt)}</td><td class="num">${fmt(r.so_ma)}</td><td class="num neg-t">${fmt(r.lau_so)} (${pct(r.lau_so,r.so_ma)})</td><td class="tq-nhom">${(r.nhom_top||[]).map(n=>`<span ${xnAttr('nhom',n.nhom,null,'')}>${esc(n.nhom)}</span> <span class="muted">${fmtN(n.gt)} · ${pct(n.gt,r.gt)}</span>`).join('<br>')}</td></tr>`).join('')}
-      <tr class="tong"><td><b>Tổng cộng</b></td><td class="num"><b>${fmt(sumBy(tc,r=>r.gt))}</b></td><td class="num"><b>${fmt(sumBy(tc,r=>r.so_ma))}</b></td><td class="num"><b>${fmt(sumBy(tc,r=>r.lau_so))} (${pct(sumBy(tc,r=>r.lau_so),sumBy(tc,r=>r.so_ma))})</b></td><td></td></tr></table>`);
+  const s6=sec(6,'vio','Tồn kho nội bộ','cuối '+fmtD(S.den).slice(3),`<table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num">Tồn kho (giá vốn)</th><th class="num">Số mặt hàng</th><th class="num">Mã tồn > 6 tháng</th><th style="min-width:300px">3 nhóm tồn nhiều nhất (giá trị · % tồn cơ sở)</th></tr>
+      ${tc.map(r=>`<tr ${xnAttr('ton_lau','',r.cn_k,'')}><td><b>${r.ten}</b></td><td class="num">${fmt(r.gt)}</td><td class="num">${fmt(r.so_ma)}</td><td class="num"><b class="neg-t">${fmt(r.lau_so)}</b> mã<div class="muted" style="font-size:11px">${pct(r.lau_so,r.so_ma)} số mã</div></td><td class="tq-nhom">${(r.nhom_top||[]).map(n=>`<div class="nh" style="--p:${r.gt?Math.round(n.gt*100/r.gt):0}%"><span ${xnAttr('nhom',n.nhom,null,'')}>${esc(n.nhom)}</span><b>${fmtN(n.gt)}</b><em>${pct(n.gt,r.gt)}</em></div>`).join('')}</td></tr>`).join('')}
+      <tr class="tong"><td><b>Tổng cộng</b></td><td class="num"><b>${fmt(sumBy(tc,r=>r.gt))}</b></td><td class="num"><b>${fmt(sumBy(tc,r=>r.so_ma))}</b></td><td class="num"><b>${fmt(sumBy(tc,r=>r.lau_so))}</b> mã<div class="muted" style="font-size:11px">${pct(sumBy(tc,r=>r.lau_so),sumBy(tc,r=>r.so_ma))} số mã</div></td><td></td></tr></table>`);
   const tkL=l=>sumBy(b.tai_khoan.filter(t=>t.loai===l),t=>t.cuoi_ky),tm=tkL('tien_mat'),nh=tkL('ngan_hang'),khac=(+b.ton_cuoi_ky||0)-tm-nh,coSD=S.den>='2026-08-31';
   const o=(c,ic,l,v,hl,on)=>`<div class="tq2-o ${hl?'hl':''} ${on?'click':''}" ${on?`onclick="${on}"`:''}>${ic?`<span class="m-ic" style="--c:var(--${c})">${ic}</span>`:''}<div><div class="l">${l}</div><div class="v">${coSD?fmt(v):'—'}</div></div></div>`;
   const ICT={tm:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>',nh:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 2 7v2h20V7zM4 10v8h3v-8zm6 0v8h4v-8zm7 0v8h3v-8zM2 20h20v2H2z"/></svg>',vi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm2 4h6v2H5z"/></svg>'};
@@ -1399,7 +1406,7 @@ async function pageTongQuan(){
       ${cb('info',IC2.lg,lau,'Mặt hàng tồn lâu > 6 tháng','Giá trị: '+fmt(lauGT),(()=>{const m=tq.ton_cs.filter(x=>csOK(x.cn)).sort((a,b)=>b.lau_gt-a.lau_gt)[0];return m&&xnDuoc('ton_lau')?`xemNhanh('ton_lau','','${m.cn}','')`:''})())}
       ${cb('bad',IC2.ln,S.soLoi||0,'Lỗi đối soát cần xử lý','Phiếu nghi trùng, sai loại, lệch số dư…',"go('doi_soat')")}</div>`);
   const r2=x=>x.replace('<section class="tq2 ','<section class="tq2 rong2 ');
-  el.innerHTML=s1F()+`<div class="tq2-r2">${s2}${sKenh}</div><div class="tq2-r3">${r2(s3)}${s4}</div><div class="tq2-r3">${r2(s6)}${s9}</div><div class="tq2-r3">${s7}${r2(s8)}</div>`+s10+
+  el.innerHTML=s1F()+`<div class="tq2-r2">${s2F()}${sKenh}</div><div class="tq2-r3">${r2(s3)}${s4}</div><div class="tq2-r3">${r2(s6)}${s9}</div><div class="tq2-r3">${s7}${r2(s8)}</div>`+s10+
     `<div class="tq-note" style="margin-top:8px">Doanh thu, giá vốn: hoá đơn Kiot (giá vốn đã trừ hàng bị trả) · chi phí: thực chi · Kiot cập nhật ${b.kiot_keo_luc?fmtDT(b.kiot_keo_luc):'—'}</div>`;
   shellBadges();
 }
@@ -3457,7 +3464,7 @@ const LOGIC2=[
  ['bao_cao','P&L','Giá vốn = giá vốn Kiot lúc kéo về − giá vốn hàng trả (theo tỷ lệ HĐ gốc).','Gần đúng; Kiot không trả giá vốn tại lúc bán.','14/10'],
  ['bao_cao','P&L','Chi phí = phiếu chi đã trả, ghi theo tháng phân bổ (không phân bổ: tháng thanh toán).','Mỗi loại chi OPEX là 1 dòng.','14/10'],
  ['bao_cao','Dòng tiền','Tiền thực: thu đã thu (ngày thu), chi đã trả (ngày trả) — chia Kinh doanh / Đầu tư / Tài chính.','Số dư đầu / cuối chỉ có từ mốc 01/09.','14/10'],
- ['bao_cao','Doanh thu trên Tổng quan','Thực tế = HĐ đã đi hàng − trả hàng. Đã cọc chưa đi hàng = đơn đặt có cọc chưa ra HĐ (doanh thu dự kiến).','Đơn không dấu vết tiền = báo giá, không tính.','14/10'],
+ ['bao_cao','Doanh thu trên Tổng quan','Thực tế = HĐ đã đi hàng − trả hàng. Đã cọc chưa đi hàng = đơn đặt có cọc chưa ra HĐ (doanh thu dự kiến).','Đơn không dấu vết tiền = báo giá, không tính. Đã cọc · chưa đi hàng hiện theo từng cơ sở ở bảng Kết quả theo cơ sở.','15/10'],
  ['bao_cao','Phân bổ chi phí','Chia phiếu cho đơn vị (tự nhập / chia đều / % doanh số tháng) và ra nhiều tháng ở tab Phân bổ của phiếu.','Chỉ kế toán (quyền duyệt chi) sửa.','14/10'],
  ['bao_cao','Phân bổ chi phí','Chọn "% doanh số tháng" → mỗi đêm 00:15 hệ thống chia lại theo doanh số mới nhất đến hết tháng sau.','Sửa tay → giữ số đã sửa; tháng đã khoá thì không chia lại.','15/10'],
  ['bao_cao','Báo cáo 3–8','3 Hiệu suất đơn hàng: đơn đặt trong kỳ chia huỷ / đã đi hàng / đã cọc / báo giá.','','15/10'],
