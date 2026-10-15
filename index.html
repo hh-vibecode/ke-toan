@@ -784,8 +784,8 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.78';
-const APP_VERSION='15/10/2026 16:30';
+const APP_SO='1.79';
+const APP_VERSION='15/10/2026 16:45';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1776,7 +1776,7 @@ async function pageChi(){
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const [tu0,den0]=kyTruoc(S.tu,S.den);
   const [ds,ds0,hv]=await Promise.all([rpc('kt_ds',{p_bang:'chi',p_tu:S.tu,p_den:S.den}),rpc('kt_ds',{p_bang:'chi',p_tu:tu0,p_den:den0}),
-    rpc('kt_hd_vao_goi_y',{}).catch(()=>({goi_y:[],da_ghep:[]}))]);S.cache.chi=ds;S.cache.hdv=hv;
+    chiDuyet()||can('hoa_don_thue')?rpc('kt_hd_vao_goi_y',{}).catch(()=>({goi_y:[],da_ghep:[]})):{goi_y:[],da_ghep:[]}]);S.cache.chi=ds;S.cache.hdv=hv;
   S.cache.kle=chiDuyet()?await rpc('kt_kiot_chi_chua_ghep',{}).catch(()=>[]):[];
   const f=S.f;f.chi_tt=f.chi_tt||(ds.some(viecCuaToi)?'cua_toi':'tat_ca');const q=(f.chi_q||'').toLowerCase();   // như Lark: mở ra thấy ngay phiếu chờ mình
   const loc={cua_toi:viecCuaToi,tat_ca:x=>true,cho_duyet:x=>x.trang_thai==='cho_duyet',cho_gd:x=>x.trang_thai==='cho_gd',nghi_trung:x=>!!x.nghi_trung&&x.trang_thai!=='tu_choi',nghi_loai:x=>!!x.nghi_loai,cho_tt:x=>x.trang_thai==='cho_tt',da_tt:x=>x.trang_thai==='da_tt',
