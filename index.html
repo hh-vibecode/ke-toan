@@ -783,7 +783,7 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // ── Cấu hình ──────────────────────────────────────────────────────────────
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
-const APP_VERSION='15/10/2026 15:32';
+const APP_VERSION='15/10/2026 15:49';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1781,9 +1781,9 @@ async function pageChi(){
     &&(!f.chi_bp||x.bo_phan_id==f.chi_bp)&&(!f.chi_nguon||(f.chi_nguon==='bo_sung'?canBS(x):f.chi_nguon==='hoan_quy'?!!x.hoan_quy:f.chi_nguon==='claude'?!!claudeGan(x):f.chi_nguon==='claude_soat'?['vừa','thấp'].includes(claudeGan(x)):x.nguon===f.chi_nguon))&&(!f.chi_dv||(x.phan_bo||[]).some(p=>p.don_vi_id==f.chi_dv))
     &&(!q||[x.noi_dung,x.nguoi_de_nghi,x.thu_huong_ten,x.ghi_chu,x.kiot_ma,'#'+x.id].join(' ').toLowerCase().includes(q)));
   const tien=a=>sumBy(a,x=>x.so_tien),pt=(a,b)=>{if(!b)return '';const p=(a-b)/Math.abs(b)*100;return `<span class="${p>=0?'pos-t':'neg-t'}">${p>=0?'↑':'↓'} ${Math.round(Math.abs(p))}%</span>`};
-  const tky=(x,a,b)=>{const d=x.trang_thai==='da_tt'?x.ngay_tt:x.ngay_de_nghi;return !!d&&d>=a&&d<=b},bo=x=>['tu_choi','tu_choi_tt'].includes(x.trang_thai);
-  const tong=nen.filter(x=>!bo(x)&&tky(x,S.tu,S.den)),tong0=nen0.filter(x=>!bo(x)&&tky(x,tu0,den0)),dtt0=nen0.filter(x=>x.trang_thai==='da_tt'&&tky(x,tu0,den0));
-  const dtt=nen.filter(x=>x.trang_thai==='da_tt'&&tky(x,S.tu,S.den)),cd=nen.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)),ctt=nen.filter(loc.cho_tt),hd=nen.filter(loc.hd_do),ck=nen.filter(chuaKiot);
+  const tky=(x,a,b)=>{const d=x.trang_thai==='da_tt'?x.ngay_tt:x.ngay_de_nghi;return !!d&&d>=a&&d<=b},bo=x=>['tu_choi','tu_choi_tt'].includes(x.trang_thai)||laGocVay(x);
+  const tong=nen.filter(x=>!bo(x)&&tky(x,S.tu,S.den)),tong0=nen0.filter(x=>!bo(x)&&tky(x,tu0,den0)),dtt0=nen0.filter(x=>x.trang_thai==='da_tt'&&!laGocVay(x)&&tky(x,tu0,den0)),gocKy=nen.filter(x=>laGocVay(x)&&x.trang_thai==='da_tt'&&tky(x,S.tu,S.den));
+  const dtt=nen.filter(x=>x.trang_thai==='da_tt'&&!laGocVay(x)&&tky(x,S.tu,S.den)),cd=nen.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)),ctt=nen.filter(loc.cho_tt),hd=nen.filter(loc.hd_do),ck=nen.filter(chuaKiot);
   const IC={vi:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H4zm0 4h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm11 3v2h3v-2z"/></svg>',
     ok:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4z"/></svg>',
     gio:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4 3.3 2-.9 1.6L11 13.3V6h2z"/></svg>',
@@ -1804,7 +1804,7 @@ async function pageChi(){
   S.cache.chi_xuat=()=>xuatCSV('phieu-chi-'+S.tu+'_'+S.den,cols,l);
   const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.chi_tr=1;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=`<div><div class="m-kpis m-k3">
-      ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(tong),pt(tien(tong),tien(tong0))+' so với kỳ trước · không tính phiếu từ chối',`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'tat_ca')}
+      ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(tong),pt(tien(tong),tien(tong0))+' so với kỳ trước · không tính phiếu từ chối'+(gocKy.length?` · <span title="Trả gốc vay là trả lại tiền mượn, không phải chi phí — xem ở loại chi FINANCE - Trả gốc vay">trả gốc vay tính riêng: <b>${fmt(tien(gocKy))}</b></span>`:''),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'tat_ca')}
       ${the('ok','ok','Đã thanh toán',tien(dtt),pt(tien(dtt),tien(dtt0)),dtt.length+' phiếu · trả trong kỳ','da_tt')}
       ${the('warn','gio','Chờ duyệt',tien(cd),pt(tien(cd),tien(nen0.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)))),cd.length+' phiếu','cho_duyet')}
       ${the('warn','tt','Chưa thanh toán',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt))),ctt.length+' phiếu','cho_tt')}
@@ -1830,6 +1830,8 @@ async function pageChi(){
 }
 // ── Góp ý kế toán 15/10/2026 ───────────────────────────────────────────────
 // Phiếu chi: nội dung bỏ tiền tố nhóm Kiot (tách ra cột Loại chi) · nhà cung cấp = người bán trên HĐ đã ghép / người thụ hưởng khác người đề nghị
+// 15/10: trả gốc vay không phải chi phí — không cộng vào Tổng chi / Đã thanh toán / ngân sách
+const laGocVay=x=>((lo(x.loai_id)||{}).ten||'')==='FINANCE - Trả gốc vay';
 const ndChi=x=>x.nguon==='kiot'?String(x.noi_dung||'').replace(/^[^·]+ · /,''):String(x.noi_dung||'');
 const nhomKiotChi=x=>x.nguon==='kiot'?((String(x.noi_dung||'').match(/^([^·]+) · /)||[])[1]||'').trim():'';
 function nccChi(x){const h=hdvGhep(x.id)[0];if(h&&h.ncc)return h.ncc;
@@ -2641,7 +2643,7 @@ async function pageBCDuKien(){const el=$('#page');el.innerHTML='<div class="m-em
 
 // 5. CHI PHÍ & NGÂN SÁCH (ngân sách nhập trên app theo tháng × loại chi)
 async function pageBCNganSach(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tính...</div>';
-  const [ky,d]=await qtLay('ngan_sach');S.cache.ns=d;S.cache.ns_ky=ky;
+  const [ky,d]=await qtLay('ngan_sach');const gocId=(d.loai.find(l=>l.ten==='FINANCE - Trả gốc vay')||{}).id;d.loai=d.loai.filter(l=>l.id!==gocId);d.thuc=d.thuc.filter(x=>x.loai_id!==gocId);S.cache.ns=d;S.cache.ns_ky=ky;
   const rows=d.loai.map(l=>{const ns=sumBy(d.ns.filter(x=>x.loai_id===l.id),x=>+x.so_tien),tt=sumBy(d.thuc.filter(x=>x.loai_id===l.id),x=>+x.tien);return {l,ns,tt}}).filter(r=>r.ns||r.tt);
   const kl=sumBy(d.thuc.filter(x=>!d.loai.some(l=>l.id===x.loai_id)),x=>+x.tien),TN=sumBy(rows,r=>r.ns),TT=sumBy(rows,r=>r.tt)+kl;
   S.cache.bc_xuat=()=>xuatCSV('ngan-sach-'+ky.tu+'_'+ky.den,[['Loại chi',r=>r.l.ten],['Ngân sách',r=>r.ns],['Thực tế',r=>r.tt],['Chênh lệch',r=>r.ns-r.tt]],rows);
@@ -3472,6 +3474,7 @@ const LOGIC2=[
  ['thu_chi','Quỹ ngoài cửa hàng','Phiếu Kiot chi bằng Quỹ ngoài KHÔNG tạo đề xuất chi.','Tránh tính 2 lần với phiếu hoàn quỹ.','15/10'],
  ['thu_chi','Quỹ ngoài cửa hàng','Chi phí quỹ ngoài ghi 1 lần ở phiếu hoàn quỹ ("thanh toán quỹ ngoài từ … đến …").','Lọc: Phiếu chi → nguồn "Phiếu hoàn Quỹ ngoài cửa hàng".','15/10'],
  ['thu_chi','Quỹ ngoài cửa hàng','Mở phiếu hoàn quỹ → bảng kê phiếu Kiot Quỹ ngoài từ lần hoàn trước, báo khớp / lệch với số đề nghị.','Phiếu mới không có chữ "quỹ ngoài" → kế toán chọn cửa hàng ở khung chi tiết.','15/10'],
+ ['thu_chi','Loại chi','Loại tài chính tách 3: Trả gốc vay · Trả thẻ tín dụng · Lãi vay & phí tài chính.','Trả gốc vay là trả lại tiền mượn, KHÔNG phải chi phí: không cộng vào Tổng chi, Đã thanh toán, ngân sách; Dòng tiền xếp ở hoạt động tài chính.','15/10'],
  ['thu_chi','Loại chi','Phiếu chọn loại khác luật đã chốt → nhãn "Nghi sai loại", kế toán bấm Đổi / Giữ.','Thẻ tín dụng → FINANCE; phí NH, tiền điện, bù quỹ ngoài → OPEX Vận hành; phí CK nước ngoài, vận chuyển TQ → COGS.','09/10'],
  ['thu_chi','Điều chuyển','Nhập ngày, TK đi, TK nhận (khác nhau), số tiền; kế toán xác nhận ngay trên dòng.','Chưa xác nhận vẫn tính vào tồn.','14/10'],
  ['thu_chi','Sổ quỹ & kiểm két','Thủ quỹ đếm két cuối ngày (đếm theo mệnh giá được) + ảnh sổ quỹ; app so với sổ sách cuối ngày.','Lệch → Đối soát lỗi tự báo. Mỗi TK 1 lần / ngày, đếm lại thì ghi đè.','14/10'],
