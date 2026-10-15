@@ -142,6 +142,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **15/10/2026 (6)** — Anh: "luồng cũ làm ở GG sheet rồi đẩy lên Kiot, kéo về từ Kiot để xác nhận là bị ngược". Đề xuất thanh toán làm TRÊN APP trước: màn đầu 2 bên (phiếu đề xuất | đăng nhập, điện thoại giữ 2 tab), đã đăng nhập có nút "+ Đề xuất thanh toán" trên thanh đầu trang. `kt_dong_bo_kiot_chi` thôi tự tạo đề xuất từ phiếu chi Kiot (vẫn ghép 4A, vẫn tự từ chối phiếu Kiot huỷ); phiếu Kiot chưa khớp → nút "Phiếu Kiot chưa có đề nghị" ở Phiếu chi: ghép tay / tạo phiếu (`kt_kiot_chi_chua_ghep`, `kt_ghep_chi_kiot`, `kt_tao_chi_tu_kiot` — `supabase-schema-kt-kiot-ghep-chi.sql`). **Chờ anh quyết**: 40 đề xuất nguồn Kiot cũ đang chờ duyệt (~1,06 tỷ) giữ nguyên hay chuyển sang danh sách ghép.
+
 - **15/10/2026 (5)** — Trang Logic làm lại thành bảng kiểu GG Sheet: 6 tab nghiệp vụ + tab Danh mục, ô tìm, 83 dòng quy tắc ngắn (gộp + cập nhật logic mới: quỹ ngoài, phân bổ % doanh số, QR, ô bắt buộc, khoá sổ, so khớp Kiot; sửa dòng cũ sai "phiếu chi Kiot không chép sang Chi"). Phiếu chi: lọc + nhãn "Phiếu hoàn Quỹ ngoài cửa hàng".
 
 - **15/10/2026 (4)** — Anh: "phần bắt buộc gắn * hết". Dấu * + kiểm đủ trước khi lưu: Phiếu chi (thêm ô Hình thức nhận tiền như phiếu đề nghị công khai — chuyển khoản bắt buộc ngân hàng + số TK 6–20 số, báo nếu không nhận ra ngân hàng → không có QR; tiền mặt ẩn 2 ô), Thanh toán, Phiếu thu (thêm bắt buộc ngày + cơ sở), Điều chuyển, Tạm ứng, Vay. Phiếu cũ thiếu thông tin: sửa lại phải điền đủ mới lưu được. Phiếu chưa có STK: chỗ QR hiện dòng nhắc. Nút sửa dùng hình bút vẽ (ký tự bút hiện thành gạch trên máy kế toán).
