@@ -17,6 +17,8 @@
 
 **Xong hôm 16/10 (chi tiết ở Nhật ký 16/10 (1)→(22)):** doanh thu như Kiot + tách DT / DT thuần · kênh bán · luồng chi có THỦ QUỸ (GĐ / KT xác nhận + chọn TK đi tiền → thủ quỹ / GĐ chi + ảnh giao dịch; tài khoản thuquy) · người nhận tiền mặt · hoạt động + bình luận phiếu · Xem như (icon, admin + GĐ, chỉ xem) · tự kiểm Supabase ngày 15 + cuối tháng · đồng bộ sheet đề nghị 15 phút (lịch Windows) · cửa sổ phiếu lớn · xuất phiếu Word · tìm kiếm · menu tự ẩn · Kiot sang Đối soát lỗi · số phiếu khớp sheet theo ngày sử dụng.
 
+**Góp ý kế toán 16/10 18:03: xong 1, 2, 3, 5, 6 (nhật ký 16/10 (23)); việc 4 = chính là việc khớp dòng tiền T5–T10 ở trên.** Kế toán cần: soát loại nợ tự đoán, chọn TK ngừng dùng, gán loại chi cho phiếu đã xác nhận chưa có loại.
+
 **Còn treo, chờ kế toán / anh:** giải ngân 7 khoản vay; tách lãi trong THU NO TKV; 12 phiếu chỉ có link Drive (Google Sheet/Docs); Điều chuyển còn ô "Ảnh hưởng Kiot" (anh chưa nói bỏ); bug: tài khoản hạn chế có Tổng quan nhưng thiếu quyền bán hàng / vay → Tổng quan lỗi tải (sửa trước khi cấp tài khoản hạn chế).
 
 ---
@@ -161,6 +163,15 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **16/10/2026 (23) — phiên cloud, góp ý kế toán 18:03 (6 việc)** — SQL `supabase-schema-kt-gop-y-16-10.sql` ĐÃ CHẠY trên Supabase (qua connector Supabase; nạp file từ git bằng pg_net, kiểm md5 khớp rồi mới chạy). Trước khi chạy đã so 7 hàm định nghĩa lại = đúng bản đang chạy (không đè sửa của ai). Đã chạy thử trên Postgres local với dữ liệu giả.
+  (1) **KQKD tách khỏi dòng tiền**: chi phí HẠCH TOÁN (view `kt_v_chi_ht`) = phiếu đã xác nhận (chờ chi + đã chi), trừ tạm ứng, ghi vào tháng phân bổ > tháng hạch toán ghi tay (`kt_chi.thang_ht`, ô mới trong form phiếu chi) > tháng ngày sử dụng DV. Tổng quan (`kt_chi_phi_ht`), P&L (`kt_bc_pl2`), ngân sách / theo cơ sở / tài chính (`kt_bc_qt`), ô xem nhanh chi phí (`kt_drill`) đổi sang. Dòng tiền / Sổ quỹ giữ theo ngày chi. Số thật lúc chạy: T10 chi phí hạch toán (mọi loại) 358 tr, tiền ra đã chi T10 562 tr — chênh là phiếu trả trong T10 cho dịch vụ tháng trước. Phiếu đã xác nhận nhưng CHƯA gán loại chi thì chưa vào chi phí (Tổng quan có dòng cảnh báo).
+  (2) **Công nợ phải thu tách 3 loại** theo hoá đơn đang tính nợ (FIFO): COD chưa thu hồi (ô COD Kiot) · Chưa lấy hàng (ghi chú HĐ có "chưa lấy / gửi lại / giữ hàng / để lại / hẹn lấy…") · Nợ thật. Kế toán đổi tay từng HĐ trong khung chi tiết (bảng `kt_no_phan_loai`, hàm `kt_luu_loai_no`). Bộ lọc "Loại nợ" + 3 nhãn tổng trên trang Công nợ. CHƯA kiểm số trên dữ liệu thật — app tự đoán, cần kế toán soát.
+  (3) **Phiếu đề nghị**: có hoá đơn đỏ → bắt buộc chọn HĐ xuất về Công ty / HKD Hiền Thủy / HKD Chánh Tâm (`kt_chi.hd_ve`); tick **TẠM ỨNG** (`kt_chi.la_tam_ung`) → trigger tự tạo dòng Tạm ứng & hoàn ứng (người tạo "Hệ thống"), từ chối / xoá / bỏ tick → tự gỡ nếu chưa hoàn; tạm ứng không bắt đơn vị chịu chi phí / hoá đơn, không tính chi phí. Form công khai `#de-nghi` + form trong app + cửa sổ phiếu đều có. Form trong app lưu 3 ô mới bằng `kt_chi_bo_sung` sau `kt_luu_chi`.
+  (5) **TK ngừng dùng**: bỏ tick "Đang dùng" ở Cài đặt → Danh mục → không còn trong lựa chọn, số dư, tổng tồn Tổng quan / Sổ quỹ; Sổ quỹ có link "Xem N tài khoản ngừng dùng"; phiếu cũ giữ tên TK. CHƯA tắt tài khoản nào — chị kế toán / anh chọn (gợi ý: TK không có trong file dòng tiền: TECH…, MSB, BIDV BUI THI HIEN… — xem câu SQL gợi ý đầu file SQL).
+  (6) **Cọc chưa đi hàng**: luật cũ đếm lặp tiền trả trước của khách ở MỌI đơn mở + tính cả đơn đã ra HĐ. Luật mới (`kt_v_don_coc`): trả trước chia 1 lần FIFO; loại đơn có HĐ gắn đơn; khách có HĐ không gắn đơn ≥ 50% giá trị đơn từ ngày đặt → "nghi đã đi hàng" (liệt kê riêng để soát); đặt > 90 ngày → nhãn Treo (vẫn tính). Số thật 2026: cũ 31 đơn / 1,19 tỷ / cọc 356 tr → mới 19 đơn / 786 tr / cọc 303 tr (10 đang chờ + 9 treo) + 3 đơn nghi đã đi hàng.
+  (4) **Khớp thu / chi / điều chuyển T5→T10 theo file dòng tiền: CHƯA LÀM trong phiên này** — cần file Drive + 6 báo cáo đối chiếu ở máy anh → làm theo mục ★ MAI LÀM TIẾP.
+  Chưa thử bằng tay trên trình duyệt thật (chỉ kiểm cú pháp + SQL). Trang Logic thêm / sửa 6 dòng.
 
 - **16/10/2026 (22)** — Anh: "nút xuất phiếu trong popup, gọn trong 1 docs Word để kế toán xuất cho nhân sự ký xác nhận, chỉ phần ký của người nhận" + "chỉ thông tin xác nhận phổ thông, không bảo mật như chia chi phí" → nút "Xuất phiếu Word" (.doc mở bằng Word, A4): GIẤY XÁC NHẬN NHẬN TIỀN — số phiếu, ngày, nội dung, số tiền + bằng chữ, hình thức, người nhận (+ TK nhận nếu chuyển khoản), người đề nghị, bộ phận, ngày đề nghị; 1 chỗ ký Người nhận tiền. Không có phân bổ / loại chi / TK công ty. **Lưu ý code:** không để chuỗi </body> trong mã (công cụ chụp + bộ kiểm chèn script vào </body> đầu tiên) — viết </body>.
 
