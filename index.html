@@ -788,8 +788,8 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.81';
-const APP_VERSION='16/10/2026 14:36';
+const APP_SO='1.82';
+const APP_VERSION='16/10/2026 14:42';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3537,7 +3537,8 @@ const LOGIC2=[
  ['thue','Kho sổ thuế','4 bước: nạp file → so lệch → điều chỉnh (có lý do) → khoá quý.','Khoá xong không nạp lại / sửa điều chỉnh; mở khoá: Supreme / Admin.','14/10'],
  ['thue','Ngày hoá đơn','Ngày HĐ ngoài 01/01/2025 → hôm nay coi là gõ sai, liệt kê ở Đối soát lỗi.','','09/10'],
  // ── BÁO CÁO & CHỐT KỲ
- ['bao_cao','P&L','Doanh thu = hoá đơn Kiot Hoàn thành + Đang xử lý (đang giao) — như Kiot. Doanh thu thuần = doanh thu − trả hàng.','Khớp màn Tổng quan Kiot (T9: 797.882.124). Trước 16/10 app bỏ hoá đơn Đang xử lý.','16/10'],
+ ['bao_cao','P&L','Doanh thu = hoá đơn Kiot Hoàn thành + Đang xử lý (đang giao) — như Kiot. Doanh thu thuần = doanh thu − trả hàng.','Khớp màn Tổng quan Kiot (đã đối chiếu T9). Trước 16/10 app bỏ hoá đơn Đang xử lý.','16/10'],
+ ['bao_cao','Kênh bán','Theo ô kênh bán trên hoá đơn Kiot. Không ghi kênh = Bán trực tiếp tại cửa hàng; "Facebook" chung (gắn thiếu thương hiệu) → theo chi nhánh: Facebook Chánh Tâm / Hiền Thuỷ / Shidai; "Siêu thị Phật Giáo Hiền Thuỷ" = Shopee Hiền Thuỷ.','Chỉ đổi tên trong báo cáo, dữ liệu Kiot giữ nguyên. "Khác" = nhân viên tự chọn Khác trên Kiot.','16/10'],
  ['bao_cao','P&L','Giá vốn = giá vốn Kiot lúc kéo về − giá vốn hàng trả (theo tỷ lệ HĐ gốc).','Gần đúng; Kiot không trả giá vốn tại lúc bán.','14/10'],
  ['bao_cao','P&L','Chi phí = phiếu chi đã trả, ghi theo tháng phân bổ (không phân bổ: tháng thanh toán).','Mỗi loại chi OPEX là 1 dòng.','14/10'],
  ['bao_cao','Dòng tiền','Tiền thực: thu đã thu (ngày thu), chi đã trả (ngày trả) — chia Kinh doanh / Đầu tư / Tài chính.','Số dư đầu / cuối chỉ có từ mốc 01/09.','14/10'],

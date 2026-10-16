@@ -1,5 +1,5 @@
 -- DOANH THU THEO ĐÚNG KIOT (16/10/2026, anh: "phải đúng theo Kiot" + "chia làm doanh thu và doanh thu thuần"). Monsieur Claude
--- Kiot tính doanh thu gồm hoá đơn Hoàn thành (1) VÀ Đang xử lý (3 — đang giao hàng). App trước chỉ lấy Hoàn thành → T9 thiếu 13.130.000 (HD059764 Shidai).
+-- Kiot tính doanh thu gồm hoá đơn Hoàn thành (1) VÀ Đang xử lý (3 — đang giao hàng). App trước chỉ lấy Hoàn thành → T9 thiếu (số ở file local) (HD059764 Shidai).
 -- Mọi hàm đọc hoá đơn Kiot: trang_thai = 1 → trang_thai in (1, 3). (Bản đang chạy 16/10 của từng hàm, chỉ đổi điều kiện này.)
 
 -- kt_bc_ban_hang (1 chỗ)
