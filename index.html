@@ -824,8 +824,8 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.89';
-const APP_VERSION='16/10/2026 16:00';
+const APP_SO='1.90';
+const APP_VERSION='16/10/2026 16:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1883,8 +1883,8 @@ async function pageChi(){
   S.cache.chi_xuat=()=>xuatCSV('phieu-chi-'+S.tu+'_'+S.den,cols,l);
   const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.chi_tr=1;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=`<div><div class="m-kpis m-k3">
-      ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(tong),pt(tien(tong),tien(tong0))+' so với kỳ trước · không tính phiếu từ chối'+(gocKy.length?` · <span title="Trả gốc vay là trả lại tiền mượn, không phải chi phí — xem ở loại chi FINANCE - Trả gốc vay">trả gốc vay tính riêng: <b>${fmt(tien(gocKy))}</b></span>`:''),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'tat_ca')}
-      ${the('ok','ok','Đã thanh toán',tien(dtt),pt(tien(dtt),tien(dtt0)),dtt.length+' phiếu · trả trong kỳ','da_tt')}
+      ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(dtt),pt(tien(dtt),tien(dtt0))+' so với kỳ trước · chỉ tính phiếu đã thanh toán ('+dtt.length+' phiếu)'+(gocKy.length?` · <span title="Trả gốc vay là trả lại tiền mượn, không phải chi phí — xem ở loại chi FINANCE - Trả gốc vay">trả gốc vay tính riêng: <b>${fmt(tien(gocKy))}</b></span>`:''),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'da_tt')}
+      ${the('ok','ok','Tổng đề nghị',tien(tong),pt(tien(tong),tien(tong0)),tong.length+' phiếu · gồm cả chưa thanh toán, không tính từ chối','tat_ca')}
       ${the('warn','gio','Chờ duyệt',tien(cd),pt(tien(cd),tien(nen0.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)))),cd.length+' phiếu','cho_duyet')}
       ${the('warn','tt','Chưa thanh toán',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt))),ctt.length+' phiếu','cho_tt')}
       ${the('bad','hd','Chưa nhận HĐ',tien(hd),pt(tien(hd),tien(nen0.filter(loc.hd_do))),hd.length+' phiếu','hd_do')}
@@ -3593,7 +3593,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — đề nghị','Đã đăng nhập: nút "+ Đề xuất thanh toán" trên thanh đầu trang mở cùng phiếu đó, tên người đề nghị điền sẵn.','','15/10'],
  ['thu_chi','Phiếu chi — đề nghị','Hình thức nhận tiền: Chuyển khoản → bắt buộc ngân hàng + số tài khoản; Tiền mặt → không cần.','','15/10'],
  ['thu_chi','Phiếu chi — đề nghị','Đơn vị chịu chi phí lúc đề nghị: chọn 1 (Tổng công ty / HT / CT / SD); chia nhiều đơn vị làm ở tab Phân bổ.','','14/10'],
- ['thu_chi','Phiếu chi — hiển thị','Thẻ số tính đúng kỳ: Tổng chi = phiếu trong kỳ (không tính từ chối); Đã thanh toán = trả trong kỳ.','','15/10'],
+ ['thu_chi','Phiếu chi — hiển thị','Tổng chi = CHỈ phiếu đã thanh toán (tách tiền mặt / ngân hàng). Tổng đề nghị = mọi phiếu trong tháng trừ từ chối (gồm cả chưa thanh toán).','Tháng theo ngày sử dụng dịch vụ. Trả gốc vay không tính.','16/10'],
  ['thu_chi','Phiếu chi — hiển thị','Nhà cung cấp = người bán trên HĐ đã ghép → thụ hưởng (nếu khác người đề nghị) → đối tác Kiot.','Thụ hưởng = người đề nghị → "Hoàn cho NV".','15/10'],
  ['thu_chi','Phiếu chi — hiển thị','Cột Loại chi tách riêng; phiếu Kiot chưa phân loại hiện nhóm Kiot.','','15/10'],
  ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],

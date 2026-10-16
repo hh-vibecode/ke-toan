@@ -143,6 +143,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **16/10/2026 (11)** — Anh: "tổng chi là chỉ lấy đã thanh toán" → thẻ Tổng chi = phiếu đã thanh toán (tiền mặt / ngân hàng); thẻ thứ 2 đổi thành "Tổng đề nghị" (mọi phiếu tháng trừ từ chối). Trang Logic cập nhật.
+
 - **16/10/2026 (10)** — Anh: "cho click vào đây sửa luôn" (khung Hoá đơn đỏ trong cửa sổ phiếu) → ô chọn Không cần / Cần — chưa nhận / Đã nhận (+ ngày nhận), lưu ngay (`doiHDChi`, người có quyền ghi phiếu chi); đóng cửa sổ sau khi đổi thì danh sách tự tải lại.
 
 - **16/10/2026 (9)** — Anh: "phiếu Vân Hồ 9/10 đâu" → có (#419, đã TT 09/10) nhưng hiện số phiếu theo mã Kiot CNH009029 → số phiếu luôn PC…, mã Kiot dòng nhỏ bên dưới (5 chỗ). "tìm kiếm phải ra cái cần tìm" → ô tìm khớp NGUYÊN CỤM (không dấu) thay vì từng chữ ("vân hồ" từng khớp nhầm "Vận hành … cho"); sau đó anh: "tìm theo số phiếu và từ trong nội dung thôi" → chỉ tìm nội dung + số phiếu (PC419 / 419 / pc000419 / mã Kiot đều ra), bỏ tìm theo người, NCC, số tiền.
