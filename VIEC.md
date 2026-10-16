@@ -143,6 +143,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **16/10/2026 (12)** — Anh: "clear mục Hoá đơn 3TShop ghi ngày sai năm, tương tự không care nữa" → bỏ hẳn nhóm này khỏi Đối soát lỗi (`supabase-schema-kt-bo-loi-ngay-3tshop.sql`); 13 dòng nhập Công ty THT ngày trống giữ nguyên dữ liệu. **Quy tắc:** không theo dõi / cảnh báo ngày hoá đơn 3TShop sai năm nữa.
+
 - **16/10/2026 (11)** — Anh: "tổng chi là chỉ lấy đã thanh toán" → thẻ Tổng chi = phiếu đã thanh toán (tiền mặt / ngân hàng); thẻ thứ 2 đổi thành "Tổng đề nghị" (mọi phiếu tháng trừ từ chối). Trang Logic cập nhật.
 
 - **16/10/2026 (10)** — Anh: "cho click vào đây sửa luôn" (khung Hoá đơn đỏ trong cửa sổ phiếu) → ô chọn Không cần / Cần — chưa nhận / Đã nhận (+ ngày nhận), lưu ngay (`doiHDChi`, người có quyền ghi phiếu chi); đóng cửa sổ sau khi đổi thì danh sách tự tải lại.
