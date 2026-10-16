@@ -845,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.46';
-const APP_VERSION='16/10/2026 20:58';
+const APP_SO='1.47';
+const APP_VERSION='16/10/2026 21:05';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1018,7 +1018,7 @@ async function dnForm(){
       <label class="dn-hd"><span>12. Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
       <label id="dn-hdve" class="dn-hd"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,'')}</select></label>
       <label class="full">13. Ghi chú<input name="ghi_chu" maxlength="500"></label>
-      <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <span class="muted">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
+      <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
         <label class="dn-drop" id="dn-drop">+ Chọn ảnh / PDF / Excel / Word<input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="dnThemFile(this.files);this.value=''"></label>
         <div id="dn-files"></div></div>
       <input name="web" tabindex="-1" autocomplete="off" class="dn-bay" aria-hidden="true">
@@ -1053,6 +1053,8 @@ function dnLoai(k){DN.loai=k;const hu=k==='hoan_ung',tt=k==='thanh_toan',f=$('#d
   $('#dn-l3').innerHTML=(hu?'3. Hoàn ứng cho khoản ứng nào (ngày ứng, lý do)':k==='tam_ung'?'3. Lý do tạm ứng':'3. Nội dung chi (hạng mục, lý do)')+BB;
   $('#dn-l4').innerHTML=(hu?'4. Ngày trả lại tiền':k==='tam_ung'?'4. Ngày cần dùng tiền':'4. Ngày sử dụng dịch vụ / nhận hàng')+BB;
   $('#dn-l5').innerHTML=(hu?'5. Số tiền trả lại (đồng)':k==='tam_ung'?'5. Số tiền xin tạm ứng (đồng)':'5. Số tiền đề nghị (đồng)')+BB;
+  const nd=$('#dn [name=noi_dung]');if(nd)nd.placeholder=hu?'vd: Trả lại tiền tạm ứng ngày 05/10 đi công tác Hà Nội (ứng 5.000.000, chi hết 3.200.000)':k==='tam_ung'?'vd: Tạm ứng mua vật tư sửa cửa hàng Chánh Tâm':'vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online';
+  $('#dn-l14').textContent=hu?'— ảnh chuyển khoản / biên nhận nộp tiền mặt (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':k==='tam_ung'?'— ảnh / PDF báo giá, kế hoạch chi, giấy đề nghị (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':'— ảnh / PDF hoá đơn, báo giá, hợp đồng (bắt buộc, tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V';
   $('#dn-gui').textContent=hu?'Gửi hoàn ứng':k==='tam_ung'?'Gửi đề nghị tạm ứng':'Gửi đề nghị'}
 function dnChenh(){}
 function dnPb(){
@@ -1076,7 +1078,7 @@ async function dnGui(){
   const t=so(v('so_tien')),ds=$$('#dn [name=dv]').filter(x=>x.checked).map(x=>Number(x.value)),hu=DN.loai==='hoan_ung',ck=v('hinh_thuc')==='ck'&&!hu,tu=DN.loai==='tam_ung',duUng=so(v('tu_da_ung'));
   const pb=ds.length===1?[{don_vi_id:ds[0],so_tien:t}]:ds.map(id=>({don_vi_id:id,so_tien:so(f.querySelector(`[name=pb_${id}]`).value)||0}));
   const thieu=[!v('nguoi_de_nghi')&&'họ tên',!v('bo_phan_id')&&'bộ phận',v('noi_dung').length<5&&'nội dung chi',!v('ngay_su_dung')&&'ngày sử dụng',!t&&'số tiền',
-    !hu&&!v('thu_huong_ten')&&'người thụ hưởng',ck&&!v('thu_huong_nh')&&'ngân hàng',ck&&!v('thu_huong_stk')&&'số tài khoản',!ds.length&&!tu&&!hu&&'đơn vị chịu chi phí',!v('co_hd_do')&&!tu&&!hu&&'hoá đơn đỏ',!tu&&!hu&&!v('hd_ve')&&'hoá đơn xuất về đâu'].filter(Boolean);
+    !DN.files.length&&(hu?'ảnh chuyển khoản / biên nhận nộp tiền':'hồ sơ đính kèm (ảnh / PDF)'),!hu&&!v('thu_huong_ten')&&'người thụ hưởng',ck&&!v('thu_huong_nh')&&'ngân hàng',ck&&!v('thu_huong_stk')&&'số tài khoản',!ds.length&&!tu&&!hu&&'đơn vị chịu chi phí',!v('co_hd_do')&&!tu&&!hu&&'hoá đơn đỏ',!tu&&!hu&&!v('hd_ve')&&'hoá đơn xuất về đâu'].filter(Boolean);
   if(thieu.length){e.textContent='Còn thiếu: '+thieu.join(', ');return}
   if(t<1000){e.textContent='Số tiền tối thiểu 1.000 đ';return}
   if(!hu&&pb.length&&sumBy(pb,x=>x.so_tien)!==t){e.textContent='Tổng tiền chia cho các đơn vị phải bằng số tiền đề nghị';return}
@@ -2355,10 +2357,25 @@ function xemChi(id){
       <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}</div><div class="pc-nd">${esc(ndChi(x))}</div></div>
       <div class="pc-tien"><span>Số tiền</span><b>${fmt(x.so_tien)}</b></div><button class="x" title="Đóng" onclick="dongChiCT()">✕</button></div>
     <div class="pc-b">${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
-      <div class="pc-cot"><div>${deNghi}${xacNhan}${nhan}${hqChi(x,dy)}${ttoan}${pb}${hd}</div><div>${ld}${ct}${lsO}</div></div></div>
+      <div class="pc-cot"><div>${deNghi}${(x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung')?`<div id="pc-tu-${id}"></div>`:''}${xacNhan}${nhan}${hqChi(x,dy)}${ttoan}${pb}${hd}</div><div>${ld}${ct}${lsO}</div></div></div>
     <div class="pc-f">${nut}</div>`;
-  hienChiCT(id,html);setTimeout(()=>veHoatDong(id),0);
+  hienChiCT(id,html);setTimeout(()=>veHoatDong(id),0);if((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung'))setTimeout(()=>veTUChi(x),0);
 }
+// 16/10/2026 (anh): kế toán nối phiếu hoàn ứng vào luồng phiếu tạm ứng để clear — khung trong cửa sổ phiếu tạm ứng / hoàn ứng
+async function tuNap(){const [ds,hc]=await Promise.all([rpc('kt_ds_tam_ung'),rpc('kt_ds_hoan_ung_cho').catch(()=>[])]);ds.forEach(t=>{t.con=Number(t.so_tien)-Number(t.da_hoan)});S.cache.tu=ds;S.cache.tu_hc=hc;return [ds,hc]}
+async function veTUChi(x){const el=$('#pc-tu-'+x.id);if(!el)return;let ds,hc;try{[ds,hc]=await tuNap()}catch(e){el.innerHTML='';return}
+  const g=can('tam_ung',true),ten=s=>String(s||'').trim().toLowerCase();let h='';
+  if(x.la_tam_ung){const t=ds.find(z=>z.chi&&z.chi.id===x.id);
+    if(!t)h='<div class="muted">Chưa có khoản tạm ứng gắn phiếu này.</div>';
+    else{const cho=hc.filter(c=>(c.goi_y||[]).includes(t.id)||ten(c.nguoi)===ten(t.nguoi_nhan));
+      h=`<div class="m-kv"><div>Tình trạng</div><div>${tuPill(t)}</div><div>Đã ứng</div><div>${fmt(t.so_tien)}</div><div>Đã trả lại (đã xác nhận)</div><div>${fmt(t.da_hoan)}</div><div>Còn chưa clear</div><div><b class="${t.con>0?'neg-t':''}">${fmt(t.con)}</b></div></div>
+        ${(t.hoan||[]).length?`<div class="m-st">Các lần tiền về</div>${(t.hoan||[]).map(z=>`<div style="font-size:12.5px">${fmtD(z.ngay)} · <b>${fmt(z.so_tien)}</b> · ${esc(HT_HOAN[z.hinh_thuc]||z.hinh_thuc)}${z.ghi_chu?' · <span class="muted">'+esc(z.ghi_chu)+'</span>':''}</div>`).join('')}`:''}
+        ${t.con>0?`<div class="m-st">Phiếu hoàn ứng chờ nối (${cho.length})</div>${cho.map(c=>`<div style="display:flex;gap:8px;align-items:center;font-size:12.5px;margin-top:4px"><div style="flex:1">${maPC(c.id)} · ${fmtD(c.ngay)} · ${esc(c.nguoi)} · <b>${fmt(c.so_tien)}</b></div>${g?`<button class="m-btn pri" style="height:26px;font-size:11.5px" onclick="formXNHU(${t.id},${c.id})">Nối & xác nhận tiền về</button>`:''}</div>`).join('')||'<div class="muted" style="font-size:12px">Chưa có phiếu hoàn ứng của người này.</div>'}
+          ${g?`<div style="margin-top:8px"><button class="m-btn" style="height:28px;font-size:11.5px" onclick="formXNHU(${t.id})">+ Xác nhận tiền về (không có phiếu)</button></div>`:''}`:''}`}}
+  else{const c=hc.find(z=>z.id===x.id);
+    h=x.trang_thai==='quyet_toan'?`<div>${pill('Đã nối & xác nhận tiền về','ok')}${x.tam_ung_id?' · khoản tạm ứng #'+x.tam_ung_id:''}</div>`
+      :c?`<div class="muted" style="font-size:12px;margin-bottom:6px">Nối phiếu này vào phiếu / khoản tạm ứng của người ứng, xác nhận tiền đã về thì khoản ứng mới clear.</div>${g?`<button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="formXNHU(null,${x.id})">Nối vào phiếu tạm ứng & xác nhận tiền về</button>`:''}`:'<div class="muted">Phiếu đã xử lý.</div>'}
+  el.innerHTML=`<section class="pc-c"><h4><span>${x.la_tam_ung?'Tạm ứng · hoàn ứng':'Nối vào phiếu tạm ứng'}</span></h4>${h}</section>`}
 // Hoá đơn đỏ: chọn ngay trong cửa sổ phiếu, lưu luôn (16/10)
 async function doiHDChi(id,v,ngay){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;
   const o={...x};['tao_luc','sua_luc','duyet_luc','kiem_luc'].forEach(k=>delete o[k]);
@@ -3099,7 +3116,7 @@ async function luuVayTra(vid,id){const o=formData($('#f'));o.id=id;o.vay_id=vid;
 
 // TẠM ỨNG & HOÀN ỨNG (14/10/2026) — sổ theo dõi ai đang cầm tiền ứng. Tiền ra vẫn đi bằng Phiếu chi, trả lại tiền ghi Phiếu thu → trang này KHÔNG đổi số dư.
 const maPC=id=>'PC'+String(id).padStart(6,'0');
-const HT_HOAN={chung_tu:'Quyết toán bằng chứng từ chi phí',tien:'Trả lại tiền',tru_luong:'Trừ vào lương'};
+const HT_HOAN={chung_tu:'Quyết toán bằng chứng từ chi phí',tien:'Trả lại tiền (đã xác nhận về)',tru_luong:'Trừ vào lương'};
 async function pageTamUng(){
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const [ds,gy,hc]=await Promise.all([rpc('kt_ds_tam_ung'),rpc('kt_goi_y_tam_ung'),rpc('kt_ds_hoan_ung_cho').catch(()=>[])]);S.cache.tu=ds;S.cache.tu_gy=gy;S.cache.tu_hc=hc;
@@ -3172,7 +3189,7 @@ function formXNHU(tid,chiId){const c=chiId?(S.cache.tu_hc||[]).find(x=>x.id===ch
   const ds=tid?mo.filter(t=>t.id===tid):[...mo.filter(t=>gy.includes(t.id)),...mo.filter(t=>!gy.includes(t.id))],t0=ds[0];
   modal(`<h2>Xác nhận tiền hoàn ứng đã về${c?' — '+esc(c.nguoi):t0?' — '+esc(t0.nguoi_nhan):''}</h2>
     ${c?`<div class="m-kv" style="margin-bottom:10px"><div>Phiếu</div><div>${maPC(c.id)} · ${esc(c.noi_dung)}</div><div>Người trả báo</div><div><b>${fmt(c.so_tien)}</b>${c.tu_da_ung?' · đã ứng '+fmt(c.tu_da_ung):''}</div></div>`:''}
-    <div class="form" id="f"><label class="full"><span>Khoản tạm ứng${BB}</span><select name="tu" onchange="const t=S.cache.tu.find(z=>z.id==this.value);if(t)$('#xnhu-con').textContent=fmt(t.con)">${ds.map(t=>`<option value="${t.id}">${gy.includes(t.id)?'★ ':''}${fmtD(t.ngay)} · ${esc(t.nguoi_nhan)} · ứng ${fmt(t.so_tien)} · còn ${fmt(t.con)}${t.ly_do?' · '+esc(String(t.ly_do).slice(0,40)):''}</option>`).join('')||'<option value="">— không có khoản tạm ứng nào chưa clear —</option>'}</select></label>
+    <div class="form" id="f"><label class="full"><span>Khoản tạm ứng${BB}</span><select name="tu" onchange="const t=S.cache.tu.find(z=>z.id==this.value);if(t)$('#xnhu-con').textContent=fmt(t.con)">${ds.map(t=>`<option value="${t.id}">${gy.includes(t.id)?'★ ':''}${t.chi?maPC(t.chi.id)+' · ':''}${fmtD(t.ngay)} · ${esc(t.nguoi_nhan)} · ứng ${fmt(t.so_tien)} · còn ${fmt(t.con)}${t.ly_do?' · '+esc(String(t.ly_do).slice(0,40)):''}</option>`).join('')||'<option value="">— không có khoản tạm ứng nào chưa clear —</option>'}</select></label>
       <label><span>Số tiền đã về${BB}</span>${moneyIn('so_tien',c?Math.min(+c.so_tien,t0?t0.con:+c.so_tien):(t0||{}).con)}</label><label><span>Ngày tiền về${BB}</span><input type="date" name="ngay" value="${c&&c.ngay?c.ngay:homNay()}"></label>
       <label class="full"><span>Tiền về tài khoản${BB}</span><select name="tk">${opts(tkOn().filter(t=>t.loai!=='vay'),null,'— chọn tài khoản / két —')}</select></label></div>
     <div class="muted" style="font-size:11.5px;margin-top:6px">Còn phải hoàn: <b id="xnhu-con">${t0?fmt(t0.con):'—'}</b> · ★ = cùng tên người. Đối chiếu sao kê / két trước khi xác nhận. App tạo phiếu thu "Thu hoàn ứng" vào tài khoản đã chọn; trả đủ thì khoản ứng chuyển "Đã clear".</div>
@@ -3180,7 +3197,7 @@ function formXNHU(tid,chiId){const c=chiId?(S.cache.tu_hc||[]).find(x=>x.id===ch
 async function luuXNHU(chiId){const f=$('#f'),tu=+f.querySelector('[name=tu]').value,tien=so(f.querySelector('[name=so_tien]').value),tk=+f.querySelector('[name=tk]').value,ngay=f.querySelector('[name=ngay]').value;
   if(!tu||!tien||!tk||!ngay)return alert('Chọn khoản tạm ứng, số tiền, ngày, tài khoản nhận');
   try{const r=await rpc('kt_xac_nhan_hoan_ung',{p_tam_ung_id:tu,p_so_tien:tien,p_tai_khoan_id:tk,p_ngay:ngay,p_chi_id:chiId});closeModal();S.cache={};
-    toast(r.con_lai>0?'Đã ghi tiền về — còn '+fmt(r.con_lai)+' chưa clear':'Đã clear khoản tạm ứng');S.f.tu_chon=tu;S.f.tu_tab=r.con_lai>0?'dang':'xong';render()}catch(e){alert(e.message)}}
+    toast(r.con_lai>0?'Đã ghi tiền về — còn '+fmt(r.con_lai)+' chưa clear':'Đã clear khoản tạm ứng');S.f.tu_chon=tu;S.f.tu_tab=r.con_lai>0?'dang':'xong';if(S.page==='chi')S.f.chi_doi=1;render()}catch(e){alert(e.message)}}
 function dongTUCT(){if($('#modal')){closeModal();return}S.f.tu_chon=null;const p=$('#tu-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
 // tạo / sửa khoản tạm ứng — tạo từ gợi ý phiếu chi thì điền sẵn người nhận, số tiền, ngày, bộ phận
 function formTU(id,chiId){const c=chiId?(S.cache.tu_gy||[]).find(r=>r.id===chiId):null;
@@ -3764,6 +3781,8 @@ const LOGIC2=[
  ['thu_chi','Phiếu đề nghị','Mọi phiếu (trừ tạm ứng) bắt buộc chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm — ô riêng, không liên quan ô Hoá đơn đỏ (hoá đơn trắng cũng chọn).','Kế toán + anh 16/10.','16/10'],
  ['thu_chi','Tạm ứng','Phiếu đề nghị tick TẠM ỨNG → tự tạo dòng ở Tạm ứng & hoàn ứng; từ chối / xoá / bỏ tick → tự gỡ (nếu chưa hoàn). Tạm ứng không tính chi phí.','Không bắt chọn đơn vị chịu chi phí / hoá đơn — quyết toán khi hoàn ứng. Vẫn là tiền ra ở Dòng tiền.','16/10'],
  ['thu_chi','Phiếu trang chủ','2 lựa chọn: Đề nghị thanh toán | Tạm ứng & hoàn ứng (bên trong: Xin tạm ứng / Hoàn ứng = trả lại tiền đã ứng).','Hoàn ứng không chi tiền, không là chi phí.','16/10'],
+ ['thu_chi','Hồ sơ phiếu trang chủ','Bắt buộc đính kèm ảnh / PDF cho cả 3 loại; hoàn ứng = ảnh chuyển khoản / biên nhận nộp tiền.','Anh 16/10.','16/10'],
+ ['thu_chi','Nối hoàn ứng','Kế toán nối phiếu hoàn ứng vào phiếu tạm ứng ngay trong cửa sổ phiếu (khung Tạm ứng · hoàn ứng / Nối vào phiếu tạm ứng) → xác nhận tiền về → clear.','Cũng làm được ở trang Tạm ứng & hoàn ứng.','16/10'],
  ['thu_chi','Clear tạm ứng','Khoản tạm ứng chỉ "Đã clear" khi tiền trả lại đã về và kế toán bấm Xác nhận tiền về (tạo phiếu thu "Thu hoàn ứng" vào tài khoản nhận). Chưa đủ → "Đã tạm ứng · chưa clear", theo dõi ở Tạm ứng & hoàn ứng.','Anh 16/10.','16/10'],
  ['thu_chi','Tài khoản ngừng dùng','Bỏ tick "Đang dùng" ở Cài đặt → Danh mục: ẩn khỏi lựa chọn, số dư, tổng tồn; phiếu cũ giữ nguyên tên TK.','Xem lại: Sổ quỹ → "TK ngừng dùng".','16/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền vào = phiếu thu Đã thu, theo ngày thu.','','05/10'],
