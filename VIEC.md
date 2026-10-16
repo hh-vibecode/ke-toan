@@ -144,6 +144,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **16/10/2026 (17)** — Anh: "có tạo phiếu chi rồi thì bỏ đề xuất thanh toán đi" → bỏ nút "+ Đề xuất thanh toán" trên thanh đầu trang (trùng "+ Tạo phiếu chi"). Link công khai #de-nghi cho người không có tài khoản giữ nguyên.
+
 - **16/10/2026 (16)** — Anh: "làm view as như bên MKT app, để xem view các tài khoản chuẩn chưa" → **Xem như**: Supreme bấm ở trang Phân quyền → app mở PHIÊN THẬT của tài khoản đó (đúng menu / nút / dữ liệu) nhưng CHỈ XEM — thanh vàng trên cùng, nút Thoát. `supabase-schema-kt-xem-nhu.sql`: kt_phien.chi_xem / xem_boi, kt_xem_nhu (chỉ Supreme, phiên 2 giờ, ghi nhật ký), kt_chan bật kt.chi_xem, trigger **kt_chi_xem** trên 50 bảng kt_* (trừ kt_phien) chặn mọi thêm / sửa / xoá. Thử 8/8 (kế toán không dùng được, đọc được, tạo phiếu + bình luận bị chặn, phiên thường vẫn ghi, không lồng). **Quy tắc:** bảng kt_* mới phải gắn trigger kt_chi_xem (chạy lại vòng lặp cuối file SQL).
 
 - **16/10/2026 (15)** — Anh: "lịch sử phiếu lưu vết đủ từ bước người tạo" + "thêm phần bình luận, đẩy chuông những người trong phiếu" → khung **Hoạt động** trong cửa sổ phiếu (Tất cả / Bình luận / Nhật ký hoạt động): tạo phiếu, mọi lần đổi trạng thái / sửa (trường đổi từ → sang, so ảnh chụp dòng trong kt_nhat_ky), cập nhật theo sheet, chứng từ + ảnh giao dịch, bình luận. `supabase-schema-kt-hoat-dong.sql`: bảng kt_binh_luan (RLS), kt_hoat_dong, kt_them_binh_luan (chuông: người tạo / đề nghị / xác nhận / đã bình luận + người đang phải xử lý bước hiện tại), kt_xoa_binh_luan (chỉ của mình). Thử 6/6, đã dọn. Dọn thêm 2 dòng nhật ký chứng từ thử còn sót của bài thử thủ quỹ (bài thử sau phải xoá cả kt_nhat_ky bang kt_chung_tu).

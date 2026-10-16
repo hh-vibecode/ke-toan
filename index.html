@@ -837,8 +837,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.93';
-const APP_VERSION='16/10/2026 16:57';
+const APP_SO='1.94';
+const APP_VERSION='16/10/2026 17:04';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1275,7 +1275,7 @@ function shell(){
     <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
     <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
       <div class="hd-t"><h1>${esc(nvO.ten||'')}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
-      <div class="hd-r"><button class="m-btn pri hd-dx" onclick="moDeXuat()" title="Gửi phiếu đề nghị thanh toán — vào thẳng mục chờ kế toán kiểm">+ Đề xuất thanh toán</button><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
+      <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         <select class="hd-cs" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([k,t])=>`<option value="${k}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===k?'selected':''}>${t}</option>`).join('')}</select>
         ${tim}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
           <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
@@ -3656,7 +3656,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — luồng duyệt','Kế toán tự chi tick "Đã thanh toán luôn" — không cần GĐ xác nhận.','','09/10'],
  ['thu_chi','Phiếu chi — thanh toán','Bấm Đã thanh toán: ngày, tài khoản chi, loại chi + đính kèm ảnh uỷ nhiệm chi (tuỳ chọn). Không còn hỏi "ảnh hưởng tài khoản cửa hàng trên Kiot".','Kiot chỉ để đối soát: hệ thống tự tìm phiếu chi Kiot cùng tiền / tài khoản ±5 ngày. Ảnh UNC lưu thành chứng từ của phiếu (tên UNC_…). Link UNC cũ vẫn mở được.','16/10'],
  ['thu_chi','Phiếu chi — đề nghị','Màn đầu app: trái là phiếu đề xuất thanh toán (không cần tài khoản), phải là đăng nhập; gửi xong vào thẳng Chờ kế toán kiểm.','Tối đa 10 phiếu / giờ / máy; chặn gửi trùng trong 30 phút. Điện thoại: 2 tab.','15/10'],
- ['thu_chi','Phiếu chi — đề nghị','Đã đăng nhập: nút "+ Đề xuất thanh toán" trên thanh đầu trang mở cùng phiếu đó, tên người đề nghị điền sẵn.','','15/10'],
+ ['thu_chi','Phiếu chi — đề nghị','Đã đăng nhập: tạo bằng nút "+ Tạo phiếu chi" ở trang Phiếu chi (bỏ nút Đề xuất thanh toán trên đầu trang — trùng). Người không có tài khoản: gửi qua link công khai màn đăng nhập.','','16/10'],
  ['thu_chi','Phiếu chi — đề nghị','Hình thức nhận tiền: Chuyển khoản → bắt buộc ngân hàng + số tài khoản; Tiền mặt → không cần.','','15/10'],
  ['thu_chi','Phiếu chi — đề nghị','Đơn vị chịu chi phí lúc đề nghị: chọn 1 (Tổng công ty / HT / CT / SD); chia nhiều đơn vị làm ở tab Phân bổ.','','14/10'],
  ['thu_chi','Phiếu chi — hiển thị','Tổng chi = CHỈ phiếu đã thanh toán (tách tiền mặt / ngân hàng). Tổng đề nghị = mọi phiếu trong tháng trừ từ chối (gồm cả chưa thanh toán).','Tháng theo ngày sử dụng dịch vụ. Trả gốc vay không tính.','16/10'],
