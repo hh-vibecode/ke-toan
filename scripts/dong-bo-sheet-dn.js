@@ -6,6 +6,7 @@
 //   2. Dòng sheet chưa có trên app (đề nghị từ 01/10/2026) → thêm phiếu (nguồn "sheet_cu", mã dntt2:<dấu thời gian form>).
 //   3. Dòng trả GỐC vay (THU NO TKV…) → trang Vay (kt_vay_tra), không vào Phiếu chi.
 //   4. Đề xuất tự tạo từ Kiot (nguồn kiot, còn chờ) trùng số tiền ±7 ngày với dòng sheet đã thanh toán → ghép phiếu Kiot vào phiếu sheet, đề xuất Kiot → Từ chối (trùng).
+//   5. (16/10) Phiếu nguồn sheet còn chờ trên app mà dòng không còn trên sheet → xoá mềm, ghi nhật ký (số phiếu app = số dòng sheet).
 // Tải file: rclone backend copyid ktdrive2: <id> <thư mục>  ·  Chạy: Code.exe scripts/dong-bo-sheet-dn.js <file.xlsx> [ghi]
 // Không in số tài khoản. Monsieur Claude
 const { docXlsx } = require('./doc-xlsx'), { sql } = require('./sql');
@@ -124,6 +125,11 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
       update kt_chi set kiot_so_quy_id = ${g.k.kiot_so_quy_id}, kiot_ma = ${Q(g.k.kiot_ma)}, kiot = 'da_tao' where id = ${sid} and kiot_so_quy_id is null;
       insert into kt_nhat_ky (nguoi, bang, dong_id, hanh_dong, du_lieu) values (${Q(NG)}, 'kt_chi', ${g.k.id}, 'trung_sheet', ${Q(JSON.stringify({ ghep_vao: sid }))}::jsonb)`);
   }
+  // 16/10 anh: "thu chi chỉ cần đầy đủ số lượng phiếu giống trên gg sheet" → phiếu sheet còn chờ mà dòng đã xoá / đã sửa thành dòng khác trên sheet: xoá MỀM (khôi phục được)
+  // chặn an toàn: file đọc ra quá ít dòng (file hỏng / tab sai) thì không xoá gì
+  if (cho.length && rows.length > 500) await sql(`update kt_chi set da_xoa = true, sua_boi = ${Q(NG)}, sua_luc = now(),
+      ghi_chu = concat_ws(' ', ghi_chu, '[Không còn trên sheet đề nghị — xoá theo sheet]') where id in (${cho.map(x => x.id).join(',')}) and not da_xoa;
+    insert into kt_nhat_ky (nguoi, bang, dong_id, hanh_dong, du_lieu) select ${Q(NG)}, 'kt_chi', id, 'xoa_theo_sheet', '{}'::jsonb from kt_chi where id in (${cho.map(x => x.id).join(',')})`);
   // phiếu hoàn quỹ ngoài cửa hàng mới → gắn cửa hàng (như supabase-schema-kt-quy-ngoai.sql)
   await sql(`update kt_chi set hoan_quy = case when noi_dung ~* '(\mHT\M|hiền thủy|hien thuy)' then 'HT' when noi_dung ~* '(\mCT\M|chánh tâm|chanh tam)' then 'CT'
       when noi_dung ~* '(shidai|kho|\mSD\M)' then 'SD' else case (phan_bo->0->>'don_vi_id')::int when 2 then 'HT' when 3 then 'CT' when 4 then 'SD' end end
