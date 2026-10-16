@@ -845,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.97';
-const APP_VERSION='16/10/2026 17:22';
+const APP_SO='1.98';
+const APP_VERSION='16/10/2026 17:26';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2291,7 +2291,7 @@ function xemChi(id){
       <div class="hd-bl"><textarea id="bl-${id}" rows="1" placeholder="Viết bình luận… (Enter để gửi, Shift+Enter xuống dòng)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();guiBL(${id})}"></textarea><button class="m-btn pri" onclick="guiBL(${id})">Gửi</button></div>
       <div class="hd-ds" id="hd-ds-${id}"><div class="muted" style="font-size:12px">Đang tải…</div></div></section>`;
   // ── chân: nút xử lý
-  const nut=[g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:'','<span style="margin-left:auto"></span>',
+  const nut=[g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:'',`<button class="m-btn out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu Word</button>`,'<span style="margin-left:auto"></span>',
     ['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="doiTTChi(${id},'tu_choi')">✕ Từ chối</button><button class="m-btn pri" onclick="doiTTChi(${id},'cho_tt')">✓ Xác nhận</button>`:'',
     x.trang_thai==='cho_tt'&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="doiTTChi(${id},'tu_choi_tt')">✕ Từ chối thanh toán</button>`:'',
     x.trang_thai==='cho_tt'&&chiTien(x)?`<button class="m-btn pri" title="Cần ảnh giao dịch (uỷ nhiệm chi / phiếu chi tiền mặt)" onclick="doiTTChi(${id},'da_tt')">✓ Đã chi tiền</button>`:'',
@@ -2349,6 +2349,25 @@ async function guiBL(id){const t=$('#bl-'+id);if(!t)return;const v=t.value.trim(
   try{await rpc('kt_them_binh_luan',{p_bang:'chi',p_id:id,p_noi_dung:v});t.value='';S.f.hd_tab=S.f.hd_tab==='nk'?'tat_ca':S.f.hd_tab;await veHoatDong(id);toast('Đã gửi bình luận — đã báo người trong phiếu')}
   catch(e){alert(e.message)}finally{t.disabled=false;t.focus()}}
 async function xoaBL(bid,id){if(!confirm('Xoá bình luận này?'))return;try{await rpc('kt_xoa_binh_luan',{p_id:bid});await veHoatDong(id)}catch(e){alert(e.message)}}
+// XUẤT PHIẾU WORD (16/10/2026, anh): giấy xác nhận chi tiền để nhân sự ký nhận — CHỈ thông tin phổ thông (không phân bổ chi phí, loại chi, số TK công ty…), 1 chỗ ký: người nhận
+function phieuChiHtml(x){const so='PC'+String(x.id).padStart(6,'0'),tm=(tk(x.tai_khoan_id)||{}).loai==='tien_mat',nhan=x.nguoi_nhan_tien||x.thu_huong_ten||'';
+  const d=x.ngay_tt||x.ngay_de_nghi||homNay(),ngay=`Ngày ${d.slice(8,10)} tháng ${d.slice(5,7)} năm ${d.slice(0,4)}`;
+  const dong=(a,b)=>`<tr><td style="width:34%;padding:6px 8px;border:1px solid #999;color:#333">${a}</td><td style="padding:6px 8px;border:1px solid #999"><b>${b||''}</b></td></tr>`;
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${so}</title>
+<style>@page{size:A4;margin:2cm 2cm 2cm 2.5cm}body{font-family:'Times New Roman',serif;font-size:13pt;color:#000}table{border-collapse:collapse;width:100%}</style></head><body>
+<table style="border:none"><tr><td style="border:none;font-size:12pt"><b>TÂN HƯNG THỊNH</b></td><td style="border:none;text-align:right;font-size:12pt">Số: <b>${so}</b></td></tr></table>
+<p style="text-align:center;font-size:17pt;font-weight:bold;margin:22pt 0 2pt">GIẤY XÁC NHẬN NHẬN TIỀN</p>
+<p style="text-align:center;font-style:italic;margin:0 0 16pt">${ngay}</p>
+<table>${dong('Nội dung',esc(ndChi(x)))}${dong('Số tiền','<span style="font-size:14pt">'+fmt(x.so_tien)+' đồng</span>')}${dong('Bằng chữ','<i>'+esc(soChu(x.so_tien))+'</i>')}
+${dong('Hình thức',tm?'Tiền mặt':'Chuyển khoản')}${dong('Người nhận tiền',esc(nhan))}${!tm&&x.thu_huong_stk?dong('Nhận vào tài khoản',esc([x.thu_huong_nh,x.thu_huong_stk].filter(Boolean).join(' — '))):''}
+${dong('Người đề nghị',esc(x.nguoi_de_nghi||''))}${dong('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}${dong('Ngày đề nghị',fmtD(x.ngay_de_nghi))}</table>
+<p style="margin:14pt 0 0">Tôi đã nhận đủ số tiền nêu trên.</p>
+<table style="border:none;margin-top:18pt"><tr><td style="border:none;width:50%"></td><td style="border:none;text-align:center"><i>${ngay}</i><br><b>NGƯỜI NHẬN TIỀN</b><br><i style="font-size:11pt">(Ký, ghi rõ họ tên)</i><br><br><br><br><br><br>${esc(nhan)}</td></tr></table>
+<\/body><\/html>`}
+function xuatPhieuChi(id){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;
+  const b=new Blob(['﻿',phieuChiHtml(x)],{type:'application/msword'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='PC'+String(x.id).padStart(6,'0')+'_xac-nhan-nhan-tien.doc';document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('Đã xuất phiếu Word — mở bằng Word để in ký nhận')}
 // PHÂN BỔ CHI PHÍ & KỲ GHI NHẬN (14/10/2026, kế toán làm sau khi lập phiếu): chia đơn vị (tự nhập · chia đều · % doanh số thực đạt tháng) + chia nhiều tháng
 function pbForm(x){const pb=Object.fromEntries((x.phan_bo||[]).map(p=>[p.don_vi_id,p.so_tien])),thg=x.phan_bo_thang||[],th0=(x.ngay_su_dung||x.ngay_tt||x.ngay_de_nghi||homNay()).slice(0,7);
   return `<div class="m-st">Phân bổ chi phí cho đơn vị <span class="r">${fmt(x.so_tien)}</span></div>
@@ -3675,6 +3694,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu thu','Thu từ Kiot tự kéo 15 phút / lần, chỉ xem — sai thì sửa trên Kiot.','Thu ngoài Kiot (vốn, vay, hoàn BHXH…) nhập tay trên app.','14/10'],
  ['thu_chi','Phiếu thu','Bấm thẻ số (Thu bán hàng / công nợ / đặt cọc / khác) → bảng lọc đúng khoản đó.','','15/10'],
  ['thu_chi','Phiếu thu','Lọc theo tài khoản → hiện tổng đã thu của tài khoản đó.','Phiếu chi tương tự: tổng đã chi.','15/10'],
+ ['thu_chi','Phiếu chi — xuất phiếu','Nút "Xuất phiếu Word" trong cửa sổ phiếu: giấy xác nhận nhận tiền (.doc mở bằng Word) để in cho người nhận ký.','Chỉ thông tin phổ thông: số phiếu, ngày, nội dung, số tiền + bằng chữ, hình thức, người nhận (+ TK nhận nếu chuyển khoản), người đề nghị, bộ phận. Không có phân bổ chi phí, loại chi, tài khoản công ty. 1 chỗ ký: người nhận tiền.','16/10'],
  ['thu_chi','Phiếu chi — chi tiền mặt','Đi tiền từ két tiền mặt: thủ quỹ ghi Người đến nhận tiền (bắt buộc) + up ảnh phiếu chi có ký nhận rồi mới bấm Đã chi tiền.','Không phải chuyển khoản nên không có uỷ nhiệm chi — tên người nhận thay cho thông tin người thụ hưởng.','16/10'],
  ['thu_chi','Phiếu chi — luồng duyệt','Đề nghị → Giám đốc / kế toán XÁC NHẬN + chọn tài khoản đi tiền → Thủ quỹ (két + 3 TK công ty) hoặc Giám đốc (TK cá nhân) chi tiền + up ảnh giao dịch → Đã thanh toán.','Kế toán không tự duyệt lượt 2. Giám đốc / Supreme bấm Duyệt = qua luôn 2 bước; GĐ có thể từ chối / trả lại.','16/10'],
  ['thu_chi','Phiếu chi — luồng duyệt','Thanh toán bắt buộc: ngày thanh toán, tài khoản chi, loại chi.','','05/10'],
