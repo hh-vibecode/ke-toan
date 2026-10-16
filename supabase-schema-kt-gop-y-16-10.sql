@@ -223,9 +223,10 @@ begin
   if v_tu then p_dong := p_dong || jsonb_build_object('co_hd_do', coalesce(p_dong->>'co_hd_do', 'false')); end if;   -- tạm ứng: hoá đơn nộp khi hoàn ứng
   if p_dong->>'co_hd_do' is null or p_dong->>'co_hd_do' not in ('true', 'false') then raise exception 'Chọn có / không có hoá đơn đỏ'; end if;
   -- 16/10/2026 (kế toán): có hoá đơn thì chọn hoá đơn xuất về Công ty hay hộ kinh doanh nào
-  if p_dong->>'co_hd_do' = 'true' and coalesce(v_hdve, '') not in ('cong_ty', 'hkd_ht', 'hkd_ct') then
+  -- anh 16/10: áp dụng mọi hoá đơn (đỏ hoặc trắng), không chỉ hoá đơn đỏ; tạm ứng chọn sau khi hoàn ứng
+  if not v_tu and coalesce(v_hdve, '') not in ('cong_ty', 'hkd_ht', 'hkd_ct') then
     raise exception 'Chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm'; end if;
-  if p_dong->>'co_hd_do' = 'false' then v_hdve := null; end if;
+  if v_hdve is not null and v_hdve not in ('cong_ty', 'hkd_ht', 'hkd_ct') then v_hdve := null; end if;
   if length(coalesce(v_gc, '')) > 500 then raise exception 'Ghi chú tối đa 500 ký tự'; end if;
   -- đơn vị chịu chi phí: 1–6 đơn vị đang dùng, không trùng, tổng = số tiền
   if jsonb_typeof(v_pb) <> 'array' or (jsonb_array_length(v_pb) = 0 and not v_tu) then raise exception 'Chọn đơn vị chịu chi phí'; end if;
