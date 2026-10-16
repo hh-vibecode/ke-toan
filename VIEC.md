@@ -145,6 +145,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **16/10/2026 (21)** — Anh: "liên quan két tiền mặt thì thủ quỹ có thêm mục ghi ai là người đến nhận, vì không phải chuyển khoản" → cột `kt_chi.nguoi_nhan_tien`; bước chi tiền: tài khoản đi tiền là tiền mặt thì hiện ô "Người đến nhận tiền mặt" (bắt buộc, gợi ý tên thụ hưởng), máy chủ chặn Đã thanh toán nếu trống (`supabase-schema-kt-nguoi-nhan-tien.sql`); hiện ở phiếu đã chi, nhật ký hoạt động, file Excel. Ô ảnh đổi tên "Ảnh giao dịch (uỷ nhiệm chi / phiếu chi ký nhận)". Thử 2/2, đã dọn.
+
 - **16/10/2026 (20)** — Anh: "làm xem như như bên MKT app, icon thôi cho gọn" → icon người tròn cạnh chuông (chỉ Supreme), bấm xổ danh sách tài khoản; đang xem: icon đỏ + nhãn đỏ "Đang xem như …", dòng "Thoát — về tài khoản của mình"; đổi thẳng sang tài khoản khác bằng phiên gốc. Bỏ thanh vàng + mục trong menu tài khoản (học theo viewAsBox của app MKT — chỉ đọc code). "Menu phải tự co ra co vào" → menu mở thì ĐẨY nội dung (không đè), thu lại thì giãn ra. Anh: "view as giám đốc và admin đều có quyền, tài khoản khác thì không" → Xem như cho Supreme + giám đốc (quyền chi_gd), kế toán / khác bị chặn ở máy chủ (thử 2/2).
 
 - **16/10/2026 (19)** — Anh: "cái này t bảo làm thành chế độ mà, bỏ nút đi, chế độ tự động ẩn luôn, để lại mỗi icon" (hôm trước "nhầm chế độ" = muốn chế độ, em làm thành nút) → menu trái máy tính LUÔN tự ẩn: dải icon (số đỏ vẫn hiện), trỏ vào mở, rời 1 giây thu lại; bỏ nút. "view as tài khoản của t giống bên MKT app đâu" → thêm "Xem như tài khoản khác…" trong menu tài khoản góc phải (chọn từ danh sách), "Thoát Xem như" cũng ở đó. Bộ kiểm toàn app 164 lượt: chỉ còn lượt treo đã biết (form hoàn ứng — chưa có tạm ứng).
