@@ -823,8 +823,8 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.87';
-const APP_VERSION='16/10/2026 15:45';
+const APP_SO='1.88';
+const APP_VERSION='16/10/2026 15:57';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1626,8 +1626,12 @@ async function luuTT(id,ng,v){try{await rpc('kt_luu_ton_thuc_te',{p_tai_khoan_id
 
 // ── THU ────────────────────────────────────────────────────────────────────
 // 16/10 anh: ô tìm kiếm Phiếu thu / Phiếu chi — gõ không dấu, nhiều từ, số tiền có dấu chấm vẫn khớp
-function khopTim(q,a){const s=boDau(a.filter(v=>v!=null).join(' ')).toLowerCase();
-  return boDau(q).toLowerCase().split(/\s+/).filter(Boolean).every(w=>s.includes(/^[\d.,]+$/.test(w)?w.replace(/[.,]/g,''):w))}
+// 16/10 anh: tìm theo NGUYÊN CỤM đã gõ (không dấu) — tách từng chữ thì "vân hồ" khớp nhầm "Vận hành … cho"
+function khopTim(q,a){const s=boDau(a.filter(v=>v!=null).join(' | ')).toLowerCase().replace(/\s+/g,' ');
+  const c=boDau(q).toLowerCase().trim().replace(/\s+/g,' ');if(!c)return true;
+  // số phiếu: "PC419", "419", "pc000419" đều ra (anh 16/10: chỉ tìm theo số phiếu và chữ trong nội dung)
+  const so=c.match(/^(pc|pt)?\s*0*(\d{1,6})$/);if(so&&new RegExp('\\b(pc|pt)0*'+so[2]+'\\b').test(s))return true;
+  return s.includes(c)}
 const oTim=(k,goi)=>`<input class="m-in" type="search" style="min-width:260px;flex:1 1 260px;max-width:380px" placeholder="${goi}" value="${esc(S.f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value.trim();S.f['${k}_tr']=1;S.f['${k}_chon']=null;render()" onsearch="if(!this.value)this.onchange()">${S.f[k+'_q']?'<span class="badge" title="Đang tìm trên mọi phiếu — không theo kỳ, tab, bộ lọc">Tìm mọi kỳ · bỏ qua bộ lọc</span>':''}`;
 // Menu trái tự ẩn (16/10, anh) — chỉ máy tính; lưu lựa chọn trên trình duyệt
 let SB_T=null;
@@ -1651,7 +1655,7 @@ async function pageThu(){
     l_ban:x=>dt(x)&&tenL(x)==='Thu bán hàng',l_no:x=>dt(x)&&tenL(x)==='Thu công nợ',l_coc:x=>dt(x)&&tenL(x)==='Thu đặt cọc',l_khac:x=>dt(x)&&!['Thu bán hàng','Thu công nợ','Thu đặt cọc'].includes(tenL(x))};
   const nhan={tat_ca:'Tất cả',da_thu:'Đã thu',chua_thu:'Chưa thu',kiot:'Từ Kiot',tay:'Nhập trên app'};
   // có chữ trong ô tìm → tìm trên MỌI phiếu, mọi kỳ, bỏ qua tab và bộ lọc
-  const l=q?dsT.filter(x=>khopTim(q,[x.noi_dung,x.ghi_chu,'PT'+String(x.id).padStart(6,'0'),x.so_tien,(tk(x.tai_khoan_id)||{}).ten,(lo(x.loai_id)||{}).ten]))
+  const l=q?dsT.filter(x=>khopTim(q,[x.noi_dung,'PT'+String(x.id).padStart(6,'0')]))
     :nen.filter(loc[f.thu_tt]).filter(x=>(!f.thu_loai||x.loai_id==f.thu_loai)&&(!f.thu_tk||x.tai_khoan_id==f.thu_tk));
   const da=nen.filter(loc.da_thu),da0=nen0.filter(loc.da_thu),tien=a=>sumBy(a,x=>x.so_tien),theoLoai=t=>da.filter(x=>((lo(x.loai_id)||{}).ten||'')===t);
   const pt=(a,b)=>{if(!b)return '';const p=(a-b)/Math.abs(b)*100;return `<span class="${p>=0?'pos-t':'neg-t'}">${p>=0?'↑':'↓'} ${Math.round(Math.abs(p))}%</span> so với kỳ trước`};
@@ -1681,7 +1685,7 @@ async function pageThu(){
       ${the('warn','gio','Chưa thu',tien(nen.filter(loc.chua_thu)),nen.filter(loc.chua_thu).length+' phiếu','','chua_thu')}</div>
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
       <div class="m-seg" style="margin-bottom:10px">${Object.keys(nhan).map(k=>`<button class="${f.thu_tt===k?'on':''}" onclick="S.f.thu_tt='${k}';S.f.thu_tr=1;render()">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
-      <div class="m-flt" style="align-items:center">${oTim('thu','Tìm nội dung, số phiếu, số tiền…')}        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
+      <div class="m-flt" style="align-items:center">${oTim('thu','Tìm số phiếu hoặc nội dung…')}        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
         ${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Tất cả loại thu')}${sel('thu_tk',S.dm.tai_khoan,'Tất cả tài khoản')}${f.thu_tk?`<span class="badge" style="font-size:12px">${esc((tk(+f.thu_tk)||{}).ten||'')}: đã thu <b>${fmt(sumBy(l.filter(dt),x=>x.so_tien))}</b> · ${l.length} phiếu</span>`:''}${f.thu_tt.startsWith('l_')?`<span class="badge">Đang xem: ${{l_ban:'Thu bán hàng',l_no:'Thu công nợ',l_coc:'Thu đặt cọc',l_khac:'Thu khác'}[f.thu_tt]} <span class="xn" onclick="S.f.thu_tt='tat_ca';render()">✕</span></span>`:''}
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.thu_xuat()">${IC_XLS} Xuất Excel</button>${coGhi('thu')?`<button class="m-btn pri" onclick="formThu()">+ Tạo phiếu thu</button>`:''}</div>
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Cơ sở</th><th>Tài khoản nhận</th><th>Loại thu</th><th class="num">Số tiền</th><th class="c">Trạng thái</th><th class="c">Nguồn</th></tr>
@@ -1805,8 +1809,8 @@ function nutNhanh(x){const dy=chiDuyet(),gd=chiGD(),t=x.trang_thai,b=(tt,nhan,cl
 const coCT=x=>+x.so_ct>0||(x.chung_tu||[]).some(u=>/^https?:/.test(u));   // file trên app hoặc link Drive cũ (anh 16/10: không kéo được ảnh thì gắn link)
 async function duyetNhanh(id,tt,im){
   const x=S.cache.chi.find(c=>c.id===id);if(!x)return false;
-  if((tt==='cho_gd'||(tt==='cho_tt'&&x.trang_thai==='cho_duyet'))&&!coCT(x)){const m='Phiếu '+(x.kiot_ma||'PC'+String(x.id).padStart(6,'0'))+' chưa có chứng từ đi kèm — đính kèm hoá đơn / báo giá / ảnh trước khi duyệt';if(im)throw new Error(m);alert(m);return false}
-  if(!im&&(tt==='tu_choi'||tt==='cho_duyet')&&!confirm(`${tt==='tu_choi'?'Từ chối':'Trả lại kế toán'} phiếu ${x.kiot_ma||'PC'+String(x.id).padStart(6,'0')} · ${fmt(x.so_tien)} đ?`))return false;
+  if((tt==='cho_gd'||(tt==='cho_tt'&&x.trang_thai==='cho_duyet'))&&!coCT(x)){const m='Phiếu '+('PC'+String(x.id).padStart(6,'0'))+' chưa có chứng từ đi kèm — đính kèm hoá đơn / báo giá / ảnh trước khi duyệt';if(im)throw new Error(m);alert(m);return false}
+  if(!im&&(tt==='tu_choi'||tt==='cho_duyet')&&!confirm(`${tt==='tu_choi'?'Từ chối':'Trả lại kế toán'} phiếu ${'PC'+String(x.id).padStart(6,'0')} · ${fmt(x.so_tien)} đ?`))return false;
   const o={...x};delete o.tao_luc;delete o.sua_luc;delete o.duyet_luc;o.trang_thai=tt;
   if(im){await rpc('kt_luu_chi',{p_dong:o});return true}
   await save('kt_luu_chi',{p_dong:o},{cho_gd:'Đã kiểm lượt 1 — chuyển giám đốc',cho_tt:'Giám đốc đã xác nhận',tu_choi:'Đã từ chối',cho_duyet:'Đã trả lại kế toán'}[tt]);render();return true}
@@ -1827,7 +1831,7 @@ async function duyetLoat(tt){
   const ten={cho_gd:'Kế toán xác nhận lượt 1',cho_tt:'Giám đốc duyệt',tu_choi:'Từ chối'}[tt];
   if(!ds.length||!confirm(`${ten} cho ${ds.length} phiếu, tổng ${fmt(sumBy(ds,x=>x.so_tien))} đ?`))return;
   let ok=0;const loi=[];
-  for(const x of ds){try{await duyetNhanh(x.id,tt,true);ok++}catch(e){loi.push((x.kiot_ma||'PC'+String(x.id).padStart(6,'0'))+': '+e.message)}}
+  for(const x of ds){try{await duyetNhanh(x.id,tt,true);ok++}catch(e){loi.push(('PC'+String(x.id).padStart(6,'0'))+': '+e.message)}}
   S.f.chi_sel=[];toast(`${ten}: ${ok}/${ds.length} phiếu`);if(loi.length)alert('Chưa xử lý được:\n'+loi.join('\n'));render()}
 async function pageChi(){
   // THU CHI & NGÂN QUỸ · PHIẾU CHI — giao diện mẫu kế toán (13/10/2026): 6 thẻ có icon + so tháng trước · tab nút liền · hàng lọc ·
@@ -1851,7 +1855,7 @@ async function pageChi(){
   const cuCho=ds.filter(x=>csOK(x)&&tkOK(x)&&['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&ngSD(x)<S.tu);   // tháng trước còn chờ xử lý
   const gocVay=(vay||[]).flatMap(v=>v.lan_tra||[]).filter(t=>+t.goc>0&&t.ngay>=S.tu&&t.ngay<=denSD).length;   // dòng trả gốc vay trên sheet → trang Vay
   // có chữ trong ô tìm → tìm trên MỌI phiếu, mọi kỳ, bỏ qua tab và bộ lọc
-  const l=q?dsT.filter(x=>khopTim(q,[x.noi_dung,x.nguoi_de_nghi,x.thu_huong_ten,x.thu_huong_stk,x.ghi_chu,x.kiot_ma,'#'+x.id,'PC'+String(x.id).padStart(6,'0'),x.so_tien,nccChi(x),(lo(x.loai_id)||{}).ten]))
+  const l=q?dsT.filter(x=>khopTim(q,[ndChi(x),'PC'+String(x.id).padStart(6,'0'),x.kiot_ma]))
     :(f.chi_tt==='cu_cho'?cuCho:nen.filter(loc[f.chi_tt])).filter(x=>(!f.chi_loai||x.loai_id==f.chi_loai)&&(!f.chi_tk||x.tai_khoan_id==f.chi_tk)
     &&(!f.chi_bp||x.bo_phan_id==f.chi_bp)&&(!f.chi_nguon||(f.chi_nguon==='bo_sung'?canBS(x):f.chi_nguon==='hoan_quy'?!!x.hoan_quy:f.chi_nguon==='claude'?!!claudeGan(x):f.chi_nguon==='claude_soat'?['vừa','thấp'].includes(claudeGan(x)):x.nguon===f.chi_nguon))&&(!f.chi_dv||(x.phan_bo||[]).some(p=>p.don_vi_id==f.chi_dv)));
   const tien=a=>sumBy(a,x=>x.so_tien),pt=(a,b)=>{if(!b)return '';const p=(a-b)/Math.abs(b)*100;return `<span class="${p>=0?'pos-t':'neg-t'}">${p>=0?'↑':'↓'} ${Math.round(Math.abs(p))}%</span>`};
@@ -1868,7 +1872,7 @@ async function pageChi(){
   const tk0=a=>sumBy(a.filter(x=>x.tai_khoan_id&&tkNhom(x.tai_khoan_id)==='tien_mat'),x=>x.so_tien);
   const moi=f.chi_moi||10,[a,b,tr]=phanTrang('chi',l.length,moi),trang=l.slice(a,b);
   const chon=f.chi_chon&&l.some(x=>x.id===f.chi_chon)?f.chi_chon:null;   // 14/10 kế toán: khung chi tiết chỉ hiện khi bấm 1 phiếu
-  const soPhieu=x=>x.kiot_ma||'PC'+String(x.id).padStart(6,'0');
+  const soPhieu=x=>'PC'+String(x.id).padStart(6,'0');
   const csTen=x=>[...new Set((x.phan_bo||[]).map(p=>{const c=csCuaDV(p.don_vi_id);return c?(CS3.find(z=>z[0]===c)||[])[1]:((dv(p.don_vi_id)||{}).ten||'')}))].join(', ');
   const ttPill=x=>{const m={cho_duyet:['Chờ kiểm','warn'],cho_gd:['Chờ GĐ duyệt','warn'],cho_tt:['Chưa thanh toán','warn'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối TT','bad']}[x.trang_thai]||['—',''];return pill(...m)};
   const hdPill=x=>!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok'):hdvGoiY(x.id).length?pill('Có HĐ gợi ý','info'):pill('Chưa nhận','bad');
@@ -1889,14 +1893,14 @@ async function pageChi(){
       <div class="m-seg" style="margin-bottom:8px">${['cua_toi','tat_ca','cho_duyet','cho_gd','cho_tt','da_tt','tu_choi'].filter(k=>k!=='cua_toi'||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()" style="--c:var(--${MAU_TAB[k]||'accent'})">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
       ${(()=>{const ck=[['thieu_ct','Thiếu chứng từ','bad'],['qua_han','Quá hạn','bad'],['hd_do','Chưa nhận HĐ','vio'],['cu_cho','Tháng trước còn chờ','warn'],['nghi_trung','Nghi trùng','bad'],['nghi_loai','Nghi sai loại','bad']].filter(([k])=>(k==='cu_cho'?cuCho.length:nen.some(loc[k]))||f.chi_tt===k);
         return ck.length?`<div class="chi-chu-y"><span class="muted">Cần chú ý:</span>${ck.map(([k,t,c])=>`<button class="${f.chi_tt===k?'on':''}" style="--c:var(--${c})" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()">${t} <b>${k==='cu_cho'?cuCho.length:nen.filter(loc[k]).length}</b></button>`).join('')}</div>`:''})()}
-      <div class="m-flt" style="align-items:center">${oTim('chi','Tìm nội dung, người, NCC, số phiếu, số tiền…')}        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
+      <div class="m-flt" style="align-items:center">${oTim('chi','Tìm số phiếu hoặc nội dung…')}        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
         ${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Tất cả loại chi')}${sel('chi_nguon',[{id:'phieu',ten:'Phiếu đề nghị (link công khai)'},{id:'app',ten:'Tạo trên app'},{id:'sheet_cu',ten:'Chuyển từ sheet cũ'},{id:'bo_sung',ten:'Sheet cũ — cần bổ sung'},{id:'claude_soat',ten:'Tự gán loại — cần soát'},{id:'hoan_quy',ten:'Phiếu hoàn Quỹ ngoài cửa hàng'}],'Tất cả nguồn')}
         ${sel('chi_tk',S.dm.tai_khoan,'Tất cả tài khoản')}${f.chi_tk?`<span class="badge" style="font-size:12px">${esc((tk(+f.chi_tk)||{}).ten||'')}: đã chi <b>${fmt(sumBy(l.filter(x=>x.trang_thai==='da_tt'),x=>x.so_tien))}</b> · ${l.length} phiếu · tổng <b>${fmt(sumBy(l.filter(x=>!bo(x)),x=>x.so_tien))}</b></span>`:''}
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.chi_xuat()">${IC_XLS} Xuất Excel</button>${chiTao()?`<button class="m-btn pri" onclick="formChi()">+ Tạo phiếu chi</button>`:''}</div>
       <div class="m-chon" id="chi-chon" style="display:none"></div>
       <div class="m-card"><div class="scroll"><table class="m-t" id="chi-bang"><tr><th class="c"><input type="checkbox" title="Chọn cả trang" onclick="chonHetChi(this.checked)"></th><th title="Ngày sử dụng dịch vụ (quyết định phiếu thuộc tháng nào, như sheet)">Ngày SD</th><th>Số phiếu</th><th>Cơ sở</th><th>Loại chi</th><th>Nội dung</th><th>Nhà cung cấp</th><th class="num">Số tiền</th><th>Luồng duyệt · thao tác</th><th class="c">Hóa đơn</th></tr>
         ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemChi(${x.id})"><td class="c"><input type="checkbox" class="cb-chon" ${(S.f.chi_sel||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonChi(${x.id},this.checked)"></td>
-          <td class="nw">${fmtD(x.ngay_su_dung||x.ngay_de_nghi)}${x.ngay_tt&&x.trang_thai==='da_tt'?`<div class="muted" style="font-size:11px">TT ${fmtD(x.ngay_tt).slice(0,5)}</div>`:''}</td><td class="nw m-link">${esc(soPhieu(x))}</td>
+          <td class="nw">${fmtD(x.ngay_su_dung||x.ngay_de_nghi)}${x.ngay_tt&&x.trang_thai==='da_tt'?`<div class="muted" style="font-size:11px">TT ${fmtD(x.ngay_tt).slice(0,5)}</div>`:''}</td><td class="nw m-link">${esc(soPhieu(x))}${x.kiot_ma?`<div class="muted" style="font-size:11px" title="Mã phiếu chi trên Kiot (đã khớp)">${esc(x.kiot_ma)}</div>`:''}</td>
           <td class="nw">${(()=>{const k=[...new Set((x.phan_bo||[]).map(p=>csCuaDV(p.don_vi_id)).filter(Boolean))];return k.length===1?`<span class="xn" title="Lọc theo cơ sở này" onclick="event.stopPropagation();S.f.loc_cs=['${k[0]}'];shell()">${esc(csTen(x))}</span>`:esc(csTen(x))})()}</td>
           <td class="ten" style="font-size:12px">${chiDuyet()?selLoaiChi(x):loaiChiO(x)}</td>
           <td class="ten">${esc(ndChi(x))}${x.hoan_quy?' '+pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.nghi_trung&&x.trang_thai!=='tu_choi'?' '+pill('Nghi trùng','bad'):''}${x.nghi_loai?' '+pill('Nghi sai loại','bad'):''}${canBS(x)?' '+pill('Cần bổ sung','vio'):''}${['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x)?' '+pill('Thiếu chứng từ','bad'):''}</td><td class="ten">${nccChi(x)?`<span class="xn" title="Lọc theo nhà cung cấp này" onclick="event.stopPropagation();S.f.chi_q=${esc(JSON.stringify(nccChi(x)))};S.f.chi_tr=1;render()">${esc(nccChi(x))}</span>`:nccChiO(x)}</td><td class="num"><b>${fmt(x.so_tien)}</b></td>
@@ -2199,7 +2203,7 @@ function xemChi(id){
   // 16/10/2026 (anh): phiếu chi mở thành CỬA SỔ LỚN (như app MKT), 1 màn đủ thông tin — trái: đề nghị · người nhận + QR · phân bổ · thanh toán · hoá đơn;
   // phải: luồng duyệt · chứng từ · lịch sử. Nút xử lý cố định ở chân cửa sổ.
   const x=S.cache.chi.find(c=>c.id===id);if(!x)return;const g=coGhi('chi'),dy=chiDuyet(),gd=chiGD(),sua=chiSua(x);
-  const so=x.kiot_ma||'PC'+String(x.id).padStart(6,'0'),l=lo(x.loai_id)||{},t=tk(x.tai_khoan_id)||{};
+  const so='PC'+String(x.id).padStart(6,'0'),l=lo(x.loai_id)||{},t=tk(x.tai_khoan_id)||{};
   const kv=rows=>`<div class="m-kv">${rows.map(([a,b])=>`<div>${a}</div><div>${b||'-'}</div>`).join('')}</div>`;
   const o=(a,b,full)=>`<div class="pc-o${full?' full':''}"><span>${a}</span><div>${b||'<span class="muted">—</span>'}</div></div>`;
   const the=(tieu,noi,phai)=>`<section class="pc-c">${tieu?`<h4><span>${tieu}</span>${phai?`<span class="r">${phai}</span>`:''}</h4>`:''}${noi}</section>`;
