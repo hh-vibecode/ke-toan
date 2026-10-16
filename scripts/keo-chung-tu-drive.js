@@ -12,7 +12,8 @@ const MIME_OK = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/;
 const sach = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/-+/g, '-').slice(-60) || 'tep';
 const tachId = s => [...String(s || '').matchAll(/(?:id=|\/d\/)([A-Za-z0-9_-]{20,})/g)].map(m => m[1]);
 (async () => {
-  const dk = KY === 'T9' ? `and c.ngay_tt between '2026-09-01' and '2026-09-30'` : '';
+  // 16/10: 'thieu' = chỉ phiếu có link Drive mà CHƯA có file nào trên app (phiếu mới đồng bộ từ sheet đề nghị)
+const dk = KY === 'T9' ? `and c.ngay_tt between '2026-09-01' and '2026-09-30'` : KY === 'thieu' ? `and not exists (select 1 from kt_chung_tu k where k.bang = 'chi' and k.dong_id = c.id and not k.da_xoa)` : '';
   const rows = await sql(`select c.id, c.chung_tu, c.unc from kt_chi c where not c.da_xoa ${dk}
     and (array_to_string(c.chung_tu, ' ') ~ 'drive.google' or coalesce(c.unc, '') ~ 'drive.google') order by c.id`);
   const da = new Set((await sql(`select duong_dan from kt_chung_tu where bang = 'chi' and duong_dan like '%/drive_%'`))
