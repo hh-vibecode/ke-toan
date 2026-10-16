@@ -822,6 +822,10 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .hd-i.nk .hd-av{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-size:10px}.hd-i.bl .hd-av{background:color-mix(in srgb,var(--vio) 18%,transparent);color:var(--vio)}
 .hd-n{min-width:0;flex:1}.hd-ai{display:flex;gap:8px;align-items:baseline;font-size:12.5px}.hd-ai span{color:var(--muted);font-size:11px}.hd-x{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px}
 .hd-t{font-size:12.5px;margin-top:2px;word-break:break-word}.hd-i.bl .hd-t{background:var(--bg2);border-radius:8px;padding:6px 10px;display:inline-block}.hd-ct{font-size:11.5px;color:var(--text2);margin-top:3px;padding-left:8px;border-left:2px solid var(--border)}
+/* Xem như (16/10) */
+#xn-bar{position:fixed;top:0;left:0;right:0;z-index:200;background:#f59e0b;color:#111;font-size:13px;padding:6px 14px;display:flex;align-items:center;gap:10px;justify-content:center}
+#xn-bar button{border:1px solid #111;background:#fff;border-radius:6px;padding:2px 10px;font-size:12.5px;cursor:pointer}
+body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 </style>
 </head>
 <body>
@@ -833,8 +837,8 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.92';
-const APP_VERSION='16/10/2026 16:51';
+const APP_SO='1.93';
+const APP_VERSION='16/10/2026 16:57';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1091,7 +1095,7 @@ async function login(){
     await boot();
   }catch(e){S.phien=null;renderGate(e.message)}
 }
-function lock(hetHan){const p=S.phien;S.phien=null;S.toi=null;S.cache={};
+function lock(hetHan){if(xnDoc())return thoatXemNhu();const p=S.phien;S.phien=null;S.toi=null;S.cache={};
   try{localStorage.removeItem('kt_phien');sessionStorage.removeItem('kt_phien')}catch(e){}
   if(p&&!hetHan)rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
   renderGate(hetHan?'Phiên đăng nhập hết hạn — đăng nhập lại':'')}
@@ -1102,8 +1106,21 @@ async function boot(){
   if(!S.tu)setKy('thang',true);
   const h=location.hash.slice(1);if(h&&PAGES[h])S.page=h;
   if(!coXem(S.page))S.page=Object.keys(PAGES).find(coXem)||'cd_logic';
-  shell();
+  shell();veXemNhu();
 }
+// XEM NHƯ (16/10/2026): Supreme mở phiên CHỈ XEM của 1 tài khoản (máy chủ chặn mọi lệnh ghi — supabase-schema-kt-xem-nhu.sql)
+const xnDoc=()=>{try{return JSON.parse(sessionStorage.getItem('kt_xem_nhu')||'null')}catch(e){return null}};
+async function xemNhu(id,ten){try{const r=await rpc('kt_xem_nhu',{p_nguoi_id:id});
+    sessionStorage.setItem('kt_xem_nhu',JSON.stringify({ten,goc:S.phien,goc_tu:(()=>{try{return sessionStorage.getItem('kt_phien')===S.phien?'s':'l'}catch(e){return 's'}})()}));
+    sessionStorage.setItem('kt_phien',r.phien);S.phien=r.phien;S.cache={};S.f={};location.hash='';S.page='tong_quan';await boot()}catch(e){alert(e.message)}}
+async function thoatXemNhu(){const x=xnDoc();if(!x)return;const p=S.phien;sessionStorage.removeItem('kt_xem_nhu');
+  rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
+  try{if(x.goc_tu==='s')sessionStorage.setItem('kt_phien',x.goc);else sessionStorage.removeItem('kt_phien')}catch(e){}
+  S.phien=x.goc;S.cache={};S.f={};location.hash='';S.page='cd_phan_quyen';try{await boot()}catch(e){renderGate(e.message)}}
+function veXemNhu(){let b=document.getElementById('xn-bar');const x=xnDoc();
+  if(!x||!S.toi){if(b)b.remove();document.body.classList.remove('co-xn');return}
+  if(!b){b=document.createElement('div');b.id='xn-bar';document.body.appendChild(b)}document.body.classList.add('co-xn');
+  b.innerHTML='Đang xem như <b>'+esc(S.toi.ho_ten||x.ten)+'</b> ('+esc(S.toi.ten_dang_nhap||'')+') — chỉ xem, không sửa được <button onclick="thoatXemNhu()">Thoát Xem như</button>'}
 function fillDatalists(){
   $('#dl-nh').innerHTML=NGAN_HANG.map(x=>`<option value="${esc(x)}">`).join('');
   $('#dl-th').innerHTML=(S.gy.thu_huong||[]).map(x=>`<option value="${esc(x.ten)}">${esc((x.nh||'')+' · '+(x.stk||''))}</option>`).join('');
@@ -3648,6 +3665,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: chỉ ở Đối soát lỗi (phiếu đã thanh toán chưa thấy trên Kiot).','16/10'],
+ ['chung','Xem như','Supreme bấm "Xem như" ở trang Phân quyền → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['thu_chi','Phiếu chi — duyệt','Giám đốc / Supreme bấm Duyệt là qua luôn bước kế toán kiểm + giám đốc duyệt (cả 2 bước ghi tên người bấm) → Chờ thanh toán.','Kế toán chỉ kiểm lượt 1, không tự duyệt lượt 2 (không có quyền giám đốc). Duyệt thẳng vẫn cần có chứng từ.','16/10'],
@@ -3749,7 +3767,7 @@ async function pageCaiDat(mod){
       ${ds.map(x=>`<tr><td><b>${esc(x.ho_ten)}</b>${x.vi_tri==='supreme'?' <span class="badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff">Admin</span>':''}</td>
         <td><code>${esc(x.ten_dang_nhap)}</code></td><td>${qtxt(x)}</td><td class="nw">${fmtDT(x.dang_nhap_luc)}</td>
         <td>${!x.hoat_dong?vb('Đã khoá','grey'):x.dang_khoa?vb('Tạm khoá (sai MK)','warn'):vb('Đang hoạt động','ok')}</td>
-        <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+        <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}${S.toi.vi_tri==='supreme'&&x.hoat_dong&&!xnDoc()?` <button class="btn sm" title="Xem app đúng như tài khoản này thấy — chỉ xem" onclick="xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')">Xem như</button>`:''}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
     c.insertAdjacentHTML('beforeend',await nhanSuHtml().catch(e=>`<div class="empty neg">${esc(e.message)}</div>`));
   }else if(S.f.cd==='nhat_ky'){
     const ds=await rpc('kt_ds_nhat_ky');
