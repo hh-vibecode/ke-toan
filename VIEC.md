@@ -75,6 +75,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 | # | Việc | Ghi chú |
 |---|---|---|
+| 0 | **Đồng bộ sheet đề nghị thanh toán 15 phút / lần (lịch `kt-dong-bo-sheet-dn` máy anh)** — chạy tới khi anh chốt bắt đầu luồng đề nghị trên app | Xem log `dong-bo-sheet.local.log` đầu phiên. Anh chốt → `schtasks /Delete /TN kt-dong-bo-sheet-dn /F`, ghi nhật ký. 16/10 |
 | 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
 | 2 | ~~Nhập bù phát sinh trên sheet từ 05/10~~ | **XONG 08/10** — 52 phiếu chi (tab 7.DATA CHI; Thu / Điều chuyển / công nợ không có dòng mới), nhãn "Kéo từ sheet cũ — cần bổ sung", kế toán sửa dần. Phiếu #370 (trả T8, lọt vì ngày dùng DV gõ 08/12/2026) đã ẩn. Số T9 tiền ra THAY ĐỔI vì có thêm phiếu đã trả trong T9 (số trong `doi-chieu-T9.local.md` cần đối chiếu lại) |
 | 2b | ~~Quyền "chỉ được tạo đề nghị chi"~~ | **XONG 08/10** — quyền `chi_de_nghi` + `chi_duyet`; kiểm thử 16/16 (`scripts/kiem-thu-quyen-chi.js`). Chưa có tài khoản nhân viên thật nào (câu hỏi trên app) |
@@ -142,6 +143,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **16/10/2026 (13)** — Anh: "định kỳ quét lại đề nghị thanh toán để cập nhật cho tới khi t với m xác định bắt đầu luồng này" + "15 30p" → lịch Windows **kt-dong-bo-sheet-dn** trên máy anh, 15 phút / lần cả ngày, chạy ẩn (`scripts/dong-bo-sheet-dinh-ky.vbs` → `dong-bo-sheet-dinh-ky.js`): tải sheet bằng rclone (chỉ đọc) → giống lần trước (md5) thì bỏ qua → `dong-bo-sheet-dn.js ghi` → log `dong-bo-sheet.local.log` (gitignore). Chạy tay lần đầu 16:19: +4 đề nghị mới. Máy tắt thì không chạy (khoá Drive giữ trên máy, không đưa lên mạng). **Tắt khi anh chốt bắt đầu luồng app:** `schtasks /Delete /TN kt-dong-bo-sheet-dn /F`.
 
 - **16/10/2026 (12)** — Anh: "clear mục Hoá đơn 3TShop ghi ngày sai năm, tương tự không care nữa" → bỏ hẳn nhóm này khỏi Đối soát lỗi (`supabase-schema-kt-bo-loi-ngay-3tshop.sql`); 13 dòng nhập Công ty THT ngày trống giữ nguyên dữ liệu. **Quy tắc:** không theo dõi / cảnh báo ngày hoá đơn 3TShop sai năm nữa.
 
