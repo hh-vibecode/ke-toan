@@ -5,6 +5,22 @@
 
 ---
 
+## ★ MAI LÀM TIẾP (ghi tối 16/10/2026 — anh về, sáng 17/10 làm nốt)
+
+**Việc chính đang dở: KHỚP SỔ QUỸ + SỐ DƯ TÀI KHOẢN theo file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" từ T5 → T10/2026** (anh: "khớp hết số theo file", "bắt đầu từ T5, trước đó bỏ").
+- Nguồn: thư mục Drive anh gửi (id 1_fhF9Mx9nygJVgn36IuX1_6Qxn1wdRHj, có file T4–T10 + sao kê BIDV 1/9–16/10). Tải: rclone copy ktdrive2: <thư mục> --drive-root-folder-id <id> --include "THT BẢNG KIỂM SOÁT DÒNG TIỀN THÁNG *.2026.xlsx".
+- Cấu trúc file: tab 3.CASHFLOW TỔNG — dòng 2 tên 9 TK (VCB CTY ×2, VIB CTY, BIDV HKD HT, BIDV HKD CT, VCB CN, BIDV CN, BIDV CN NGUYỆT, KÉT TIỀN MẶT), dòng 3 tồn đầu kì, từ dòng 5 mỗi ngày; mỗi TK 5 cột Thu / Chi / Tồn sổ sách / Tồn thực tế / Lệch. Chi tiết: 6.DATA THU, 7.DATA CHI (= sheet đề nghị, lọc Đã thanh toán + ngày TT trong tháng), 8.DATA ĐIỀU CHUYỂN.
+- Tối 16/10: 6 agent đối chiếu (chỉ đọc) mỗi tháng → báo cáo JSON. **Nếu máy đã tắt thì báo cáo có thể chưa xong → chạy lại** (prompt: so CASHFLOW TỔNG + DATA THU/CHI/ĐC với kt_v_bien_dong theo TK × ngày; liệt kê thiếu / thừa / lệch). Báo cáo có số thật → lưu thư mục local `doi-chieu-dong-tien.local/` (gitignore), KHÔNG lên GitHub.
+- Nguyên nhân đã thấy: (1) phiếu chi app chỉ còn luồng đề nghị → thiếu khoản đi ra không qua đề nghị (chi két quầy CTM, ngân hàng tự trích THU NO / phí, trả khách TTTH…); (2) app có TK không có trong file (TECH NH / TECH CN / TECH CN HXT / MSB CN / BIDV BUI THI HIEN / VCB …) vẫn mang tồn đầu → tổng số dư âm sai; (3) mốc tồn đầu app đang 01/09 — cần lùi về 01/05 theo file T5.
+- **Các bước mai:** (a) đọc 6 báo cáo, chốt quy tắc (điều chuyển tính vào thu/chi thế nào; thu Kiot từng phiếu vs file gộp theo ngày); (b) mốc tồn đầu 01/05/2026 = tồn đầu kì file T5 cho 9 TK, TK không có trong file → tồn 0 / ngừng dùng (hỏi anh nếu có số dư thật); (c) bổ sung khoản thiếu, xử lý khoản thừa (đánh dấu, không xoá cứng), ghi nhật ký; (d) kiểm tồn sổ sách từng ngày app = file T5→T10, lệch 0 mới xong; (e) trang Sổ quỹ hiện Tồn thực tế + Lệch theo file. Dữ liệu ghi hàng loạt → chạy thử, báo số trước.
+- **Máy anh:** đã tắt ngủ khi cắm sạc tối 16/10 (cũ 15 phút) — xong việc trả lại: `powercfg /change standby-timeout-ac 15`.
+
+**Xong hôm 16/10 (chi tiết ở Nhật ký 16/10 (1)→(22)):** doanh thu như Kiot + tách DT / DT thuần · kênh bán · luồng chi có THỦ QUỸ (GĐ / KT xác nhận + chọn TK đi tiền → thủ quỹ / GĐ chi + ảnh giao dịch; tài khoản thuquy) · người nhận tiền mặt · hoạt động + bình luận phiếu · Xem như (icon, admin + GĐ, chỉ xem) · tự kiểm Supabase ngày 15 + cuối tháng · đồng bộ sheet đề nghị 15 phút (lịch Windows) · cửa sổ phiếu lớn · xuất phiếu Word · tìm kiếm · menu tự ẩn · Kiot sang Đối soát lỗi · số phiếu khớp sheet theo ngày sử dụng.
+
+**Còn treo, chờ kế toán / anh:** giải ngân 7 khoản vay; tách lãi trong THU NO TKV; 12 phiếu chỉ có link Drive (Google Sheet/Docs); Điều chuyển còn ô "Ảnh hưởng Kiot" (anh chưa nói bỏ); bug: tài khoản hạn chế có Tổng quan nhưng thiếu quyền bán hàng / vay → Tổng quan lỗi tải (sửa trước khi cấp tài khoản hạn chế).
+
+---
+
 ## 0. KHỞI TẠO — XONG 05/10/2026
 
 Repo + Pages · khoá (`kt-keys.local.txt`, anh nhờ phiên MKT chép sang 05/10) · `supabase-schema-kt.sql` đã chạy (14 bảng, 24 hàm,
