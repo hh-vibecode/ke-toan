@@ -156,10 +156,11 @@ async function doiChieuThang(m: string, nguoi: string) {
   const thK = (await kiotHet('returns', { fromReturnDate: tu, toReturnDate: den })).filter(x => trong(x.returnDate));
   const db = await rpcJ('kt_kiot_dc_db', { p_tu: tu, p_den: den });   // hd: [id, trạng thái, tổng, tiền hàng, chi nhánh, mã] · th: [id, trạng thái, tổng trả, chi nhánh, mã]
   const kiot: any = {}, app: any = {};
-  for (const x of hdK) if (x.status === 1) { const th = (x.invoiceDetails || []).reduce((s: number, d: any) => s + Math.round(d.subTotal || 0), 0);
+  for (const x of hdK) if (x.status === 1 || x.status === 3) {   // 16/10: như Kiot — Hoàn thành + Đang xử lý (đang giao)
+    const th = (x.invoiceDetails || []).reduce((s: number, d: any) => s + Math.round(d.subTotal || 0), 0);
     cong(kiot, x.branchName, 'so_hd', 1); cong(kiot, x.branchName, 'tien_hang', th); cong(kiot, x.branchName, 'doanh_thu', Math.round(x.total)); }
   for (const x of thK) if (x.status === 1) { cong(kiot, x.branchName, 'so_tra', 1); cong(kiot, x.branchName, 'tra_hang', Math.round(x.returnTotal || 0)); }
-  for (const [, tt, tong, th, cn] of (db.hd || [])) if (tt === 1) { cong(app, cn, 'so_hd', 1); cong(app, cn, 'tien_hang', Number(th)); cong(app, cn, 'doanh_thu', Number(tong)); }
+  for (const [, tt, tong, th, cn] of (db.hd || [])) if (tt === 1 || tt === 3) { cong(app, cn, 'so_hd', 1); cong(app, cn, 'tien_hang', Number(th)); cong(app, cn, 'doanh_thu', Number(tong)); }
   for (const [, tt, tra, cn] of (db.th || [])) if ((tt ?? 1) === 1) { cong(app, cn, 'so_tra', 1); cong(app, cn, 'tra_hang', Number(tra)); }
   // so từng mã
   const soMa = (dsK: any[], dsA: any[], tienK: (x: any) => number) => {

@@ -8,7 +8,7 @@ const K = docKhoa(), SB = 'https://bcrpxfvvjsjpvbksqzls.supabase.co', BUCKET = '
 const KY = process.argv[2] || 'T9', GHI = process.argv[3] === 'ghi';
 const RC = require('./rclone-drive'); const DUNG_RC = RC.coSan();   // ưu tiên rclone (đăng nhập Drive anh, chỉ đọc — 09/10)
 let G = null; try { if (require('fs').existsSync(require('path').join(__dirname, '..', 'kt-google.local.json'))) G = require('./google'); } catch (e) {}
-const MIME_OK = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/;
+const MIME_OK = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf|application\/vnd\.openxmlformats-officedocument\.(spreadsheetml\.sheet|wordprocessingml\.document)|application\/vnd\.ms-excel|application\/msword|text\/csv)$/;   // 16/10: cả Excel / Word / CSV như app
 const sach = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/-+/g, '-').slice(-60) || 'tep';
 const tachId = s => [...String(s || '').matchAll(/(?:id=|\/d\/)([A-Za-z0-9_-]{20,})/g)].map(m => m[1]);
 (async () => {
