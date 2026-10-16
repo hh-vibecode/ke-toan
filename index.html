@@ -826,6 +826,9 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 #xn-bar{position:fixed;top:0;left:0;right:0;z-index:200;background:#f59e0b;color:#111;font-size:13px;padding:6px 14px;display:flex;align-items:center;gap:10px;justify-content:center}
 #xn-bar button{border:1px solid #111;background:#fff;border-radius:6px;padding:2px 10px;font-size:12.5px;cursor:pointer}
 body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
+@media (min-width:901px){body.sb-an:not(.sb-rong) .sb-brand{visibility:hidden;height:20px;padding:0}}
+.xn-ds{display:flex;flex-direction:column;gap:6px}.xn-i{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;color:var(--text)}
+.xn-i:hover{border-color:var(--accent)}.xn-i span{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -837,8 +840,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.94';
-const APP_VERSION='16/10/2026 17:04';
+const APP_SO='1.95';
+const APP_VERSION='16/10/2026 17:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1117,6 +1120,10 @@ async function thoatXemNhu(){const x=xnDoc();if(!x)return;const p=S.phien;sessio
   rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
   try{if(x.goc_tu==='s')sessionStorage.setItem('kt_phien',x.goc);else sessionStorage.removeItem('kt_phien')}catch(e){}
   S.phien=x.goc;S.cache={};S.f={};location.hash='';S.page='cd_phan_quyen';try{await boot()}catch(e){renderGate(e.message)}}
+async function chonXemNhu(){try{const ds=(await rpc('kt_ds_nguoi_dung')).filter(x=>x.hoat_dong&&x.id!==S.toi.id&&!/^tam-/.test(x.ten_dang_nhap));
+    modal(`<h2 style="margin:0 0 4px">Xem như tài khoản</h2><div class="muted" style="font-size:12.5px;margin-bottom:12px">App mở đúng như người đó thấy — chỉ xem, không sửa được. Thoát bằng thanh vàng trên cùng.</div>
+      <div class="xn-ds">${ds.map(x=>`<button class="xn-i" onclick="closeModal();xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')"><b>${esc(x.ho_ten)}</b><span>${esc(x.ten_dang_nhap)} · ${x.vi_tri==='supreme'?'Supreme':x.vi_tri==='admin'||(x.quyen||[]).includes('*')?'Toàn quyền':(x.quyen||[]).length+' quyền'}</span></button>`).join('')}</div>
+      <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`)}catch(e){alert(e.message)}}
 function veXemNhu(){let b=document.getElementById('xn-bar');const x=xnDoc();
   if(!x||!S.toi){if(b)b.remove();document.body.classList.remove('co-xn');return}
   if(!b){b=document.createElement('div');b.id='xn-bar';document.body.appendChild(b)}document.body.classList.add('co-xn');
@@ -1268,7 +1275,7 @@ function shell(){
       <div class="sb-bb">${ks.map(k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`).join('')}</div></div>`:'';
   const tim=TIM[S.page]?`<label class="hd-tim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="${TIM[S.page][1]}" value="${esc(S.f[TIM[S.page][0]]||'')}" onchange="S.f['${TIM[S.page][0]}']=this.value;render()"></label>`:'';
   const ten=S.toi.ho_ten||'',vt=(VI_TRI[S.toi.vi_tri]||'').split(' (')[0],av=ten.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]).join('').toUpperCase();
-  $('#app').innerHTML=`<div class="lay"><aside class="sb" onmouseenter="sbVao()" onmouseleave="sbRa()"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-an-n" onclick="doiTuAn()" title="Tự ẩn menu: bật thì menu thu gọn, trỏ chuột vào để mở, rời chuột 1 giây tự ẩn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 10l-2 2 2 2"/></svg></button><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
+  $('#app').innerHTML=`<div class="lay"><aside class="sb" onmouseenter="sbVao()" onmouseleave="sbRa()"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
       <nav class="sb-nav">${nav}</nav>${subs}
       <div class="sb-box sb-loc"><div class="sb-bh"><span>${ln.h}</span></div><div class="sb-bb">${ln.b}${ln.reset?`<button class="lc-r" onclick="datLaiLoc()">Đặt lại bộ lọc</button>`:''}</div></div>
       <div class="sb-ver" title="Cập nhật lúc ${APP_VERSION} — F5 nếu số khác bản mới nhất">Phiên bản <b>v${APP_SO}</b> · ${APP_VERSION.slice(0,5)} ${APP_VERSION.slice(11)}</div></aside>
@@ -1278,7 +1285,7 @@ function shell(){
       <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         <select class="hd-cs" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([k,t])=>`<option value="${k}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===k?'selected':''}>${t}</option>`).join('')}</select>
         ${tim}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
-          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
+          <div class="tb-menu-dd">${S.toi.vi_tri==='supreme'&&!xnDoc()?'<div class="dd-i" onclick="chonXemNhu()">Xem như tài khoản khác…</div>':''}${xnDoc()?'<div class="dd-i" onclick="thoatXemNhu()">Thoát Xem như</div>':''}<div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');
   render();
@@ -1667,7 +1674,7 @@ function sbRa(){clearTimeout(SB_T);if(!document.body.classList.contains('sb-an')
   SB_T=setTimeout(()=>{if(document.querySelector('.sb select:focus'))return sbRa();document.body.classList.remove('sb-rong')},1000)}
 function doiTuAn(){const on=!document.body.classList.contains('sb-an');document.body.classList.toggle('sb-an',on);document.body.classList.toggle('sb-rong',on);
   try{localStorage.setItem('kt_sb_an',on?'1':'')}catch(e){}toast(on?'Đã bật tự ẩn menu — rời chuột 1 giây menu sẽ thu gọn':'Đã tắt tự ẩn menu');if(on)sbRa()}
-try{if(localStorage.getItem('kt_sb_an'))document.body.classList.add('sb-an')}catch(e){}
+document.body.classList.add('sb-an');   // 16/10 anh: tự ẩn là CHẾ ĐỘ mặc định (không nút) — máy tính: menu thu về icon, trỏ vào mở, rời 1 giây thu lại
 async function pageThu(){
   // PHIẾU THU — giao diện mẫu (kế toán 14/10/2026: "giao diện hơi kì", trạng thái chỉ Đã thu / Chưa thu): thẻ số · tab · lọc · bảng + khung chi tiết khi bấm
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
@@ -3538,7 +3545,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -3665,6 +3672,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: chỉ ở Đối soát lỗi (phiếu đã thanh toán chưa thấy trên Kiot).','16/10'],
+ ['chung','Tự kiểm Supabase','Job kt-kiem-he-thong 09:00 ngày 15 + ngày cuối tháng: đo dữ liệu, kho chứng từ, nhật ký, lịch chạy lỗi, kéo Kiot, khoá RLS / quyền anon → chuông cho Supreme (luôn có tóm tắt, có vấn đề ghi rõ cảnh báo).','Gói Pro: cảnh báo khi dữ liệu > 4 GB, kho > 50 GB, tăng > 5 GB kho / 1 GB dữ liệu giữa 2 lần kiểm, có bảng tắt RLS. Băng thông không đo được từ SQL — xem Dashboard.','16/10'],
  ['chung','Xem như','Supreme bấm "Xem như" ở trang Phân quyền → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],

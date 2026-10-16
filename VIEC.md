@@ -75,6 +75,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 | # | Việc | Ghi chú |
 |---|---|---|
+| 0b | **Theo dõi Supabase** — job kt-kiem-he-thong ngày 15 + cuối tháng báo chuông | Phiên Claude giữa / cuối tháng: đọc `select du_lieu from kt_nhat_ky where hanh_dong='kiem_he_thong' order by id desc limit 2`, có cảnh báo thì báo anh. Băng thông xem Dashboard Supabase → Usage. 16/10 |
 | 0 | **Đồng bộ sheet đề nghị thanh toán 15 phút / lần (lịch `kt-dong-bo-sheet-dn` máy anh)** — chạy tới khi anh chốt bắt đầu luồng đề nghị trên app | Xem log `dong-bo-sheet.local.log` đầu phiên. Anh chốt → `schtasks /Delete /TN kt-dong-bo-sheet-dn /F`, ghi nhật ký. 16/10 |
 | 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
 | 2 | ~~Nhập bù phát sinh trên sheet từ 05/10~~ | **XONG 08/10** — 52 phiếu chi (tab 7.DATA CHI; Thu / Điều chuyển / công nợ không có dòng mới), nhãn "Kéo từ sheet cũ — cần bổ sung", kế toán sửa dần. Phiếu #370 (trả T8, lọt vì ngày dùng DV gõ 08/12/2026) đã ẩn. Số T9 tiền ra THAY ĐỔI vì có thêm phiếu đã trả trong T9 (số trong `doi-chieu-T9.local.md` cần đối chiếu lại) |
@@ -143,6 +144,10 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **16/10/2026 (19)** — Anh: "cái này t bảo làm thành chế độ mà, bỏ nút đi, chế độ tự động ẩn luôn, để lại mỗi icon" (hôm trước "nhầm chế độ" = muốn chế độ, em làm thành nút) → menu trái máy tính LUÔN tự ẩn: dải icon (số đỏ vẫn hiện), trỏ vào mở, rời 1 giây thu lại; bỏ nút. "view as tài khoản của t giống bên MKT app đâu" → thêm "Xem như tài khoản khác…" trong menu tài khoản góc phải (chọn từ danh sách), "Thoát Xem như" cũng ở đó. Bộ kiểm toàn app 164 lượt: chỉ còn lượt treo đã biết (form hoàn ứng — chưa có tạm ứng).
+
+- **16/10/2026 (18)** — Anh: "xem luồng này dùng hết bao nhiêu dữ liệu Supabase, có gì đáng ngại" + "thêm note về Supabase, chủ động cảnh báo, check giữa tháng và cuối tháng". Đo 16/10: gói **Pro**; dữ liệu cả project 158 MB (kế toán 42 MB, 3 bảng Kiot lớn nhất ~28 MB); kho chứng từ **1,19 GB / 1.939 tệp** (PDF 687 MB, JPEG 404 MB, PNG 127 MB — ảnh kéo từ Drive giữ nguyên bản); nhật ký 0,6 MB; 50/50 bảng bật RLS, anon 0 quyền bảng; lịch kt-* 0 lỗi 15 ngày; 40 lượt chạy / ngày. Không có gì đáng ngại so với gói Pro. Khoá thêm 8 hàm phụ trợ anon gọi được (không đọc dữ liệu). Job **kt-kiem-he-thong** (`supabase-schema-kt-kiem-he-thong.sql`) 09:00 ngày 15 + ngày cuối tháng → nhật ký + chuông Supreme (đã chạy thử: "Supabase ổn"). Băng thông (egress) không đo được từ SQL.
 
 - **16/10/2026 (17)** — Anh: "có tạo phiếu chi rồi thì bỏ đề xuất thanh toán đi" → bỏ nút "+ Đề xuất thanh toán" trên thanh đầu trang (trùng "+ Tạo phiếu chi"). Link công khai #de-nghi cho người không có tài khoản giữ nguyên.
 
