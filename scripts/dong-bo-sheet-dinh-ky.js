@@ -13,7 +13,10 @@ try {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kt-sheet-'));
   execFileSync(RCLONE, ['backend', 'copyid', 'ktdrive2:', ID, dir + path.sep], { stdio: 'pipe', timeout: 180000 });
   const tep = fs.readdirSync(dir).find(f => /\.xlsx$/i.test(f)); if (!tep) throw new Error('không tải được file sheet');
-  const md5 = crypto.createHash('md5').update(fs.readFileSync(path.join(dir, tep))).digest('hex');
+  // so theo NỘI DUNG tab (file xlsx Google xuất mỗi lần một khác dù sheet không đổi)
+  const { docXlsx } = require('./doc-xlsx'), F = docXlsx(path.join(dir, tep)), sh = F.sheets.find(s => s.name === 'ĐỀ NGHỊ THANH TOÁN');
+  if (!sh) throw new Error('không thấy tab ĐỀ NGHỊ THANH TOÁN');
+  const md5 = crypto.createHash('md5').update(JSON.stringify(F.load(sh))).digest('hex');
   let cu = {}; try { cu = JSON.parse(fs.readFileSync(TT, 'utf8')); } catch (e) {}
   if (cu.md5 === md5) { ghi('sheet không đổi — bỏ qua'); }
   else {
