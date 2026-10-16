@@ -143,6 +143,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **16/10/2026 (5)** — Anh: "thêm nút tìm kiếm, bên thu chi không có". Phiếu chi + Phiếu thu: ô tìm ở đầu hàng lọc (`oTim`, `khopTim`): gõ không dấu, nhiều từ, tìm cả số phiếu (PC…/PT…/mã Kiot), số tiền (gõ có dấu chấm vẫn khớp), người đề nghị / thụ hưởng / STK / NCC / loại / tài khoản; nút ✕ trong ô xoá tìm. Bỏ ô tìm ở thanh đầu trang của 2 trang này (trùng, nằm xa danh sách nên anh không thấy). Đã chụp thử máy tính + điện thoại.
+
 - **16/10/2026 (4)** — Anh: "quét mã thanh toán đừng khoá nội dung, quét xong phải sửa được". VietQR đổi từ QR động (01=12, app ngân hàng khoá số tiền + nội dung) sang QR tĩnh (01=11): vẫn điền sẵn số tiền + nội dung, người chuyển sửa được. Chưa quét thử được trên app ngân hàng thật (máy không có điện thoại) — một số app vẫn có thể khoá ô nội dung khi QR có sẵn nội dung.
 
 - **16/10/2026 (3)** — Anh: bảng Nguồn doanh thu theo kênh bán. Hàm `kt_kenh_ten` (`supabase-schema-kt-kenh-ten.sql`), dùng ở kt_tq_don + kt_bc_qt (2 chỗ): không ghi kênh → "Bán trực tiếp tại cửa hàng"; "Facebook" chung (nhân viên gắn thiếu thương hiệu) → theo chi nhánh (Facebook Chánh Tâm / Hiền Thuỷ / Shidai); "Siêu thị Phật Giáo Hiền Thuỷ" → "Shopee Hiền Thuỷ". Chỉ đổi tên hiển thị, dữ liệu Kiot giữ nguyên. "Khác" T10 = 3 HĐ nhân viên tự chọn kênh Khác trên Kiot (2 HĐ khách lẻ Chánh Tâm ship COD, 1 HĐ 0đ hàng tặng Shidai), không có trong dữ liệu chat Pancake của app MKT → chưa rõ nguồn, hỏi nhân viên bán. **Sai của em:** commit v1.81 + các mục sổ 15–16/10 có số tiền thật (repo công khai) → bản này đã thay bằng "số ở file local", lịch sử git vẫn còn.
