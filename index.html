@@ -788,8 +788,8 @@ table.m-t tr.on td{background:var(--sel-bg)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.82';
-const APP_VERSION='16/10/2026 14:42';
+const APP_SO='1.83';
+const APP_VERSION='16/10/2026 14:52';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1867,8 +1867,9 @@ const NH_BIN=[[/vietcombank|vietconbank|\bvcb\b|ngoai thuong/,'970436'],[/vietin
   [/\bscb\b/,'970429'],[/ban viet|bvbank|vccb|viet capital/,'970454'],[/baoviet|bao viet/,'970438'],[/saigonbank|saigon bank/,'970400'],[/\bcake\b/,'546034'],[/\btimo\b/,'963388'],[/\bubank\b/,'546035']];
 const boDau=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');
 const binNH=t=>{const s=' '+boDau(t).toLowerCase().replace(/[^a-z0-9]+/g,' ')+' ';const m=NH_BIN.find(([r])=>r.test(s));return m?m[1]:null};
+// 16/10 anh: QR TĨNH (11) — app ngân hàng quét xong vẫn sửa được nội dung (QR động 12 bị khoá số tiền + nội dung)
 function vietQR(bin,stk,tien,nd){const tlv=(i,v)=>i+String(v.length).padStart(2,'0')+v;
-  const p=tlv('00','01')+tlv('01','12')+tlv('38',tlv('00','A000000727')+tlv('01',tlv('00',bin)+tlv('01',stk))+tlv('02','QRIBFTTA'))+tlv('53','704')
+  const p=tlv('00','01')+tlv('01','11')+tlv('38',tlv('00','A000000727')+tlv('01',tlv('00',bin)+tlv('01',stk))+tlv('02','QRIBFTTA'))+tlv('53','704')
     +(tien?tlv('54',String(Math.round(tien))):'')+tlv('58','VN')+(nd?tlv('62',tlv('08',nd)):'')+'6304';
   let c=0xFFFF;for(const ch of p){c^=ch.charCodeAt(0)<<8;for(let k=0;k<8;k++)c=c&0x8000?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF}
   return p+c.toString(16).toUpperCase().padStart(4,'0')}
@@ -1883,7 +1884,7 @@ function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');i
   return `<div class="m-st">Mã QR chuyển khoản</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div id="qr-${x.id}" style="width:170px;height:170px;flex:none;padding:0" class="m-empty">Đang tạo…</div>
     <div class="m-kv" style="flex:1;min-width:200px"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')}</div><div>Số tài khoản</div><div><b>${esc(stk)}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')}</div>
       <div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${esc(nd)}</div></div></div>
-    <div class="muted" style="font-size:11px;margin-top:4px">Quét bằng app ngân hàng — số tiền, nội dung điền sẵn. Kiểm lại tên người nhận trên app ngân hàng trước khi chuyển.</div>`}
+    <div class="muted" style="font-size:11px;margin-top:4px">Quét bằng app ngân hàng — số tiền, nội dung điền sẵn, sửa được nội dung trước khi chuyển. Kiểm lại tên người nhận trên app ngân hàng trước khi chuyển.</div>`}
 
 // Phiếu hoàn quỹ ngoài cửa hàng (15/10): kê phiếu Kiot chi từ Quỹ ngoài trong đợt — chi phí ghi 1 lần ở phiếu này
 const CS_HQ={SD:'Shidai',HT:'Hiền Thủy',CT:'Chánh Tâm'};
@@ -3508,7 +3509,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hiển thị','Thẻ số tính đúng kỳ: Tổng chi = phiếu trong kỳ (không tính từ chối); Đã thanh toán = trả trong kỳ.','','15/10'],
  ['thu_chi','Phiếu chi — hiển thị','Nhà cung cấp = người bán trên HĐ đã ghép → thụ hưởng (nếu khác người đề nghị) → đối tác Kiot.','Thụ hưởng = người đề nghị → "Hoàn cho NV".','15/10'],
  ['thu_chi','Phiếu chi — hiển thị','Cột Loại chi tách riêng; phiếu Kiot chưa phân loại hiện nhóm Kiot.','','15/10'],
- ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn).','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung.','15/10'],
+ ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
  ['thu_chi','Phiếu chi — duyệt','Phiếu chưa có chứng từ đi kèm thì kế toán chưa kiểm được (lượt 1).','Dải "Cần chú ý" → Thiếu chứng từ. Chứng từ cũ trên Drive đã kéo về app.','16/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu app đã đánh 4A cùng số tiền, lệch ≤ 5 ngày → ghép, không tạo mới; trùng nghi ngờ → nhãn "Nghi trùng".','','08/10'],
