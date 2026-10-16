@@ -115,6 +115,8 @@ create or replace function public.kt_loai_no(p_hd bigint, p_cod boolean, p_ghi_c
 language sql stable set search_path = public as $$
   select coalesce((select loai from kt_no_phan_loai where hoa_don_id = p_hd),
     case when coalesce(p_cod, false) then 'cod'
+         -- 16/10/2026 (soát số thật): sales ghi "thu cod 1.300.000" / "Ship COD" / "ĐƠN COD" ở ghi chú, hiếm khi tick ô COD Kiot
+         when p_ghi_chu ~* '\mcod\M|thu hộ|thu ho\M' and p_ghi_chu !~* '(không|khong|ko|k)\s+(thu\s+)?cod' then 'cod'
          when p_ghi_chu ~* '(chưa|chua)\s*(lấy|lay|nhận|nhan|giao|lây)|gửi lại|gui lai|giữ hàng|giu hang|để lại|de lai|hẹn lấy|hen lay|chưa đi hàng|chua di hang' then 'chua_lay'
          else 'that' end);
 $$;

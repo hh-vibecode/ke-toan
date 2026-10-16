@@ -845,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.42';
-const APP_VERSION='16/10/2026 20:23';
+const APP_SO='1.43';
+const APP_VERSION='16/10/2026 20:33';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1009,8 +1009,8 @@ async function dnForm(){
         <div class="dn-dv">${(DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)).length?DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)):DN.dm.don_vi.map(d=>[d.id,d.ten])).map(([i,t])=>`<label class="chk"><input type="radio" name="dv" value="${i}" onchange="dnPb()"> ${esc(t)}</label>`).join('')}</div>
         <div id="dn-chia"></div></div>
       <label>11. Mong muốn thanh toán trước ngày<input type="date" name="han_tt" min="${h}"></label>
-      <label><span>12. Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do" onchange="$('#dn-hdve').style.display=this.value==='true'?'':'none'"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
-      <label id="dn-hdve" style="display:none"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,'')}</select></label>
+      <label><span>12. Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
+      <label id="dn-hdve"><span>Hoá đơn xuất về <span class="muted">(nếu có hoá đơn)</span></span><select name="hd_ve">${optsObj(HD_VE,'')}</select></label>
       <label class="full chk dn-tu"><input type="checkbox" name="la_tam_ung" onchange="dnTU()"> Đây là đề nghị <b>TẠM ỨNG</b> (ứng tiền trước, sau quyết toán / hoàn ứng) — tự chuyển sang mục Tạm ứng & hoàn ứng</label>
       <label class="full">13. Ghi chú<input name="ghi_chu" maxlength="500"></label>
       <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <span class="muted">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
@@ -2119,7 +2119,7 @@ function chonNo(k,id,on){const s=S.f[k+'_sel']=S.f[k+'_sel']||[];const i=s.index
 function veChonNo(k){const el=$('#no-chon');if(!el)return;const s=S.f[k+'_sel']||[],loai=k.slice(3);if(!s.length){el.style.display='none';return}
   el.style.display='';el.innerHTML=`<b>Đã chọn ${s.length}</b> · Gán người phụ trách <select id="no-gan"><option value="">— theo Kiot (bỏ gán) —</option>${nsOpts(null)}</select>
     <button class="m-btn sm pri" onclick="ganPT('${loai}',S.f['${k}_sel'],$('#no-gan').value)">Gán</button><button class="m-btn sm" onclick="S.f['${k}_sel']=[];render()">Bỏ chọn</button>`}
-// 16/10/2026 (kế toán): tách nợ thật / COD chưa thu hồi / khách chưa lấy hàng — app tự đoán theo ô COD + ghi chú hoá đơn Kiot, kế toán sửa từng hoá đơn
+// 16/10/2026 (kế toán): tách nợ thật / COD chưa thu hồi / khách chưa lấy hàng — app tự đoán theo ô COD + ghi chú hoá đơn Kiot ("thu cod …", "chưa lấy hàng"…), kế toán sửa từng hoá đơn
 const LOAI_NO={that:['Nợ thật','bad'],cod:['COD chưa thu hồi','warn'],chua_lay:['Chưa lấy hàng','info']},LOAI_NO_K={that:'no_that',cod:'no_cod',chua_lay:'no_chua_lay'};
 async function luuLoaiNo(hd,v,loai,id){try{await rpc('kt_luu_loai_no',{p_hd:hd,p_loai:v});toast('Đã đổi loại nợ');S.cache['no_'+loai]=null;xemCongNo(loai,id)}catch(e){alert(e.message)}}
 async function pageCongNoDT(loai){
@@ -2211,8 +2211,8 @@ function formChi(id){S.f.chi_form_id=id||null;
       <label class="chi-ck"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}" placeholder="vd: Vietcombank, MB Bank, Techcombank"></label>
       <label class="chi-ck"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" value="${esc(x.thu_huong_stk||'')}"></label>
       <label>Mong muốn thanh toán trước<input type="date" name="han_tt" value="${x.han_tt||''}"></label>
-      <label><span>Hoá đơn đỏ${BB}</span><select name="co_hd_do" onchange="$('#f .hdve').style.display=this.value==='true'?'':'none'">${optsObj({false:'Không có hoá đơn đỏ',true:'Có hoá đơn đỏ'},String(!!x.co_hd_do))}</select></label>
-      <label class="hdve" style="${x.co_hd_do?'':'display:none'}"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>
+      <label><span>Hoá đơn đỏ${BB}</span><select name="co_hd_do">${optsObj({false:'Không có hoá đơn đỏ',true:'Có hoá đơn đỏ'},String(!!x.co_hd_do))}</select></label>
+      <label class="hdve"><span>Hoá đơn xuất về <span class="muted">(nếu có hoá đơn)</span></span><select name="hd_ve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>
       <label title="Tháng ghi nhận chi phí trên báo cáo kết quả kinh doanh. Để trống = tháng của ngày sử dụng dịch vụ">Tháng hạch toán chi phí<input type="month" name="thang_ht" value="${x.thang_ht||''}" placeholder="theo ngày sử dụng"></label>
       <label class="full chk"><input type="checkbox" name="la_tam_ung" ${x.la_tam_ung?'checked':''}> Đề nghị <b>TẠM ỨNG</b> — tự chuyển sang Tạm ứng & hoàn ứng, không tính vào chi phí</label>
       <label><span>Ngày đề nghị${BB}</span><input type="date" name="ngay_de_nghi" value="${x.ngay_de_nghi}"></label>
@@ -2276,6 +2276,7 @@ function oTrung(x){const ids=(x.nghi_trung.match(/\d+/g)||[]).map(Number);const 
     ${dy?`<div style="margin-top:10px"><button class="btn sm" onclick="xuLyTrung(${x.id},null)">✓ 2 khoản khác nhau</button></div>`:''}</div>`}
 async function xuLyTrung(id,gop){if(gop&&!confirm('Gộp phiếu Kiot #'+id+' vào phiếu #'+gop+'? Phiếu Kiot sẽ ẩn, chứng từ chuyển sang #'+gop+'.'))return;
   await save('kt_xu_ly_trung',{p_id:id,p_gop_vao:gop},gop?'Đã gộp vào #'+gop:'Đã xác nhận 2 khoản khác nhau');render()}
+async function doiHDVe(id,v){try{await rpc('kt_chi_bo_sung',{p_id:id,p_dong:{hd_ve:v}});const x=(S.cache.chi||[]).find(c=>c.id===id);if(x)x.hd_ve=v||null;toast('Đã lưu hoá đơn xuất về')}catch(e){alert(e.message)}}
 function xemChi(id){
   // 16/10/2026 (anh): phiếu chi mở thành CỬA SỔ LỚN (như app MKT), 1 màn đủ thông tin — trái: đề nghị · người nhận + QR · phân bổ · thanh toán · hoá đơn;
   // phải: luồng duyệt · chứng từ · lịch sử. Nút xử lý cố định ở chân cửa sổ.
@@ -2313,7 +2314,9 @@ function xemChi(id){
     :x.trang_thai==='da_tt'?the('Thanh toán',`<div class="pc-g">${o('Ngày thanh toán',fmtD(x.ngay_tt))}${o('Tài khoản chi',esc(t.ten||''))}${x.nguoi_nhan_tien?o('Người đến nhận tiền',esc(x.nguoi_nhan_tien)):''}</div>${ctBox('chi',x.id,false,'unc')}`):'';
   const hdV=!x.co_hd_do?'khong':x.hd_do_nhan?'da':'chua';
   const hd=the('Hoá đơn đỏ',g?`<div class="pc-hd"><select class="m-in" onchange="doiHDChi(${id},this.value)">${optsObj({khong:'Không cần hoá đơn',chua:'Cần hoá đơn — chưa nhận',da:'Đã nhận hoá đơn'},hdV)}</select>
-      ${hdV==='da'?`<input type="date" class="m-in" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" onchange="doiHDChi(${id},'da',this.value)">`:''}</div>${hdV==='chua'?'<div class="muted" style="font-size:12px;margin-top:6px">Yêu cầu nhận hoá đơn từ NCC</div>':''}${hdvHtml(x)}`:`<div>${hdO}</div>${hdvHtml(x)}`);
+      ${hdV==='da'?`<input type="date" class="m-in" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" onchange="doiHDChi(${id},'da',this.value)">`:''}</div>${hdV==='chua'?'<div class="muted" style="font-size:12px;margin-top:6px">Yêu cầu nhận hoá đơn từ NCC</div>':''}
+      <label class="m-f" style="margin-top:8px"><span>Hoá đơn xuất về</span><select class="m-in" onchange="doiHDVe(${id},this.value)">${optsObj(HD_VE,x.hd_ve||'')}</select></label>${hdvHtml(x)}`
+      :`<div>${hdO}</div>${x.hd_ve?`<div style="margin-top:6px">Xuất về: <b>${esc(hdVeT(x.hd_ve))}</b></div>`:''}${hdvHtml(x)}`);
   // ── cột phải
   const ld=the('Luồng duyệt',luongDoc(x));
   const ct=the('',ctBox('chi',x.id,chiCT(x))+(drive.length?`<div class="pc-drive">${drive.map((u,i)=>`<a class="m-link" href="${esc(u)}" target="_blank" rel="noopener">Hồ sơ gốc trên Drive ${drive.length>1?i+1:''}</a>`).join('')}</div>`:''));
