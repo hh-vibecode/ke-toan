@@ -55,3 +55,14 @@ begin
     execute format('create trigger kt_chi_xem before insert or update or delete on public.%I for each row execute function public.kt_tg_chi_xem()', r.tablename);
   end loop;
 end $$;
+
+-- 16/10 (sau): anh "view as giám đốc và admin đều có quyền, tài khoản khác thì không" → Supreme + giám đốc (quyền chi_gd)
+do $$
+declare d text; n int;
+begin
+  d := pg_get_functiondef('public.kt_xem_nhu(text,int)'::regprocedure); n := length(d);
+  d := replace(d, $a$if u.vi_tri <> 'supreme' then raise exception 'Chỉ Supreme dùng được Xem như' using errcode = '42501'; end if;$a$,
+                  $a$if not kt_co_quyen(u, 'chi_gd') then raise exception 'Chỉ admin (Supreme) và giám đốc dùng được Xem như' using errcode = '42501'; end if;$a$);
+  if length(d) = n then raise exception 'kt_xem_nhu: khong thay cho'; end if;
+  execute d;
+end $$;

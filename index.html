@@ -787,7 +787,8 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 @media (min-width:901px){
   body.sb-an .lay{padding-left:64px}
   body.sb-an .sb{position:fixed;left:0;top:0;bottom:0;width:64px;overflow:hidden;transition:width .18s ease,box-shadow .18s}
-  body.sb-an.sb-rong .sb{width:232px;overflow-y:auto;box-shadow:0 0 40px rgba(0,0,0,.35)}
+  body.sb-an.sb-rong .sb{width:232px;overflow-y:auto}
+  body.sb-an .lay{transition:padding-left .18s ease}body.sb-an.sb-rong .lay{padding-left:232px}   /* 16/10 anh: menu mở thì đẩy nội dung, không đè */
   body.sb-an:not(.sb-rong) .sb .sb-t,body.sb-an:not(.sb-rong) .sb .sb-box,body.sb-an:not(.sb-rong) .sb .sb-ver,body.sb-an:not(.sb-rong) .sb-brand .bn{display:none}
   body.sb-an:not(.sb-rong) .sb-brand{justify-content:center;padding:16px 0 14px}
   body.sb-an:not(.sb-rong) .sb-nv{justify-content:center;padding:10px 0;position:relative}
@@ -829,6 +830,10 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 @media (min-width:901px){body.sb-an:not(.sb-rong) .sb-brand{visibility:hidden;height:20px;padding:0}}
 .xn-ds{display:flex;flex-direction:column;gap:6px}.xn-i{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;color:var(--text)}
 .xn-i:hover{border-color:var(--accent)}.xn-i span{font-size:12px;color:var(--muted)}
+/* Xem như — icon như app MKT (16/10) */
+.xn-dd{position:relative}.xn-b{width:34px;height:34px;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1.5px solid var(--border);background:var(--surface);color:var(--text2)}
+.xn-b.on{background:var(--bad);border-color:var(--bad);color:#fff}.xn-pill{font-size:11px;font-weight:800;color:#fff;background:var(--bad);border-radius:20px;padding:4px 11px;white-space:nowrap}
+.xn-m{min-width:240px;max-height:60vh;overflow:auto}.xn-h{font-size:11px;font-weight:700;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase}.xn-m .dd-i.on{background:color-mix(in srgb,var(--bad) 10%,transparent)}.xn-thoat{color:var(--bad);font-weight:600}
 </style>
 </head>
 <body>
@@ -840,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.95';
-const APP_VERSION='16/10/2026 17:08';
+const APP_SO='1.96';
+const APP_VERSION='16/10/2026 17:12';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1113,8 +1118,11 @@ async function boot(){
 }
 // XEM NHƯ (16/10/2026): Supreme mở phiên CHỈ XEM của 1 tài khoản (máy chủ chặn mọi lệnh ghi — supabase-schema-kt-xem-nhu.sql)
 const xnDoc=()=>{try{return JSON.parse(sessionStorage.getItem('kt_xem_nhu')||'null')}catch(e){return null}};
-async function xemNhu(id,ten){try{const r=await rpc('kt_xem_nhu',{p_nguoi_id:id});
-    sessionStorage.setItem('kt_xem_nhu',JSON.stringify({ten,goc:S.phien,goc_tu:(()=>{try{return sessionStorage.getItem('kt_phien')===S.phien?'s':'l'}catch(e){return 's'}})()}));
+async function xemNhu(id,ten){const cu=xnDoc();try{
+    const goc=cu?cu.goc:S.phien,goc_tu=cu?cu.goc_tu:(()=>{try{return sessionStorage.getItem('kt_phien')===S.phien?'s':'l'}catch(e){return 's'}})();
+    const ds=cu&&cu.ds?cu.ds:(await rpc('kt_ds_nguoi_dung')).filter(x=>x.hoat_dong&&x.id!==S.toi.id&&!/^tam-/.test(x.ten_dang_nhap)).map(x=>({id:x.id,ten:x.ho_ten,tk:x.ten_dang_nhap}));
+    const r=await rpc('kt_xem_nhu',{p_phien:goc,p_nguoi_id:id});if(cu)rpc('kt_dang_xuat',{p_phien:S.phien},true).catch(()=>{});
+    sessionStorage.setItem('kt_xem_nhu',JSON.stringify({id,ten,goc,goc_tu,ds}));
     sessionStorage.setItem('kt_phien',r.phien);S.phien=r.phien;S.cache={};S.f={};location.hash='';S.page='tong_quan';await boot()}catch(e){alert(e.message)}}
 async function thoatXemNhu(){const x=xnDoc();if(!x)return;const p=S.phien;sessionStorage.removeItem('kt_xem_nhu');
   rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
@@ -1124,10 +1132,17 @@ async function chonXemNhu(){try{const ds=(await rpc('kt_ds_nguoi_dung')).filter(
     modal(`<h2 style="margin:0 0 4px">Xem như tài khoản</h2><div class="muted" style="font-size:12.5px;margin-bottom:12px">App mở đúng như người đó thấy — chỉ xem, không sửa được. Thoát bằng thanh vàng trên cùng.</div>
       <div class="xn-ds">${ds.map(x=>`<button class="xn-i" onclick="closeModal();xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')"><b>${esc(x.ho_ten)}</b><span>${esc(x.ten_dang_nhap)} · ${x.vi_tri==='supreme'?'Supreme':x.vi_tri==='admin'||(x.quyen||[]).includes('*')?'Toàn quyền':(x.quyen||[]).length+' quyền'}</span></button>`).join('')}</div>
       <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`)}catch(e){alert(e.message)}}
-function veXemNhu(){let b=document.getElementById('xn-bar');const x=xnDoc();
-  if(!x||!S.toi){if(b)b.remove();document.body.classList.remove('co-xn');return}
-  if(!b){b=document.createElement('div');b.id='xn-bar';document.body.appendChild(b)}document.body.classList.add('co-xn');
-  b.innerHTML='Đang xem như <b>'+esc(S.toi.ho_ten||x.ten)+'</b> ('+esc(S.toi.ten_dang_nhap||'')+') — chỉ xem, không sửa được <button onclick="thoatXemNhu()">Thoát Xem như</button>'}
+const xnHtml=()=>{const v=xnDoc();if(!v&&!(S.toi&&chiGD()))return '';   // admin (Supreme) + giám đốc
+  return (v?'<span class="xn-pill" title="Cả app đang hiện theo quyền của tài khoản này — chỉ xem, không sửa được">Đang xem như '+esc(v.ten)+'</span>':'')
+    +'<div class="tb-dd xn-dd"><button class="xn-b'+(v?' on':'')+'" title="'+(v?'Đang xem như '+esc(v.ten)+' — bấm để đổi / thoát':'Xem app bằng góc nhìn của tài khoản khác')+'" onclick="event.stopPropagation();moXN(this)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg></button>'
+    +'<div class="tb-menu-dd xn-m" onclick="event.stopPropagation()"></div></div>'};
+async function moXN(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;d.classList.add('open');
+  const m=d.querySelector('.xn-m'),v=xnDoc();m.innerHTML='<div class="muted" style="padding:10px;font-size:12px">Đang tải…</div>';
+  try{let ds=v&&v.ds;if(!ds){ds=(await rpc('kt_ds_nguoi_dung')).filter(x=>x.hoat_dong&&x.id!==S.toi.id&&!/^tam-/.test(x.ten_dang_nhap)).map(x=>({id:x.id,ten:x.ho_ten,tk:x.ten_dang_nhap}))}
+    m.innerHTML='<div class="xn-h">Xem như tài khoản</div>'+(v?'<div class="dd-i xn-thoat" onclick="thoatXemNhu()">Thoát — về tài khoản của mình</div>':'')
+      +ds.map(x=>'<div class="dd-i'+(v&&v.id===x.id?' on':'')+'" onclick="xemNhu('+x.id+',\''+esc(x.ten).replace(/'/g,'')+'\')"><b>'+esc(x.ten)+'</b> <span class="muted">'+esc(x.tk)+'</span></div>').join('')}
+  catch(e){m.innerHTML='<div class="neg" style="padding:10px;font-size:12px">'+esc(e.message)+'</div>'}}
+function veXemNhu(){const b=document.getElementById('xn-bar');if(b)b.remove();document.body.classList.remove('co-xn')}
 function fillDatalists(){
   $('#dl-nh').innerHTML=NGAN_HANG.map(x=>`<option value="${esc(x)}">`).join('');
   $('#dl-th').innerHTML=(S.gy.thu_huong||[]).map(x=>`<option value="${esc(x.ten)}">${esc((x.nh||'')+' · '+(x.stk||''))}</option>`).join('');
@@ -1284,8 +1299,8 @@ function shell(){
       <div class="hd-t"><h1>${esc(nvO.ten||'')}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
       <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         <select class="hd-cs" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([k,t])=>`<option value="${k}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===k?'selected':''}>${t}</option>`).join('')}</select>
-        ${tim}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
-          <div class="tb-menu-dd">${S.toi.vi_tri==='supreme'&&!xnDoc()?'<div class="dd-i" onclick="chonXemNhu()">Xem như tài khoản khác…</div>':''}${xnDoc()?'<div class="dd-i" onclick="thoatXemNhu()">Thoát Xem như</div>':''}<div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
+        ${tim}${xnHtml()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
+          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');
   render();
@@ -3673,7 +3688,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: chỉ ở Đối soát lỗi (phiếu đã thanh toán chưa thấy trên Kiot).','16/10'],
  ['chung','Tự kiểm Supabase','Job kt-kiem-he-thong 09:00 ngày 15 + ngày cuối tháng: đo dữ liệu, kho chứng từ, nhật ký, lịch chạy lỗi, kéo Kiot, khoá RLS / quyền anon → chuông cho Supreme (luôn có tóm tắt, có vấn đề ghi rõ cảnh báo).','Gói Pro: cảnh báo khi dữ liệu > 4 GB, kho > 50 GB, tăng > 5 GB kho / 1 GB dữ liệu giữa 2 lần kiểm, có bảng tắt RLS. Băng thông không đo được từ SQL — xem Dashboard.','16/10'],
- ['chung','Xem như','Supreme bấm "Xem như" ở trang Phân quyền → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
+ ['chung','Xem như','Admin (Supreme) và giám đốc bấm icon người cạnh chuông (hoặc nút Xem như ở trang Phân quyền) → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['thu_chi','Phiếu chi — duyệt','Giám đốc / Supreme bấm Duyệt là qua luôn bước kế toán kiểm + giám đốc duyệt (cả 2 bước ghi tên người bấm) → Chờ thanh toán.','Kế toán chỉ kiểm lượt 1, không tự duyệt lượt 2 (không có quyền giám đốc). Duyệt thẳng vẫn cần có chứng từ.','16/10'],
@@ -3775,7 +3790,7 @@ async function pageCaiDat(mod){
       ${ds.map(x=>`<tr><td><b>${esc(x.ho_ten)}</b>${x.vi_tri==='supreme'?' <span class="badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff">Admin</span>':''}</td>
         <td><code>${esc(x.ten_dang_nhap)}</code></td><td>${qtxt(x)}</td><td class="nw">${fmtDT(x.dang_nhap_luc)}</td>
         <td>${!x.hoat_dong?vb('Đã khoá','grey'):x.dang_khoa?vb('Tạm khoá (sai MK)','warn'):vb('Đang hoạt động','ok')}</td>
-        <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}${S.toi.vi_tri==='supreme'&&x.hoat_dong&&!xnDoc()?` <button class="btn sm" title="Xem app đúng như tài khoản này thấy — chỉ xem" onclick="xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')">Xem như</button>`:''}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+        <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}${chiGD()&&x.hoat_dong&&x.id!==S.toi.id&&!xnDoc()?` <button class="btn sm" title="Xem app đúng như tài khoản này thấy — chỉ xem" onclick="xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')">Xem như</button>`:''}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
     c.insertAdjacentHTML('beforeend',await nhanSuHtml().catch(e=>`<div class="empty neg">${esc(e.message)}</div>`));
   }else if(S.f.cd==='nhat_ky'){
     const ds=await rpc('kt_ds_nhat_ky');
