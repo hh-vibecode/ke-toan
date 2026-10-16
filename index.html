@@ -812,6 +812,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-drive{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12.5px}
 .pc-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 22px;border-top:1px solid var(--border);background:var(--surface)}
 @media (max-width:900px){.pc-cot,.pc-g{grid-template-columns:1fr}.pc-h{flex-wrap:wrap;padding:12px 14px}.pc-tien{text-align:left}.pc-b{padding:12px}.pc-f{padding:10px 12px}.modal.pc-m{padding:0}.modal.pc-m>div{max-height:100vh;height:100vh;border-radius:0}}
+.pc-hd{display:flex;gap:8px;flex-wrap:wrap}.pc-hd select{flex:1 1 220px}.pc-hd input{flex:0 0 160px}
 </style>
 </head>
 <body>
@@ -823,8 +824,8 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.88';
-const APP_VERSION='16/10/2026 15:57';
+const APP_SO='1.89';
+const APP_VERSION='16/10/2026 16:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1275,9 +1276,9 @@ async function render(){
 function doiGiaoDien(){const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
   r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('kt_theme',r.dataset.theme)}catch(e){}}
 function head(title,right=''){return `<div class="top"><div class="title">${title}</div><div class="right">${right}</div></div>`}
-function modal(html,drawer){closeModal();const m=document.createElement('div');m.className='modal'+(drawer?' drawer':'');m.id='modal';
+function modal(html,drawer){closeModal(1);const m=document.createElement('div');m.className='modal'+(drawer?' drawer':'');m.id='modal';
   m.innerHTML=`<div>${html}</div>`;m.onclick=e=>{if(e.target===m)closeModal()};document.body.appendChild(m);setTimeout(ganCT,0);return m}
-function closeModal(){const m=$('#modal');if(m){if(m.dataset.chi)S.f.chi_chon=null;m.remove()}}
+function closeModal(thay){const m=$('#modal');if(m){const c=m.dataset.chi;if(c)S.f.chi_chon=null;m.remove();if(c&&!thay&&S.f.chi_doi){S.f.chi_doi=0;render()}}}   // thay = mở cửa sổ khác đè lên, không tải lại
 async function save(fn,args,msg){try{const r=await rpc(fn,args);toast(msg||'Đã lưu');closeModal();S.cache={};return r}catch(e){alert(e.message);throw e}}
 
 // ── TỔNG QUAN ──────────────────────────────────────────────────────────────
@@ -2228,8 +2229,9 @@ function xemChi(id){
       <div style="margin-top:8px">${(x.phan_bo_thang||[]).length?kv(x.phan_bo_thang.map(t=>['Tháng '+t.thang.slice(5)+'/'+t.thang.slice(0,4),fmt(t.so_tien)])):kv([['Ghi nhận','Tháng thanh toán'+(x.ngay_tt?' ('+x.ngay_tt.slice(5,7)+'/'+x.ngay_tt.slice(0,4)+')':'')]])}</div>`);
   const ttoan=dy&&['cho_tt','da_tt'].includes(x.trang_thai)?the(x.trang_thai==='cho_tt'?'Thanh toán':'Thanh toán (cập nhật)',fieldsThanhToan(x))
     :x.trang_thai==='da_tt'?the('Thanh toán',`<div class="pc-g">${o('Ngày thanh toán',fmtD(x.ngay_tt))}${o('Tài khoản chi',esc(t.ten||''))}</div>${ctBox('chi',x.id,false,'unc')}`):'';
-  const hd=the('Hoá đơn đỏ',`<div>${hdO}</div>${hdvHtml(x)}${x.trang_thai==='da_tt'&&x.co_hd_do&&g?`<div class="form" id="fhd" style="margin-top:10px"><label class="chk"><input type="checkbox" name="hd_do_nhan" ${x.hd_do_nhan?'checked':''}> Đã nhận hoá đơn đỏ</label>
-      <label>Ngày nhận HĐ<input type="date" name="ngay_nhan_hd" value="${x.ngay_nhan_hd||homNay()}"></label></div>`:''}`);
+  const hdV=!x.co_hd_do?'khong':x.hd_do_nhan?'da':'chua';
+  const hd=the('Hoá đơn đỏ',g?`<div class="pc-hd"><select class="m-in" onchange="doiHDChi(${id},this.value)">${optsObj({khong:'Không cần hoá đơn',chua:'Cần hoá đơn — chưa nhận',da:'Đã nhận hoá đơn'},hdV)}</select>
+      ${hdV==='da'?`<input type="date" class="m-in" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" onchange="doiHDChi(${id},'da',this.value)">`:''}</div>${hdV==='chua'?'<div class="muted" style="font-size:12px;margin-top:6px">Yêu cầu nhận hoá đơn từ NCC</div>':''}${hdvHtml(x)}`:`<div>${hdO}</div>${hdvHtml(x)}`);
   // ── cột phải
   const ld=the('Luồng duyệt',luongDoc(x));
   const ct=the('',ctBox('chi',x.id,chiCT(x))+(drive.length?`<div class="pc-drive">${drive.map((u,i)=>`<a class="m-link" href="${esc(u)}" target="_blank" rel="noopener">Hồ sơ gốc trên Drive ${drive.length>1?i+1:''}</a>`).join('')}</div>`:''));
@@ -2253,6 +2255,12 @@ function xemChi(id){
     <div class="pc-f">${nut}</div>`;
   hienChiCT(id,html);
 }
+// Hoá đơn đỏ: chọn ngay trong cửa sổ phiếu, lưu luôn (16/10)
+async function doiHDChi(id,v,ngay){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;
+  const o={...x};['tao_luc','sua_luc','duyet_luc','kiem_luc'].forEach(k=>delete o[k]);
+  o.co_hd_do=v!=='khong';o.hd_do_nhan=v==='da';if(v==='da')o.ngay_nhan_hd=ngay||x.ngay_nhan_hd||homNay();
+  try{await rpc('kt_luu_chi',{p_dong:o});Object.assign(x,{co_hd_do:o.co_hd_do,hd_do_nhan:o.hd_do_nhan,ngay_nhan_hd:o.ngay_nhan_hd||x.ngay_nhan_hd});
+    S.f.chi_doi=1;toast(v==='khong'?'Không cần hoá đơn':v==='da'?'Đã nhận hoá đơn':'Cần hoá đơn — chưa nhận');xemChi(id)}catch(e){alert(e.message);xemChi(id)}}
 // PHÂN BỔ CHI PHÍ & KỲ GHI NHẬN (14/10/2026, kế toán làm sau khi lập phiếu): chia đơn vị (tự nhập · chia đều · % doanh số thực đạt tháng) + chia nhiều tháng
 function pbForm(x){const pb=Object.fromEntries((x.phan_bo||[]).map(p=>[p.don_vi_id,p.so_tien])),thg=x.phan_bo_thang||[],th0=(x.ngay_su_dung||x.ngay_tt||x.ngay_de_nghi||homNay()).slice(0,7);
   return `<div class="m-st">Phân bổ chi phí cho đơn vị <span class="r">${fmt(x.so_tien)}</span></div>
