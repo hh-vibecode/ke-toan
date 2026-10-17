@@ -116,6 +116,7 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | 16 | **HĐ mua vào 2 hộ (Chánh Tâm, Hiền Thủy)** — anh 14/10: thông tin "lấy từ file 3TShop như trước" đang SAI, xử lý sau. Đã bỏ dòng đó khỏi `tra-loi-ke-toan-14-10.txt`; chưa sửa chữ trên app (trang HĐ đầu vào, Logic) | chờ anh nói nguồn đúng |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
+- **Trả lời kế toán (anh 17/10/2026):** viết trong khung code (``` … ```) chữ thường, không markdown đậm / bảng, để anh bấm copy dán thẳng cho chị.
 - **Số phiên bản (15/10/2026, anh)**: góc trái dưới hiện "Phiên bản v1.N · ngày giờ", N tăng 1 mỗi lần sửa index.html (kiểu app Driver). Trước mỗi commit index.html chạy `scripts/dong-dau.js` (cả phiên cloud).
 - **Trang Logic (15/10/2026, anh)**: bảng kiểu Google Sheet theo nghiệp vụ — mảng `LOGIC2` trong index.html, mỗi dòng [nghiệp vụ, mục, quy tắc ngắn, ghi chú, ngày]. **Đổi logic nào → sửa / thêm đúng dòng đó trong cùng commit.** Không viết đoạn văn dài.
 
