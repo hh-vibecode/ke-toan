@@ -77,3 +77,36 @@ do $$ declare f text; begin
     execute format('revoke execute on function public.%s from public', f);
     execute format('grant execute on function public.%s to anon, authenticated', f);
   end loop; end $$;
+
+-- 16/10/2026 (anh: "không khớp note ra, note vào app luôn"): sau mỗi lần nạp file, ngày lệch chưa có ghi chú → hệ thống tự ghi
+-- "lệch thu / chi bao nhiêu"; ngày đã khớp lại thì gỡ ghi chú TỰ ĐỘNG (ghi chú kế toán gõ tay giữ nguyên).
+create or replace function public.kt_dcf_tu_ghi_chu() returns int
+language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  with l as (select f.tai_khoan_id tk, f.ngay, round(coalesce(a.v, 0) - f.thu) lt, round(coalesce(a.r, 0) - f.chi) lc
+               from kt_dcf_ngay f left join lateral (select sum(vao) v, sum(ra) r from kt_v_bien_dong b where b.tai_khoan_id = f.tai_khoan_id and b.ngay = f.ngay) a on true)
+  delete from kt_dcf_ghi_chu g using l where g.tai_khoan_id = l.tk and g.ngay = l.ngay and g.sua_boi = 'Hệ thống (tự đối chiếu)' and abs(l.lt) <= 1 and abs(l.lc) <= 1;
+  with l as (select f.tai_khoan_id tk, f.ngay, round(coalesce(a.v, 0) - f.thu) lt, round(coalesce(a.r, 0) - f.chi) lc
+               from kt_dcf_ngay f left join lateral (select sum(vao) v, sum(ra) r from kt_v_bien_dong b where b.tai_khoan_id = f.tai_khoan_id and b.ngay = f.ngay) a on true)
+  insert into kt_dcf_ghi_chu (tai_khoan_id, ngay, ghi_chu, sua_boi)
+  select tk, ngay, concat_ws(' · ',
+      case when lt > 1 then 'App thu nhiều hơn file ' || replace(to_char(lt, 'FM999G999G999G999'), ',', '.') when lt < -1 then 'App thiếu thu ' || replace(to_char(-lt, 'FM999G999G999G999'), ',', '.') end,
+      case when lc > 1 then 'App chi nhiều hơn file ' || replace(to_char(lc, 'FM999G999G999G999'), ',', '.') when lc < -1 then 'App thiếu chi ' || replace(to_char(-lc, 'FM999G999G999G999'), ',', '.') end)
+      || ' — chưa rõ nguyên nhân, kế toán kiểm', 'Hệ thống (tự đối chiếu)'
+    from l where (abs(lt) > 1 or abs(lc) > 1) and ngay < (now() at time zone 'Asia/Ho_Chi_Minh')::date
+  on conflict (tai_khoan_id, ngay) do update set ghi_chu = excluded.ghi_chu, sua_luc = now() where kt_dcf_ghi_chu.sua_boi = 'Hệ thống (tự đối chiếu)';
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke execute on function public.kt_dcf_tu_ghi_chu() from public, anon, authenticated;
+-- nạp file xong tự ghi chú
+do $x$ declare d text; begin
+  d := pg_get_functiondef('public.kt_nap_dcf'::regproc);
+  if position('kt_dcf_tu_ghi_chu' in d) = 0 then
+    d := replace(d, $a$  return jsonb_build_object('so_dong', v_n, 'tk_la', coalesce(to_jsonb(v_la), '[]'));$a$,
+                    $a$  return jsonb_build_object('so_dong', v_n, 'tk_la', coalesce(to_jsonb(v_la), '[]'), 'ghi_chu_tu_dong', kt_dcf_tu_ghi_chu());$a$);
+    if position('kt_dcf_tu_ghi_chu' in d) = 0 then raise exception 'kt_nap_dcf: khong thay return'; end if;
+    execute d;
+  end if;
+end $x$;

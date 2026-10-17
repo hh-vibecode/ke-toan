@@ -845,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.48';
-const APP_VERSION='16/10/2026 21:41';
+const APP_SO='1.49';
+const APP_VERSION='17/10/2026 10:03';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3801,6 +3801,8 @@ const LOGIC2=[
  ['thu_chi','Hồ sơ phiếu trang chủ','Bắt buộc đính kèm ảnh / PDF cho cả 3 loại; hoàn ứng = ảnh chuyển khoản / biên nhận nộp tiền.','Anh 16/10.','16/10'],
  ['thu_chi','Nối hoàn ứng','Kế toán nối phiếu hoàn ứng vào phiếu tạm ứng ngay trong cửa sổ phiếu (khung Tạm ứng · hoàn ứng / Nối vào phiếu tạm ứng) → xác nhận tiền về → clear.','Cũng làm được ở trang Tạm ứng & hoàn ứng.','16/10'],
  ['thu_chi','Clear tạm ứng','Khoản tạm ứng chỉ "Đã clear" khi tiền trả lại đã về và kế toán bấm Xác nhận tiền về (tạo phiếu thu "Thu hoàn ứng" vào tài khoản nhận). Chưa đủ → "Đã tạm ứng · chưa clear", theo dõi ở Tạm ứng & hoàn ứng.','Anh 16/10.','16/10'],
+ ['thu_chi','Tiền mặt quầy cửa hàng','Kiot thu tiền mặt ở quầy Hiền Thủy / Chánh Tâm vào quỹ "TIỀN MẶT QUẦY CỬA HÀNG (chưa nộp két)", KHÔNG vào thẳng két. Cửa hàng nộp tiền về két = điều chuyển quầy → két (đúng ngày nộp, như file dòng tiền).','Anh 16/10 (khớp file dòng tiền). Số dư quầy = tiền cửa hàng đang giữ chưa nộp.','16/10'],
+ ['thu_chi','Đối chiếu file dòng tiền','Sổ quỹ → tab Đối chiếu: số file (tab 3.CASHFLOW TỔNG) từng TK × ngày so với app; ngày lệch tự ghi chú, kế toán sửa ghi chú. File tự kéo 30 phút / lần (máy anh).','App theo phát sinh; file tự sai (tồn cộng nhầm, trùng dòng) thì ghi chú, không sửa app theo.','16/10'],
  ['thu_chi','Tài khoản ngừng dùng','Bỏ tick "Đang dùng" ở Cài đặt → Danh mục: ẩn khỏi lựa chọn, số dư, tổng tồn; phiếu cũ giữ nguyên tên TK.','Xem lại: Sổ quỹ → "TK ngừng dùng".','16/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền vào = phiếu thu Đã thu, theo ngày thu.','','05/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền ra = phiếu chi Đã thanh toán, theo ngày thanh toán.','Phiếu chờ duyệt / chờ thanh toán / từ chối không tính.','05/10'],
