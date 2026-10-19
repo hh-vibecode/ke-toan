@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (35)** — Kế toán: VCB CN …1991 thiếu 3 giao dịch theo sao kê (15–17/10); 1 là chi phí, 2 là chi tiêu cá nhân không hạch toán. → 1 phiếu chi đã TT (vận chuyển TQ, OPEX-Logistics, ma_nguon saoke:vcb91:…); 2 khoản cá nhân = **điều chuyển VCB CN → TK mới "CHI TIÊU CÁ NHÂN (không hạch toán)"** (loại khác, ngừng dùng → không vào tổng tồn, không vào chi phí / P&L). **Quy ước mới:** chi tiêu cá nhân từ TK cá nhân = điều chuyển sang TK này. Số tiền ở sao kê / file local. So số dư app vs file dòng tiền 19/10: còn lệch đã biết VCB CTY (câu #57), BIDV CN (file cộng sai 14/09), VCB CN (Pancake 19/09 + 3 giao dịch mới chưa có trong file); HT / CT 17–19/10 = file chưa cập nhật thu Kiot; KÉT 17/10 = thiếu điều chuyển quầy → két (kế toán ghi).
+
 - **19/10/2026 (34)** — Anh: "COD chưa thu hồi không được tính là công nợ đến hạn" → hạn công nợ chỉ xét NỢ THẬT (noHan = no_that; chưa tách thì cả số): khách chỉ còn COD / chưa lấy hàng → trạng thái "Chờ thu COD / lấy hàng"; Tổng quan thẻ cảnh báo: 89 khách / tổng nợ → 34 khách / nợ thật quá hạn; khối công nợ đến hạn / quá hạn cũng chỉ tính nợ thật. Logic: dòng "Hạn công nợ".
 
 - **19/10/2026 (33)** — Anh: "thêm nút tích nhanh cho phân quyền, tích phát phân hết các thứ trong mục" → dòng tiêu đề mỗi mục (Nghiệp vụ, Báo cáo tài chính, Báo cáo kinh doanh, Thuế, Quản trị) có ô **Xem hết / Sửa hết**; Sửa hết tự tick Xem; bỏ tick thì bỏ cả mục; mở cửa sổ thấy sẵn tick nếu mục đã đủ.
