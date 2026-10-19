@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (58)** — Anh: "sắp xếp giống người thường, Xoá với Xuất phiếu in (đổi tên) đẩy lên thành nút nhỏ cùng hàng mã phiếu, dưới còn Đóng với Lưu" → cửa sổ phiếu chi: đầu = mã phiếu · trạng thái · [Xuất phiếu in] [Xoá]; chân trái = Đóng · Lưu, phải = nút duyệt. Mới áp cho phiếu chi (cửa sổ thu / điều chuyển / tạm ứng / vay chưa đổi).
+
 - **19/10/2026 (57)** — Anh: "tự F5 lại được chưa" (ảnh máy đang v1.121) → bản ≤ v1.121 chưa có kiểm phien-ban.txt nên không tự lên; mượn cơ chế "đổi quyền → tự tải lại" (có từ v1.120): đặt quyen_doi_luc = now() cho 4 TK không phải Supreme (admin.ketoan, thuquy, giamdoc, ketoan) → máy họ tự tải lên bản mới; TK anh (Supreme) F5 tay 1 lần. Anh: "cho icon người online sang bên trái lọc ngày" → avatar đứng trước ô kỳ trên thanh trên.
 
 - **19/10/2026 (56)** — Anh: "tất cả cơ sở chuyển thành bộ lọc ở thanh trên, thanh đấy chỉ có ngày và cơ sở, cơ sở cho chọn nhiều 1 lúc" + "xoá bộ lọc cơ sở bên tab trái" → thanh trên: ô cơ sở dạng tick chọn nhiều (csHtml / csChon; bỏ tick hết = tất cả); BỎ ô cơ sở trong trang Thu, Chi, Công nợ và phần cơ sở ở cột lọc trái (Tổng quan không còn khung lọc trái; Thu chi / Công nợ còn lọc tài khoản / nhóm / trạng thái). Các trang vốn lọc theo mảng locCS() nên chọn 2 cơ sở chạy luôn (chụp Tổng quan + Phiếu chi chọn Kho Shidai + Chánh Tâm OK). Lỗi tự bắt khi chụp: chữ trong ô tick bị trắng (kiểu .lc-c của cột trái) → sửa màu; avatar người trong app mất sau khi đổi lọc → shell() gọi veDX(). Thấy nhưng CHƯA sửa: Tổng quan mục B "Nguồn doanh thu theo kênh" không lọc theo cơ sở (lọc 2 cơ sở vẫn có Facebook Hiền Thuỷ) — có từ trước.
