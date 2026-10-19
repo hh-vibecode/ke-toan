@@ -858,8 +858,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.125';
-const APP_VERSION='19/10/2026 11:12';
+const APP_SO='1.126';
+const APP_VERSION='19/10/2026 11:50';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2095,7 +2095,7 @@ function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');i
 // Phiếu hoàn quỹ ngoài cửa hàng (15/10): kê phiếu Kiot chi từ Quỹ ngoài trong đợt — chi phí ghi 1 lần ở phiếu này
 const CS_HQ={SD:'Shidai',HT:'Hiền Thủy',CT:'Chánh Tâm'};
 function hqChi(x,dy){
-  const chon=dy?`<select class="m-in" style="height:28px" onchange="datHoanQuy(${x.id},this.value)"><option value="">Không phải</option>${Object.entries(CS_HQ).map(([k,t])=>`<option value="${k}" ${x.hoan_quy===k?'selected':''}>Hoàn Quỹ ngoài ${t}</option>`).join('')}</select>`:'';
+  const chon=dy?`<select class="m-in" style="height:28px" id="pc-hq"><option value="">Không phải</option>${Object.entries(CS_HQ).map(([k,t])=>`<option value="${k}" ${x.hoan_quy===k?'selected':''}>Hoàn Quỹ ngoài ${t}</option>`).join('')}</select>`:'';
   if(!x.hoan_quy)return dy&&/quỹ/i.test(x.noi_dung||'')?`<div class="m-st">Phiếu hoàn quỹ ngoài cửa hàng?</div><div style="display:flex;gap:8px;align-items:center">${chon}<span class="muted" style="font-size:11.5px">Đánh dấu để xem bảng kê phiếu Kiot chi từ Quỹ ngoài trong đợt</span></div>`:'';
   setTimeout(async()=>{const o=document.getElementById('hq-'+x.id);if(!o)return;try{const d=await rpc('kt_quy_ngoai_ct',{p_id:x.id});const chi=d.ds.filter(r=>!r.la_thu&&!r.huy),thu=d.ds.filter(r=>r.la_thu&&!r.huy),tc=sumBy(chi,r=>r.so_tien);
     o.innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:6px">Phiếu Kiot từ ${fmtD(d.tu)} (sau lần hoàn trước) đến ${fmtD(d.den)} · chi <b>${fmt(tc)}</b> (${chi.length} phiếu)${thu.length?' · nạp vào quỹ '+fmt(sumBy(thu,r=>r.so_tien)):''} · phiếu này <b>${fmt(x.so_tien)}</b>
@@ -2308,7 +2308,7 @@ function formChi(id){S.f.chi_form_id=id||null;
 function chiHT(){const h=$('#f [name=hinh_thuc_nhan]');if(!h)return;$$('#f .chi-ck').forEach(x=>x.style.display=h.value==='ck'?'':'none')}
 function fieldsThanhToan(x){return `<div class="form" id="ftt">
     <label><span>Ngày thanh toán${BB}</span><input type="date" name="ngay_tt" value="${x.ngay_tt||homNay()}" min="${MOC_TIEN}"></label>
-    ${x.trang_thai==='cho_tt'&&!chiDuyet()&&!chiGD()?`<label><span>Tài khoản chi</span><input type="hidden" name="tai_khoan_id" value="${x.tai_khoan_id||''}"><b style="padding:8px 0;display:block">${esc((tk(x.tai_khoan_id)||{}).ten||'')} · ${htChi(x)==='tm'?'tiền mặt':'chuyển khoản'}</b></label>`:''}<label ${x.trang_thai==='cho_tt'&&!chiDuyet()&&!chiGD()?'style="display:none"':''}><span>Tài khoản chi${BB}</span><select name="tai_khoan_id" onchange="this.closest('.form').querySelector('.nnt').style.display=(tk(+this.value)||{}).loai==='tien_mat'?'':'none'${x.trang_thai==='cho_tt'&&x.id?';doiTKChi('+x.id+',this.value)':''}">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label>
+    ${x.trang_thai==='cho_tt'&&!chiDuyet()&&!chiGD()?`<label><span>Tài khoản chi</span><input type="hidden" name="tai_khoan_id" value="${x.tai_khoan_id||''}"><b style="padding:8px 0;display:block">${esc((tk(x.tai_khoan_id)||{}).ten||'')} · ${htChi(x)==='tm'?'tiền mặt':'chuyển khoản'}</b></label>`:''}<label ${x.trang_thai==='cho_tt'&&!chiDuyet()&&!chiGD()?'style="display:none"':''}><span>Tài khoản chi${BB}</span><select name="tai_khoan_id" onchange="this.closest('.form').querySelector('.nnt').style.display=(tk(+this.value)||{}).loai==='tien_mat'?'':'none'">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label>
     <label class="full"><span>Loại chi${BB}</span><select name="loai_id">${opts(loai('chi'),x.loai_id,'— chọn —')}</select></label>
     <label class="full nnt" style="${(tk(x.tai_khoan_id)||{}).loai==='tien_mat'?'':'display:none'}"><span>Người đến nhận tiền mặt${BB}</span><input name="nguoi_nhan_tien" list="dl-th" value="${esc(x.nguoi_nhan_tien||'')}" placeholder="Họ tên người đến két nhận tiền${x.thu_huong_ten?' (vd '+esc(x.thu_huong_ten)+')':''}"></label></div>
     ${ctBox('chi',x.id,chiDuyet()||chiTien(x),'unc')}${x.unc?`<div style="font-size:12px;margin-top:4px"><a class="m-link" href="${esc(x.unc)}" target="_blank" rel="noopener">Link uỷ nhiệm chi cũ</a></div>`:''}`}
@@ -2378,7 +2378,7 @@ function xemChi(id){
       ${o('Cơ sở',esc(csTen))}${o('Loại chi',l.ten?esc(l.ten):'<span class="muted">Chưa phân loại</span>')}
       ${o('Người đề nghị',esc(x.nguoi_de_nghi||''))}${o('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}
       ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${o('Ngày sử dụng dịch vụ',x.ngay_su_dung?fmtD(x.ngay_su_dung):'')}${o('Kỳ hạch toán chi phí',x.la_tam_ung?'<span class="muted">Tạm ứng — chưa là chi phí</span>':thgT(kyHT(x))+(x.thang_ht?' <span class="muted">· ghi tay</span>':''))}
-      ${o('Hoá đơn xuất về',hdG?`<select class="m-in" style="height:28px" onchange="doiHDVe(${id},this.value)">${optsObj(HD_VE,x.hd_ve||'')}</select>`:x.hd_ve?esc(hdVeT(x.hd_ve)):'<span class="neg-t">chưa chọn</span>')}${x.la_tam_ung?o('Loại đề nghị',pill('Tạm ứng','warn')+' <span class="muted">theo dõi ở Tạm ứng & hoàn ứng</span>'):''}${x.loai_dn==='hoan_ung'?o('Loại đề nghị',pill('Hoàn ứng — trả lại tiền','info')+` <span class="muted">${fmt(x.so_tien)} — không chi tiền, ${x.trang_thai==='quyet_toan'?'kế toán đã xác nhận tiền về':`<span class="m-link" onclick="closeModal();S.f.tu_tab='hoan';go('tam_ung')">xác nhận tiền về ở Tạm ứng & hoàn ứng</span>`}</span>`):''}
+      ${o('Hoá đơn xuất về',hdG?`<select class="m-in" style="height:28px" id="pc-hdve">${optsObj(HD_VE,x.hd_ve||'')}</select>`:x.hd_ve?esc(hdVeT(x.hd_ve)):'<span class="neg-t">chưa chọn</span>')}${x.la_tam_ung?o('Loại đề nghị',pill('Tạm ứng','warn')+' <span class="muted">theo dõi ở Tạm ứng & hoàn ứng</span>'):''}${x.loai_dn==='hoan_ung'?o('Loại đề nghị',pill('Hoàn ứng — trả lại tiền','info')+` <span class="muted">${fmt(x.so_tien)} — không chi tiền, ${x.trang_thai==='quyet_toan'?'kế toán đã xác nhận tiền về':`<span class="m-link" onclick="closeModal();S.f.tu_tab='hoan';go('tam_ung')">xác nhận tiền về ở Tạm ứng & hoàn ứng</span>`}</span>`):''}
       ${o('Hạn mong muốn',fmtD(x.han_tt))}${o('Nhà cung cấp',nccChiO(x))}
       ${x.ghi_chu?o('Ghi chú',esc(x.ghi_chu),1):''}</div>`,sua?`<button class="m-btn out" style="height:30px" onclick="formChi(${id})">${IC_SUA} Chỉnh sửa</button>`:'');
   const nhan=x.trang_thai!=='da_tt'&&x.thu_huong_stk?the('',qrChi(x))
@@ -2390,11 +2390,11 @@ function xemChi(id){
       <label><span>Loại chi</span><select name="loai_id">${opts(loai('chi'),x.loai_id,'— chọn —')}</select></label></div>
       <div class="muted" id="tq-goi" style="font-size:12px;margin-top:6px">${x.tai_khoan_id?(tkTQ(x)?'Két / tài khoản công ty → thủ quỹ chi tiền, up ảnh giao dịch':'Tài khoản cá nhân → giám đốc chi tiền, up ảnh giao dịch'):'Két tiền mặt + 3 tài khoản công ty → thủ quỹ chi · tài khoản cá nhân → giám đốc chi'}</div>`):'';
   const ttoan=(x.trang_thai==='cho_tt'&&chiTien(x))||(x.trang_thai==='da_tt'&&dy)?the(x.trang_thai==='cho_tt'?aiChi(x)+' chi tiền':'Thanh toán (cập nhật)',fieldsThanhToan(x))
-    :x.trang_thai==='cho_tt'?the('Chờ chi tiền',`<div class="pc-g">${o('Đi tiền từ',esc(t.ten||''))}${o('Hình thức',htPill(x))}${o('Người chi',aiChi(x))}</div>${dy||gd?`<div class="pc-hd" style="margin-top:8px"><select class="m-in" id="doi-tk">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select><button class="m-btn out" onclick="doiTKChi(${id})">Đổi tài khoản đi tiền</button></div><div class="muted" style="font-size:11.5px;margin-top:4px">Đổi ý chi từ tài khoản khác: người xác nhận đổi ở đây, hệ thống báo chuông người chi mới. Thủ quỹ không tự đổi.</div>`:''}`)
+    :x.trang_thai==='cho_tt'?the('Chờ chi tiền',`<div class="pc-g">${o('Đi tiền từ',esc(t.ten||''))}${o('Hình thức',htPill(x))}${o('Người chi',aiChi(x))}</div>${dy||gd?`<div class="pc-hd" style="margin-top:8px"><select class="m-in" id="doi-tk">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></div><div class="muted" style="font-size:11.5px;margin-top:4px">Đổi ý chi từ tài khoản khác: chọn tài khoản rồi bấm Lưu — hệ thống báo chuông người chi mới. Thủ quỹ không tự đổi.</div>`:''}`)
     :x.trang_thai==='da_tt'?the('Thanh toán',`<div class="pc-g">${o('Ngày thanh toán',fmtD(x.ngay_tt))}${o('Tài khoản chi',esc(t.ten||''))}${x.nguoi_nhan_tien?o('Người đến nhận tiền',esc(x.nguoi_nhan_tien)):''}</div>${ctBox('chi',x.id,false,'unc')}`):'';
   const hdV=!x.co_hd_do?'khong':x.hd_do_nhan?'da':'chua';
-  const hd=the('Hoá đơn đỏ',hdG?`<div class="pc-hd"><select class="m-in" onchange="doiHDChi(${id},this.value)">${optsObj({khong:'Không cần hoá đơn',chua:'Cần hoá đơn — chưa nhận',da:'Đã nhận hoá đơn'},hdV)}</select>
-      ${hdV==='da'?`<input type="date" class="m-in" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" onchange="doiHDChi(${id},'da',this.value)">`:''}</div>${hdV==='chua'?'<div class="muted" style="font-size:12px;margin-top:6px">Yêu cầu nhận hoá đơn từ NCC</div>':''}${hdvHtml(x)}`:`<div>${hdO}</div>${hdvHtml(x)}`);
+  const hd=the('Hoá đơn đỏ',hdG?`<div class="pc-hd"><select class="m-in" id="pc-hd" onchange="pcHD(this)">${optsObj({khong:'Không cần hoá đơn',chua:'Cần hoá đơn — chưa nhận',da:'Đã nhận hoá đơn'},hdV)}</select>
+      <input type="date" class="m-in" id="pc-hd-ngay" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" style="${hdV==='da'?'':'display:none'}"></div>${hdV==='chua'?'<div class="muted" style="font-size:12px;margin-top:6px">Yêu cầu nhận hoá đơn từ NCC</div>':''}${hdvHtml(x)}`:`<div>${hdO}</div>${hdvHtml(x)}`);
   // ── cột phải
   const ld=the('Luồng duyệt',luongDoc(x));
   const ct=the('',ctBox('chi',x.id,chiCT(x))+(drive.length?`<div class="pc-drive">${drive.map((u,i)=>`<a class="m-link" href="${esc(u)}" target="_blank" rel="noopener">Hồ sơ gốc trên Drive ${drive.length>1?i+1:''}</a>`).join('')}</div>`:''));
@@ -2404,11 +2404,11 @@ function xemChi(id){
       <div class="hd-ds" id="hd-ds-${id}"><div class="muted" style="font-size:12px">Đang tải…</div></div></section>`;
   // ── chân: nút xử lý
   const nut=[g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:'',`<button class="m-btn out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu Word</button>`,'<span style="margin-left:auto"></span>',
-    ['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="doiTTChi(${id},'tu_choi')">✕ Từ chối</button><button class="m-btn pri" onclick="doiTTChi(${id},'cho_tt')">✓ Xác nhận</button>`:'',
-    x.trang_thai==='cho_tt'&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="doiTTChi(${id},'tu_choi_tt')">✕ Từ chối thanh toán</button>`:'',
-    x.trang_thai==='cho_tt'&&chiTien(x)?`<button class="m-btn pri" title="Cần ảnh giao dịch (uỷ nhiệm chi / phiếu chi tiền mặt)" onclick="doiTTChi(${id},'da_tt')">✓ Đã chi tiền</button>`:'',
-    x.trang_thai==='da_tt'&&(dy||(g&&x.co_hd_do))?`<button class="m-btn pri" onclick="doiTTChi(${id},null)">Lưu</button>`:'',
-    dy&&['tu_choi','tu_choi_tt'].includes(x.trang_thai)?`<button class="m-btn" onclick="doiTTChi(${id},'cho_duyet')">Mở lại</button>`:'',
+    (dy||gd||hdG||(x.trang_thai==='cho_tt'&&chiTien(x)))?`<button class="m-btn" title="Lưu mọi thay đổi trong phiếu" onclick="luuPhieu(${id},null)">Lưu</button>`:'',
+    ['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="luuPhieu(${id},'tu_choi')">✕ Từ chối</button><button class="m-btn pri" onclick="luuPhieu(${id},'cho_tt')">✓ Xác nhận</button>`:'',
+    x.trang_thai==='cho_tt'&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="luuPhieu(${id},'tu_choi_tt')">✕ Từ chối thanh toán</button>`:'',
+    x.trang_thai==='cho_tt'&&chiTien(x)?`<button class="m-btn pri" title="Cần ảnh giao dịch (uỷ nhiệm chi / phiếu chi tiền mặt)" onclick="luuPhieu(${id},'da_tt')">✓ Đã chi tiền</button>`:'',
+    dy&&['tu_choi','tu_choi_tt'].includes(x.trang_thai)?`<button class="m-btn" onclick="luuPhieu(${id},'cho_duyet')">Mở lại</button>`:'',
     `<button class="m-btn" onclick="dongChiCT()">Đóng</button>`].join('');
   const html=`<div class="pc-h"><span class="m-loai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm3 8h8v2H9zm0 4h8v2H9z"/></svg></span>
       <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}</div><div class="pc-nd">${esc(ndChi(x))}</div></div>
@@ -2552,11 +2552,11 @@ function xuatWordTU(id){const x=(S.cache.tu||[]).find(t=>t.id===id);if(!x)return
   taiWord(so+'_tam-ung',phieuWord({so,tieu_de:'GIẤY XÁC NHẬN TẠM ỨNG',ngay:x.ngay||x.ngay_ung,ky:'NGƯỜI NHẬN TẠM ỨNG',nguoi:x.nguoi_ung||x.nguoi_nhan||x.nguoi||'',cam_ket:'Tôi đã nhận đủ số tiền tạm ứng nêu trên và sẽ hoàn ứng đúng hạn.',
     dong:[['Người nhận tạm ứng',esc(x.nguoi_ung||x.nguoi_nhan||x.nguoi||'')],['Nội dung',esc(x.noi_dung||x.ly_do||'')],['Số tiền',tienO(tien)],['Bằng chữ','<i>'+esc(soChu(tien))+'</i>'],['Hạn hoàn ứng',x.han_hoan?fmtD(x.han_hoan):'']]}))}
 // PHÂN BỔ CHI PHÍ & KỲ GHI NHẬN (14/10/2026, kế toán làm sau khi lập phiếu): chia đơn vị (tự nhập · chia đều · % doanh số thực đạt tháng) + chia nhiều tháng
-function pbHT(x,sua){return `<label class="chk ht-tick"><input type="checkbox" ${x.khong_hach_toan?'':'checked'} ${sua?'':'disabled'} onchange="datHachToan('chi',${x.id},this.checked)"> <b>Có hạch toán chi phí</b></label>`}
+function pbHT(x,sua){return `<label class="chk ht-tick"><input type="checkbox" ${x.khong_hach_toan?'':'checked'} ${sua?'':'disabled'} id="pc-ht" onchange="pcHT(this)"> <b>Có hạch toán chi phí</b></label>`}
 const pbCaNhan='<div class="ht-cn">Khoản cá nhân — không hạch toán: không phân bổ đơn vị, không vào chi phí / lãi lỗ. Vẫn trừ tiền tài khoản.</div>';
-function pbForm(x){if(x.khong_hach_toan)return `<div class="m-st">Phân bổ chi phí cho đơn vị <span class="r">${fmt(x.so_tien)}</span></div>${pbHT(x,1)}${pbCaNhan}`;
+function pbForm(x){
   const pb=Object.fromEntries((x.phan_bo||[]).map(p=>[p.don_vi_id,p.so_tien])),thg=x.phan_bo_thang||[],th0=(x.ngay_su_dung||x.ngay_tt||x.ngay_de_nghi||homNay()).slice(0,7);
-  return `<div class="m-st">Phân bổ chi phí cho đơn vị <span class="r">${fmt(x.so_tien)}</span></div>${pbHT(x,1)}
+  return `<div class="m-st">Phân bổ chi phí cho đơn vị <span class="r">${fmt(x.so_tien)}</span></div>${pbHT(x,1)}<div id="pb-cn" style="${x.khong_hach_toan?'':'display:none'}">${pbCaNhan}</div><div id="pb-wrap" style="${x.khong_hach_toan?'display:none':''}">
   ${(x.phan_bo||[])[0]&&x.phan_bo[0].ds?`<div class="m-st" style="color:var(--info)">Đang chia theo % doanh số thực đạt tháng ${+x.phan_bo[0].ds.slice(5)}/${x.phan_bo[0].ds.slice(0,4)} — hệ thống tự chia lại mỗi đêm theo doanh số mới nhất đến hết tháng sau</div>`:''}
   <div class="pbf" id="pbf" data-tong="${x.so_tien}" data-ds="${((x.phan_bo||[])[0]||{}).ds||''}">${DV_CP.map(([i,t])=>`<label><span>${t}</span>${moneyIn('pb_'+i,pb[i]||'','oninput="fmtMoney(this);$(\'#pbf\').dataset.ds=\'\';pbTong()"')}<em id="pbp_${i}"></em></label>`).join('')}
     ${(x.phan_bo||[]).filter(p=>!DV_CP.some(d=>d[0]===+p.don_vi_id)).map(p=>`<div class="muted">Đơn vị cũ: ${esc(dvCPTen(p.don_vi_id))} ${fmt(p.so_tien)} — lưu lại sẽ chuyển sang 4 đơn vị trên</div>`).join('')}
@@ -2567,7 +2567,7 @@ function pbForm(x){if(x.khong_hach_toan)return `<div class="m-st">Phân bổ chi
     <label class="m-f"><span>Số tháng</span><input type="number" id="pbm_n" class="m-in" min="1" max="36" value="${thg.length||1}" style="min-width:90px"></label></div>
   <div class="muted" style="font-size:11.5px;margin:6px 0 2px">1 tháng = ghi nhận cả vào tháng đó. Dòng tiền / số dư vẫn trừ đúng ngày thanh toán.</div>
   ${thg.length>1?`<div class="m-kv" style="margin-top:6px">${thg.map(t=>`<div>Tháng ${t.thang.slice(5)}/${t.thang.slice(0,4)}</div><div>${fmt(t.so_tien)}</div>`).join('')}</div>`:''}
-  <div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="m-btn pri" onclick="luuPhanBo(${x.id})">Lưu phân bổ</button></div>`}
+  </div>`}
 function pbTong(){const b=$('#pbf');if(!b)return;const t=+b.dataset.tong,v=DV_CP.map(([i])=>so(($('[name=pb_'+i+']')||{}).value)||0),s=v.reduce((a,c)=>a+c,0);
   DV_CP.forEach(([i],k)=>{const e=$('#pbp_'+i);if(e)e.textContent=v[k]?pct(v[k],t):''});const e=$('#pbt');if(e){e.textContent=fmt(s)+' / '+fmt(t);e.className=Math.abs(s-t)>1?'neg-t':'pos-t'}}
 async function pbChia(cach,thang){const t=+$('#pbf').dataset.tong;let w;$('#pbf').dataset.ds=cach==='ds'?thang:'';
@@ -2578,6 +2578,35 @@ async function pbChia(cach,thang){const t=+$('#pbf').dataset.tong;let w;$('#pbf'
   const tw=Object.values(w).reduce((a,c)=>a+c,0),ids=Object.keys(w).filter(i=>w[i]);let con=t;
   DV_CP.forEach(([i])=>{const e=$('[name=pb_'+i+']');if(e)e.value=''});
   ids.forEach((i,k)=>{const v=k===ids.length-1?con:Math.round(t*w[i]/tw);con-=v;$('[name=pb_'+i+']').value=fmt(v)});pbTong()}
+// 19/10/2026 anh: "thêm nút lưu 1 nút thôi, thêm cho cả phiếu popup", "sửa cả luồng ấn lưu là được" — cửa sổ phiếu chi: đổi ô nào cũng CHƯA lưu,
+// bấm Lưu (hoặc nút chuyển bước Xác nhận / Đã chi tiền / Từ chối…) mới lưu hết: hạch toán, phân bổ, hoàn quỹ, hoá đơn, tài khoản đi tiền, rồi tài khoản / loại / ngày TT.
+function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?'':'none'}
+function pcHT(el){const w=$('#pb-wrap'),c=$('#pb-cn');if(w)w.style.display=el.checked?'':'none';if(c)c.style.display=el.checked?'none':''}
+['input','change'].forEach(ev=>document.addEventListener(ev,e=>{const t=e.target;if(t&&t.closest&&(t.closest('#pbf')||t.id==='pbm_tu'||t.id==='pbm_n')){const b=$('#pbf');if(b)b.dataset.doi='1'}},true));
+function pbDoc(x){const t=x.so_tien,ds=($('#pbf')||{dataset:{}}).dataset.ds;
+  const pb=DV_CP.map(([i])=>({don_vi_id:i,so_tien:so(($('[name=pb_'+i+']')||{}).value)||0,...(ds?{ds}:{})})).filter(p=>p.so_tien);
+  if(Math.abs(sumBy(pb,p=>p.so_tien)-t)>1)return {loi:'Tổng chia cho đơn vị phải bằng '+fmt(t)};
+  const tu=$('#pbm_tu').value,n=Math.max(1,Math.min(36,+$('#pbm_n').value||1));let thg=null;
+  if(n>1){if(!/^\d{4}-\d{2}$/.test(tu))return {loi:'Chọn tháng bắt đầu'};const m=Math.floor(t/n);thg=[];
+    for(let k=0;k<n;k++){const d=new Date(+tu.slice(0,4),+tu.slice(5,7)-1+k,1);thg.push({thang:ymd(d).slice(0,7),so_tien:k===n-1?t-m*(n-1):m})}}
+  else if(tu&&x.ngay_tt&&tu!==x.ngay_tt.slice(0,7))thg=[{thang:tu,so_tien:t}];
+  return {pb,thg}}
+async function luuPhieu(id,tt){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;const viec=[];
+  try{
+    const ht=$('#pc-ht');if(ht&&!ht.disabled&&ht.checked===!!x.khong_hach_toan){await rpc('kt_dat_hach_toan',{p_bang:'chi',p_id:id,p_hach_toan:ht.checked});x.khong_hach_toan=!ht.checked;viec.push('hạch toán')}
+    const pbf=$('#pbf');if(pbf&&pbf.dataset.doi&&!x.khong_hach_toan){const r=pbDoc(x);if(r.loi)return alert(r.loi);
+      await rpc('kt_luu_phan_bo',{p_id:id,p_phan_bo:r.pb,p_phan_bo_thang:r.thg});x.phan_bo=r.pb;x.phan_bo_thang=r.thg;pbf.dataset.doi='';viec.push('phân bổ')}
+    const hq=$('#pc-hq');if(hq&&(hq.value||null)!==(x.hoan_quy||null)){await rpc('kt_dat_hoan_quy',{p_id:id,p_cs:hq.value||null});x.hoan_quy=hq.value||null;viec.push('hoàn quỹ')}
+    const hd=$('#pc-hd'),hn=$('#pc-hd-ngay'),hv=$('#pc-hdve'),hdV=!x.co_hd_do?'khong':x.hd_do_nhan?'da':'chua';
+    const doiHD=!!hd&&(hd.value!==hdV||(hd.value==='da'&&!!hn&&!!hn.value&&hn.value!==(x.ngay_nhan_hd||''))),doiVe=!!hv&&(hv.value||'')!==(x.hd_ve||'');
+    if(doiHD||doiVe){const ng=doiHD&&hd.value==='da'?((hn&&hn.value)||homNay()):null;
+      await rpc('kt_dat_hd_do',{p_id:id,p_trang:doiHD?hd.value:null,p_ngay:ng,p_hd_ve:doiVe?(hv.value||''):null});
+      if(doiHD){x.co_hd_do=hd.value!=='khong';x.hd_do_nhan=hd.value==='da';x.ngay_nhan_hd=hd.value==='da'?ng:null}if(doiVe)x.hd_ve=hv.value||null;viec.push('hoá đơn')}
+    const tkSel=$('#doi-tk')||(x.trang_thai==='cho_tt'?$('#ftt select[name=tai_khoan_id]'):null);
+    if(x.trang_thai==='cho_tt'&&tkSel&&(chiDuyet()||chiGD())&&+tkSel.value&&+tkSel.value!==+x.tai_khoan_id){await rpc('kt_doi_tk_chi',{p_id:id,p_tk:+tkSel.value});x.tai_khoan_id=+tkSel.value;viec.push('tài khoản đi tiền')}
+  }catch(e){alert(e.message);S.cache={};await render();return}
+  if(tt||$('#ftt'))return doiTTChi(id,tt);   // tài khoản / loại chi / ngày TT / người nhận + chuyển bước (lưu, đóng cửa sổ)
+  closeModal();S.cache={};toast(viec.length?'Đã lưu: '+viec.join(', '):'Không có thay đổi');await render()}
 async function luuPhanBo(id){const x=S.cache.chi.find(c=>c.id===id),t=x.so_tien;
   const ds=($('#pbf')||{dataset:{}}).dataset.ds;   // chia theo doanh số → giữ dấu tháng, lịch kt-pb-ds chia lại mỗi đêm
   const pb=DV_CP.map(([i])=>({don_vi_id:i,so_tien:so(($('[name=pb_'+i+']')||{}).value)||0,...(ds?{ds}:{})})).filter(p=>p.so_tien);
@@ -3965,6 +3994,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['chung','Tự tải lại khi có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App mọi tài khoản mỗi phút (và lúc quay lại tab) đọc file này; số lớn hơn bản đang chạy → tự tải lại như F5.','Đang mở cửa sổ nhập liệu thì chờ đóng cửa sổ mới tải lại (không mất dữ liệu đang gõ). Lúc Xem như thì không tự tải.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
+ ['thu_chi','Cửa sổ phiếu chi — 1 nút Lưu','Trong cửa sổ phiếu chi, đổi ô nào (hạch toán, phân bổ, hoàn quỹ, hoá đơn đỏ, hoá đơn xuất về, tài khoản đi tiền, loại chi…) cũng CHƯA lưu; bấm Lưu ở chân cửa sổ mới lưu hết.','Nút chuyển bước (Xác nhận, Đã chi tiền, Từ chối…) cũng lưu hết các thay đổi rồi mới chuyển bước. Đóng cửa sổ không bấm Lưu = bỏ thay đổi.','19/10'],
  ['thu_chi','Phiếu chi — chờ chi tiền: tiền mặt / chuyển khoản','Mỗi phiếu chờ chi có nhãn "Tiền mặt · KÉT…" hoặc "Chuyển khoản · <tài khoản>" (thẻ Chờ chi tiền chỉ còn tổng tiền + số phiếu — anh 19/10 bỏ khối chia theo tài khoản).','Đổi tài khoản đi tiền sau khi đã xác nhận: người xác nhận (kế toán có quyền xác nhận / giám đốc) bấm "Đổi tài khoản đi tiền" trong phiếu, báo chuông người chi mới; thủ quỹ không tự đổi được.','19/10'],
  ['thu_chi','Phiếu chi — hoá đơn đỏ theo HKD','Thủ quỹ theo dõi thủ công hoá đơn đỏ xuất về 2 HKD: thấy mọi phiếu ĐÃ CHI có cần hoá đơn, sửa được "Hoá đơn xuất về" + Đã nhận / ngày nhận trong cửa sổ phiếu.','Thẻ "Chưa nhận HĐ" chia theo HKD Hiền Thủy / HKD Chánh Tâm / Công ty / Chưa ghi xuất về (bấm để lọc); bộ lọc "HĐ xuất về" trên danh sách.','19/10'],
  ['thu_chi','Phiếu chi — thiếu ảnh giao dịch','Phiếu ĐÃ CHI từ 01/09/2026 chưa có ảnh giao dịch (file "UNC…" up ở ô Ảnh giao dịch, hoặc link UNC cũ từ sheet).','Nhắc admin up đủ: dải "Cần chú ý" → Thiếu ảnh giao dịch (theo tháng đang chọn) + Tổng quan → Cảnh báo & công việc cần xử lý (đếm từ 01/09).','19/10'],
