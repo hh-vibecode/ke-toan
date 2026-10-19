@@ -869,8 +869,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.135';
-const APP_VERSION='19/10/2026 13:57';
+const APP_SO='1.136';
+const APP_VERSION='19/10/2026 14:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2160,7 +2160,7 @@ const IC_SUA='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor
 // dấu * ô bắt buộc (15/10)
 const BB='<b class="bb" title="Bắt buộc">*</b>';
 const IC_XLS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l8 8M16 8l-8 8"/></svg>';
-// trạng thái 1 khách / NCC theo hạn nợ (số ngày được nợ: cài đặt han_no_*_ngay, tạm 30 — chờ kế toán chốt)
+// trạng thái 1 khách / NCC theo hạn nợ (số ngày được nợ: cài đặt han_no_*_ngay — giám đốc chốt 19/10: khách sỉ 30, NCC 30)
 // nợ tính hạn = nợ thật (khách đã tách COD / chưa lấy hàng); chưa tách → cả số nợ
 const noHan=x=>x.no_that!=null?Math.max(0,+x.no_that):Math.max(0,+x.no||0);
 function ttCongNo(x){if(!(x.no>0))return x.no<0?['Trả trước','info']:['Đã thanh toán','ok'];if(!(noHan(x)>0))return ['Chờ thu COD / lấy hàng','info'];if(x.qua_han==null)return ['Quá hạn','bad'];
@@ -2248,7 +2248,7 @@ async function pageCongNoDT(loai){
       <div class="m-f"><span>&nbsp;</span><input class="m-in" type="search" placeholder="Tìm kiếm" value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()"></div></div>
     <div class="m-chon" id="no-chon" style="display:none"></div>
     <div class="m-split ${chon?'co':''}"><div class="m-card"><div class="m-ch">Danh sách công nợ ${dt} <span class="m-cnt">(Tổng ${fmt(l.length)} ${dt})</span>
-        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click" style="cursor:pointer" title="Bấm để lọc" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';render()">${pill(t,c)} ${fmt(sumBy(l,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}<span class="m-pill">Hạn nợ tạm ${ds[0]?ds[0].han:30} ngày — chờ kế toán chốt</span></span></div>
+        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click" style="cursor:pointer" title="Bấm để lọc" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';render()">${pill(t,c)} ${fmt(sumBy(l,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
       <div class="scroll"><table class="m-t"><tr><th class="c"><input type="checkbox"></th><th>Mã ${KH?'KH':'NCC'}</th><th>${KH?'Tên khách hàng':'Nhà cung cấp'}</th><th>Cơ sở</th><th class="num">Tổng công nợ</th><th class="num">Đã thanh toán</th><th class="num">Còn phải ${KH?'thu':'trả'}</th><th>Ngày đến hạn</th><th class="num">Số ngày<br>quá hạn</th><th class="c">Trạng thái</th><th class="m-nguon">Nguồn</th>${KH?'<th>Nhóm KH</th>':''}<th>Người phụ trách</th></tr>
       ${trang.map(x=>{const t=ttCongNo(x),con=Math.abs(x.no);return `<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemCongNo('${loai}',${x.id})"><td class="c">${ganDuoc?`<input type="checkbox" ${(f[k+'_sel']||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonNo('${k}',${x.id},this.checked)">`:''}</td>
         <td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten)}</td><td class="nw">${esc((CS3.find(c=>c[0]===csCuaCN(x.cn))||[])[1]||x.cn||'')}</td><td class="num"><b>${fmt(x.tong_ct||con)}</b></td><td class="num">${fmt(Math.max((x.tong_ct||con)-con,0))}</td>
@@ -2289,7 +2289,7 @@ const canBS=x=>String(x.ghi_chu||'').startsWith('[Kéo từ sheet cũ')&&!x.sua_
 // Loại chi do Claude tự gán theo mẫu T5–T9 (anh cho phép 09/10) — trả 'cao' | 'vừa' | 'thấp'; kế toán sửa phiếu (Sửa đề nghị) là coi như đã soát
 // 16/10/2026 (kế toán): kỳ hạch toán chi phí của phiếu = tháng phân bổ > tháng ghi tay > tháng ngày sử dụng DV (thiếu thì ngày đề nghị) — khớp view kt_v_chi_ht
 const kyHT=x=>x.thang_ht||String(x.ngay_su_dung||x.ngay_de_nghi||x.ngay_tt||'').slice(0,7),thgT=m=>m?'T'+(+m.slice(5,7))+'/'+m.slice(0,4):'';
-const claudeGan=x=>{const m=String(x.ghi_chu||'').match(/\[Claude gán loại chi — tin (cao|vừa|thấp)/);return m&&!x.sua_boi?m[1]:null};
+const claudeGan=x=>{const m=String(x.ghi_chu||'').match(/\[(?:Claude|Hệ thống) gán loại chi — tin (cao|vừa|thấp)/);return m&&!x.sua_boi?m[1]:null};
 function pbRow(p={}){return `<div class="pb"><select name="pb_dv">${opts(coSo(),p.don_vi_id,'— đơn vị —')}</select>${moneyIn('pb_tien',p.so_tien,'oninput="fmtMoney(this)"')}<button class="btn sm" onclick="this.parentNode.remove()">✕</button></div>`}
 function formChi(id){S.f.chi_form_id=id||null;
   const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ho_ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
@@ -3904,7 +3904,7 @@ async function pageDoiSoat(){
   const kt=co.filter(g=>g.ai==='ke_toan'),ht=co.filter(g=>g.ai==='he_thong');
   el.innerHTML=head('Đối soát lỗi',`<span class="badge ${S.soLoi?'':'ok'}">${S.soLoi?S.soLoi+' việc kế toán':'Không có lỗi'}</span><span class="badge">Từ 01/09/2026</span><button class="btn" onclick="render()">↻ Kiểm lại</button>`)+
     (kt.map(khung).join('')||'<div class="card"><div class="empty">✓ Không có lỗi nghiệp vụ</div></div>')+
-    (ht.length?'<div class="sec" style="margin-top:18px;color:var(--vio)">Lỗi hệ thống — Claude / người làm app xử lý</div>'+ht.map(khung).join(''):'')+
+    (ht.length?'<div class="sec" style="margin-top:18px;color:var(--vio)">Lỗi hệ thống — người làm app xử lý</div>'+ht.map(khung).join(''):'')+
     (khong.length?`<div class="muted" style="font-size:12px;margin-top:12px">✓ Không có lỗi: ${khong.map(g=>esc(g.ten)).join(' · ')}</div>`:'');
 }
 // 16/10: phiếu đã thanh toán không cần ghi trên Kiot (chi ngoài hệ thống cửa hàng…) → bỏ khỏi danh sách đối soát, ghi lý do
@@ -3926,10 +3926,10 @@ async function pageGiaiDap(){
   const el=$('#page');const ds=await rpc('kt_ds_cau_hoi');S.cache.ch=ds;const loc=S.f.gd||'chua';
   const l=ds.filter(x=>loc==='tat_ca'||(loc==='chua'?!x.tra_loi:!!x.tra_loi));const chua=ds.filter(x=>!x.tra_loi).length;
   S.cauHoi=chua;shellBadges();
-  const nhom=[...new Set(l.map(x=>x.nhom))];
+  const nhom=[...new Set(l.map(x=>x.nhom))].sort((p,q)=>{const i=n=>{const k=NV.findIndex(v=>v.ten===n);return k<0?99:k};return i(p)-i(q)||String(p).localeCompare(String(q),'vi')});   // 19/10 anh: nhóm theo mục chính của app, xếp theo thứ tự menu
   el.innerHTML=head('Cần giải đáp <span class="badge" style="vertical-align:middle">Cài đặt · Hỏi đáp</span>',`<div class="seg">${[['chua','Chưa trả lời '+chua],['roi','Đã trả lời '+(ds.length-chua)],['tat_ca','Tất cả '+ds.length]].map(([k,t])=>`<button class="${loc===k?'on':''}" onclick="S.f.gd='${k}';render()">${t}</button>`).join('')}</div>`)+
-    `<div class="panel" style="margin-bottom:14px;font-size:12.5px;color:var(--text2)">Các câu app cần hỏi để số liệu đúng. Anh hỏi kế toán rồi <b>bấm chọn câu trả lời có sẵn</b> hoặc gõ thêm vào ô, bấm <b>Lưu</b>. Lần sau Claude đọc và làm theo.</div>`+
-    (l.length?nhom.map(n=>`<div class="sec">${esc(n)}</div>`+l.filter(x=>x.nhom===n).map(x=>`<div class="panel cauhoi ${x.tra_loi?'xong':''}" id="ch${x.id}">
+    `<div class="panel" style="margin-bottom:14px;font-size:12.5px;color:var(--text2)">Các câu app cần hỏi để số liệu đúng. Anh hỏi kế toán rồi <b>bấm chọn câu trả lời có sẵn</b> hoặc gõ thêm vào ô, bấm <b>Lưu</b>. Hệ thống đọc và làm theo.</div>`+
+    (l.length?nhom.map(n=>`<div class="sec">${esc(n)}${(c=>c?` <span class="badge" style="margin-left:6px">còn ${c} câu</span>`:'')(l.filter(x=>x.nhom===n&&!x.tra_loi).length)}</div>`+l.filter(x=>x.nhom===n).map(x=>`<div class="panel cauhoi ${x.tra_loi?'xong':''}" id="ch${x.id}">
       <h4>${esc(x.tieu_de)} <span class="badge ${x.hoi_ai==='anh'?'':'warn'}" style="margin-left:auto">${x.hoi_ai==='anh'?'Hỏi anh Hải':'Hỏi kế toán'}</span></h4>
       <div class="gt">${esc(x.giai_thich)}</div>
       ${x.tra_loi?`<div class="tl"><b>Trả lời:</b> ${esc(x.tra_loi)}<div class="muted" style="font-size:11px;margin-top:3px">${esc(x.tra_loi_boi||'')} · ${fmtDT(x.tra_loi_luc)} <a href="#" onclick="event.preventDefault();suaTL(${x.id})">${IC_SUA} Sửa</a></div></div>`:oTraLoi(x)}
