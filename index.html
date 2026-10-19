@@ -847,6 +847,7 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .kht{background:var(--bg2);border-radius:8px;padding:8px 10px}
 .ht-khoa{opacity:.45}.ht-tick{display:flex;align-items:center;gap:6px;margin:6px 0 8px}.ht-cn{background:var(--bg2);border-radius:8px;padding:10px 12px;color:var(--mut,#667)}
 .dy-ht{margin-top:4px}.dy-ht .pill{font-size:11px}.ctt-ht{margin-bottom:4px;padding-bottom:4px;border-bottom:1px dashed var(--line,#dde)}
+.m-btn.duyet{background:#16a34a;border-color:#16a34a;color:#fff;font-weight:700}.m-btn.duyet:hover{background:#15803d}.m-btn.tuchoi{background:#dc2626;border-color:#dc2626;color:#fff;font-weight:700}.m-btn.tuchoi:hover{background:#b91c1c}.m-btn.mo{background:#ea7a0c;border-color:#ea7a0c;color:#fff;font-weight:700}
 </style>
 </head>
 <body>
@@ -858,8 +859,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.126';
-const APP_VERSION='19/10/2026 11:50';
+const APP_SO='1.127';
+const APP_VERSION='19/10/2026 11:51';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2403,13 +2404,11 @@ function xemChi(id){
       <div class="hd-bl"><textarea id="bl-${id}" rows="1" placeholder="Viết bình luận… (Enter để gửi, Shift+Enter xuống dòng)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();guiBL(${id})}"></textarea><button class="m-btn pri" onclick="guiBL(${id})">Gửi</button></div>
       <div class="hd-ds" id="hd-ds-${id}"><div class="muted" style="font-size:12px">Đang tải…</div></div></section>`;
   // ── chân: nút xử lý
-  const nut=[g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:'',`<button class="m-btn out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu Word</button>`,'<span style="margin-left:auto"></span>',
-    (dy||gd||hdG||(x.trang_thai==='cho_tt'&&chiTien(x)))?`<button class="m-btn" title="Lưu mọi thay đổi trong phiếu" onclick="luuPhieu(${id},null)">Lưu</button>`:'',
-    ['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="luuPhieu(${id},'tu_choi')">✕ Từ chối</button><button class="m-btn pri" onclick="luuPhieu(${id},'cho_tt')">✓ Xác nhận</button>`:'',
-    x.trang_thai==='cho_tt'&&(dy||gd)?`<button class="m-btn" style="color:var(--bad)" onclick="luuPhieu(${id},'tu_choi_tt')">✕ Từ chối thanh toán</button>`:'',
-    x.trang_thai==='cho_tt'&&chiTien(x)?`<button class="m-btn pri" title="Cần ảnh giao dịch (uỷ nhiệm chi / phiếu chi tiền mặt)" onclick="luuPhieu(${id},'da_tt')">✓ Đã chi tiền</button>`:'',
-    dy&&['tu_choi','tu_choi_tt'].includes(x.trang_thai)?`<button class="m-btn" onclick="luuPhieu(${id},'cho_duyet')">Mở lại</button>`:'',
-    `<button class="m-btn" onclick="dongChiCT()">Đóng</button>`].join('');
+  const nut=[g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:'',`<button class="m-btn out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu Word</button>`,(dy||gd||hdG||(x.trang_thai==='cho_tt'&&chiTien(x)))?`<button class="m-btn pri" title="Lưu mọi thay đổi trong phiếu" onclick="luuPhieu(${id},null)">Lưu</button>`:'',`<button class="m-btn" onclick="dongChiCT()">Đóng</button>`,'<span style="margin-left:auto"></span>',
+    ['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?`<button class="m-btn tuchoi" onclick="luuPhieu(${id},'tu_choi')">✕ Từ chối</button><button class="m-btn duyet" onclick="luuPhieu(${id},'cho_tt')">✓ Xác nhận</button>`:'',
+    x.trang_thai==='cho_tt'&&(dy||gd)?`<button class="m-btn tuchoi" onclick="luuPhieu(${id},'tu_choi_tt')">✕ Từ chối thanh toán</button>`:'',
+    x.trang_thai==='cho_tt'&&chiTien(x)?`<button class="m-btn duyet" title="Cần ảnh giao dịch (uỷ nhiệm chi / phiếu chi tiền mặt)" onclick="luuPhieu(${id},'da_tt')">✓ Đã chi tiền</button>`:'',
+    dy&&['tu_choi','tu_choi_tt'].includes(x.trang_thai)?`<button class="m-btn mo" onclick="luuPhieu(${id},'cho_duyet')">Mở lại</button>`:''].join('');
   const html=`<div class="pc-h"><span class="m-loai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm3 8h8v2H9zm0 4h8v2H9z"/></svg></span>
       <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}</div><div class="pc-nd">${esc(ndChi(x))}</div></div>
       <div class="pc-tien"><span>Số tiền</span><b>${fmt(x.so_tien)}</b></div><button class="x" title="Đóng" onclick="dongChiCT()">✕</button></div>
