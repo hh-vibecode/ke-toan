@@ -848,7 +848,7 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .ht-khoa{opacity:.45}.ht-tick{display:flex;align-items:center;gap:6px;margin:6px 0 8px}.ht-cn{background:var(--bg2);border-radius:8px;padding:10px 12px;color:var(--mut,#667)}
 .dy-ht{margin-top:4px}.dy-ht .pill{font-size:11px}.ctt-ht{margin-bottom:4px;padding-bottom:4px;border-bottom:1px dashed var(--line,#dde)}
 .m-btn.duyet{background:#16a34a;border-color:#16a34a;color:#fff;font-weight:700}.m-btn.duyet:hover{background:#15803d}.m-btn.tuchoi{background:#dc2626;border-color:#dc2626;color:#fff;font-weight:700}.m-btn.tuchoi:hover{background:#b91c1c}.m-btn.mo{background:#ea7a0c;border-color:#ea7a0c;color:#fff;font-weight:700}
-.dx{position:relative;display:flex;align-items:center}.dx-h{display:flex;align-items:center;padding-left:7px;cursor:default}
+.dx{position:relative;display:flex;align-items:center;margin-right:6px}.dx-h{display:flex;align-items:center;padding-left:7px;cursor:default}
 .dx-av{display:inline-flex;border-radius:50%;border:2px solid var(--surface);margin-left:-7px;overflow:hidden;background:#f5f5f3;flex-shrink:0}.dx-av img{width:100%;height:100%;display:block}
 .dx-them{width:28px;height:28px;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:var(--bg2);color:var(--text2)}
 .dx-pop{display:none;position:absolute;top:36px;right:0;z-index:600;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.2);padding:10px 12px;min-width:230px}
@@ -867,8 +867,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.129';
-const APP_VERSION='19/10/2026 11:57';
+const APP_SO='1.130';
+const APP_VERSION='19/10/2026 12:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1359,9 +1359,9 @@ function shell(){
     <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
     <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
       <div class="hd-t"><h1>${esc(nvO.ten||'')}${ks.length>1&&PAGES[S.page]&&PAGES[S.page].ten!==nvO.ten?`<span class="hd-t1"> — ${esc(PAGES[S.page].ten)}</span>`:''}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
-      <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
+      <div class="hd-r">${dxHtml()}<select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         ${csHtml()}
-        ${dxHtml()}${xnHtml()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
+        ${xnHtml()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
           <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');veDX();
