@@ -848,6 +848,12 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .ht-khoa{opacity:.45}.ht-tick{display:flex;align-items:center;gap:6px;margin:6px 0 8px}.ht-cn{background:var(--bg2);border-radius:8px;padding:10px 12px;color:var(--mut,#667)}
 .dy-ht{margin-top:4px}.dy-ht .pill{font-size:11px}.ctt-ht{margin-bottom:4px;padding-bottom:4px;border-bottom:1px dashed var(--line,#dde)}
 .m-btn.duyet{background:#16a34a;border-color:#16a34a;color:#fff;font-weight:700}.m-btn.duyet:hover{background:#15803d}.m-btn.tuchoi{background:#dc2626;border-color:#dc2626;color:#fff;font-weight:700}.m-btn.tuchoi:hover{background:#b91c1c}.m-btn.mo{background:#ea7a0c;border-color:#ea7a0c;color:#fff;font-weight:700}
+.dx{position:relative;display:flex;align-items:center}.dx-h{display:flex;align-items:center;padding-left:7px;cursor:default}
+.dx-av{display:inline-flex;border-radius:50%;border:2px solid var(--surface);margin-left:-7px;overflow:hidden;background:#f5f5f3;flex-shrink:0}.dx-av img{width:100%;height:100%;display:block}
+.dx-them{width:28px;height:28px;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:var(--bg2);color:var(--text2)}
+.dx-pop{display:none;position:absolute;top:36px;right:0;z-index:600;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.2);padding:10px 12px;min-width:230px}
+.dx:hover .dx-pop{display:block}.dx-t{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+.dx-r{display:flex;align-items:center;gap:9px;padding:4px 0 4px 7px;font-size:12.5px;white-space:nowrap}.dx-r .muted{font-size:11px}
 </style>
 </head>
 <body>
@@ -859,8 +865,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.127';
-const APP_VERSION='19/10/2026 11:51';
+const APP_SO='1.128';
+const APP_VERSION='19/10/2026 11:55';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1148,7 +1154,7 @@ async function login(){
     await boot();
   }catch(e){S.phien=null;renderGate(e.message)}
 }
-function lock(hetHan){if(xnDoc())return thoatXemNhu();const p=S.phien;S.phien=null;S.toi=null;S.cache={};
+function lock(hetHan){if(xnDoc())return thoatXemNhu();const p=S.phien;if(p&&!hetHan)rpc('kt_bao_danh',{p_phien:p,p_ma:dxMa(),p_roi:true},true).catch(()=>{});S.phien=null;S.toi=null;S.cache={};
   try{localStorage.removeItem('kt_phien');sessionStorage.removeItem('kt_phien')}catch(e){}
   if(p&&!hetHan)rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
   renderGate(hetHan?'Phiên đăng nhập hết hạn — đăng nhập lại':'')}
@@ -1159,7 +1165,7 @@ async function boot(){
   if(!S.tu)setKy('thang',true);
   const h=location.hash.slice(1);if(h&&PAGES[h])S.page=h;
   if(!coXem(S.page))S.page=Object.keys(PAGES).find(coXem)||'cd_logic';
-  shell();veXemNhu();
+  shell();veXemNhu();dxBao();
 }
 // XEM NHƯ (16/10/2026): Supreme mở phiên CHỈ XEM của 1 tài khoản (máy chủ chặn mọi lệnh ghi — supabase-schema-kt-xem-nhu.sql)
 const xnDoc=()=>{try{return JSON.parse(sessionStorage.getItem('kt_xem_nhu')||'null')}catch(e){return null}};
@@ -1280,7 +1286,7 @@ const PAGES={
   cd_kiot:{ten:'Nhật ký kéo & so khớp Kiot',nv:'he_thong',cd:'Hệ thống',fn:()=>pageKiotLog()},
   cd_doi_mk:{ten:'Đổi mật khẩu',nv:'he_thong',cd:'Hệ thống',fn:()=>pageCaiDat('doi_ma')},
 };
-function go(p){S.page=p;location.hash=p;shell()}
+function go(p){S.page=p;location.hash=p;shell();dxBao()}
 // số việc cần xử lý trên từng mục (đỏ) — dùng cho menu trái
 function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0}
 const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
@@ -1335,7 +1341,7 @@ function shell(){
     return `<div class="sb-nv ${cur===v.k?'on':''}" data-g="${v.k}" onclick="go('${kk[0]}')">${v.ic}<span class="sb-t">${v.ten}</span>${nb(kk.reduce((a,k)=>a+demMuc(k),0))}</div>`}).join('');
   const subs=ks.length>1?`<div class="sb-box ${S.f.sb_gon?'gon':''}"><div class="sb-bh" onclick="S.f.sb_gon=!S.f.sb_gon;this.parentNode.classList.toggle('gon')"><span>${nvO.ten||''}</span><span class="cv">⌃</span></div>
       <div class="sb-bb">${ks.map(k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`).join('')}</div></div>`:'';
-  const tim=TIM[S.page]?`<label class="hd-tim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="${TIM[S.page][1]}" value="${esc(S.f[TIM[S.page][0]]||'')}" onchange="S.f['${TIM[S.page][0]}']=this.value;render()"></label>`:'';
+  // 19/10 anh: "thanh bên trên không cho linh tinh lên" — bỏ ô tìm kiếm ở thanh trên, mỗi trang tìm trong thanh lọc riêng
   const ten=S.toi.ho_ten||'',vt=(VI_TRI[S.toi.vi_tri]||'').split(' (')[0],av=ten.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]).join('').toUpperCase();
   $('#app').innerHTML=`<div class="lay"><aside class="sb" onmouseenter="sbVao()" onmouseleave="sbRa()"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
       <nav class="sb-nav">${nav}</nav>${subs}
@@ -1346,7 +1352,7 @@ function shell(){
       <div class="hd-t"><h1>${esc(nvO.ten||'')}${ks.length>1&&PAGES[S.page]&&PAGES[S.page].ten!==nvO.ten?`<span class="hd-t1"> — ${esc(PAGES[S.page].ten)}</span>`:''}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
       <div class="hd-r"><select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         <select class="hd-cs" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([k,t])=>`<option value="${k}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===k?'selected':''}>${t}</option>`).join('')}</select>
-        ${tim}${xnHtml()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
+        ${dxHtml()}${xnHtml()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
           <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');
@@ -3809,6 +3815,20 @@ function xemCT(bang,id,ctId){const ds=S.cache['ct_'+bang+id]||[];let i=ds.findIn
 // Hàm SQL tự sinh thông báo khi: có đề nghị chi mới / được duyệt / đã TT / bị từ chối, có điều chuyển mới / được xác nhận.
 // Trang đếm số chưa đọc mỗi phút (chỉ khi tab đang mở); bấm chuông xem 40 cái gần nhất, bấm 1 cái → mở đúng phiếu.
 S.tb=0;
+// AI ĐANG TRONG APP (19/10/2026, anh: "bên MKT có sẵn, cái hiển thị người đang trong app, lấy icon bên nó") — như app MKT:
+// mỗi trình duyệt 1 dòng, 30 giây báo danh (kt_bao_danh), quá 90 giây không báo = đã thoát; con vật ngẫu nhiên mỗi lần mở app (thu/a01..a30.png, ảnh của app MKT)
+const DX_SO=30,dxCon=Math.floor(Math.random()*DX_SO)+1;let DX_DS=[];
+function dxMa(){let id='';try{id=localStorage.getItem('kt_dx')||'';if(!id){id=Date.now().toString(36)+Math.random().toString(36).slice(2,9);localStorage.setItem('kt_dx',id)}}catch(e){id='tam'+dxCon}return id}
+const dxAnh=c=>'thu/a'+String(((+c||1)-1)%DX_SO+1).padStart(2,'0')+'.png';
+const dxHtml=()=>'<div class="dx" id="dang-xem"></div>';
+async function dxBao(){if(!S.phien||!S.toi||document.hidden)return;try{DX_DS=await rpc('kt_bao_danh',{p_ma:dxMa(),p_trang:(PAGES[S.page]||{}).ten||'',p_con:dxCon});veDX()}catch(e){}}
+function veDX(){const el=$('#dang-xem');if(!el)return;const ds=(DX_DS||[]).slice(),toi=dxMa();if(!ds.length){el.innerHTML='';return}
+  ds.sort((p,q)=>p.ma===toi?-1:q.ma===toi?1:String(p.ten).localeCompare(String(q.ten),'vi'));
+  const av=(x,z)=>`<span class="dx-av" style="width:${z}px;height:${z}px" title="${esc(x.ten)}"><img src="${dxAnh(x.con)}" alt=""></span>`;
+  const hien=ds.slice(0,4),them=ds.length-hien.length;
+  el.innerHTML=`<div class="dx-h">${hien.map(x=>av(x,28)).join('')}${them>0?`<span class="dx-av dx-them">+${them}</span>`:''}</div>
+    <div class="dx-pop"><div class="dx-t">Đang trong app (${ds.length})</div>${ds.map(x=>`<div class="dx-r">${av(x,24)}<div><b>${esc(x.ten)}</b>${x.ma===toi?' <span class="muted">(bạn)</span>':''}${x.trang?`<div class="muted">${esc(x.trang)}</div>`:''}</div></div>`).join('')}</div>`}
+setInterval(dxBao,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dxBao()});
 const chuongHtml=()=>`<div class="tb-dd tb-chuong"><button class="tb-btn chuong" title="Thông báo" onclick="event.stopPropagation();moChuong(this)">${IC.chuong}<span class="cb-so" ${S.tb?'':'hidden'}>${S.tb>99?'99+':S.tb}</span></button><div class="tb-menu-dd cb-ds" onclick="event.stopPropagation()"></div></div>`;
 function veSoChuong(){$$('.cb-so').forEach(n=>{n.hidden=!S.tb;n.textContent=S.tb>99?'99+':S.tb})}
 // 19/10 anh: đổi quyền tài khoản → app người đó tự tải lại (như F5), không đăng xuất; trừ Supreme và lúc đang Xem như. Đang mở cửa sổ nhập liệu thì chờ đóng.
@@ -3991,6 +4011,7 @@ const LOGIC2=[
  ['chung','Xem như — giữ trang','Bật / đổi / thoát Xem như: app ở nguyên trang, tab và bộ lọc đang xem, chỉ đổi giao diện theo tài khoản được chọn.','Tài khoản đó không có quyền trang đang xem → về trang đầu tiên tài khoản đó được xem.','19/10'],
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
+ ['chung','Người đang trong app','Thanh trên cạnh chuông: avatar con vật của những ai đang mở app (rê chuột xem tên + trang đang xem). Như app MKT, ảnh con vật lấy từ app MKT.','Mỗi trình duyệt 30 giây báo danh 1 lần (kt_bao_danh, bảng kt_dang_xem riêng app kế toán); quá 90 giây không báo = đã thoát; đăng xuất = rời ngay. Lúc Xem như không báo danh.','19/10'],
  ['chung','Tự tải lại khi có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App mọi tài khoản mỗi phút (và lúc quay lại tab) đọc file này; số lớn hơn bản đang chạy → tự tải lại như F5.','Đang mở cửa sổ nhập liệu thì chờ đóng cửa sổ mới tải lại (không mất dữ liệu đang gõ). Lúc Xem như thì không tự tải.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
  ['thu_chi','Cửa sổ phiếu chi — 1 nút Lưu','Trong cửa sổ phiếu chi, đổi ô nào (hạch toán, phân bổ, hoàn quỹ, hoá đơn đỏ, hoá đơn xuất về, tài khoản đi tiền, loại chi…) cũng CHƯA lưu; bấm Lưu ở chân cửa sổ mới lưu hết.','Nút chuyển bước (Xác nhận, Đã chi tiền, Từ chối…) cũng lưu hết các thay đổi rồi mới chuyển bước. Đóng cửa sổ không bấm Lưu = bỏ thay đổi.','19/10'],
