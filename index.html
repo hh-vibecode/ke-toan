@@ -857,8 +857,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.117';
-const APP_VERSION='19/10/2026 10:33';
+const APP_SO='1.118';
+const APP_VERSION='19/10/2026 10:38';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1644,7 +1644,7 @@ async function luuDcf(tk,ngay,v){try{await rpc('kt_luu_dcf_ghi_chu',{p_tk:tk,p_n
 async function pageDongTien(){
   // SỔ QUỸ & SỐ DƯ TÀI KHOẢN — giao diện mới (14/10/2026): thẻ số · tab Số dư tài khoản / Sổ quỹ theo ngày / Kiểm két cuối ngày / Quỹ cửa hàng
   const el=$('#page'),f=S.f,tab=f.sq_tab||'so_du';el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const [b,r,kq]=await Promise.all([rpc('kt_bao_cao',{p_tu:S.tu,p_den:S.den}),rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den}),rpc('kt_ds_kiem_quy',{p_tu:S.tu,p_den:S.den})]);
+  const [b,r,kq]=await Promise.all([rpc('kt_so_du_tk',{p_tu:S.tu,p_den:S.den}),rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den}),rpc('kt_ds_kiem_quy',{p_tu:S.tu,p_den:S.den})]);
   S.cache.bc=b;S.cache.kq=kq;
   const ngung=b.tai_khoan.filter(t=>!t.hoat_dong&&(+t.cuoi_ky||+t.thu||+t.chi||+t.dc));
   const tks=b.tai_khoan.filter(t=>t.hoat_dong||(f.sq_ngung&&ngung.includes(t))).filter(t=>locTK().length===LOC_TK.length||locTK().includes(tkNhom(t.id)));
