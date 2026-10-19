@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (59)** — Anh: "đẩy lên rồi mà tao đâu có tự F5" (máy v1.129) → **LỖI CỦA MÌNH từ v1.122:** regex so phiên bản bị mất dấu \ khi chèn code (/^1.(d+)$/) → soBan luôn = 0 → KHÔNG máy nào tự tải lại khi có bản mới (v1.122–v1.131). Sửa /^1\.(\d+)$/, thử: 1.131 > 1.129 → tải lại. Các máy đang chạy bản lỗi: đẩy lại mốc quyen_doi_luc cho TK không phải Supreme để tự tải (cơ chế đổi quyền vẫn đúng); TK anh (Supreme) F5 tay 1 lần. **Sự cố khác do mình:** lúc dừng lần chạy thử Edge headless bị treo đã chạy taskkill msedge.exe (lọc tiêu đề rỗng) → có thể tắt cả Edge anh đang dùng; lần sau chỉ dừng đúng tiến trình mình tạo (thư mục user-data-dir riêng).
+
 - **19/10/2026 (58)** — Anh: "sắp xếp giống người thường, Xoá với Xuất phiếu in (đổi tên) đẩy lên thành nút nhỏ cùng hàng mã phiếu, dưới còn Đóng với Lưu" → cửa sổ phiếu chi: đầu = mã phiếu · trạng thái · [Xuất phiếu in] [Xoá]; chân trái = Đóng · Lưu, phải = nút duyệt. Mới áp cho phiếu chi (cửa sổ thu / điều chuyển / tạm ứng / vay chưa đổi).
 
 - **19/10/2026 (57)** — Anh: "tự F5 lại được chưa" (ảnh máy đang v1.121) → bản ≤ v1.121 chưa có kiểm phien-ban.txt nên không tự lên; mượn cơ chế "đổi quyền → tự tải lại" (có từ v1.120): đặt quyen_doi_luc = now() cho 4 TK không phải Supreme (admin.ketoan, thuquy, giamdoc, ketoan) → máy họ tự tải lên bản mới; TK anh (Supreme) F5 tay 1 lần. Anh: "cho icon người online sang bên trái lọc ngày" → avatar đứng trước ô kỳ trên thanh trên.
