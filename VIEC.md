@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (34)** — Anh: "COD chưa thu hồi không được tính là công nợ đến hạn" → hạn công nợ chỉ xét NỢ THẬT (noHan = no_that; chưa tách thì cả số): khách chỉ còn COD / chưa lấy hàng → trạng thái "Chờ thu COD / lấy hàng"; Tổng quan thẻ cảnh báo: 89 khách / tổng nợ → 34 khách / nợ thật quá hạn; khối công nợ đến hạn / quá hạn cũng chỉ tính nợ thật. Logic: dòng "Hạn công nợ".
+
 - **19/10/2026 (33)** — Anh: "thêm nút tích nhanh cho phân quyền, tích phát phân hết các thứ trong mục" → dòng tiêu đề mỗi mục (Nghiệp vụ, Báo cáo tài chính, Báo cáo kinh doanh, Thuế, Quản trị) có ô **Xem hết / Sửa hết**; Sửa hết tự tick Xem; bỏ tick thì bỏ cả mục; mở cửa sổ thấy sẵn tick nếu mục đã đủ.
 
 - **19/10/2026 (32)** — Anh: "bỏ phân quyền ra mục riêng" → cửa sổ tài khoản 2 tab: **Thông tin tài khoản** (tên đăng nhập, họ tên, mật khẩu, đang dùng) | **Phân quyền** (Toàn quyền · Vai trò đặc biệt: Giám đốc / Thủ quỹ · Quyền theo trang). Bỏ ô chi_tt trùng trong bảng trang; nhãn Giám đốc mới (xác nhận, chi TK cá nhân, Xem như). Ghi nhận: tài khoản thuquy đã đổi tên Nguyễn Thị Vân Anh + tick thêm Chi (mọi phiếu) / chỉ đề nghị / tạm ứng — anh: "sửa tay thì không cần thắc mắc" (quyền chỉnh trên app là chủ ý, không báo lại).

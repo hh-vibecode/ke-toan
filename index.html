@@ -847,8 +847,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.110';
-const APP_VERSION='19/10/2026 09:53';
+const APP_SO='1.111';
+const APP_VERSION='19/10/2026 09:59';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1537,7 +1537,7 @@ async function pageTongQuan(){
   const dongT=(t,bb)=>`<div class="tq2-mini"><div class="h">${t}</div><div class="r3"><div class="${coXem('thu')?'click':''}" ${coXem('thu')?`onclick="go('thu')"`:''}><span class="muted">Thu</span><b><span class="pos-t">↑</span> ${fmt(bb.tien_vao)}</b></div><div class="${coXem('chi')?'click':''}" ${coXem('chi')?`onclick="S.f.chi_tt='da_tt';go('chi')"`:''}><span class="muted">Chi</span><b><span class="neg-t">↓</span> ${fmt(bb.tien_ra)}</b></div></div><div class="ft"><span>Thuần</span><b>${fmt(bb.tien_vao-bb.tien_ra)}</b></div></div>`;
   const s7=sec(7,'info','Dòng tiền & số dư','tại '+fmtD(S.den),`<div class="tq2-os">${o('ok',ICT.tm,'Tiền mặt',tm,0,coXem('dong_tien')?"go('dong_tien')":'')}${o('info',ICT.nh,'Tiền gửi ngân hàng',nh,0,coXem('dong_tien')?"go('dong_tien')":'')}${o('info',ICT.vi,'TK vay / khác',khac,0,coXem('dong_tien')?"go('dong_tien')":'')}${o('','','Tổng số dư',tongSD,true,coXem('dong_tien')?"go('dong_tien')":'')}</div>
       <div class="tq2-2">${dongT('Dòng tiền '+kyN.toLowerCase(),b)}${dongT('Dòng tiền lũy kế năm '+S.den.slice(0,4),bn)}</div>${coSD?'':'<div class="tq-note">Số dư tài khoản tính từ 01/09/2026</div>'}`);
-  const phan=ds=>{const n=ds.filter(x=>x.no>0&&csOK(x.cn));const g=t=>sumBy(n.filter(x=>ttCongNo(x)[0]===t),x=>x.no);return {tong:sumBy(n,x=>x.no),den:g('Đến hạn'),qua:g('Quá hạn'),chua:g('Trong hạn'),n}};
+  const phan=ds=>{const n=ds.filter(x=>x.no>0&&csOK(x.cn));const g=t=>sumBy(n.filter(x=>ttCongNo(x)[0]===t),x=>t==='Trong hạn'?x.no:noHan(x));/* 19/10: đến hạn / quá hạn chỉ tính nợ thật */return {tong:sumBy(n,x=>x.no),den:g('Đến hạn'),qua:g('Quá hạn'),chua:g('Trong hạn'),n}};
   const PK=phan(noKH),PN=phan(noNCC);
   const noBox=(c,t,P,go)=>`<div class="tq2-no"><div class="tq2-kt ${coXem(go)?'click':''}" ${coXem(go)?`onclick="S.f['${go}_tt']='';go('${go}')"`:''}><span class="m-ic" style="--c:var(--${c})">${IC2.cp}</span><div><div class="l">${t}</div><div class="v">${fmt(P.tong)}</div><div class="s muted">${P.n.length} ${go==='no_kh'?'khách':'NCC'}</div></div></div>
       <table class="m-t tq2-t">${[['Đến hạn',P.den,'Đến hạn',''],['Quá hạn',P.qua,'Quá hạn','neg-t'],['Chưa đến hạn',P.chua,'Trong hạn','']].map(([t,v,k,c])=>`<tr ${coXem(go)?`class="click" onclick="S.f['${go}_tt']='${k}';go('${go}')"`:''}><td>${t}</td><td class="num ${c}">${fmt(v)}</td></tr>`).join('')}</table></div>`;
@@ -1549,7 +1549,7 @@ async function pageTongQuan(){
   const khQH=PK.n.filter(x=>ttCongNo(x)[0]==='Quá hạn'),nccDH=PN.n.filter(x=>['Đến hạn','Quá hạn'].includes(ttCongNo(x)[0])),lau=tc.reduce((a,r)=>a+(+r.lau_so||0),0),lauGT=sumBy(tq.ton_cs.filter(x=>csOK(x.cn)),x=>x.lau_gt);
   const cb=(c,ic,n,t,s,on)=>`<div class="tq2-cb" style="--c:var(--${c})" onclick="${on}"><span class="m-ic">${ic}</span><div><div><b>${fmt(n)}</b> ${t}</div><div class="muted">${s}</div></div><span class="cv">›</span></div>`;
   const s10=sec(10,'bad','Cảnh báo & công việc cần xử lý','',`<div class="tq2-cbs">
-      ${cb('bad',IC2.cp,khQH.length,'Khách hàng quá hạn thanh toán','Tổng nợ: '+fmt(sumBy(khQH,x=>x.no)),"S.f.no_kh_tt='Quá hạn';go('no_kh')")}
+      ${cb('bad',IC2.cp,khQH.length,'Khách hàng quá hạn thanh toán','Nợ thật quá hạn: '+fmt(sumBy(khQH,noHan)),"S.f.no_kh_tt='Quá hạn';go('no_kh')")}
       ${cb('bad',IC2.gv,nccDH.length,'Nhà cung cấp đến hạn thanh toán','Tổng nợ: '+fmt(sumBy(nccDH,x=>x.no)),"S.f.no_ncc_tt='';go('no_ncc')")}
       ${cb('warn',IC2.cp,(d.cho_duyet||0)+(d.cho_gd||0),'Phiếu chi chờ duyệt','Tổng tiền: '+fmt((+pt.cho_duyet_tien||0)+(+pt.cho_gd_tien||0)),"S.f.chi_tt='cho_duyet';go('chi')")}
       ${cb('warn',IC2.dt,d.hd_do_chua_nhan||0,'Phiếu chi chưa nhận hoá đơn đỏ','Đã chi, chờ hoá đơn NCC',"S.f.chi_tt='hd_do';go('chi')")}
@@ -2110,7 +2110,9 @@ const IC_SUA='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor
 const BB='<b class="bb" title="Bắt buộc">*</b>';
 const IC_XLS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l8 8M16 8l-8 8"/></svg>';
 // trạng thái 1 khách / NCC theo hạn nợ (số ngày được nợ: cài đặt han_no_*_ngay, tạm 30 — chờ kế toán chốt)
-function ttCongNo(x){if(!(x.no>0))return x.no<0?['Trả trước','info']:['Đã thanh toán','ok'];if(x.qua_han==null)return ['Quá hạn','bad'];
+// nợ tính hạn = nợ thật (khách đã tách COD / chưa lấy hàng); chưa tách → cả số nợ
+const noHan=x=>x.no_that!=null?Math.max(0,+x.no_that):Math.max(0,+x.no||0);
+function ttCongNo(x){if(!(x.no>0))return x.no<0?['Trả trước','info']:['Đã thanh toán','ok'];if(!(noHan(x)>0))return ['Chờ thu COD / lấy hàng','info'];if(x.qua_han==null)return ['Quá hạn','bad'];
   if(x.qua_han>0)return ['Quá hạn','bad'];const con=x.den_han?Math.round((new Date(x.den_han)-new Date(homNay()))/864e5):99;return con<=7?['Đến hạn','warn']:['Trong hạn','ok']}
 const pill=(t,c)=>`<span class="m-pill ${c||''}">${esc(t)}</span>`;
 function phanTrang(k,n,moi){const tr=Math.min(S.f[k+'_tr']||1,Math.max(1,Math.ceil(n/moi)));S.f[k+'_tr']=tr;return [(tr-1)*moi,tr*moi,tr]}
@@ -3872,6 +3874,7 @@ const LOGIC2=[
  ['thu_chi','Vay','Khoản vay tách riêng khỏi Phiếu chi: trang Vay ghi các lần NHẬN TIỀN (giải ngân) và các lần TRẢ (gốc, lãi), mỗi lần gắn tài khoản → tính vào số dư.','Dư nợ = tổng nhận − gốc đã trả. 98 phiếu trả gốc cũ đã chuyển sang 7 khoản vay (15/10).','15/10'],
  ['thu_chi','Vay','Chỉ LÃI vay là chi phí (P&L: lãi ở trang Vay + phiếu chi loại Lãi vay & phí tài chính). Trả gốc không phải chi phí.','Lãi đã có phiếu chi thì lần trả ở trang Vay để lãi = 0.','15/10'],
  // ── CÔNG NỢ
+ ['cong_no','Hạn công nợ','Đến hạn / quá hạn chỉ xét NỢ THẬT. COD chưa thu hồi (tiền đơn vị vận chuyển đang giữ) và hàng khách chưa lấy KHÔNG tính là nợ đến hạn.','Khách chỉ còn COD / chưa lấy hàng → trạng thái "Chờ thu COD / lấy hàng". Thẻ Tổng quan "Khách hàng quá hạn" = số khách có nợ thật quá hạn, tiền = nợ thật quá hạn.','19/10'],
  ['cong_no','Công nợ khách','Dùng số công nợ Kiot: dương = khách còn nợ, âm = khách trả trước.','Tự cập nhật 15 phút / lần.','08/10'],
  ['cong_no','Công nợ NCC','Giữ nguyên dấu Kiot: âm = công ty đang nợ NCC.','','14/10'],
  ['cong_no','Công nợ cũ','Trang công nợ nhập tay (sheet cũ) đã ẩn, chỉ để tra lại.','','08/10'],
