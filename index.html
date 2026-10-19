@@ -845,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.107';
-const APP_VERSION='19/10/2026 09:32';
+const APP_SO='1.108';
+const APP_VERSION='19/10/2026 09:43';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2740,7 +2740,7 @@ async function pageHangHoa(){
 // Số liệu: kt_bc_pl2 / kt_bc_lctt (supabase-schema-kt-bao-cao-qt.sql).
 // Chi phí: mỗi LOẠI CHI OPEX của công ty là 1 dòng (anh 14/10: không ép theo nhóm chữ của ảnh mẫu) — tên bỏ tiền tố "OPEX - "
 const tenOpex=t=>String(t||'').replace(/^OPEX\s*-\s*/i,'');
-const BC_DV=[[1e3,'nghìn đồng'],[1e6,'triệu đồng'],[1,'đồng']];
+const BC_DV=[[1,'đồng'],[1e3,'nghìn đồng'],[1e6,'triệu đồng']];
 const thangSau=m=>{const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);return d.toISOString().slice(0,7)};
 const cuoiThang=m=>{const d=new Date(thangSau(m)+'-01T00:00:00Z');d.setUTCDate(0);return d.toISOString().slice(0,10)};
 const dsThang=(a,b)=>{const r=[];for(let m=a;m<=b;m=thangSau(m))r.push(m);return r};
@@ -2750,7 +2750,7 @@ function bcKy(){const f=S.f,nay=homNay().slice(0,7),v=kyHienTai(),k=v==='nam'?'n
   if(k==='thang'){const m=f.bc_thang||nay;return {k,tu:m+'-01',den:cuoiThang(m),ms:[m],ten:'Tháng '+(+m.slice(5))+'/'+m.slice(0,4)}}
   if(k==='khoang'){let a=f.bc_tu||nay.slice(0,4)+'-01',b=f.bc_den||nay;if(a>b)[a,b]=[b,a];return {k,tu:a+'-01',den:cuoiThang(b),ms:dsThang(a,b),ten:`T${+a.slice(5)}/${a.slice(0,4)} – T${+b.slice(5)}/${b.slice(0,4)}`}}
   return {k:'nam',tu:nam+'-01-01',den:nam+'-12-31',ms:dsThang(nam+'-01',nam+'-12'),ten:'Năm '+nam}}
-const bcDv=()=>S.f.bc_dv||1e3;
+const bcDv=()=>S.f.bc_dv||1;   // 19/10 anh: mặc định đơn vị đồng
 const bcSo=v=>{if(v==null||isNaN(v))return '';const x=Math.round(v/bcDv());return x<0?`(${Math.abs(x).toLocaleString('vi-VN')})`:x?x.toLocaleString('vi-VN'):'–'};
 const bcPct=(a,b)=>b?(Math.round(a*1000/b)/10).toLocaleString('vi-VN')+'%':'';
 function bcBar(tabs,tab){const f=S.f,k=f.bc_kieu||'nam',nay=homNay().slice(0,7),ky=bcKy();
