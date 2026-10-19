@@ -19,7 +19,7 @@
 
 **Góp ý kế toán 16/10 18:03: xong 1, 2, 3, 5, 6 (nhật ký 16/10 (23)); việc 4 = chính là việc khớp dòng tiền T5–T10 ở trên.** Kế toán cần: soát loại nợ tự đoán, chọn TK ngừng dùng, gán loại chi cho phiếu đã xác nhận chưa có loại.
 
-**Còn treo, chờ kế toán / anh:** giải ngân 7 khoản vay; tách lãi trong THU NO TKV; 12 phiếu chỉ có link Drive (Google Sheet/Docs); Điều chuyển còn ô "Ảnh hưởng Kiot" (anh chưa nói bỏ); bug: tài khoản hạn chế có Tổng quan nhưng thiếu quyền bán hàng / vay → Tổng quan lỗi tải (sửa trước khi cấp tài khoản hạn chế).
+**Còn treo, chờ kế toán / anh:** giải ngân 7 khoản vay; tách lãi trong THU NO TKV; 12 phiếu chỉ có link Drive (Google Sheet/Docs); bug: tài khoản hạn chế có Tổng quan nhưng thiếu quyền bán hàng / vay → Tổng quan lỗi tải (sửa trước khi cấp tài khoản hạn chế).
 
 ---
 
@@ -164,6 +164,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+
+- **19/10/2026 (36)** — Anh: "không bỏ cái ảnh hưởng đến TK Kiot à" → Điều chuyển bỏ ô "Ảnh hưởng tài khoản cửa hàng trên Kiot" + lý do, bỏ cột Kiot ở bảng + Excel (như Phiếu chi 16/10). Máy chủ: thiếu trường kiot → mặc định khong / giữ nguyên. Xoá dòng "Điều chuyển còn ô Ảnh hưởng Kiot" khỏi mục còn treo.
 
 - **19/10/2026 (35)** — Kế toán: VCB CN …1991 thiếu 3 giao dịch theo sao kê (15–17/10); 1 là chi phí, 2 là chi tiêu cá nhân không hạch toán. → 1 phiếu chi đã TT (vận chuyển TQ, OPEX-Logistics, ma_nguon saoke:vcb91:…); 2 khoản cá nhân = **điều chuyển VCB CN → TK mới "CHI TIÊU CÁ NHÂN (không hạch toán)"** (loại khác, ngừng dùng → không vào tổng tồn, không vào chi phí / P&L). **Quy ước mới:** chi tiêu cá nhân từ TK cá nhân = điều chuyển sang TK này. Số tiền ở sao kê / file local. So số dư app vs file dòng tiền 19/10: còn lệch đã biết VCB CTY (câu #57), BIDV CN (file cộng sai 14/09), VCB CN (Pancake 19/09 + 3 giao dịch mới chưa có trong file); HT / CT 17–19/10 = file chưa cập nhật thu Kiot; KÉT 17/10 = thiếu điều chuyển quầy → két (kế toán ghi).
 

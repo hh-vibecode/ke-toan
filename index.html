@@ -847,8 +847,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.111';
-const APP_VERSION='19/10/2026 09:59';
+const APP_SO='1.112';
+const APP_VERSION='19/10/2026 10:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2525,7 +2525,7 @@ async function pageDC(){
     tm:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm9 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>'};
   const the=(c,ic,l1,v,s1,key)=>`<div class="m-k ${key?'click':''} ${key&&tab===key?'on':''}" style="--c:var(--${c})" ${key?`onclick="S.f.dc_tab='${key}';S.f.dc_tr=1;render()"`:''}><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
   const moi=f.dc_moi||20,[a,b,tr]=phanTrang('dc',l.length,moi),trang=l.slice(a,b),chon=f.dc_chon&&l.some(x=>x.id===f.dc_chon)?f.dc_chon:null;
-  const cols=[['Ngày',x=>x.ngay],['Số phiếu',x=>'DC'+String(x.id).padStart(6,'0')],['Nội dung',x=>x.noi_dung],['TK đi',x=>(tk(x.tk_di_id)||{}).ten||''],['TK nhận',x=>(tk(x.tk_nhan_id)||{}).ten||''],['Số tiền',x=>x.so_tien],['Kiot',x=>KIOT[x.kiot]||''],['Xác nhận',x=>x.da_xac_nhan?'Đã xác nhận':'Chưa']];
+  const cols=[['Ngày',x=>x.ngay],['Số phiếu',x=>'DC'+String(x.id).padStart(6,'0')],['Nội dung',x=>x.noi_dung],['TK đi',x=>(tk(x.tk_di_id)||{}).ten||''],['TK nhận',x=>(tk(x.tk_nhan_id)||{}).ten||''],['Số tiền',x=>x.so_tien],['Xác nhận',x=>x.da_xac_nhan?'Đã xác nhận':'Chưa']];
   S.cache.dc_xuat=()=>xuatCSV('dieu-chuyen-'+S.tu+'_'+S.den,cols,l);
   const xn=coGhi('dieu_chuyen');
   el.innerHTML=`<div class="m-kpis m-k3">${the('accent','dc','Tổng điều chuyển trong kỳ',fmt(tien(nen)),nen.length+' lần · không tính vào thu / chi','tat_ca')}
@@ -2536,11 +2536,11 @@ async function pageDC(){
       <div class="m-flt" style="align-items:center"><select class="m-in" onchange="S.f.dc_tk=this.value;S.f.dc_tr=1;render()">${opts(S.dm.tai_khoan,f.dc_tk,'Tất cả tài khoản')}</select>
         <span class="muted" style="font-size:12px">Tiền mặt liên quan: ${fmt(tien(nen.filter(tm)))}</span>
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.dc_xuat()">${IC_XLS} Xuất Excel</button>${xn?`<button class="m-btn pri" onclick="formDC()">+ Tạo điều chuyển</button>`:''}</div>
-      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Tài khoản đi → nhận</th><th class="num">Số tiền</th><th class="c">Kiot</th><th class="c">Xác nhận</th></tr>
+      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Tài khoản đi → nhận</th><th class="num">Số tiền</th><th class="c">Xác nhận</th></tr>
         ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="formDC(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw m-link">DC${String(x.id).padStart(6,'0')}</td>
           <td class="ten">${esc(x.noi_dung)}${ghim('dieu_chuyen',x)}</td><td><div>${esc((tk(x.tk_di_id)||{}).ten||'')}</div><div class="muted">→ ${esc((tk(x.tk_nhan_id)||{}).ten||'')}</div></td>
-          <td class="num"><b>${fmt(x.so_tien)}</b></td><td class="c">${x.kiot==='da_tao'?pill('Đã tạo (4A)','ok'):x.kiot==='khong_tao'?pill('Không tạo (4B)',''):pill('Không áp dụng','')}</td>
-          <td class="c">${x.da_xac_nhan?pill('Đã xác nhận','ok'):xn?`<button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="event.stopPropagation();xacNhanDC(${x.id})">✓ Xác nhận</button>`:pill('Chưa','warn')}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Chưa có điều chuyển trong kỳ</td></tr>'}</table></div>
+          <td class="num"><b>${fmt(x.so_tien)}</b></td>
+          <td class="c">${x.da_xac_nhan?pill('Đã xác nhận','ok'):xn?`<button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="event.stopPropagation();xacNhanDC(${x.id})">✓ Xác nhận</button>`:pill('Chưa','warn')}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Chưa có điều chuyển trong kỳ</td></tr>'}</table></div>
         ${thanhTrang('dc',l.length,moi,tr,'lần')}</div></div>
       <aside class="m-pn" id="dc-ct"></aside></div>`;
   if(chon)formDC(chon);
@@ -2558,8 +2558,6 @@ function formDC(id){
       <label><span>Tài khoản đi${BB}</span><select name="tk_di_id">${opts(tkOn(),x.tk_di_id,'— chọn —')}</select></label>
       <label><span>Tài khoản nhận${BB}</span><select name="tk_nhan_id">${opts(tkOn(),x.tk_nhan_id,'— chọn —')}</select></label>
       <label class="full">Nội dung<input name="noi_dung" value="${esc(x.noi_dung||'')}"></label>
-      <label class="full">Ảnh hưởng tài khoản cửa hàng trên Kiot?<select name="kiot" onchange="$('#lydo').style.display=this.value==='khong_tao'?'':'none'">${optsObj(KIOT,x.kiot)}</select></label>
-      <label class="full" id="lydo" style="${x.kiot==='khong_tao'?'':'display:none'}"><span>Lý do không tạo phiếu Kiot${BB}</span><input name="kiot_ly_do" value="${esc(x.kiot_ly_do||'')}" placeholder="vd: điều chuyển ngân hàng khác, nội bộ công ty"></label>
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
       ${id?`<label class="full chk"><input type="checkbox" name="da_xac_nhan" ${x.da_xac_nhan?'checked':''}> Kế toán đã xác nhận${x.xac_nhan_boi?' ('+esc(x.xac_nhan_boi)+' '+fmtDT(x.xac_nhan_luc)+')':''}</label>`:''}
     </div>
@@ -2576,7 +2574,6 @@ function dongDCCT(){if($('#modal')){closeModal();return}S.f.dc_chon=null;const p
 async function luuDC(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);
   if(!o.so_tien||!o.tk_di_id||!o.tk_nhan_id)return alert('Cần đủ: số tiền, TK đi, TK nhận');
   if(o.tk_di_id===o.tk_nhan_id)return alert('TK đi và TK nhận phải khác nhau');
-  if(o.kiot==='khong_tao'&&!o.kiot_ly_do.trim())return alert('Ghi lý do không tạo phiếu Kiot');
   const nid=await save('kt_luu_dieu_chuyen',{p_dong:o});if(!id)ctGuiMoi('dieu_chuyen',nid);S.f.dc_chon=nid||id;await render()}
 
 // ── CÔNG NỢ ────────────────────────────────────────────────────────────────
@@ -3866,6 +3863,7 @@ const LOGIC2=[
  ['thu_chi','Quỹ ngoài cửa hàng','Mở phiếu hoàn quỹ → bảng kê phiếu Kiot Quỹ ngoài từ lần hoàn trước, báo khớp / lệch với số đề nghị.','Phiếu mới không có chữ "quỹ ngoài" → kế toán chọn cửa hàng ở khung chi tiết.','15/10'],
  ['thu_chi','Loại chi','Loại tài chính tách 3: Trả gốc vay · Trả thẻ tín dụng · Lãi vay & phí tài chính.','Trả gốc vay là trả lại tiền mượn, KHÔNG phải chi phí: không cộng vào Tổng chi, Đã thanh toán, ngân sách; Dòng tiền xếp ở hoạt động tài chính.','15/10'],
  ['thu_chi','Loại chi','Phiếu chọn loại khác luật đã chốt → nhãn "Nghi sai loại", kế toán bấm Đổi / Giữ.','Thẻ tín dụng → FINANCE; phí NH, tiền điện, bù quỹ ngoài → OPEX Vận hành; phí CK nước ngoài, vận chuyển TQ → COGS.','09/10'],
+ ['thu_chi','Điều chuyển — Kiot','Điều chuyển không còn ô "Ảnh hưởng tài khoản cửa hàng trên Kiot" (bỏ 19/10, như Phiếu chi 16/10).','Kiot chỉ để đối soát. Tiền cửa hàng nộp về két: ghi điều chuyển Tiền mặt quầy → Két.','19/10'],
  ['thu_chi','Điều chuyển','Nhập ngày, TK đi, TK nhận (khác nhau), số tiền; kế toán xác nhận ngay trên dòng.','Chưa xác nhận vẫn tính vào tồn.','14/10'],
  ['thu_chi','Sổ quỹ & kiểm két','Thủ quỹ đếm két cuối ngày (đếm theo mệnh giá được) + ảnh sổ quỹ; app so với sổ sách cuối ngày.','Lệch → Đối soát lỗi tự báo. Mỗi TK 1 lần / ngày, đếm lại thì ghi đè.','14/10'],
  ['thu_chi','Sổ quỹ & kiểm két','Quỹ tiền mặt 3 cửa hàng (Kiot): thu quầy − chi quầy − nộp về két = tiền còn giữ ở quầy.','Cuối ngày nộp đủ thì về 0.','09/10'],
