@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (68)** — Anh: "làm cái chat trong nền tảng với mọi người", "có nút link cái phiếu để bảo duyệt cho nhanh", "xem có realtime được không, có quá tải không". supabase-schema-kt-chat.sql: bảng kt_tin_nhan (kênh "chung" / "u:a-b" nhắn riêng) + kt_tin_doc (đã đọc tới đâu), RLS khoá, hàm kt_chat_tong / ds / gui / doc / xoa; lúc Xem như không gửi được. Realtime Postgres KHÔNG dùng được (RLS + không dùng Supabase Auth; mở khoá = lộ tin) → hỏi định kỳ: mở khung chat 3 giây, đóng 15 giây (≤ 2 truy vấn / giây cả công ty — nhẹ). Giao diện: nút chat cạnh chuông + số chưa đọc + tiếng bzzz, khung chat trượt bên phải (Nhóm chung + từng người), mã PC… / PT… / DC… trong tin thành link mở phiếu (moPhieu: tìm mọi kỳ nếu chưa có trong danh sách), cửa sổ phiếu chi có nút "Gửi vào chat". Test 2 TK tạm nhắn riêng (không đụng Nhóm chung): gửi 138 ms, người thứ 3 không đọc được, chưa đọc → đã đọc, không xoá tin người khác; đã dọn.
+
 - **19/10/2026 (67)** — Anh: "dùng tiếng hay ho, có tiếng BUZZ của Yahoo ngày xưa không" → file BUZZ gốc của Yahoo có bản quyền, không chép; tự tổng hợp tiếng "bzzzz" (Web Audio: sóng vuông 165→140 Hz + rung biên độ 38 Hz, 2 nhịp) + rung màn hình 0,6s (.lay) khi chuông có thông báo mới. Menu tài khoản thêm "▶ Thử âm báo".
 
 - **19/10/2026 (66)** — Anh: "\"Thử giao diện\" (đang trong app) là mày à" → đúng, TK tạm chụp màn hình (tam-chup) cũng báo danh. supabase-schema-kt-dang-xem-2.sql: kt_bao_danh bỏ qua TK tam-… + xoá dòng TK tạm đang có.
