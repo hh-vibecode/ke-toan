@@ -857,8 +857,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.116';
-const APP_VERSION='19/10/2026 10:30';
+const APP_SO='1.117';
+const APP_VERSION='19/10/2026 10:33';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1562,6 +1562,7 @@ async function pageTongQuan(){
       ${cb('bad',IC2.cp,khQH.length,'Khách hàng quá hạn thanh toán','Nợ thật quá hạn: '+fmt(sumBy(khQH,noHan)),"S.f.no_kh_tt='Quá hạn';go('no_kh')")}
       ${cb('bad',IC2.gv,nccDH.length,'Nhà cung cấp đến hạn thanh toán','Tổng nợ: '+fmt(sumBy(nccDH,x=>x.no)),"S.f.no_ncc_tt='';go('no_ncc')")}
       ${cb('warn',IC2.cp,(d.cho_duyet||0)+(d.cho_gd||0),'Phiếu chi chờ duyệt','Tổng tiền: '+fmt((+pt.cho_duyet_tien||0)+(+pt.cho_gd_tien||0)),"S.f.chi_tt='cho_duyet';go('chi')")}
+      ${cb('bad',IC2.dt,d.chi_thieu_unc||0,'Phiếu chi thiếu ảnh giao dịch','Đã chi, chưa up uỷ nhiệm chi / phiếu ký nhận · từ 01/09',"S.f.chi_tt='thieu_unc';go('chi')")}
       ${cb('warn',IC2.dt,d.hd_do_chua_nhan||0,'Phiếu chi chưa nhận hoá đơn đỏ','Đã chi, chờ hoá đơn NCC',"S.f.chi_tt='hd_do';go('chi')")}
       ${cb('info',IC2.lg,lau,'Mặt hàng tồn lâu > 6 tháng','Giá trị: '+fmt(lauGT),(()=>{const m=tq.ton_cs.filter(x=>csOK(x.cn)).sort((a,b)=>b.lau_gt-a.lau_gt)[0];return m&&xnDuoc('ton_lau')?`xemNhanh('ton_lau','','${m.cn}','')`:''})())}
       ${cb('bad',IC2.ln,S.soLoi||0,'Lỗi đối soát cần xử lý','Phiếu nghi trùng, sai loại, lệch số dư…',"go('doi_soat')")}</div>`);
@@ -1963,9 +1964,9 @@ async function pageChi(){
     chiDuyet()||can('hoa_don_thue')?rpc('kt_hd_vao_goi_y',{}).catch(()=>({goi_y:[],da_ghep:[]})):{goi_y:[],da_ghep:[]},
     S.f.chi_q?rpc('kt_ds',{p_bang:'chi',p_tu:'2000-01-01',p_den:'2099-12-31'}):null,can('vay')?rpc('kt_ds_vay',{}).catch(()=>[]):[]]);S.cache.chi=dsT||ds;S.cache.hdv=hv;   // đang tìm: lấy mọi kỳ
   const f=S.f;f.chi_tt=f.chi_tt||(ds.some(viecCuaToi)?'cua_toi':'tat_ca');const q=(f.chi_q||'').toLowerCase();   // như Lark: mở ra thấy ngay phiếu chờ mình
-  const loc={cua_toi:viecCuaToi,tat_ca:x=>true,thieu_ct:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x),cho_duyet:x=>x.trang_thai==='cho_duyet',cho_gd:x=>x.trang_thai==='cho_gd',nghi_trung:x=>!!x.nghi_trung&&x.trang_thai!=='tu_choi',nghi_loai:x=>!!x.nghi_loai,cho_tt:x=>x.trang_thai==='cho_tt',da_tt:x=>x.trang_thai==='da_tt',
+  const loc={cua_toi:viecCuaToi,tat_ca:x=>true,thieu_ct:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x),thieu_unc:x=>!!x.thieu_unc,cho_duyet:x=>x.trang_thai==='cho_duyet',cho_gd:x=>x.trang_thai==='cho_gd',nghi_trung:x=>!!x.nghi_trung&&x.trang_thai!=='tu_choi',nghi_loai:x=>!!x.nghi_loai,cho_tt:x=>x.trang_thai==='cho_tt',da_tt:x=>x.trang_thai==='da_tt',
     tu_choi:x=>x.trang_thai==='tu_choi'||x.trang_thai==='tu_choi_tt',hd_do:x=>x.trang_thai==='da_tt'&&x.co_hd_do&&!x.hd_do_nhan&&x.ngay_tt>=MOC_SODU,chua_kiot:chuaKiot,qua_han:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&x.han_tt&&x.han_tt<homNay()};
-  const nhan={thieu_ct:'Thiếu chứng từ',cua_toi:'Chờ tôi xử lý',tat_ca:'Tất cả',cho_duyet:'Chờ xác nhận',cho_gd:'Chờ GĐ duyệt (cũ)',cho_tt:'Chờ chi tiền',da_tt:'Đã thanh toán',hd_do:'Chưa nhận HĐ',chua_kiot:'Chưa cập nhật Kiot',qua_han:'Quá hạn',nghi_trung:'Nghi trùng',nghi_loai:'Nghi sai loại',tu_choi:'Từ chối'};
+  const nhan={thieu_ct:'Thiếu chứng từ',thieu_unc:'Thiếu ảnh giao dịch',cua_toi:'Chờ tôi xử lý',tat_ca:'Tất cả',cho_duyet:'Chờ xác nhận',cho_gd:'Chờ GĐ duyệt (cũ)',cho_tt:'Chờ chi tiền',da_tt:'Đã thanh toán',hd_do:'Chưa nhận HĐ',chua_kiot:'Chưa cập nhật Kiot',qua_han:'Quá hạn',nghi_trung:'Nghi trùng',nghi_loai:'Nghi sai loại',tu_choi:'Từ chối'};
   // bộ lọc nhanh bên trái: cơ sở (theo đơn vị chịu chi phí) · loại tài khoản chi
   const csOK=x=>locCSAll()||(x.phan_bo||[]).some(p=>locCS().includes(csCuaDV(p.don_vi_id))),tkOK=x=>locTK().length===LOC_TK.length||(x.tai_khoan_id&&locTK().includes(tkNhom(x.tai_khoan_id)));
   const ngSD=x=>x.ngay_su_dung||x.ngay_de_nghi,trongKy=(x,a,b)=>{const d=ngSD(x);return !!d&&d>=a&&d<=b};
@@ -2014,7 +2015,7 @@ async function pageChi(){
       </div>
     <div class="m-split rong"><div style="min-width:0">
       <div class="m-seg" style="margin-bottom:8px">${['cua_toi','tat_ca','cho_duyet','cho_gd','cho_tt','da_tt','tu_choi'].filter(k=>!['cua_toi','cho_gd'].includes(k)||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()" style="--c:var(--${MAU_TAB[k]||'accent'})">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
-      ${(()=>{const ck=[['thieu_ct','Thiếu chứng từ','bad'],['qua_han','Quá hạn','bad'],['hd_do','Chưa nhận HĐ','vio'],['cu_cho','Tháng trước còn chờ','warn'],['nghi_trung','Nghi trùng','bad'],['nghi_loai','Nghi sai loại','bad']].filter(([k])=>(k==='cu_cho'?cuCho.length:nen.some(loc[k]))||f.chi_tt===k);
+      ${(()=>{const ck=[['thieu_ct','Thiếu chứng từ','bad'],['thieu_unc','Thiếu ảnh giao dịch','bad'],['qua_han','Quá hạn','bad'],['hd_do','Chưa nhận HĐ','vio'],['cu_cho','Tháng trước còn chờ','warn'],['nghi_trung','Nghi trùng','bad'],['nghi_loai','Nghi sai loại','bad']].filter(([k])=>(k==='cu_cho'?cuCho.length:nen.some(loc[k]))||f.chi_tt===k);
         return ck.length?`<div class="chi-chu-y"><span class="muted">Cần chú ý:</span>${ck.map(([k,t,c])=>`<button class="${f.chi_tt===k?'on':''}" style="--c:var(--${c})" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()">${t} <b>${k==='cu_cho'?cuCho.length:nen.filter(loc[k]).length}</b></button>`).join('')}</div>`:''})()}
       <div class="m-flt" style="align-items:center">${oTim('chi','Tìm số phiếu hoặc nội dung…')}        <select class="m-in" onchange="S.f.loc_cs=this.value?[this.value]:null;shell()"><option value="">Tất cả cơ sở</option>${CS3.map(([c,t])=>`<option value="${c}" ${!locCSAll()&&locCS().length===1&&locCS()[0]===c?'selected':''}>${t}</option>`).join('')}</select>
         ${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Tất cả loại chi')}${sel('chi_nguon',[{id:'phieu',ten:'Phiếu đề nghị (link công khai)'},{id:'app',ten:'Tạo trên app'},{id:'sheet_cu',ten:'Chuyển từ sheet cũ'},{id:'bo_sung',ten:'Sheet cũ — cần bổ sung'},{id:'claude_soat',ten:'Tự gán loại — cần soát'},{id:'hoan_quy',ten:'Phiếu hoàn Quỹ ngoài cửa hàng'}],'Tất cả nguồn')}
@@ -2026,7 +2027,7 @@ async function pageChi(){
           <td class="nw">${fmtD(x.ngay_su_dung||x.ngay_de_nghi)}${x.ngay_tt&&x.trang_thai==='da_tt'?`<div class="muted" style="font-size:11px">TT ${fmtD(x.ngay_tt).slice(0,5)}</div>`:''}</td><td class="nw m-link">${esc(soPhieu(x))}${x.kiot_ma?`<div class="muted" style="font-size:11px" title="Mã phiếu chi trên Kiot (đã khớp)">${esc(x.kiot_ma)}</div>`:''}</td>
           <td class="nw">${(()=>{const k=[...new Set((x.phan_bo||[]).map(p=>csCuaDV(p.don_vi_id)).filter(Boolean))];return k.length===1?`<span class="xn" title="Lọc theo cơ sở này" onclick="event.stopPropagation();S.f.loc_cs=['${k[0]}'];shell()">${esc(csTen(x))}</span>`:esc(csTen(x))})()}</td>
           <td class="ten" style="font-size:12px">${chiDuyet()?selLoaiChi(x):loaiChiO(x)}</td>
-          <td class="ten">${esc(ndChi(x))}${x.khong_hach_toan?' '+pill('Không hạch toán',''):''}${x.hoan_quy?' '+pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.nghi_trung&&x.trang_thai!=='tu_choi'?' '+pill('Nghi trùng','bad'):''}${x.nghi_loai?' '+pill('Nghi sai loại','bad'):''}${canBS(x)?' '+pill('Cần bổ sung','vio'):''}${['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x)?' '+pill('Thiếu chứng từ','bad'):''}</td><td class="ten">${nccChi(x)?`<span class="xn" title="Lọc theo nhà cung cấp này" onclick="event.stopPropagation();S.f.chi_q=${esc(JSON.stringify(nccChi(x)))};S.f.chi_tr=1;render()">${esc(nccChi(x))}</span>`:nccChiO(x)}</td><td class="num"><b>${fmt(x.so_tien)}</b></td>
+          <td class="ten">${esc(ndChi(x))}${x.thieu_unc?' '+pill('Thiếu ảnh giao dịch','bad'):''}${x.khong_hach_toan?' '+pill('Không hạch toán',''):''}${x.hoan_quy?' '+pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.nghi_trung&&x.trang_thai!=='tu_choi'?' '+pill('Nghi trùng','bad'):''}${x.nghi_loai?' '+pill('Nghi sai loại','bad'):''}${canBS(x)?' '+pill('Cần bổ sung','vio'):''}${['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x)?' '+pill('Thiếu chứng từ','bad'):''}</td><td class="ten">${nccChi(x)?`<span class="xn" title="Lọc theo nhà cung cấp này" onclick="event.stopPropagation();S.f.chi_q=${esc(JSON.stringify(nccChi(x)))};S.f.chi_tr=1;render()">${esc(nccChi(x))}</span>`:nccChiO(x)}</td><td class="num"><b>${fmt(x.so_tien)}</b></td>
           <td class="dy-o">${luongDong(x)}</td><td class="c">${hdPill(x)}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có phiếu</td></tr>'}</table></div>
         ${thanhTrang('chi',l.length,moi,tr,'phiếu')}</div></div>
       </div>`;
@@ -3939,6 +3940,7 @@ const LOGIC2=[
  ['chung','Xem như','Admin (Supreme) và giám đốc bấm icon người cạnh chuông (hoặc nút Xem như ở trang Phân quyền) → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
+ ['thu_chi','Phiếu chi — thiếu ảnh giao dịch','Phiếu ĐÃ CHI từ 01/09/2026 chưa có ảnh giao dịch (file "UNC…" up ở ô Ảnh giao dịch, hoặc link UNC cũ từ sheet).','Nhắc admin up đủ: dải "Cần chú ý" → Thiếu ảnh giao dịch (theo tháng đang chọn) + Tổng quan → Cảnh báo & công việc cần xử lý (đếm từ 01/09).','19/10'],
  ['thu_chi','Phiếu chi — duyệt','Giám đốc / Supreme bấm Duyệt là qua luôn bước kế toán kiểm + giám đốc duyệt (cả 2 bước ghi tên người bấm) → Chờ thanh toán.','Kế toán chỉ kiểm lượt 1, không tự duyệt lượt 2 (không có quyền giám đốc). Duyệt thẳng vẫn cần có chứng từ.','16/10'],
  ['thu_chi','Phiếu chi — duyệt','Phiếu chưa có chứng từ đi kèm thì kế toán chưa kiểm được (lượt 1).','Dải "Cần chú ý" → Thiếu chứng từ. Chứng từ cũ trên Drive đã kéo về app.','16/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu app đã đánh 4A cùng số tiền, lệch ≤ 5 ngày → ghép, không tạo mới; trùng nghi ngờ → nhãn "Nghi trùng".','','08/10'],
