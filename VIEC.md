@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (33)** — Anh: "thêm nút tích nhanh cho phân quyền, tích phát phân hết các thứ trong mục" → dòng tiêu đề mỗi mục (Nghiệp vụ, Báo cáo tài chính, Báo cáo kinh doanh, Thuế, Quản trị) có ô **Xem hết / Sửa hết**; Sửa hết tự tick Xem; bỏ tick thì bỏ cả mục; mở cửa sổ thấy sẵn tick nếu mục đã đủ.
+
 - **19/10/2026 (32)** — Anh: "bỏ phân quyền ra mục riêng" → cửa sổ tài khoản 2 tab: **Thông tin tài khoản** (tên đăng nhập, họ tên, mật khẩu, đang dùng) | **Phân quyền** (Toàn quyền · Vai trò đặc biệt: Giám đốc / Thủ quỹ · Quyền theo trang). Bỏ ô chi_tt trùng trong bảng trang; nhãn Giám đốc mới (xác nhận, chi TK cá nhân, Xem như). Ghi nhận: tài khoản thuquy đã đổi tên Nguyễn Thị Vân Anh + tick thêm Chi (mọi phiếu) / chỉ đề nghị / tạm ứng — anh: "sửa tay thì không cần thắc mắc" (quyền chỉnh trên app là chủ ý, không báo lại).
 
 - **19/10/2026 (31)** — Anh: "mặc định đơn vị đồng" → báo cáo quản trị mặc định Đơn vị: đồng (trước: nghìn đồng), "đồng" lên đầu danh sách.

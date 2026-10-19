@@ -835,6 +835,7 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .xn-b.on{background:var(--bad);border-color:var(--bad);color:#fff}.xn-pill{font-size:11px;font-weight:800;color:#fff;background:var(--bad);border-radius:20px;padding:4px 11px;white-space:nowrap}
 .xn-m{min-width:240px;max-height:60vh;overflow:auto}.xn-h{font-size:11px;font-weight:700;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase}.xn-m .dd-i.on{background:color-mix(in srgb,var(--bad) 10%,transparent)}.xn-thoat{color:var(--bad);font-weight:600}
 .nd-tab{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:4px 0 14px}.nd-tab button{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:13px;cursor:pointer;color:var(--text2)}.nd-tab button.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+.pq-nh{font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -846,8 +847,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.109';
-const APP_VERSION='19/10/2026 09:48';
+const APP_SO='1.110';
+const APP_VERSION='19/10/2026 09:53';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4152,9 +4153,13 @@ function formND(id){const x=id?S.cache.nd.find(n=>n.id===id):{vi_tri:'nhan_vien'
     <div class="full" id="qbox" style="grid-column:1/-1;${full?'display:none':''}">
       <div class="sec" style="margin-top:4px">Quyền theo trang</div>
       <div class="card"><table><tr><th>Module / trang</th><th class="c">Xem</th><th class="c">Nhập / sửa</th></tr>
-      ${NHOM_QUYEN.map(([g,ks])=>`<tr class="tong"><td colspan="3">${g}</td></tr>`+ks.map(k=>`<tr><td style="padding-left:24px">${esc(TRANG_QUYEN[k])}</td>${QUYEN_1_O.includes(k)?`<td class="c" colspan="2"><input type="checkbox" data-q="${k}" ${q.includes(k)?'checked':''}></td>`:`<td class="c"><input type="checkbox" data-q="${k}" ${q.includes(k)?'checked':''}></td><td class="c"><input type="checkbox" data-q="${k}:ghi" ${q.includes(k+':ghi')?'checked':''}></td>`}</tr>`).join('')).join('')}</table></div></div>
+      ${NHOM_QUYEN.map(([g,ks],gi)=>`<tr class="tong"><td>${g}</td><td class="c"><label class="pq-nh" title="Tick xem cả mục"><input type="checkbox" data-nh="${gi}" data-c="x" ${ks.every(k=>q.includes(k))?'checked':''} onchange="pqNhom(this)"> Xem hết</label></td><td class="c"><label class="pq-nh" title="Tick nhập / sửa cả mục (tự tick xem)"><input type="checkbox" data-nh="${gi}" data-c="s" ${ks.every(k=>q.includes(QUYEN_1_O.includes(k)?k:k+':ghi'))?'checked':''} onchange="pqNhom(this)"> Sửa hết</label></td></tr>`+ks.map(k=>`<tr><td style="padding-left:24px">${esc(TRANG_QUYEN[k])}</td>${QUYEN_1_O.includes(k)?`<td class="c" colspan="2"><input type="checkbox" data-q="${k}" data-g="${gi}" data-c="1" ${q.includes(k)?'checked':''}></td>`:`<td class="c"><input type="checkbox" data-q="${k}" data-g="${gi}" data-c="x" ${q.includes(k)?'checked':''}></td><td class="c"><input type="checkbox" data-q="${k}:ghi" data-g="${gi}" data-c="s" ${q.includes(k+':ghi')?'checked':''}></td>`}</tr>`).join('')).join('')}</table></div></div>
     </div></div>
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuND(${id||'null'})">Lưu</button></div>`)}
+// tick nhanh cả mục: Xem hết → mọi ô xem + ô 1-quyền; Sửa hết → mọi ô sửa + ô 1-quyền, tick sửa thì tick luôn xem; bỏ tick thì bỏ tương ứng
+function pqNhom(el){const g=el.dataset.nh,c=el.dataset.c,on=el.checked;
+  $$('#nd-pq [data-g="'+g+'"]').forEach(b=>{const k=b.dataset.c;if(k===c||k==='1'||(on&&c==='s'&&k==='x'))b.checked=on});
+  if(c==='s'&&on){const x=$('#nd-pq [data-nh="'+g+'"][data-c="x"]');if(x)x.checked=true}}
 function ndTab(b,id){$$('.nd-tab button').forEach(x=>x.classList.toggle('on',x===b));$$('.nd-p').forEach(p=>p.style.display=p.id===id?'':'none')}
 async function luuND(id){const f=$('#f');const x=id?S.cache.nd.find(n=>n.id===id):{};const all=$('#q_all');
   const toan=x.vi_tri==='supreme'||(all&&all.checked);
