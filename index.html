@@ -869,8 +869,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.134';
-const APP_VERSION='19/10/2026 13:34';
+const APP_SO='1.135';
+const APP_VERSION='19/10/2026 13:57';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1044,7 +1044,7 @@ async function dnForm(){
       <label class="dn-hd"><span>12. Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
       <label id="dn-hdve" class="dn-hd"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,'')}</select></label>
       <label class="full">13. Ghi chú<input name="ghi_chu" maxlength="500"></label>
-      <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
+      <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 60 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
         <label class="dn-drop" id="dn-drop">+ Chọn ảnh / PDF / Excel / Word<input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="dnThemFile(this.files);this.value=''"></label>
         <div id="dn-files"></div></div>
       <input name="web" tabindex="-1" autocomplete="off" class="dn-bay" aria-hidden="true">
@@ -1080,7 +1080,7 @@ function dnLoai(k){DN.loai=k;const hu=k==='hoan_ung',tt=k==='thanh_toan',f=$('#d
   $('#dn-l4').innerHTML=(hu?'4. Ngày trả lại tiền':k==='tam_ung'?'4. Ngày cần dùng tiền':'4. Ngày sử dụng dịch vụ / nhận hàng')+BB;
   $('#dn-l5').innerHTML=(hu?'5. Số tiền trả lại (đồng)':k==='tam_ung'?'5. Số tiền xin tạm ứng (đồng)':'5. Số tiền đề nghị (đồng)')+BB;
   const nd=$('#dn [name=noi_dung]');if(nd)nd.placeholder=hu?'vd: Trả lại tiền tạm ứng ngày 05/10 đi công tác Hà Nội (ứng 5.000.000, chi hết 3.200.000)':k==='tam_ung'?'vd: Tạm ứng mua vật tư sửa cửa hàng Chánh Tâm':'vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online';
-  $('#dn-l14').textContent=hu?'— ảnh chuyển khoản / biên nhận nộp tiền mặt (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':k==='tam_ung'?'— ảnh / PDF báo giá, kế hoạch chi, giấy đề nghị (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':'— ảnh / PDF hoá đơn, báo giá, hợp đồng (bắt buộc, tối đa 15 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V';
+  $('#dn-l14').textContent=hu?'— ảnh chuyển khoản / biên nhận nộp tiền mặt (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':k==='tam_ung'?'— ảnh / PDF báo giá, kế hoạch chi, giấy đề nghị (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':'— ảnh / PDF hoá đơn, báo giá, hợp đồng (bắt buộc, tối đa 60 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V';
   $('#dn-gui').textContent=hu?'Gửi hoàn ứng':k==='tam_ung'?'Gửi đề nghị tạm ứng':'Gửi đề nghị'}
 function dnChenh(){}
 function dnPb(){
@@ -1096,7 +1096,7 @@ function dnThemFile(list){
   const loi=[];for(const f of list){const m=dnMime(f);
     if(!/^(image\/(jpeg|png|webp|heic|heif)|application\/pdf|application\/vnd\.openxmlformats-officedocument\.(spreadsheetml\.sheet|wordprocessingml\.document)|application\/vnd\.ms-excel|application\/msword|text\/csv)$/.test(m)){loi.push(f.name+': chỉ nhận ảnh, PDF, Excel, Word');continue}
     if(f.size>15*1024*1024){loi.push(f.name+': quá 15 MB');continue}
-    if(DN.files.length>=15){loi.push('Tối đa 15 file');break}DN.files.push(f)}
+    if(DN.files.length>=60){loi.push('Tối đa 60 file mỗi phiếu');break}DN.files.push(f)}
   if(loi.length)alert(loi.join('\n'));dnVeFile()}
 function dnVeFile(){const el=$('#dn-files');if(!el)return;el.innerHTML=DN.files.map((f,i)=>`<div class="dn-f"><span>${esc(f.name)}</span><span class="muted">${fmt(Math.ceil(f.size/1024))} KB</span>${DN.gui?'':`<button class="btn sm" onclick="DN.files.splice(${i},1);dnVeFile()">✕</button>`}<span class="dn-tt" id="dn-tt-${i}"></span></div>`).join('')}
 async function dnGui(){
@@ -1126,15 +1126,15 @@ async function dnGui(){
     <div class="acts" style="justify-content:center">${S.toi?`<button class="btn" onclick="closeModal();render()">Đóng</button><button class="btn pri" onclick="dnForm()">Gửi phiếu khác</button>`:`<button class="btn" onclick="location.hash='phieu=${r.ma}';gateTab('phieu')">Xem trạng thái</button><button class="btn pri" onclick="history.replaceState(null,'',location.pathname+'#de-nghi');dnForm()">Gửi phiếu khác</button>`}</div></div>`;
 }
 // tải hồ sơ: nén ảnh → xin link ký (mã phiếu) → PUT → ghi vào phiếu. Trả danh sách lỗi.
-async function dnTaiFile(ma,files,idTT){const loi=[];
-  for(let i=0;i<files.length;i++){const tt=$('#'+idTT(i));
+async function dnTaiFile(ma,files,idTT){const loi=[],hang=files.map((_,i)=>i);   // 19/10: 3 file cùng lúc
+  await Promise.all([0,1,2].map(async()=>{for(let i;(i=hang.shift())!==undefined;){const tt=$('#'+idTT(i));
     try{if(tt)tt.textContent='đang nén...';let f=await nenAnh(files[i]);const mime=dnMime(f);if(f.size>15*1024*1024)throw new Error('quá 15 MB');
       const {duong_dan,url}=await ctFn({viec:'tai_len_phieu',ma,ten:f.name});
       if(!f.type)f=new File([f],f.name,{type:mime});
       await putTienDo(url,f,p=>{if(tt)tt.textContent=p+'%'});
       await rpc('kt_them_ct_phieu',{p_ma:ma,p_duong_dan:duong_dan,p_ten:f.name,p_mime:mime,p_kich_thuoc:f.size},true);
       if(tt){tt.textContent='✓ đã tải';tt.className='dn-tt pos-t'}}
-    catch(x){loi.push(files[i].name+' ('+x.message+')');if(tt){tt.textContent='✕ '+x.message;tt.className='dn-tt neg-t'}}}
+    catch(x){loi.push(files[i].name+' ('+x.message+')');if(tt){tt.textContent='✕ '+x.message;tt.className='dn-tt neg-t'}}}}));
   return loi}
 async function dnXem(ma){
   const b=$('#gt-body');b.innerHTML='<div class="empty">Đang tải...</div>';let x;
@@ -2035,12 +2035,12 @@ async function pageChi(){
   S.cache.chi_xuat=()=>xuatCSV('phieu-chi-'+S.tu+'_'+S.den,cols,l);
   const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.chi_tr=1;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=`<div><div class="m-kpis m-k3">
-      ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(dtt),pt(tien(dtt),tien(dtt0))+' so với kỳ trước · chỉ tính phiếu đã thanh toán ('+dtt.length+' phiếu)'+(gocKy.length?` · <span title="Trả gốc vay là trả lại tiền mượn, không phải chi phí — xem ở loại chi FINANCE - Trả gốc vay">trả gốc vay tính riêng: <b>${fmt(tien(gocKy))}</b></span>`:''),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'da_tt')}
-      ${the('ok','ok','Tổng đề nghị',tien(tong),pt(tien(tong),tien(tong0)),tong.length+' phiếu · gồm cả chưa thanh toán, không tính từ chối','tat_ca')}
-      ${the('warn','gio','Chờ xác nhận',tien(cd),pt(tien(cd),tien(nen0.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)))),cd.length+' phiếu','cho_duyet')}
+      ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(dtt),pt(tien(dtt),tien(dtt0))+' · '+dtt.length+' phiếu','','da_tt')}
+      ${the('ok','ok','Tổng đề nghị',tien(tong),pt(tien(tong),tien(tong0))+' · '+tong.length+' phiếu','','tat_ca')}
+      ${the('warn','gio','Chờ xác nhận',tien(cd),pt(tien(cd),tien(nen0.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai))))+' · '+cd.length+' phiếu','','cho_duyet')}
       ${the('warn','tt','Chờ chi tiền',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt)))+' · '+ctt.length+' phiếu','','cho_tt')}
-      ${the('bad','hd','Chưa nhận HĐ',tien(hd),pt(tien(hd),tien(nen0.filter(loc.hd_do)))+' · '+hd.length+' phiếu',hdHKD(hd),'hd_do')}
-      <div class="m-k click ${f.chi_tt==='tat_ca'?'on':''}" style="--c:var(--info)" onclick="S.f.chi_tt='tat_ca';S.f.chi_tr=1;render()"><div class="m-ic">${IC.tt}</div><div style="min-width:0;flex:1"><div class="l">Số phiếu trong tháng</div><div class="v">${nen.length+gocVay}</div><div class="s">${nen.length} phiếu chi${gocVay?` + ${gocVay} trả gốc vay (trang Vay)`:''}</div><div class="s">Theo ngày sử dụng dịch vụ — như sheet</div></div></div></div>
+      ${the('bad','hd','Chưa nhận HĐ',tien(hd),pt(tien(hd),tien(nen0.filter(loc.hd_do)))+' · '+hd.length+' phiếu','','hd_do')}
+      <div class="m-k click ${f.chi_tt==='tat_ca'?'on':''}" style="--c:var(--info)" onclick="S.f.chi_tt='tat_ca';S.f.chi_tr=1;render()"><div class="m-ic">${IC.tt}</div><div style="min-width:0;flex:1"><div class="l">Số phiếu trong tháng</div><div class="v">${nen.length+gocVay}</div><div class="s" title="Theo ngày sử dụng dịch vụ — như sheet">${nen.length} phiếu chi${gocVay?` · ${gocVay} trả gốc vay`:''}</div></div></div></div>
       </div>
     <div class="m-split rong"><div style="min-width:0">
       <div class="m-seg" style="margin-bottom:8px">${['cua_toi','tat_ca','cho_duyet','cho_gd','cho_tt','da_tt','tu_choi'].filter(k=>!['cua_toi','cho_gd'].includes(k)||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()" style="--c:var(--${MAU_TAB[k]||'accent'})">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
@@ -3713,12 +3713,12 @@ const FN_CT=SB_URL+'/functions/v1/kt-chung-tu';
 const TEN_BANG={thu:'Thu',chi:'Chi',dieu_chuyen:'Dieu-chuyen',vay:'Vay',tai_san:'Tai-san'};
 async function ctFn(b){const r=await fetch(FN_CT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phien:S.phien,...b})});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.loi||'Lỗi chứng từ '+r.status);return j}
-// Nén ảnh: cạnh dài tối đa 2000px, JPEG 82% (~400–600 KB, vẫn đọc rõ hoá đơn). PDF / ảnh không đọc được (HEIC trên máy không hỗ trợ) giữ nguyên.
+// Nén ảnh: cạnh dài tối đa 1600px, JPEG 80% (~250–350 KB, vẫn đọc rõ hoá đơn — 19/10 giảm từ 2000px / 82% cho tải nhanh hơn). PDF / ảnh không đọc được (HEIC trên máy không hỗ trợ) giữ nguyên.
 async function nenAnh(f){
-  if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size<350*1024)return f;
-  try{const bm=await createImageBitmap(f);const k=Math.min(1,2000/Math.max(bm.width,bm.height));
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size<300*1024)return f;
+  try{const bm=await createImageBitmap(f);const k=Math.min(1,1600/Math.max(bm.width,bm.height));
     const c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
-    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.82));if(!b||b.size>=f.size)return f;
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.8));if(!b||b.size>=f.size)return f;
     return new File([b],f.name.replace(/\.\w+$/,'')+'.jpg',{type:'image/jpeg'})}catch(e){return f}}
 // Ô chứng từ (anh 08/10: "gọn nhất cho người up, giảm dung lượng ngầm, click lại ra luôn"):
 // bấm ＋ / kéo thả / dán Ctrl+V là xong — nén + tải lên chạy NGẦM theo hàng đợi, ô hiện ảnh xem trước + %; đóng phiếu vẫn tải tiếp.
@@ -3778,8 +3778,9 @@ function ctThuLai(uid){const q=CTQ.find(x=>x.uid===uid);if(!q)return;q.tt='cho';
 function putTienDo(url,f,cb){return new Promise((ok,loi)=>{const x=new XMLHttpRequest();x.open('PUT',url);x.setRequestHeader('Content-Type',f.type||'application/octet-stream');
   x.upload.onprogress=e=>{if(e.lengthComputable)cb(Math.round(e.loaded*100/e.total))};
   x.onload=()=>x.status<300?ok():loi(new Error('Tải lên lỗi '+x.status));x.onerror=()=>loi(new Error('Mất mạng khi tải lên'));x.send(f)})}
+// 19/10 anh: "up chứng từ có bị lâu không, thử up nhiều ảnh" — đo: mỗi file ~1s thủ tục + ~2,5s đẩy ảnh 500 KB; tải 3 file cùng lúc nhanh ~2,5 lần → 3 luồng
 async function chayCT(){if(ctChay)return;ctChay=true;let n=0;
-  try{for(let q;(q=CTQ.find(x=>x.tt==='cho'));){
+  const mot=async q=>{
     try{q.tt='nen';veTienDo(q);const f=await nenAnh(q.file);if(f.size>15*1024*1024)throw new Error(q.file.name+' quá 15 MB');
       const {duong_dan,url}=await ctFn({viec:'tai_len',bang:q.bang,dong_id:q.id,ten:f.name});
       q.tt='tai';veTienDo(q);await putTienDo(url,f,p=>{q.pct=p;veTienDo(q)});
@@ -3789,8 +3790,8 @@ async function chayCT(){if(ctChay)return;ctChay=true;let n=0;
     // xong cả lô của phiếu này → bỏ khỏi hàng đợi, vẽ lại ô từ máy chủ (ảnh thật + nút xem / tải / xoá)
     if(!CTQ.some(x=>x.k===q.k&&['cho','nen','tai'].includes(x.tt))){
       for(let i=CTQ.length-1;i>=0;i--)if(CTQ[i].k===q.k&&CTQ[i].tt==='xong'){if(CTQ[i].url)URL.revokeObjectURL(CTQ[i].url);CTQ.splice(i,1)}
-      veLaiCT(q.bang,q.id,true)}}
-  }finally{ctChay=false}
+      veLaiCT(q.bang,q.id,true)}};
+  try{await Promise.all([0,1,2].map(async()=>{for(let q;(q=CTQ.find(x=>x.tt==='cho'));)await mot(q)}))}finally{ctChay=false}
   const loi=CTQ.filter(x=>x.tt==='loi').length;
   if(n)toast(`Đã lưu ${n} chứng từ`+(loi?` · ${loi} lỗi (bấm ô lỗi để thử lại)`:''));else if(loi)toast(loi+' chứng từ tải lỗi — bấm ô lỗi để thử lại')}
 // Kéo thả / dán ảnh vào form hoặc ngăn kéo đang mở có ô chứng từ

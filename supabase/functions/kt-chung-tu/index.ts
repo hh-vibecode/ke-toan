@@ -30,7 +30,7 @@ Deno.serve(async req => {
       const j = await r.json();
       return tra({ duong_dan: duong, url: `${SB}/storage/v1${j.url}` });
     }
-    if (b.viec === 'tai_len_phieu') {   // phiếu đề nghị công khai (14/10/2026): không đăng nhập — mã phiếu bí mật, 3 giờ, tối đa 15 file
+    if (b.viec === 'tai_len_phieu') {   // phiếu đề nghị công khai (14/10/2026): không đăng nhập — mã phiếu bí mật, 3 giờ, tối đa 60 file
       const q = await fetch(`${SB}/rest/v1/rpc/kt_quyen_ct_phieu`, { method: 'POST', headers: H, body: JSON.stringify({ p_ma: String(b.ma || '') }) });
       if (!q.ok) { const j = await q.json().catch(() => ({})); throw new Error(j.message || 'Mã phiếu không đúng'); }
       const id = Number(await q.json());
