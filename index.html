@@ -639,6 +639,7 @@ table.m-t th,table.m-t td{padding-left:5px;padding-right:5px}table.m-t td.ten{mi
 .m-split.rong{grid-template-columns:minmax(0,1fr) 440px}
 .m-k{padding:10px}.m-k .m-ic{width:36px;height:36px}.m-k .v{font-size:17px;overflow:hidden;text-overflow:ellipsis}
 .m-2d{display:grid;grid-template-columns:auto 1fr;column-gap:8px;font-size:11.5px;color:var(--text2)}.m-2d b{text-align:right;color:var(--text)}
+.ctt-tk{margin-top:6px;row-gap:2px}.ctt-tk span.click{cursor:pointer}.ctt-tk span.click:hover,.ctt-tk span.on{text-decoration:underline;color:var(--text)}.ctt-tk i{font-style:normal;color:var(--text3,#889)}
 .m-seg button{padding:0 11px}
 .m-2d{white-space:nowrap}
 /* TỔNG QUAN sát ảnh mẫu (13/10) */
@@ -856,8 +857,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.115';
-const APP_VERSION='19/10/2026 10:28';
+const APP_SO='1.116';
+const APP_VERSION='19/10/2026 10:30';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1989,6 +1990,9 @@ async function pageChi(){
     link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'};
   const the=(c,ic,l1,v,ss,s2,key)=>`<div class="m-k click ${f.chi_tt===key?'on':''}" style="--c:var(--${c})" onclick="S.f.chi_tt='${key}';S.f.chi_tr=1;render()"><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${fmt(v)}</div><div class="s">${ss}</div>${s2?`<div class="s" style="margin-top:4px">${s2}</div>`:''}</div></div>`;
   const tk0=a=>sumBy(a.filter(x=>x.tai_khoan_id&&tkNhom(x.tai_khoan_id)==='tien_mat'),x=>x.so_tien);
+  // 19/10 anh: "Chờ chi tiền" chia theo tài khoản đi tiền — bấm 1 dòng lọc danh sách theo tài khoản đó
+  const cttTK=a=>{const g={};a.forEach(x=>{const k=x.tai_khoan_id||0;(g[k]=g[k]||[]).push(x)});const ds=Object.entries(g).sort((p,q)=>tien(q[1])-tien(p[1]));
+    return ds.length?`<div class="m-2d ctt-tk">${ds.map(([k,v])=>{const t=tk(+k)||{};return `<span class="click${+f.chi_tk===+k&&f.chi_tt==='cho_tt'?' on':''}" title="${esc(t.ten||'Chưa chọn tài khoản')} · ${v.length} phiếu · ${t.thu_quy_chi?'thủ quỹ chi':k>0?'giám đốc chi':''}" onclick="event.stopPropagation();S.f.chi_tt='cho_tt';S.f.chi_tk=${+k?`'${k}'`:"''"};S.f.chi_tr=1;render()">${esc(k>0?String(t.ten||'').split(' - ')[0]:'Chưa chọn TK')} <i>(${v.length})</i></span><b>${fmt(tien(v))}</b>`}).join('')}</div>`:''};
   const moi=f.chi_moi||10,[a,b,tr]=phanTrang('chi',l.length,moi),trang=l.slice(a,b);
   const chon=f.chi_chon&&l.some(x=>x.id===f.chi_chon)?f.chi_chon:null;   // 14/10 kế toán: khung chi tiết chỉ hiện khi bấm 1 phiếu
   const soPhieu=x=>'PC'+String(x.id).padStart(6,'0');
@@ -2004,7 +2008,7 @@ async function pageChi(){
       ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(dtt),pt(tien(dtt),tien(dtt0))+' so với kỳ trước · chỉ tính phiếu đã thanh toán ('+dtt.length+' phiếu)'+(gocKy.length?` · <span title="Trả gốc vay là trả lại tiền mượn, không phải chi phí — xem ở loại chi FINANCE - Trả gốc vay">trả gốc vay tính riêng: <b>${fmt(tien(gocKy))}</b></span>`:''),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'da_tt')}
       ${the('ok','ok','Tổng đề nghị',tien(tong),pt(tien(tong),tien(tong0)),tong.length+' phiếu · gồm cả chưa thanh toán, không tính từ chối','tat_ca')}
       ${the('warn','gio','Chờ xác nhận',tien(cd),pt(tien(cd),tien(nen0.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)))),cd.length+' phiếu','cho_duyet')}
-      ${the('warn','tt','Chờ chi tiền',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt))),ctt.length+' phiếu','cho_tt')}
+      ${the('warn','tt','Chờ chi tiền',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt)))+' · '+ctt.length+' phiếu',cttTK(ctt),'cho_tt')}
       ${the('bad','hd','Chưa nhận HĐ',tien(hd),pt(tien(hd),tien(nen0.filter(loc.hd_do))),hd.length+' phiếu','hd_do')}
       <div class="m-k click ${f.chi_tt==='tat_ca'?'on':''}" style="--c:var(--info)" onclick="S.f.chi_tt='tat_ca';S.f.chi_tr=1;render()"><div class="m-ic">${IC.tt}</div><div style="min-width:0;flex:1"><div class="l">Số phiếu trong tháng</div><div class="v">${nen.length+gocVay}</div><div class="s">${nen.length} phiếu chi${gocVay?` + ${gocVay} trả gốc vay (trang Vay)`:''}</div><div class="s">Theo ngày sử dụng dịch vụ — như sheet</div></div></div></div>
       </div>
