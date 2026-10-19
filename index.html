@@ -858,8 +858,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.123';
-const APP_VERSION='19/10/2026 11:02';
+const APP_SO='1.124';
+const APP_VERSION='19/10/2026 11:10';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2020,7 +2020,7 @@ async function pageChi(){
       ${the('bad','vi',(S.ky==='thang'||kyHienTai().startsWith('m:')?'Tổng chi tháng '+(+S.tu.slice(5,7)):'Tổng chi trong kỳ'),tien(dtt),pt(tien(dtt),tien(dtt0))+' so với kỳ trước · chỉ tính phiếu đã thanh toán ('+dtt.length+' phiếu)'+(gocKy.length?` · <span title="Trả gốc vay là trả lại tiền mượn, không phải chi phí — xem ở loại chi FINANCE - Trả gốc vay">trả gốc vay tính riêng: <b>${fmt(tien(gocKy))}</b></span>`:''),`<div class="m-2d"><span>Tiền mặt:</span><b>${fmt(tk0(dtt))}</b><span>Ngân hàng:</span><b>${fmt(tien(dtt)-tk0(dtt))}</b></div>`,'da_tt')}
       ${the('ok','ok','Tổng đề nghị',tien(tong),pt(tien(tong),tien(tong0)),tong.length+' phiếu · gồm cả chưa thanh toán, không tính từ chối','tat_ca')}
       ${the('warn','gio','Chờ xác nhận',tien(cd),pt(tien(cd),tien(nen0.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)))),cd.length+' phiếu','cho_duyet')}
-      ${the('warn','tt','Chờ chi tiền',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt)))+' · '+ctt.length+' phiếu',cttHT(ctt)+cttTK(ctt),'cho_tt')}
+      ${the('warn','tt','Chờ chi tiền',tien(ctt),pt(tien(ctt),tien(nen0.filter(loc.cho_tt)))+' · '+ctt.length+' phiếu','','cho_tt')}
       ${the('bad','hd','Chưa nhận HĐ',tien(hd),pt(tien(hd),tien(nen0.filter(loc.hd_do)))+' · '+hd.length+' phiếu',hdHKD(hd),'hd_do')}
       <div class="m-k click ${f.chi_tt==='tat_ca'?'on':''}" style="--c:var(--info)" onclick="S.f.chi_tt='tat_ca';S.f.chi_tr=1;render()"><div class="m-ic">${IC.tt}</div><div style="min-width:0;flex:1"><div class="l">Số phiếu trong tháng</div><div class="v">${nen.length+gocVay}</div><div class="s">${nen.length} phiếu chi${gocVay?` + ${gocVay} trả gốc vay (trang Vay)`:''}</div><div class="s">Theo ngày sử dụng dịch vụ — như sheet</div></div></div></div>
       </div>
@@ -3965,7 +3965,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['chung','Tự tải lại khi có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App mọi tài khoản mỗi phút (và lúc quay lại tab) đọc file này; số lớn hơn bản đang chạy → tự tải lại như F5.','Đang mở cửa sổ nhập liệu thì chờ đóng cửa sổ mới tải lại (không mất dữ liệu đang gõ). Lúc Xem như thì không tự tải.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
- ['thu_chi','Phiếu chi — chờ chi tiền: tiền mặt / chuyển khoản','Mỗi phiếu chờ chi có nhãn "Tiền mặt · KÉT…" hoặc "Chuyển khoản · <tài khoản>"; thẻ Chờ chi tiền tách tổng Tiền mặt (két) / Chuyển khoản rồi từng tài khoản, bấm để lọc.','Đổi tài khoản đi tiền sau khi đã xác nhận: người xác nhận (kế toán có quyền xác nhận / giám đốc) bấm "Đổi tài khoản đi tiền" trong phiếu, báo chuông người chi mới; thủ quỹ không tự đổi được.','19/10'],
+ ['thu_chi','Phiếu chi — chờ chi tiền: tiền mặt / chuyển khoản','Mỗi phiếu chờ chi có nhãn "Tiền mặt · KÉT…" hoặc "Chuyển khoản · <tài khoản>" (thẻ Chờ chi tiền chỉ còn tổng tiền + số phiếu — anh 19/10 bỏ khối chia theo tài khoản).','Đổi tài khoản đi tiền sau khi đã xác nhận: người xác nhận (kế toán có quyền xác nhận / giám đốc) bấm "Đổi tài khoản đi tiền" trong phiếu, báo chuông người chi mới; thủ quỹ không tự đổi được.','19/10'],
  ['thu_chi','Phiếu chi — hoá đơn đỏ theo HKD','Thủ quỹ theo dõi thủ công hoá đơn đỏ xuất về 2 HKD: thấy mọi phiếu ĐÃ CHI có cần hoá đơn, sửa được "Hoá đơn xuất về" + Đã nhận / ngày nhận trong cửa sổ phiếu.','Thẻ "Chưa nhận HĐ" chia theo HKD Hiền Thủy / HKD Chánh Tâm / Công ty / Chưa ghi xuất về (bấm để lọc); bộ lọc "HĐ xuất về" trên danh sách.','19/10'],
  ['thu_chi','Phiếu chi — thiếu ảnh giao dịch','Phiếu ĐÃ CHI từ 01/09/2026 chưa có ảnh giao dịch (file "UNC…" up ở ô Ảnh giao dịch, hoặc link UNC cũ từ sheet).','Nhắc admin up đủ: dải "Cần chú ý" → Thiếu ảnh giao dịch (theo tháng đang chọn) + Tổng quan → Cảnh báo & công việc cần xử lý (đếm từ 01/09).','19/10'],
  ['thu_chi','Phiếu chi — duyệt','Giám đốc / Supreme bấm Duyệt là qua luôn bước kế toán kiểm + giám đốc duyệt (cả 2 bước ghi tên người bấm) → Chờ thanh toán.','Kế toán chỉ kiểm lượt 1, không tự duyệt lượt 2 (không có quyền giám đốc). Duyệt thẳng vẫn cần có chứng từ.','16/10'],
