@@ -1,6 +1,7 @@
 -- Số dư từng tài khoản cho trang "Sổ quỹ & số dư tài khoản" (19/10/2026, anh: "bổ sung quyền nhìn giao dịch từng TK cho admin").
 -- Trước: trang gọi kt_bao_cao (chặn theo quyền Tổng quan) → tài khoản chỉ có quyền Sổ quỹ (dong_tien) bị lỗi.
 -- Nay hàm riêng, chặn theo quyền dong_tien, chỉ trả số dư tài khoản + số dư thực tế (không lộ doanh thu / chi phí của Tổng quan).
+-- (sửa cùng ngày: thêm vay_vao / vay_ra để thẻ Thu / Chi trong kỳ tách riêng khoản vay)
 -- Cột Thu / Chi tính cả khoản vay (nhận vay → Thu, trả nợ vay → Chi) cho khớp cột Cuối kỳ. — Monsieur Claude
 create or replace function public.kt_so_du_tk(p_phien text, p_tu date, p_den date)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
@@ -15,6 +16,8 @@ begin
           coalesce(sum(b.vao) filter (where b.ngay between p_tu and p_den and b.kieu in ('thu','vay')), 0) as thu,
           coalesce(sum(b.ra)  filter (where b.ngay between p_tu and p_den and b.kieu in ('chi','vay')), 0) as chi,
           coalesce(sum(b.vao - b.ra) filter (where b.ngay between p_tu and p_den and b.kieu = 'dc'), 0) as dc,
+          coalesce(sum(b.vao) filter (where b.ngay between p_tu and p_den and b.kieu = 'vay'), 0) as vay_vao,
+          coalesce(sum(b.ra)  filter (where b.ngay between p_tu and p_den and b.kieu = 'vay'), 0) as vay_ra,
           tk.ton_dau + coalesce(sum(b.vao - b.ra) filter (where b.ngay <= p_den), 0) as cuoi_ky
         from kt_tai_khoan tk left join bd b on b.tai_khoan_id = tk.id
         group by tk.id)

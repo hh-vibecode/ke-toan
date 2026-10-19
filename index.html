@@ -858,8 +858,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.122';
-const APP_VERSION='19/10/2026 10:58';
+const APP_SO='1.123';
+const APP_VERSION='19/10/2026 11:02';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1162,16 +1162,18 @@ async function boot(){
 }
 // XEM NHƯ (16/10/2026): Supreme mở phiên CHỈ XEM của 1 tài khoản (máy chủ chặn mọi lệnh ghi — supabase-schema-kt-xem-nhu.sql)
 const xnDoc=()=>{try{return JSON.parse(sessionStorage.getItem('kt_xem_nhu')||'null')}catch(e){return null}};
+// 19/10 anh: Xem như / thoát Xem như giữ nguyên trang + tab + bộ lọc đang xem, chỉ đổi giao diện theo tài khoản (không có quyền trang đó thì về trang đầu tiên được xem)
+const giuF=()=>Object.fromEntries(Object.entries(S.f||{}).filter(([k])=>!/_chon$|_doi$/.test(k)));
 async function xemNhu(id,ten){const cu=xnDoc();try{
     const goc=cu?cu.goc:S.phien,goc_tu=cu?cu.goc_tu:(()=>{try{return sessionStorage.getItem('kt_phien')===S.phien?'s':'l'}catch(e){return 's'}})();
     const ds=cu&&cu.ds?cu.ds:(await rpc('kt_ds_nguoi_dung')).filter(x=>x.hoat_dong&&x.id!==S.toi.id&&!/^tam-/.test(x.ten_dang_nhap)).map(x=>({id:x.id,ten:x.ho_ten,tk:x.ten_dang_nhap}));
     const r=await rpc('kt_xem_nhu',{p_phien:goc,p_nguoi_id:id});if(cu)rpc('kt_dang_xuat',{p_phien:S.phien},true).catch(()=>{});
     sessionStorage.setItem('kt_xem_nhu',JSON.stringify({id,ten,goc,goc_tu,ds}));
-    sessionStorage.setItem('kt_phien',r.phien);S.phien=r.phien;S.cache={};S.f={};location.hash='';S.page='tong_quan';await boot()}catch(e){alert(e.message)}}
+    sessionStorage.setItem('kt_phien',r.phien);S.phien=r.phien;S.cache={};S.f=giuF();location.hash=S.page;await boot()}catch(e){alert(e.message)}}
 async function thoatXemNhu(){const x=xnDoc();if(!x)return;const p=S.phien;sessionStorage.removeItem('kt_xem_nhu');
   rpc('kt_dang_xuat',{p_phien:p},true).catch(()=>{});
   try{if(x.goc_tu==='s')sessionStorage.setItem('kt_phien',x.goc);else sessionStorage.removeItem('kt_phien')}catch(e){}
-  S.phien=x.goc;S.cache={};S.f={};location.hash='';S.page='cd_phan_quyen';try{await boot()}catch(e){renderGate(e.message)}}
+  S.phien=x.goc;S.cache={};S.f=giuF();location.hash=S.page;try{await boot()}catch(e){renderGate(e.message)}}
 async function chonXemNhu(){try{const ds=(await rpc('kt_ds_nguoi_dung')).filter(x=>x.hoat_dong&&x.id!==S.toi.id&&!/^tam-/.test(x.ten_dang_nhap));
     modal(`<h2 style="margin:0 0 4px">Xem như tài khoản</h2><div class="muted" style="font-size:12.5px;margin-bottom:12px">App mở đúng như người đó thấy — chỉ xem, không sửa được. Thoát bằng thanh vàng trên cùng.</div>
       <div class="xn-ds">${ds.map(x=>`<button class="xn-i" onclick="closeModal();xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')"><b>${esc(x.ho_ten)}</b><span>${esc(x.ten_dang_nhap)} · ${x.vi_tri==='supreme'?'Supreme':x.vi_tri==='admin'||(x.quyen||[]).includes('*')?'Toàn quyền':(x.quyen||[]).length+' quyền'}</span></button>`).join('')}</div>
@@ -1713,7 +1715,7 @@ async function pageDongTien(){
   }
   el.innerHTML=`<div class="m-kpis m-k3">${the('accent','vi','Tổng số dư (sổ sách)',coSD?fmt(sumBy(tks,t=>t.cuoi_ky)):'—','cuối '+fmtD(S.den))}
       ${the('ok','tm','Tiền mặt',coSD?fmt(sumBy(tm,t=>t.cuoi_ky)):'—',tm.length+' két / quỹ')}${the('info','nh','Ngân hàng',coSD?fmt(sumBy(nh,t=>t.cuoi_ky)):'—',nh.length+' tài khoản')}
-      ${the('ok','vao','Thu trong kỳ',fmt(b.tien_vao),'không gồm điều chuyển')}${the('bad','ra','Chi trong kỳ',fmt(b.tien_ra),'không gồm điều chuyển')}
+      ${(()=>{const vv=sumBy(b.tai_khoan,x=>+x.vay_vao||0),vr=sumBy(b.tai_khoan,x=>+x.vay_ra||0);return the('ok','vao','Thu trong kỳ',fmt(sumBy(b.tai_khoan,x=>+x.thu)-vv),'không gồm điều chuyển'+(vv?' · nhận vay tính riêng: '+fmt(vv):''))+the('bad','ra','Chi trong kỳ',fmt(sumBy(b.tai_khoan,x=>+x.chi)-vr),'phiếu chi, không gồm điều chuyển'+(vr?' · trả nợ vay tính riêng: '+fmt(vr):''))})()}
       ${the(homKet?'ok':'warn','ket','Kiểm két hôm nay',homKet?'Đã kiểm':'Chưa kiểm',lech.length?lech.length+' tài khoản lệch thực tế':'Không có lệch',"S.f.sq_tab='ket';render()")}</div>
     <div class="m-seg" style="margin-bottom:12px">${tabs.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.sq_tab='${k}';render()">${t}${k==='ket'&&kq.length?`<span class="c">${kq.length}</span>`:''}</button>`).join('')}</div>
     <div id="sq-body">${body}</div>`;
@@ -3958,6 +3960,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: chỉ ở Đối soát lỗi (phiếu đã thanh toán chưa thấy trên Kiot).','16/10'],
  ['chung','Tự kiểm Supabase','Job kt-kiem-he-thong 09:00 ngày 15 + ngày cuối tháng: đo dữ liệu, kho chứng từ, nhật ký, lịch chạy lỗi, kéo Kiot, khoá RLS / quyền anon → chuông cho Supreme (luôn có tóm tắt, có vấn đề ghi rõ cảnh báo).','Gói Pro: cảnh báo khi dữ liệu > 4 GB, kho > 50 GB, tăng > 5 GB kho / 1 GB dữ liệu giữa 2 lần kiểm, có bảng tắt RLS. Băng thông không đo được từ SQL — xem Dashboard.','16/10'],
  ['chung','Xem như','Admin (Supreme) và giám đốc bấm icon người cạnh chuông (hoặc nút Xem như ở trang Phân quyền) → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
+ ['chung','Xem như — giữ trang','Bật / đổi / thoát Xem như: app ở nguyên trang, tab và bộ lọc đang xem, chỉ đổi giao diện theo tài khoản được chọn.','Tài khoản đó không có quyền trang đang xem → về trang đầu tiên tài khoản đó được xem.','19/10'],
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['chung','Tự tải lại khi có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App mọi tài khoản mỗi phút (và lúc quay lại tab) đọc file này; số lớn hơn bản đang chạy → tự tải lại như F5.','Đang mở cửa sổ nhập liệu thì chờ đóng cửa sổ mới tải lại (không mất dữ liệu đang gõ). Lúc Xem như thì không tự tải.','19/10'],
