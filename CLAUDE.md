@@ -33,7 +33,7 @@ Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phi�
 - **Tự làm, không giao việc cho anh:** SQL, deploy, cấu hình làm được thì tự làm rồi báo. Chỉ nhờ anh khi thật sự bị chặn.
 - **Commit:** pull → `git diff --cached --stat` (chỉ đúng file mình sửa) → commit → push. Push bị từ chối → `git pull --rebase`,
   xung đột giải TAY từng chỗ, kiểm 0 dấu `<<<<<<<` và cú pháp OK rồi mới push — mỗi bước 1 lệnh, không nối `&&` sau bước kiểm.
-- **Đóng dấu phiên bản bằng `scripts/dong-dau.js`** (số phiên bản v1.N tăng theo số lần sửa index.html + giờ máy thật — anh 15/10/2026). Trước đây: **Đóng dấu `APP_VERSION` bằng giờ máy thật** (`date` / `Get-Date`), không tự ước. Đẩy xong đợi trang live hiện đúng bản mới
+- **Đóng dấu phiên bản bằng `scripts/dong-dau.js`** (số phiên bản v1.N tăng theo số lần sửa index.html + giờ máy thật — anh 15/10/2026; từ 19/10 script ghi + git add `phien-ban.txt` → app mọi TK tự tải lại khi có bản mới, nên LUÔN chạy dong-dau trước khi commit index.html). Trước đây: **Đóng dấu `APP_VERSION` bằng giờ máy thật** (`date` / `Get-Date`), không tự ước. Đẩy xong đợi trang live hiện đúng bản mới
   rồi **báo anh F5**.
 - **Khoá / token / mật khẩu:** không in ra màn hình, không dán vào chat, không commit. Máy: `kt-keys.local.txt` (gitignore).
   Soát file khoá CHỈ in tên dòng (`grep -o '^[A-Z_]*'`) — giá trị nằm dòng dưới vẫn có thể bị in lộ (sự cố 30/9).

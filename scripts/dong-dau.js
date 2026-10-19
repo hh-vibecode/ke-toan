@@ -10,4 +10,7 @@ let s = fs.readFileSync(f, 'utf8');
 if (!/^const APP_VERSION='[^']*';/m.test(s) || !/^const APP_SO='[^']*';/m.test(s)) throw new Error('Không thấy APP_VERSION / APP_SO trong index.html');
 s = s.replace(/^const APP_VERSION='[^']*';/m, `const APP_VERSION='${gio}';`).replace(/^const APP_SO='[^']*';/m, `const APP_SO='1.${n}';`);
 fs.writeFileSync(f, s);
-console.log(`v1.${n} · ${gio}`);
+// 19/10/2026 anh: "thay đổi bản mới thì các TK tự F5 lại hết" — app mỗi phút đọc phien-ban.txt, số lớn hơn bản đang chạy thì tự tải lại
+fs.writeFileSync(path.join(goc, 'phien-ban.txt'), `1.${n}\n`);
+execSync('git add phien-ban.txt', { cwd: goc });
+console.log(`v1.${n} · ${gio}  (đã ghi + git add phien-ban.txt)`);
