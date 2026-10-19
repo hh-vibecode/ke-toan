@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (30)** — Anh: "viết vào phần Logic cách tính các bộ chỉ số chưa" → tab Logic mới **Chỉ số (cách tính)** (mở mặc định), 21 dòng: 6 thẻ Tổng quan + so kỳ trước + đã cọc chưa đi hàng, so với app MKT (doanh thu vs doanh số chốt đơn), Phiếu chi (tổng chi / tổng đề nghị / chờ xác nhận / chờ chi / chưa nhận HĐ / số phiếu), Phiếu thu (tổng thu / theo loại / chưa thu), Sổ quỹ (tổng số dư / thu chi trong kỳ / kiểm két / đối chiếu file). Ghi rõ: lọc 1 cơ sở thì chi phí không gồm chi phí chung. **Quy tắc:** thêm / đổi thẻ chỉ số → sửa dòng tương ứng ở tab này.
+
 - **19/10/2026 (29)** — Anh: "mấy cái chờ kế toán cho vào câu hỏi chưa" → chưa có → thêm 6 câu nhóm "Khớp sổ quỹ & tài khoản (19/10)" (#57–62): VCB CTY chênh tồn cuối T9 / đầu T10 file; 6 TK ngoài file dòng tiền còn dùng không; #75 #90 thiếu TK chi; 7 khoản vay thiếu giải ngân; tách lãi THU NO TKV; khoản về VCB CTY 12/10 tạm ghi từ TK vay. Đóng 3 câu đã giải quyết (#21 gốc vay, #24 cọc Phương Hương, #52 đề xuất Kiot) với trả lời "Hệ thống". **Lỗi:** nap-cau-hoi thêm nhầm 4 câu cũ (json còn tiêu đề cũ, app đã đổi tiêu đề) → đã xoá #53–56 + gỡ khỏi json (json giờ chỉ giữ câu đang có trên app). Gán loại chi phiếu đã xác nhận: 0 phiếu thiếu (đã xong).
 
 - **19/10/2026 (28)** — Máy anh: sửa git hỏng (clone sạch), đăng ký lịch Windows **kt-keo-file-dong-tien** 30 phút / lần (việc phiên cloud để lại), chạy thật OK; trả chế độ ngủ về 15 phút; lịch kt-dong-bo-sheet-dn vẫn chạy đều.

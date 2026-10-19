@@ -845,8 +845,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.49';
-const APP_VERSION='17/10/2026 10:03';
+const APP_SO='1.107';
+const APP_VERSION='19/10/2026 09:32';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3774,8 +3774,29 @@ async function luuTL(id){const v=$('#tl'+id).value.trim();if(!v)return alert('Ch
 // Sửa luật ở SQL thì sửa luôn mục tương ứng ở đây — để người khác đọc là hiểu app đang tính thế nào.
 // LOGIC dạng bảng (anh 15/10/2026: "dài như sớ, làm bảng kiểu GG sheet theo nghiệp vụ"). Mỗi dòng 1 quy tắc ngắn.
 // [nghiệp vụ, mục, quy tắc, ghi chú / ví dụ, cập nhật]. Thêm / đổi logic → sửa đúng dòng ở đây.
-const LG_NV=[['chung','Dữ liệu chung'],['thu_chi','Thu chi & Ngân quỹ'],['cong_no','Công nợ'],['thue','Hoá đơn & Thuế'],['bao_cao','Báo cáo & Chốt kỳ'],['kiot','Kéo & so khớp Kiot']];
+const LG_NV=[['chi_so','Chỉ số (cách tính)'],['chung','Dữ liệu chung'],['thu_chi','Thu chi & Ngân quỹ'],['cong_no','Công nợ'],['thue','Hoá đơn & Thuế'],['bao_cao','Báo cáo & Chốt kỳ'],['kiot','Kéo & so khớp Kiot']];
 const LOGIC2=[
+ ['chi_so','Tổng quan · Doanh thu','Tổng tiền hoá đơn Kiot trạng thái Hoàn thành + Đang xử lý (đang giao), theo NGÀY HOÁ ĐƠN trong kỳ, mọi khách, mọi kênh.','Giống màn Tổng quan Kiot. Đơn đặt chưa giao chưa tính. Dòng nhỏ: tiền trả hàng trong kỳ.','19/10'],
+ ['chi_so','Tổng quan · Doanh thu thuần','Doanh thu − tiền khách trả hàng trong kỳ (phiếu trả hàng Kiot).','Khớp \"Doanh thu thuần\" Kiot. Tỷ lệ trả hàng = trả hàng ÷ doanh thu.','19/10'],
+ ['chi_so','Tổng quan · Giá vốn hàng bán','Giá vốn Kiot của hàng đã bán − giá vốn hàng trả lại (theo tỷ lệ hoá đơn gốc).','Tỷ lệ giá vốn = giá vốn ÷ doanh thu thuần.','19/10'],
+ ['chi_so','Tổng quan · Lợi nhuận gộp','Doanh thu thuần − giá vốn.','Biên lợi nhuận gộp = lợi nhuận gộp ÷ doanh thu thuần.','19/10'],
+ ['chi_so','Tổng quan · Chi phí hoạt động (hạch toán)','Phiếu chi đã xác nhận (chờ chi + đã chi), trừ tạm ứng và trả gốc vay; ghi vào tháng phân bổ → tháng hạch toán ghi tay → tháng sử dụng dịch vụ.','Chọn 1 cơ sở: chỉ phần chi phí phân bổ cho cơ sở đó, KHÔNG gồm chi phí chung công ty. Tỷ lệ chi phí = chi phí ÷ doanh thu thuần.','19/10'],
+ ['chi_so','Tổng quan · Lợi nhuận sau chi phí (ước tính)','Lợi nhuận gộp − chi phí hoạt động.','\"Ước tính\" vì giá vốn Kiot là gần đúng và chi phí phụ thuộc phân bổ. Biên lợi nhuận = lợi nhuận ÷ doanh thu thuần.','19/10'],
+ ['chi_so','Tổng quan · So với tháng trước','So với kỳ liền trước CÙNG ĐỘ DÀI (vd 1–19/10 so 1–19/9).','Mũi tên xanh = tốt (doanh thu / lợi nhuận tăng, chi phí / giá vốn giảm).','19/10'],
+ ['chi_so','Tổng quan · Đã cọc · chưa đi hàng','Đơn đặt chưa hoàn thành / chưa huỷ có tiền cọc (trả trên đơn + trả trước của khách chia cho đơn cũ nhất trước).','Là doanh thu DỰ KIẾN, chưa nằm trong doanh thu. Báo giá không tiền không tính.','19/10'],
+ ['chi_so','So với app MKT','App kế toán = DOANH THU (hàng đã giao, theo ngày hoá đơn). App MKT = DOANH SỐ CHỐT ĐƠN của Sale (đơn đặt theo ngày đặt + hoá đơn bán thẳng, theo khách gắn mã từ lead).','Lệch vì: đơn chốt tháng này giao tháng sau (MKT tính trước); đơn chốt tháng trước giao tháng này (kế toán tính sau); phạm vi khách. Số báo lãi lỗ / thuế dùng số kế toán.','19/10'],
+ ['chi_so','Phiếu chi · Tổng chi tháng','Phiếu ĐÃ THANH TOÁN có ngày sử dụng dịch vụ trong tháng; tách tiền mặt / ngân hàng theo tài khoản đi tiền.','Không tính trả gốc vay, phiếu từ chối.','19/10'],
+ ['chi_so','Phiếu chi · Tổng đề nghị','Mọi phiếu có ngày sử dụng dịch vụ trong tháng (chờ xác nhận + chờ chi + đã chi), trừ từ chối.','','19/10'],
+ ['chi_so','Phiếu chi · Chờ xác nhận / Chờ chi tiền','Chờ xác nhận = phiếu chưa được GĐ / kế toán xác nhận. Chờ chi tiền = đã xác nhận, chờ thủ quỹ (két, TK công ty) hoặc GĐ (TK cá nhân) chi.','Phiếu tháng trước còn chờ: nút \"Tháng trước còn chờ\".','19/10'],
+ ['chi_so','Phiếu chi · Chưa nhận HĐ','Phiếu đã thanh toán, cần hoá đơn đỏ, chưa đánh dấu đã nhận.','','19/10'],
+ ['chi_so','Phiếu chi · Số phiếu trong tháng','Số phiếu chi theo ngày sử dụng dịch vụ + số lần trả gốc vay trong tháng (trang Vay).','Bằng số dòng sheet đề nghị lọc theo ngày sử dụng.','19/10'],
+ ['chi_so','Phiếu thu · Tổng thu tháng','Phiếu thu ĐÃ THU có ngày thu trong tháng; tách tiền mặt / ngân hàng.','Thu Kiot tự kéo + thu nhập tay. Điều chuyển nội bộ không tính.','19/10'],
+ ['chi_so','Phiếu thu · Thu bán hàng / công nợ / đặt cọc / khác','Theo loại thu của phiếu (đã thu, trong tháng). Thu khác = mọi loại còn lại (lãi NH, hoàn tiền, vốn góp…).','Bấm thẻ → lọc danh sách đúng loại.','19/10'],
+ ['chi_so','Phiếu thu · Chưa thu','Phiếu thu trạng thái Chưa thu trong tháng.','','19/10'],
+ ['chi_so','Sổ quỹ · Tổng số dư (sổ sách)','Tồn đầu kỳ của tài khoản (ngày mốc) + thu − chi ± điều chuyển ± vay, đến cuối ngày đang xem; cộng mọi tài khoản đang dùng.','Tiền mặt = két + quỹ quầy cửa hàng; Ngân hàng = các tài khoản ngân hàng.','19/10'],
+ ['chi_so','Sổ quỹ · Thu / Chi trong kỳ','Tiền thật vào / ra tài khoản theo ngày thu / ngày chi, KHÔNG gồm điều chuyển nội bộ.','Khác \"Chi phí hạch toán\" ở Tổng quan (theo tháng sử dụng / phân bổ).','19/10'],
+ ['chi_so','Sổ quỹ · Kiểm két hôm nay','Số đếm két cuối ngày (thủ quỹ nhập) so với số dư sổ sách cuối ngày.','Lệch → Đối soát lỗi tự báo.','19/10'],
+ ['chi_so','Sổ quỹ · Đối chiếu file dòng tiền','Mỗi tài khoản × ngày: số trong file \"Kiểm soát dòng tiền\" so với số app; lệch thì tự ghi chú.','File là chuẩn (anh chốt 17/10). Kéo file 30 phút / lần.','19/10'],
  // ── DỮ LIỆU CHUNG
  ['chung','Phạm vi dữ liệu','Số chuẩn tính từ 01/09/2026; trước đó là số tham khảo.','Việc / câu hỏi chỉ dính trước T9 đóng tạm; HĐ đỏ chưa nhận đếm từ 01/09.','09/10'],
  ['chung','Phạm vi dữ liệu','Có dữ liệu cả năm 2026: Kiot và chi từ 01/01, điều chuyển từ 01/05, số dư tài khoản từ 01/09.','Trước 01/09 sheet cũ không ghi thu ngoài Kiot (lãi, hộ trả tiền, GĐ nộp…) → kỳ trước 01/09 có nhãn cảnh báo, không hiện số dư.','09/10'],
@@ -3891,7 +3912,7 @@ const LOGIC2=[
  ['kiot','Cảnh báo','Chuông báo: kéo lỗi, quá 4 tiếng không kéo được, lịch so khớp không chạy, còn lệch không tự bù được.','Cùng vấn đề chỉ báo lại sau 12 tiếng.','14/10'],
 ];
 function veLogic(c){
-  const f=S.f,tab=f.lg_tab||'chung',q=(f.lg_q||'').toLowerCase().trim();
+  const f=S.f,tab=f.lg_tab||'chi_so',q=(f.lg_q||'').toLowerCase().trim();
   const ds=q?LOGIC2.filter(r=>r.join(' ').toLowerCase().includes(q)):LOGIC2.filter(r=>r[0]===tab);
   const tenNV=k=>(LG_NV.find(x=>x[0]===k)||[])[1]||k;
   let rows='',i=0;const nhom=[];ds.forEach(r=>{const g=(q?r[0]+'|':'')+r[1];const z=nhom[nhom.length-1];if(z&&z.g===g)z.r.push(r);else nhom.push({g,r:[r]})});
