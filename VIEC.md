@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **19/10/2026 (32)** — Anh: "bỏ phân quyền ra mục riêng" → cửa sổ tài khoản 2 tab: **Thông tin tài khoản** (tên đăng nhập, họ tên, mật khẩu, đang dùng) | **Phân quyền** (Toàn quyền · Vai trò đặc biệt: Giám đốc / Thủ quỹ · Quyền theo trang). Bỏ ô chi_tt trùng trong bảng trang; nhãn Giám đốc mới (xác nhận, chi TK cá nhân, Xem như). Ghi nhận: tài khoản thuquy đã đổi tên Nguyễn Thị Vân Anh + tick thêm Chi (mọi phiếu) / chỉ đề nghị / tạm ứng → thủ quỹ đang THẤY MỌI phiếu chi (trái quy tắc 16/10 "chỉ thấy phiếu đã xác nhận") — chờ anh quyết, chưa sửa.
+
 - **19/10/2026 (31)** — Anh: "mặc định đơn vị đồng" → báo cáo quản trị mặc định Đơn vị: đồng (trước: nghìn đồng), "đồng" lên đầu danh sách.
 
 - **19/10/2026 (30)** — Anh: "viết vào phần Logic cách tính các bộ chỉ số chưa" → tab Logic mới **Chỉ số (cách tính)** (mở mặc định), 21 dòng: 6 thẻ Tổng quan + so kỳ trước + đã cọc chưa đi hàng, so với app MKT (doanh thu vs doanh số chốt đơn), Phiếu chi (tổng chi / tổng đề nghị / chờ xác nhận / chờ chi / chưa nhận HĐ / số phiếu), Phiếu thu (tổng thu / theo loại / chưa thu), Sổ quỹ (tổng số dư / thu chi trong kỳ / kiểm két / đối chiếu file). Ghi rõ: lọc 1 cơ sở thì chi phí không gồm chi phí chung. **Quy tắc:** thêm / đổi thẻ chỉ số → sửa dòng tương ứng ở tab này.

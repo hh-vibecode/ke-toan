@@ -834,6 +834,7 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .xn-dd{position:relative}.xn-b{width:34px;height:34px;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1.5px solid var(--border);background:var(--surface);color:var(--text2)}
 .xn-b.on{background:var(--bad);border-color:var(--bad);color:#fff}.xn-pill{font-size:11px;font-weight:800;color:#fff;background:var(--bad);border-radius:20px;padding:4px 11px;white-space:nowrap}
 .xn-m{min-width:240px;max-height:60vh;overflow:auto}.xn-h{font-size:11px;font-weight:700;color:var(--muted);padding:8px 12px 4px;text-transform:uppercase}.xn-m .dd-i.on{background:color-mix(in srgb,var(--bad) 10%,transparent)}.xn-thoat{color:var(--bad);font-weight:600}
+.nd-tab{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:4px 0 14px}.nd-tab button{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:13px;cursor:pointer;color:var(--text2)}.nd-tab button.on{border-color:var(--accent);color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -845,8 +846,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.108';
-const APP_VERSION='19/10/2026 09:43';
+const APP_SO='1.109';
+const APP_VERSION='19/10/2026 09:48';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -864,7 +865,7 @@ const VI_TRI={supreme:'Admin (chủ app)',admin:'Admin (toàn quyền)',ke_toan:
 // Quyền chia theo MODULE (giống app MKT/Sale). Key trùng tên trang dùng trong hàm SQL kt_chan. Thêm trang mới → thêm vào đây.
 // chi_de_nghi / chi_duyet (08/10): quyền 1 ô (không chia xem / sửa) — QUYEN_1_O.
 const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_gd','chi_tt'];
-const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','chi_tt','dieu_chuyen','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl','khoa_ky']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Quản trị',['danh_muc','phan_quyen','nhat_ky']]];
+const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','dieu_chuyen','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl','khoa_ky']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Quản trị',['danh_muc','phan_quyen','nhat_ky']]];
 const TRANG_QUYEN={tong_quan:'Tổng quan',dong_tien:'Dòng tiền & đối soát',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán xác nhận & chọn tài khoản đi tiền',chi_gd:'Chi — giám đốc xác nhận + chi tài khoản cá nhân',chi_tt:'Chi — thủ quỹ chi tiền (két, TK công ty) & up ảnh giao dịch',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
   sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',khoa_ky:'Khoá kỳ / chốt tháng (mở khoá: chỉ Supreme / Admin)',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
 const LOAI_TK={ngan_hang:'Ngân hàng',tien_mat:'Tiền mặt',vay:'Tài khoản vay',khac:'Khác'};
@@ -4135,19 +4136,26 @@ async function luuDM(bang,id){const o=formData($('#f'));o.id=id;
   await save('kt_luu_danh_muc',{p_bang:bang,p_dong:o});await reloadDm();render()}
 function formND(id){const x=id?S.cache.nd.find(n=>n.id===id):{vi_tri:'nhan_vien',hoat_dong:true,quyen:[]};
   const q=x.quyen||[],sup=x.vi_tri==='supreme',full=sup||x.vi_tri==='admin'||q.includes('*');
-  modal(`<h2>${id?'Sửa tài khoản':'Thêm tài khoản'}</h2><div class="form" id="f">
+  modal(`<h2>${id?'Sửa tài khoản — '+esc(x.ho_ten||''):'Thêm tài khoản'}</h2>
+    <div class="nd-tab"><button class="on" onclick="ndTab(this,'nd-tt')">Thông tin tài khoản</button><button onclick="ndTab(this,'nd-pq')">Phân quyền</button></div>
+    <div id="f"><div class="form nd-p" id="nd-tt">
     <label>Tên đăng nhập (chữ thường, không dấu)<input name="ten_dang_nhap" value="${esc(x.ten_dang_nhap||'')}" autocapitalize="none"></label>
     <label>Họ tên<input name="ho_ten" value="${esc(x.ho_ten||'')}"></label>
     <label class="full">${id?'Đặt lại mật khẩu (để trống = giữ)':'Mật khẩu (từ 8 ký tự)'}<input type="password" name="mk_moi" autocomplete="new-password"></label>
+    <label class="full chk"><input type="checkbox" name="hoat_dong" ${x.hoat_dong?'checked':''}> Đang dùng (bỏ tick = khoá tài khoản, đăng xuất ngay)</label></div>
+    <div class="form nd-p" id="nd-pq" style="display:none">
     <div class="full" style="grid-column:1/-1">${sup?'<span class="badge">Tài khoản người làm app — luôn toàn quyền</span>':
       `<label class="chk"><input type="checkbox" id="q_all" ${full?'checked':''} onchange="$('#qbox').style.display=this.checked?'none':''"> <b>Toàn quyền</b> — xem, nhập, sửa mọi trang, quản lý tài khoản</label>`}
-      <label class="chk" style="margin-top:6px"><input type="checkbox" id="q_gd" ${sup||q.includes('chi_gd')?'checked':''} ${sup||S.toi.vi_tri!=='supreme'?'disabled':''}> <b>Giám đốc xác nhận chi (lượt 2)</b> — tick riêng, Toàn quyền không tự có${S.toi.vi_tri!=='supreme'?' · chỉ anh Hải cấp / bỏ':''}</label></div>
+      <div class="sec" style="margin-top:12px">Vai trò đặc biệt</div>
+      <label class="chk"><input type="checkbox" id="q_gd" ${sup||q.includes('chi_gd')?'checked':''} ${sup||S.toi.vi_tri!=='supreme'?'disabled':''}> <b>Giám đốc</b> — xác nhận phiếu chi, tự chi tiền từ tài khoản cá nhân, dùng Xem như (Toàn quyền không tự có; chỉ Supreme tick)</label>
+      <label class="chk" style="margin-top:6px"><input type="checkbox" id="q_tq" ${q.includes('chi_tt')?'checked':''} ${sup?'disabled':''}> <b>Thủ quỹ</b> — chi tiền từ két + tài khoản công ty, up ảnh giao dịch (chỉ thấy phiếu đã xác nhận)</label></div>
     <div class="full" id="qbox" style="grid-column:1/-1;${full?'display:none':''}">
       <div class="sec" style="margin-top:4px">Quyền theo trang</div>
       <div class="card"><table><tr><th>Module / trang</th><th class="c">Xem</th><th class="c">Nhập / sửa</th></tr>
       ${NHOM_QUYEN.map(([g,ks])=>`<tr class="tong"><td colspan="3">${g}</td></tr>`+ks.map(k=>`<tr><td style="padding-left:24px">${esc(TRANG_QUYEN[k])}</td>${QUYEN_1_O.includes(k)?`<td class="c" colspan="2"><input type="checkbox" data-q="${k}" ${q.includes(k)?'checked':''}></td>`:`<td class="c"><input type="checkbox" data-q="${k}" ${q.includes(k)?'checked':''}></td><td class="c"><input type="checkbox" data-q="${k}:ghi" ${q.includes(k+':ghi')?'checked':''}></td>`}</tr>`).join('')).join('')}</table></div></div>
-    <label class="full chk"><input type="checkbox" name="hoat_dong" ${x.hoat_dong?'checked':''}> Đang dùng (bỏ tick = khoá tài khoản, đăng xuất ngay)</label></div>
+    </div></div>
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuND(${id||'null'})">Lưu</button></div>`)}
+function ndTab(b,id){$$('.nd-tab button').forEach(x=>x.classList.toggle('on',x===b));$$('.nd-p').forEach(p=>p.style.display=p.id===id?'':'none')}
 async function luuND(id){const f=$('#f');const x=id?S.cache.nd.find(n=>n.id===id):{};const all=$('#q_all');
   const toan=x.vi_tri==='supreme'||(all&&all.checked);
   const o={id,ten_dang_nhap:f.querySelector('[name=ten_dang_nhap]').value.trim().toLowerCase(),ho_ten:f.querySelector('[name=ho_ten]').value.trim(),
@@ -4155,10 +4163,11 @@ async function luuND(id){const f=$('#f');const x=id?S.cache.nd.find(n=>n.id===id
   const q=new Set(toan?[]:$$('#f [data-q]').filter(c=>c.checked).map(c=>c.dataset.q));
   [...q].filter(k=>k.endsWith(':ghi')).forEach(k=>q.add(k.split(':')[0]));   // được sửa thì phải được xem
   if($('#q_gd')&&$('#q_gd').checked)q.add('chi_gd');else q.delete('chi_gd');   // ô riêng, giữ cả khi Toàn quyền
+  if($('#q_tq')&&$('#q_tq').checked)q.add('chi_tt');else if($('#q_tq'))q.delete('chi_tt');   // 19/10: vai trò thủ quỹ ở mục Phân quyền
   o.quyen=[...q];
   if(!/^[a-z0-9._-]{3,40}$/.test(o.ten_dang_nhap))return alert('Tên đăng nhập 3–40 ký tự: chữ thường không dấu, số, dấu chấm, gạch');
   if(!o.ho_ten)return alert('Nhập họ tên');if(!id&&o.mk_moi.length<8)return alert('Mật khẩu từ 8 ký tự');
-  if(!toan&&!o.quyen.filter(k=>k!=='chi_gd').length)return alert('Chưa tick quyền trang nào');
+  if(!toan&&!o.quyen.filter(k=>k!=='chi_gd').length){ndTab($$('.nd-tab button')[1],'nd-pq');return alert('Chưa tick quyền trang nào (tab Phân quyền)')}
   await save('kt_luu_nguoi_dung',{p_dong:o});render()}
 function datLaiMK(id){const x=S.cache.nd.find(n=>n.id===id);
   modal(`<h2>Đặt lại mật khẩu — ${esc(x.ho_ten)}</h2><div class="form" id="f" style="grid-template-columns:1fr">
