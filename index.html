@@ -876,6 +876,11 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .chat-nd{display:inline-block;text-align:left;background:var(--bg2);border-radius:12px;padding:7px 11px;font-size:13px;line-height:1.4;word-break:break-word}.chat-m.toi .chat-nd{background:var(--accent);color:#fff}
 .chat-m.toi .chat-phieu{color:#fff;text-decoration:underline}.chat-n{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border)}.chat-n textarea{flex:1;resize:none;min-height:38px;max-height:120px}
 @media (max-width:640px){.chat-ds{width:120px}.chat-it span{display:none}}
+.chat-btn{position:relative;display:inline-flex;align-items:center;padding:5px 8px}.hd .chat-btn{border:none;background:transparent}.hd .chat-btn svg{width:21px;height:21px;color:var(--text2)}
+.chat-bb{display:flex;align-items:center;gap:6px}.chat-m.toi .chat-bb{flex-direction:row-reverse}
+.chat-xl{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:999px;width:24px;height:24px;font-size:12px;font-weight:800;cursor:pointer;opacity:0;transition:opacity .15s;flex-shrink:0}
+.chat-m:hover .chat-xl{opacity:1}.chat-xl.on{opacity:1;background:var(--ok,#16a34a);border-color:var(--ok,#16a34a);color:#fff}
+.chat-cam{font-size:11px;color:var(--ok,#16a34a);font-weight:700;margin-top:3px}.chat-xem{font-size:10.5px;color:var(--muted);margin-top:2px}
 </style>
 </head>
 <body>
@@ -887,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.139';
-const APP_VERSION='19/10/2026 16:22';
+const APP_SO='1.140';
+const APP_VERSION='19/10/2026 16:27';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3884,9 +3889,9 @@ function tiengBao(){try{if(!AC)return;const t=AC.currentTime,out=AC.createGain()
 // ── CHAT trong app (19/10/2026, anh: "làm cái chat trong nền tảng với mọi người", "có nút link cái phiếu luôn để bảo duyệt cho nhanh") ──
 // Nhóm chung + nhắn riêng 1-1. Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần (số chưa đọc + tiếng bzzz).
 // Mã phiếu trong tin (PC000123 / PT000123 / DC000123) thành link mở thẳng phiếu.
-const CHAT={kenh:'chung',mo:false,tin:{},tong:[],so:0,dang:false};
-const IC_CHAT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>';
-const chatNut=()=>`<div class="tb-dd tb-chat"><button class="tb-btn" title="Chat" onclick="event.stopPropagation();CHAT.mo?dongChat():moChat()">${IC_CHAT}<span class="cb-so" id="chat-so" ${CHAT.so?'':'hidden'}>${CHAT.so>99?'99+':CHAT.so}</span></button></div>`;
+const CHAT={kenh:'chung',mo:false,tin:{},tong:[],so:0,dang:false,cam:{},doc:{}};
+const IC_CHAT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6" stroke-linecap="round"/></svg>';
+const chatNut=()=>`<div class="tb-dd tb-chat"><button class="tb-btn chat-btn" title="Chat" onclick="event.stopPropagation();CHAT.mo?dongChat():moChat()">${IC_CHAT}<span class="cb-so" id="chat-so" ${CHAT.so?'':'hidden'}>${CHAT.so>99?'99+':CHAT.so}</span></button></div>`;
 function chatKhung(){let d=document.getElementById('chat');if(d)return d;d=document.createElement('div');d.id='chat';d.className='chat';
   d.innerHTML=`<div class="chat-h"><b>Chat</b><span class="muted" id="chat-kt"></span><button class="x" onclick="dongChat()">✕</button></div>
     <div class="chat-b"><div class="chat-ds" id="chat-ds"></div><div class="chat-k"><div class="chat-tin" id="chat-tin"></div>
@@ -3902,11 +3907,21 @@ function veChatDs(){const el=$('#chat-ds');if(!el)return;el.innerHTML=CHAT.tong.
   const k=CHAT.tong.find(x=>x.kenh===CHAT.kenh);const kt=$('#chat-kt');if(kt)kt.textContent=k?k.ten:''}
 async function chatChon(k){CHAT.kenh=k;veChatDs();await chatTai(true);const o=$('#chat-o');if(o)o.focus()}
 const linkPhieu=h=>h.replace(/\b(PC|PT|DC)(\d{6})\b/g,(m,l,n)=>`<a class="m-link chat-phieu" onclick="moPhieu('${l}',${+n})">${m}</a>`);
+// 19/10 anh: "thêm đã đọc, thêm cả react đã xử lý" — tin cuối của mình hiện "Đã xem" (nhóm: tên người đã xem); nút ✓ trên tin = đánh dấu đã xử lý
 async function chatTai(cuon){if(CHAT.dang||!S.phien)return;CHAT.dang=true;const k=CHAT.kenh,ds=CHAT.tin[k]=CHAT.tin[k]||[];
-  try{const moi=await rpc('kt_chat_ds',{p_kenh:k,p_sau:ds.length?ds[ds.length-1].id:0});if(moi.length){ds.push(...moi);cuon=true;rpc('kt_chat_doc',{p_kenh:k,p_den:moi[moi.length-1].id}).then(chatTong).catch(()=>{})}
-    if(k!==CHAT.kenh)return;const el=$('#chat-tin');if(!el)return;const cuoi=el.scrollHeight-el.scrollTop-el.clientHeight<60;
-    el.innerHTML=ds.map(x=>`<div class="chat-m ${x.cua_toi?'toi':''}"><div class="chat-ai">${x.cua_toi?'':esc(x.ai)+' · '}${fmtDT(x.luc)}</div><div class="chat-nd">${linkPhieu(esc(x.nd)).replace(/\n/g,'<br>')}</div></div>`).join('')||'<div class="muted" style="font-size:12px;padding:12px">Chưa có tin nhắn</div>';
-    if(cuon||cuoi)el.scrollTop=el.scrollHeight}catch(e){}finally{CHAT.dang=false}}
+  try{const r=await rpc('kt_chat_ds',{p_kenh:k,p_sau:ds.length?ds[ds.length-1].id:0,p_tu:ds.length?ds[0].id:0});const moi=r.tin||[];
+    if(moi.length){ds.push(...moi);cuon=true;rpc('kt_chat_doc',{p_kenh:k,p_den:moi[moi.length-1].id}).then(chatTong).catch(()=>{})}
+    CHAT.cam[k]=r.cam||[];CHAT.doc[k]=r.doc||[];if(k===CHAT.kenh)veChatTin(cuon)}catch(e){}finally{CHAT.dang=false}}
+function veChatTin(cuon){const k=CHAT.kenh,ds=CHAT.tin[k]||[],el=$('#chat-tin');if(!el)return;const cuoi=el.scrollHeight-el.scrollTop-el.clientHeight<60;
+  const cam=CHAT.cam[k]||[],doc=CHAT.doc[k]||[],toiCuoi=[...ds].reverse().find(x=>x.cua_toi);
+  el.innerHTML=ds.map(x=>{const c=cam.filter(z=>z.tin_id===x.id),toiC=c.some(z=>z.toi);
+    const xem=toiCuoi&&x.id===toiCuoi.id?(()=>{const ai=doc.filter(d=>+d.den>=x.id).map(d=>d.ten);return `<div class="chat-xem">${ai.length?(k==='chung'?'Đã xem: '+esc(ai.join(', ')):'Đã xem'):'Đã gửi'}</div>`})():'';
+    return `<div class="chat-m ${x.cua_toi?'toi':''}"><div class="chat-ai">${x.cua_toi?'':esc(x.ai)+' · '}${fmtDT(x.luc)}</div>
+      <div class="chat-bb"><div class="chat-nd">${linkPhieu(esc(x.nd)).replace(/\n/g,'<br>')}</div><button class="chat-xl ${toiC?'on':''}" title="${toiC?'Bỏ đánh dấu đã xử lý':'Đánh dấu đã xử lý'}" onclick="chatCam(${x.id})">✓</button></div>
+      ${c.length?`<div class="chat-cam">✓ Đã xử lý · ${esc(c.map(z=>z.ten).join(', '))}</div>`:''}${xem}</div>`}).join('')||'<div class="muted" style="font-size:12px;padding:12px">Chưa có tin nhắn</div>';
+  if(cuon||cuoi)el.scrollTop=el.scrollHeight}
+async function chatCam(id){try{await rpc('kt_chat_cam',{p_tin_id:id});const k=CHAT.kenh,ds=CHAT.tin[k]||[];
+  const r=await rpc('kt_chat_ds',{p_kenh:k,p_sau:ds.length?ds[ds.length-1].id:0,p_tu:ds.length?ds[0].id:0});if((r.tin||[]).length)ds.push(...r.tin);CHAT.cam[k]=r.cam||[];CHAT.doc[k]=r.doc||[];veChatTin(false)}catch(e){alert(e.message)}}
 async function chatGui(){const o=$('#chat-o');if(!o)return;const v=o.value.trim();if(!v)return;o.disabled=true;
   try{await rpc('kt_chat_gui',{p_kenh:CHAT.kenh,p_noi_dung:v});o.value='';await chatTai(true)}catch(e){alert(e.message)}finally{o.disabled=false;o.focus()}}
 function guiPhieuChat(so,nd,tien){moChat().then(()=>{const o=$('#chat-o');if(o){o.value=so+' · '+nd+' · '+fmt(tien)+' — ';o.focus();o.selectionStart=o.selectionEnd=o.value.length}});toast('Chọn người nhận ở cột trái rồi gõ thêm, bấm Gửi')}
@@ -4089,7 +4104,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['chung','Lọc cơ sở','Chỉ 1 ô lọc cơ sở ở thanh trên (cạnh ô kỳ), tick chọn 1 hoặc nhiều cơ sở cùng lúc; áp dụng cho mọi trang. Bỏ ô cơ sở trong từng trang và ở cột lọc bên trái.','Bỏ tick hết = Tất cả cơ sở. Bấm tên cơ sở trên dòng phiếu chi vẫn lọc nhanh theo cơ sở đó.','19/10'],
  ['chung','Người đang trong app','Thanh trên cạnh chuông: avatar con vật của những ai đang mở app (rê chuột xem tên + trang đang xem). Như app MKT, ảnh con vật lấy từ app MKT.','Mỗi trình duyệt 30 giây báo danh 1 lần (kt_bao_danh, bảng kt_dang_xem riêng app kế toán); quá 90 giây không báo = đã thoát; đăng xuất = rời ngay. Lúc Xem như không báo danh.','19/10'],
- ['chung','Chat trong app','Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Lúc Xem như không gửi được tin.','19/10'],
+ ['chung','Chat trong app','Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
  ['chung','Bình luận: @nhắc tên, Nhắc việc, âm báo','Ô bình luận trong phiếu (chi, thu, điều chuyển, tạm ứng, vay): gõ @ chọn tên người có tài khoản app kế toán → người đó nhận chuông. Tick "Nhắc việc" → bình luận thành việc cần làm: nhãn "Cần bổ sung" trên phiếu + mục lọc ở dải Cần chú ý, tới khi bấm "✓ Đã xong".','Việc nhắc mở quá 2 ngày: 8:00 sáng hằng ngày báo chuông lại người ghi + kế toán (lịch kt-nhac-viec). Có thông báo mới: tiếng "bzzzz" rung + màn hình rung nhẹ như BUZZ Yahoo ngày xưa (tự tổng hợp, sau khi đã bấm vào trang 1 lần). Người gửi phiếu không có tài khoản: không nhắc — giám đốc / kế toán up thay.','19/10'],
  ['chung','Báo có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App kiểm ngay 4 giây sau khi mở, rồi mỗi phút và lúc quay lại tab; có bản mới → hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình (như app MKT).','Không đang mở cửa sổ nhập liệu → đếm 10 giây rồi tự tải lại; đang nhập dở → chỉ hiện nút, bấm Tải lại khi xong. Lúc Xem như thì không báo.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
