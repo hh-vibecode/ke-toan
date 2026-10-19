@@ -36,13 +36,13 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
   const loTen = t => dm.lo.find(x => x.ten === t);
   const timLo = (x, nd) => { if (!x) return null; if (/^FINANCE/i.test(x)) return laThe(nd) ? loTen('FINANCE - Trả thẻ tín dụng') : loTen('FINANCE - Lãi vay & phí tài chính');
     return dm.lo.find(l => chuan(l.ten) === chuan(x)) || null; };
-  const app = await sql(`select id, noi_dung, so_tien::bigint so_tien, trang_thai, nguon, ma_nguon, ngay_tt::text tt, ngay_su_dung::text sd, ngay_de_nghi::text dn, tai_khoan_id, loai_id, unc, kiot_so_quy_id
+  const app = await sql(`select id, noi_dung, so_tien::bigint so_tien, trang_thai, nguon, ma_nguon, ngay_tt::text tt, ngay_su_dung::text sd, ngay_de_nghi::text dn, tai_khoan_id, loai_id, unc, kiot_so_quy_id, nguoi_de_nghi nn
     from kt_chi where not da_xoa and nguon <> 'kiot'`);
   const kiotCho = await sql(`select id, so_tien::bigint so_tien, ngay_de_nghi::text dn, noi_dung, kiot_so_quy_id, kiot_ma from kt_chi where not da_xoa and nguon = 'kiot' and trang_thai in ('cho_duyet','cho_gd','cho_tt')`);
   const vayTra = await sql(`select id, goc::bigint goc, ngay::text ngay from kt_vay_tra where not da_xoa`);
   const theoKhoa = new Map(); app.forEach(a => { const k = khoa(a.noi_dung, +a.so_tien); (theoKhoa.get(k) || theoKhoa.set(k, []).get(k)).push(a); });
   const dung = new Set(), dungVay = new Set(), dungKiot = new Set();
-  const capNhat = [], them = [], vayMoi = [], ghepKiot = [], bao = [];
+  const capNhat = [], them = [], vayMoi = [], ghepKiot = [], bao = [], gop = [];
   for (const r of rows) {
     const tien = so(r.G), nd = String(r.E), dA = ngay(r.A), dTT = ngay(r.V) || ngay(r.T), S = String(r.S || ''), U = String(r.U || '');
     const st = /từ chối/i.test(S + U) ? 'tu_choi' : /đã thanh toán/i.test(U) ? 'da_tt' : /đã duyệt/i.test(S) ? 'cho_tt' : 'cho_duyet';
@@ -59,7 +59,14 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
     // phụ 2: phiếu sheet đang chờ trên app, cùng số tiền, ngày đề nghị lệch ≤ 3 ngày (nội dung sửa chữ)
     if (!a && (dA || '') >= TU_MOI) a = app.find(x => !dung.has(x.id) && x.nguon === 'sheet_cu' && +x.so_tien === tien && lech(x.dn, dA) <= 3);
     const tk = tim(dm.tk, r.W), lo = timLo(r.X, nd);
+    // phụ 3 (19/10/2026, anh: "thấy trùng thì gộp, tránh vừa app vừa sheet"): phiếu đã gửi trên APP (link đề nghị / tạo trên app), cùng số tiền,
+    // ngày đề nghị lệch ≤ 3 ngày, cùng người đề nghị hoặc nội dung gần giống → coi là 1 phiếu, không thêm dòng sheet
+    if (!a) a = app.find(x => !dung.has(x.id) && x.nguon !== 'sheet_cu' && +x.so_tien === tien && lech(x.dn, dA) <= 3
+      && ((chuan(x.nn) && chuan(x.nn) === chuan(r.C)) || chuan(x.noi_dung).slice(0, 8) === chuan(nd).slice(0, 8)));
     if (a) { dung.add(a.id);
+      // phiếu gốc trên APP: app là chính (từ 19/10) → sheet KHÔNG đổi trạng thái / tài khoản / loại, chỉ bổ sung link UNC nếu app chưa có
+      if (a.nguon !== 'sheet_cu') { const unc = [r.Y].find(x => /^https?:/.test(String(x || ''))); if (unc && !a.unc) capNhat.push({ id: a.id, cu: a.trang_thai, doi: { unc }, nd, tien, R: sach(r.R), luc: luc(r.T) });
+        gop.push(`#${a.id} (app) = sheet r${r._r}`); continue; }
       const doi = {};
       if (st === 'tu_choi' && a.trang_thai !== 'da_tt' && a.trang_thai !== 'tu_choi') doi.trang_thai = 'tu_choi';
       else if (st !== 'tu_choi' && BAC[st] > (BAC[a.trang_thai] ?? 9)) {
@@ -88,6 +95,7 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
   }
   const cho = app.filter(a => a.nguon === 'sheet_cu' && a.trang_thai !== 'da_tt' && a.trang_thai !== 'tu_choi' && !dung.has(a.id));
   console.log('Sheet 2026:', rows.length, 'dòng');
+  console.log('0. Gộp trùng app ↔ sheet (phiếu gửi trên app, sheet không ghi đè):', gop.length, gop.slice(-5).join(', '));
   console.log('1. Cập nhật trạng thái phiếu đã có:', capNhat.length, Object.entries(capNhat.reduce((o, x) => { const k = x.cu + '→' + (x.doi.trang_thai || '(bổ sung TK/loại/UNC)'); o[k] = (o[k] || 0) + 1; return o }, {})).map(([k, v]) => k + ': ' + v).join(' · '));
   console.log('2. Thêm phiếu mới (đề nghị từ ' + TU_MOI + '):', them.length, Object.entries(them.reduce((o, x) => { o[x.trang_thai] = (o[x.trang_thai] || 0) + 1; return o }, {})).map(([k, v]) => k + ': ' + v).join(' · '), '·', f(them.reduce((s, x) => s + x.so_tien, 0)));
   console.log('3. Trả gốc vay mới → trang Vay:', vayMoi.length, f(vayMoi.reduce((s, x) => s + x.tien, 0)), vayMoi.filter(x => x.an).length ? '(+ ẩn ' + vayMoi.filter(x => x.an).length + ' phiếu chi trả gốc còn sót)' : '');
