@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **20/10/2026 (72)** — Anh: "cho giám đốc có quyền lùi bước cho phiếu" → supabase-schema-kt-gd-lui-buoc.sql: GĐ thêm Chờ chi tiền → Chờ xác nhận và mở lại phiếu Từ chối / Từ chối thanh toán (Đã chi → Chờ chi đã có ở (71)). Chân cửa sổ phiếu chi: nút lùi bước (cam) đứng ĐẦU nhóm nút duyệt: ↩ Lùi về chờ xác nhận / ↩ Huỷ đã chi / Mở lại · Từ chối · Xác nhận / Đã chi tiền. Test 7 bước máy chủ đạt + chụp giao diện. Ghi nhận lỗi của mình hôm 19/10 (phiếu chi mới không lưu được ~9 giờ, phiên cloud đã sửa) — từ nay test cả bấm Lưu trên form.
+
 - **20/10/2026 (71)** — Kế toán hỏi 2 câu: (1) "tiền chuyển cho người không có trong danh sách tài khoản thì phiếu chi hay điều chuyển" → trả lời: người ngoài = phiếu chi (tạm ứng thì phiếu tạm ứng); tài khoản của công ty / giám đốc cần theo dõi số dư = thêm vào Danh mục tài khoản rồi điều chuyển; chi tiêu cá nhân = phiếu chi "Không hạch toán". (2) "thủ quỹ bấm đã thanh toán nhưng chị chưa duyệt lệnh, không có nút sửa lại bước" → THIẾU THẬT: supabase-schema-kt-huy-da-chi.sql thêm chuyển Đã chi tiền → Chờ chi tiền cho chi_duyet / giám đốc; nút "↩ Huỷ đã chi" ở chân cửa sổ phiếu. Test 5 bước: thủ quỹ không tự huỷ, GĐ huỷ giữ TK + ảnh, hết trừ tiền két, chi lại được. Câu treo hôm qua chưa có trả lời của anh: nộp két từ Kiot chờ thủ quỹ nhận tiền; phiếu chi bổ sung khi khớp két (a/b).
 
 - **19/10/2026 (71)** — phiên cloud. Kế toán: "điền đủ mà không lưu được phiếu chi — báo thiếu đơn vị chịu chi phí" (anh: "rà ngay lại các luồng").
