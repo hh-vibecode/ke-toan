@@ -165,6 +165,8 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **20/10/2026 (71)** — Kế toán hỏi 2 câu: (1) "tiền chuyển cho người không có trong danh sách tài khoản thì phiếu chi hay điều chuyển" → trả lời: người ngoài = phiếu chi (tạm ứng thì phiếu tạm ứng); tài khoản của công ty / giám đốc cần theo dõi số dư = thêm vào Danh mục tài khoản rồi điều chuyển; chi tiêu cá nhân = phiếu chi "Không hạch toán". (2) "thủ quỹ bấm đã thanh toán nhưng chị chưa duyệt lệnh, không có nút sửa lại bước" → THIẾU THẬT: supabase-schema-kt-huy-da-chi.sql thêm chuyển Đã chi tiền → Chờ chi tiền cho chi_duyet / giám đốc; nút "↩ Huỷ đã chi" ở chân cửa sổ phiếu. Test 5 bước: thủ quỹ không tự huỷ, GĐ huỷ giữ TK + ảnh, hết trừ tiền két, chi lại được. Câu treo hôm qua chưa có trả lời của anh: nộp két từ Kiot chờ thủ quỹ nhận tiền; phiếu chi bổ sung khi khớp két (a/b).
+
 - **19/10/2026 (71)** — phiên cloud. Kế toán: "điền đủ mà không lưu được phiếu chi — báo thiếu đơn vị chịu chi phí" (anh: "rà ngay lại các luồng").
   **Nguyên nhân**: commit f174747 (19/10 10:28, Hạch toán Có / Không) chèn dòng `if(o.khong_hach_toan)o.phan_bo=[]` vào GIỮA `if(dvc)… else{…}` trong `docChi`
   → `else` bám vào dòng mới: phiếu chi MỚI luôn mất đơn vị chịu chi phí (không lưu được từ 10:28 đến 19:45), phiếu SỬA thì đổi đơn vị không ăn (giữ phân bổ cũ).
