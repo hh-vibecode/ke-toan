@@ -795,7 +795,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
   body.sb-an:not(.sb-rong) .sb-nv{justify-content:center;padding:10px 0;position:relative}
   body.sb-an:not(.sb-rong) .sb-nv .nav-badge{position:absolute;top:2px;right:6px;font-size:9px;min-width:16px;padding:0 4px}
 }
-@media (max-width:900px){.sb-an-n{display:none}}
+@media (max-width:900px){.sb-an-n,.sb-khoa-i{display:none}}
 /* Phiếu chi — cửa sổ lớn (16/10) */
 .modal.pc-m>div{max-width:1180px;width:100%;padding:0;max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
 .pc{display:flex;flex-direction:column;min-height:0;flex:1}
@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.148';
-const APP_VERSION='20/10/2026 18:05';
+const APP_SO='1.149';
+const APP_VERSION='20/10/2026 19:47';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1392,7 +1392,7 @@ function shell(){
       <div class="hd-r">${dxHtml()}<select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         ${csHtml()}
         ${xnHtml()}${chatNut()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
-          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div><div class="dd-i" onclick="thuAmBao()">▶ Thử âm báo</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
+          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div><div class="dd-i" onclick="thuAmBao()">▶ Thử âm báo</div><div class="dd-i sb-khoa-i" onclick="khoaMenu()" title="Khoá: menu trái luôn mở, không tự thu vào. Bấm lần nữa để mở khoá">${sbKhoa()?'✓ Đã khoá menu trái (bấm để mở khoá)':'☰ Khoá menu trái (luôn mở)'}</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');veDX();
   render();
@@ -1807,7 +1807,13 @@ function sbRa(){clearTimeout(SB_T);if(!document.body.classList.contains('sb-an')
   SB_T=setTimeout(()=>{if(document.querySelector('.sb select:focus'))return sbRa();document.body.classList.remove('sb-rong')},1000)}
 function doiTuAn(){const on=!document.body.classList.contains('sb-an');document.body.classList.toggle('sb-an',on);document.body.classList.toggle('sb-rong',on);
   try{localStorage.setItem('kt_sb_an',on?'1':'')}catch(e){}toast(on?'Đã bật tự ẩn menu — rời chuột 1 giây menu sẽ thu gọn':'Đã tắt tự ẩn menu');if(on)sbRa()}
-document.body.classList.add('sb-an');   // 16/10 anh: tự ẩn là CHẾ ĐỘ mặc định (không nút) — máy tính: menu thu về icon, trỏ vào mở, rời 1 giây thu lại
+// 20/10 anh: "thêm nút khoá menu trái trong tên profile, ai không thích nó thụt vào thì ấn khoá" — lưu theo trình duyệt từng người
+function sbKhoa(){try{return localStorage.getItem('kt_sb_khoa')==='1'}catch(e){return false}}
+function khoaMenu(){const k=!sbKhoa();try{localStorage.setItem('kt_sb_khoa',k?'1':'')}catch(e){}
+  document.body.classList.toggle('sb-an',!k);document.body.classList.remove('sb-rong');if(!k)sbRa();
+  const i=document.querySelector('.sb-khoa-i');if(i)i.textContent=k?'✓ Đã khoá menu trái (bấm để mở khoá)':'☰ Khoá menu trái (luôn mở)';
+  toast(k?'Đã khoá menu trái — luôn mở':'Đã mở khoá — menu tự thu vào khi rời chuột')}
+if(!sbKhoa())document.body.classList.add('sb-an');   // 16/10 anh: tự ẩn là CHẾ ĐỘ mặc định — máy tính: menu thu về icon, trỏ vào mở, rời 1 giây thu lại
 async function pageThu(){
   // PHIẾU THU — giao diện mẫu (kế toán 14/10/2026: "giao diện hơi kì", trạng thái chỉ Đã thu / Chưa thu): thẻ số · tab · lọc · bảng + khung chi tiết khi bấm
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
