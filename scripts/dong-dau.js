@@ -3,7 +3,9 @@
 // Dùng: ELECTRON_RUN_AS_NODE=1 "D:/Microsoft VS Code/Code.exe" scripts/dong-dau.js   (chạy 1 lần ngay trước git add / commit)
 const fs = require('fs'), path = require('path'), { execSync } = require('child_process');
 const goc = path.join(__dirname, '..'), f = path.join(goc, 'index.html');
-const n = Number(execSync('git rev-list --count HEAD -- index.html', { cwd: goc }).toString().trim()) + 1;
+let n = Number(execSync('git rev-list --count HEAD -- index.html', { cwd: goc }).toString().trim()) + 1;
+// 20/10/2026: clone NÔNG (phiên cloud) đếm thiếu lịch sử → số lùi, các máy không tự tải bản mới. Không bao giờ thấp hơn phien-ban.txt hiện có + 1
+try { const cu = Number((fs.readFileSync(path.join(goc, 'phien-ban.txt'), 'utf8').match(/^1\.(\d+)/) || [])[1]); if (cu >= n) n = cu + 1; } catch (_) {}
 const d = new Date(), p = x => String(x).padStart(2, '0');
 const gio = `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 let s = fs.readFileSync(f, 'utf8');

@@ -167,6 +167,16 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **20/10/2026 (79)** — phiên cloud. Anh: "Đóng quyền admin được ấn xác nhận điều chuyển tiền từ quỹ cửa hàng sang két — xử lý chưa?" → mới xử lý MỘT PHẦN (mục 76): máy chủ kiểm
+  `kt_co_quyen(u,'chi_tt')` mà vị trí Admin / Supreme / '*' coi như có mọi quyền → TK Admin (ketoan, giamdoc) vẫn xác nhận được, chỉ chặn được admin.ketoan (nhân viên).
+  Sửa `supabase-schema-kt-ket-chi-thu-quy.sql`: hàm `kt_la_thu_quy(u)` = Supreme hoặc có 'chi_tt' trong quyen → dùng trong kt_luu_dieu_chuyen + kt_tq_nhan (thay đúng chỗ, giữ phần còn lại);
+  giao diện `laTQ()` cho nút "Đã nhận tiền" + ô xác nhận điều chuyển vào két. (Chi tiền từ két vẫn như cũ: Admin / GĐ chi được — anh chỉ yêu cầu đóng phần XÁC NHẬN tiền vào két.)
+  Anh: "rà lại 1 lượt quyền, test xem chạy thật chưa" → **`scripts/kiem-thu-quyen-vai.js`** (chạy lại được): TK tạm 7 vai (quyền chép từ thuquy / admin.ketoan + Admin, GĐ, NV đề nghị, Supreme),
+  47 thao tác trên MÁY CHỦ trong 1 khối SQL rồi raise để HUỶ hết (không phiếu / thông báo / nhật ký thử) → xoá TK tạm; quét mọi bảng kt_* không còn dòng nào nhắc TK tạm.
+  **47/47 ĐẠT** (lần đầu 4 trượt do kịch bản: thiếu loại chi, trùng đường dẫn ảnh UNC, phiếu bị huỷ theo ca bị chặn — đã sửa kịch bản, không phải lỗi app).
+  Còn chờ anh tick: thuquy chưa có "Sổ quỹ" (dong_tien) → thủ quỹ chưa mở được Sổ quỹ (ca E3 bị chặn đúng; tick xong như ca E4).
+  **Sai của mình**: lỡ `git checkout -- index.html` (định bỏ số phiên bản sai) làm mất phần sửa laTQ chưa commit → áp lại ngay, kiểm cú pháp. `scripts/dong-dau.js` sửa: không bao giờ ra số nhỏ hơn
+  `phien-ban.txt` hiện có + 1 (clone nông ở cloud đếm thiếu → ra v1.144 / v1.146 trong khi live v1.150).
 - **20/10/2026 (78)** — phiên cloud. Anh (ảnh Phân quyền): "không có sổ quỹ trong này à" → quyền trang Sổ quỹ là `dong_tien`, trước mang tên "Dòng tiền & đối soát" và nằm nhóm
   Báo cáo tài chính → đổi tên "Sổ quỹ & số dư tài khoản (kiểm két, đối chiếu dòng tiền · kèm báo cáo Dòng tiền)", chuyển vào nhóm Nghiệp vụ (sau Điều chuyển). Khoá quyền giữ nguyên,
   TK đã tick trước vẫn giữ. Lưu ý: tick quyền này cũng mở báo cáo "Dòng tiền & Ngân quỹ" (coXem bc_dong_tien = dong_tien hoặc pl) — nếu không muốn thủ quỹ xem báo cáo thì phải tách quyền.

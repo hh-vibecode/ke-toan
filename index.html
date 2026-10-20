@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.150';
-const APP_VERSION='20/10/2026 19:53';
+const APP_SO='1.151';
+const APP_VERSION='20/10/2026 20:05';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1942,6 +1942,8 @@ const soNgay=t=>t?Math.max(0,Math.floor((Date.now()-new Date(t))/864e5)):null;
 // 16/10/2026 (anh): luồng mới — Đề nghị → GĐ / kế toán XÁC NHẬN + chọn tài khoản đi tiền → THỦ QUỸ (két + 3 TK công ty) hoặc GIÁM ĐỐC (TK cá nhân) chi tiền + up ảnh giao dịch
 // 19/10 thủ quỹ: nhìn nhanh khoản chờ chi trả bằng tiền mặt (két) hay chuyển khoản, từ tài khoản nào
 const htChi=x=>!x.tai_khoan_id?'':tkNhom(x.tai_khoan_id)==='tien_mat'?'tm':'ck',htPill=x=>{const h=htChi(x),t=(tk(x.tai_khoan_id)||{}).ten||'';return !h?pill('Chưa chọn TK','warn'):h==='tm'?pill('Tiền mặt · '+String(t).split(' - ')[0],'warn'):pill('Chuyển khoản · '+String(t).split(' - ')[0],'info')};
+// 20/10 anh: tiền vào KÉT chỉ người tick vai Thủ quỹ xác nhận (Admin không bấm được; Supreme giữ để gỡ) — khớp kt_la_thu_quy trên máy chủ
+const laTQ=()=>!!S.toi&&(S.toi.vi_tri==='supreme'||(S.toi.quyen||[]).includes('chi_tt'));
 const tkTQ=x=>!!(tk(x.tai_khoan_id)||{}).thu_quy_chi, chiTQ=()=>can('chi_tt'), chiTien=x=>tkTQ(x)?chiTQ():chiGD();
 const aiChi=x=>!x.tai_khoan_id?'Thủ quỹ / Giám đốc':tkTQ(x)?'Thủ quỹ':'Giám đốc';
 function luongChi(x){
@@ -1998,7 +2000,7 @@ async function lapLenh(id,huy){const x=S.cache.chi.find(c=>c.id===id);if(!x)retu
 // 20/10 (kế toán): thủ quỹ xác nhận đã nhận tiền vào két (thu / điều chuyển từ 20/10)
 const vaoKet=x=>{const t=tk(x.tk_nhan_id)||{};return t.loai==='tien_mat'&&!!t.thu_quy_chi};   // 20/10 anh: điều chuyển vào két chỉ thủ quỹ xác nhận
 const canTQ=(tkId,ngay)=>{const t=tk(tkId)||{};return t.loai==='tien_mat'&&!!t.thu_quy_chi&&String(ngay||'')>='2026-10-20'};
-const tqO=(bang,x)=>x.tq_nhan_luc?`<span title="${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}">${pill('Thủ quỹ đã nhận','ok')}</span>`:chiTQ()&&!xnDoc()?`<button class="m-btn pri" style="height:26px;font-size:11.5px" onclick="event.stopPropagation();tqNhan('${bang}',${x.id})">✓ Đã nhận tiền</button>`:pill('Chờ thủ quỹ nhận','warn');
+const tqO=(bang,x)=>x.tq_nhan_luc?`<span title="${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}">${pill('Thủ quỹ đã nhận','ok')}</span>`:laTQ()&&!xnDoc()?`<button class="m-btn pri" style="height:26px;font-size:11.5px" onclick="event.stopPropagation();tqNhan('${bang}',${x.id})">✓ Đã nhận tiền</button>`:pill('Chờ thủ quỹ nhận','warn');
 async function tqNhan(bang,id){if(!confirm('Xác nhận đã nhận đủ tiền mặt vào két?'))return;try{await rpc('kt_tq_nhan',{p_bang:bang,p_id:id});toast('Đã xác nhận nhận tiền');S.cache={};await render()}catch(e){alert(e.message)}}
 // 20/10 anh: tách giao dịch cá nhân (không hạch toán) sang nhóm riêng — không lẫn với thu chi công ty
 const theoNhom=(k,x)=>(S.f[k+'_nhom']==='ca_nhan')===!!x.khong_hach_toan;
@@ -2764,7 +2766,7 @@ function formDC(id){
       ${htSel(x,!id)}
       <label class="full">Nội dung<input name="noi_dung" value="${esc(x.noi_dung||'')}"></label>
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
-      ${id?`<label class="full chk"><input type="checkbox" name="da_xac_nhan" ${x.da_xac_nhan?'checked':''} ${vaoKet(x)&&!chiTQ()?'disabled title="Tiền vào két: thủ quỹ bấm Đã nhận tiền"':''}> Kế toán đã xác nhận${x.xac_nhan_boi?' ('+esc(x.xac_nhan_boi)+' '+fmtDT(x.xac_nhan_luc)+')':''}</label>`:''}
+      ${id?`<label class="full chk"><input type="checkbox" name="da_xac_nhan" ${x.da_xac_nhan?'checked':''} ${vaoKet(x)&&!laTQ()?'disabled title="Tiền vào két: thủ quỹ bấm Đã nhận tiền"':''}> Kế toán đã xác nhận${x.xac_nhan_boi?' ('+esc(x.xac_nhan_boi)+' '+fmtDT(x.xac_nhan_luc)+')':''}</label>`:''}
     </div>
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
     ${ctBox('dieu_chuyen',id,g)}${id?hdKhung('dieu_chuyen',id):''}</div>
