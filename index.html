@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.149';
-const APP_VERSION='20/10/2026 19:47';
+const APP_SO='1.150';
+const APP_VERSION='20/10/2026 19:53';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -911,8 +911,9 @@ const VI_TRI={supreme:'Admin (chủ app)',admin:'Admin (toàn quyền)',ke_toan:
 // Quyền chia theo MODULE (giống app MKT/Sale). Key trùng tên trang dùng trong hàm SQL kt_chan. Thêm trang mới → thêm vào đây.
 // chi_de_nghi / chi_duyet (08/10): quyền 1 ô (không chia xem / sửa) — QUYEN_1_O.
 const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_thang','chi_gd','chi_tt','he_thong'];
-const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','chi_thang','dieu_chuyen','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','dong_tien','pl','khoa_ky']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Hệ thống & cài đặt',['he_thong']]];
-const TRANG_QUYEN={he_thong:'Hệ thống & cài đặt — danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic (đổi mật khẩu luôn mở)',tong_quan:'Tổng quan',dong_tien:'Dòng tiền & đối soát',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán xác nhận & chọn tài khoản đi tiền',chi_thang:'Chi — tự chi không cần duyệt (phiếu cân tài khoản, báo giám đốc)',chi_gd:'Chi — giám đốc xác nhận + chi tài khoản cá nhân',chi_tt:'Chi — thủ quỹ chi tiền (két, TK công ty) & up ảnh giao dịch',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
+// 20/10 anh: "không có sổ quỹ trong này à" — quyền Sổ quỹ (dong_tien) trước tên "Dòng tiền & đối soát" ở nhóm Báo cáo → đổi tên, chuyển vào Nghiệp vụ
+const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','chi_thang','dieu_chuyen','dong_tien','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','pl','khoa_ky']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Hệ thống & cài đặt',['he_thong']]];
+const TRANG_QUYEN={he_thong:'Hệ thống & cài đặt — danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic (đổi mật khẩu luôn mở)',tong_quan:'Tổng quan',dong_tien:'Sổ quỹ & số dư tài khoản (kiểm két, đối chiếu dòng tiền · kèm báo cáo Dòng tiền)',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán xác nhận & chọn tài khoản đi tiền',chi_thang:'Chi — tự chi không cần duyệt (phiếu cân tài khoản, báo giám đốc)',chi_gd:'Chi — giám đốc xác nhận + chi tài khoản cá nhân',chi_tt:'Chi — thủ quỹ chi tiền (két, TK công ty) & up ảnh giao dịch',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
   sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',khoa_ky:'Khoá kỳ / chốt tháng (mở khoá: chỉ Supreme / Admin)',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
 const LOAI_TK={ngan_hang:'Ngân hàng',tien_mat:'Tiền mặt',vay:'Tài khoản vay',khac:'Khác'};
 const KIOT={khong:'Không ảnh hưởng TK cửa hàng',da_tao:'Đã tạo phiếu trên Kiot (4A)',khong_tao:'Không tạo phiếu Kiot (4B)'};

@@ -167,6 +167,10 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **20/10/2026 (78)** — phiên cloud. Anh (ảnh Phân quyền): "không có sổ quỹ trong này à" → quyền trang Sổ quỹ là `dong_tien`, trước mang tên "Dòng tiền & đối soát" và nằm nhóm
+  Báo cáo tài chính → đổi tên "Sổ quỹ & số dư tài khoản (kiểm két, đối chiếu dòng tiền · kèm báo cáo Dòng tiền)", chuyển vào nhóm Nghiệp vụ (sau Điều chuyển). Khoá quyền giữ nguyên,
+  TK đã tick trước vẫn giữ. Lưu ý: tick quyền này cũng mở báo cáo "Dòng tiền & Ngân quỹ" (coXem bc_dong_tien = dong_tien hoặc pl) — nếu không muốn thủ quỹ xem báo cáo thì phải tách quyền.
+  **Sai của mình**: các kịch bản thử 20/10 gọi `xoaTam(tk)` (cả đối tượng) thay vì `xoaTam(tk.ten)` → sót 3 TK tạm (tam-khoa, tam-luong, tam-pq) hiện ở Phân quyền ~10 phút → đã xoá, còn 0; không có phiếu nào của TK tạm.
 - **20/10/2026 (77)** — phiên cloud. Anh: "thêm nút khoá menu trái trong tên profile, ai không thích nó thụt vào thì ấn khoá" → menu tài khoản thêm
   "☰ Khoá menu trái (luôn mở)" / "✓ Đã khoá menu trái" (localStorage `kt_sb_khoa`, theo từng trình duyệt; chỉ máy tính). Thử trình duyệt: khoá → menu 232px, rời chuột không thu; F5 vẫn khoá; mở khoá → về 64px tự thu.
   Anh hỏi "việc request 5h50 chiều đã xong chưa, có vấn đề gì không" (= mục 76, phiên local) → kiểm: bản live v1.148; chạy lại bộ thử lưu phiếu (chặn ghi) 12 luồng đều qua;
