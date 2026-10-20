@@ -167,6 +167,19 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **20/10/2026 (80)** — phiên cloud. Anh: "test tạo cẩn thận đầy đủ phiếu, lưu bước đến cùng" + "chạy xong phải clear hết dữ liệu test" + "nhớ dùng view as — tương tác bằng quyền mới chuẩn".
+  (1) **`scripts/kiem-thu-luong-day-du.js`** — trình duyệt thật, mỗi vai 1 TK tạm quyền CHÉP TK thật (thuquy, admin.ketoan; Admin như ketoan; GĐ như giamdoc; NV chỉ đề nghị), bấm đúng nút trong cửa sổ phiếu,
+  tải ảnh thật: L1 TK ngân hàng (đề nghị → kế toán xác nhận chọn TK → thủ quỹ không có "Đã chi tiền", up UNC, "Đã lập lệnh" → kế toán "Đã duyệt lệnh" → Đã TT) · L2 két (GĐ chọn két → admin kế toán
+  không có nút chi → thủ quỹ up ảnh + người nhận → Đã chi) · L3 TK cá nhân (GĐ chi) · L4 từ chối → GĐ mở lại · L5 admin kế toán "Đã thanh toán luôn" · L6 thu vào két + điều chuyển quầy → két
+  (Admin KHÔNG có nút, thủ quỹ "Đã nhận tiền") · L7 phiếu đề nghị công khai + ảnh. **29/29 ĐẠT.** Phiếu thử nội dung "THỬ HỆ THỐNG E2E…" (không chuông người thật, người thật không thấy);
+  cuối tự xoá: phiếu, chứng từ + FILE TRONG KHO, thông báo, bình luận, nhật ký, TK tạm → kiểm 0 sót. **Sai của mình lần đầu**: sót 15 dòng nhật ký "tải chứng từ" của TK tạm (nhật ký ghi theo
+  mã chứng từ, không theo mã phiếu) → đã xoá + sửa hàm dọn.
+  (2) **`scripts/kiem-thu-xem-nhu.js`** — Supreme tạm bấm Xem như 4 TK thật, soi menu + nút trên phiếu thật (chỉ xem, không lưu; dọn phiên Xem như sau khi chạy). Kết quả:
+  thuquy: phiếu chờ chi TK ngân hàng chỉ có "Đã lập lệnh", két có "Đã chi tiền", phiếu chờ kiểm không nút, không có "Đã thanh toán luôn", **Sổ quỹ bị chặn (chưa tick dong_tien)**;
+  admin.ketoan: chỉ Xoá / Chỉnh sửa (không xác nhận / chi), có "Đã thanh toán luôn", không Phân quyền; ketoan + giamdoc: Xác nhận / Từ chối / Đã chi tiền / Phân quyền đủ, GĐ thêm "Lùi về chờ xác nhận".
+  Xem như ẨN nút "Đã nhận tiền" / "Xác nhận" điều chuyển (chế độ chỉ xem) → phần két kiểm ở (1).
+  **Hỏi anh**: (a) kế toán (vị trí Admin) + GĐ vẫn bấm thẳng "Đã chi tiền" trên phiếu TK ngân hàng chưa lập lệnh (bỏ qua bước thủ quỹ lập lệnh) — có đóng không;
+  (b) admin.ketoan Xoá / Chỉnh sửa được phiếu đã được GĐ xác nhận (đổi STK thì tự về chờ GĐ — đã thử; XOÁ thì không chặn) — có chặn xoá không.
 - **20/10/2026 (79)** — phiên cloud. Anh: "Đóng quyền admin được ấn xác nhận điều chuyển tiền từ quỹ cửa hàng sang két — xử lý chưa?" → mới xử lý MỘT PHẦN (mục 76): máy chủ kiểm
   `kt_co_quyen(u,'chi_tt')` mà vị trí Admin / Supreme / '*' coi như có mọi quyền → TK Admin (ketoan, giamdoc) vẫn xác nhận được, chỉ chặn được admin.ketoan (nhân viên).
   Sửa `supabase-schema-kt-ket-chi-thu-quy.sql`: hàm `kt_la_thu_quy(u)` = Supreme hoặc có 'chi_tt' trong quyen → dùng trong kt_luu_dieu_chuyen + kt_tq_nhan (thay đúng chỗ, giữ phần còn lại);
