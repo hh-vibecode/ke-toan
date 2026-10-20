@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.145';
-const APP_VERSION='20/10/2026 14:14';
+const APP_SO='1.146';
+const APP_VERSION='20/10/2026 14:24';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1136,8 +1136,8 @@ async function dnGui(){
   const p={nguoi_de_nghi:v('nguoi_de_nghi'),bo_phan_id:Number(v('bo_phan_id')),noi_dung:v('noi_dung'),ngay_su_dung:v('ngay_su_dung'),so_tien:t,
     thu_huong_ten:hu?v('nguoi_de_nghi'):v('thu_huong_ten'),thu_huong_nh:ck?v('thu_huong_nh'):null,thu_huong_stk:ck?v('thu_huong_stk'):null,phan_bo:pb,han_tt:v('han_tt')||null,
     co_hd_do:v('co_hd_do')==='true',hd_ve:hu||tu?null:v('hd_ve')||null,la_tam_ung:tu,loai_dn:DN.loai,tu_da_ung:hu?duUng||null:null,hinh_thuc:hu?'tien_mat':v('hinh_thuc'),ghi_chu:hu?('Trả lại bằng '+v('hu_ht').toLowerCase()+(v('ghi_chu')?' · '+v('ghi_chu'):'')):v('ghi_chu')||null,web:f.querySelector('[name=web]').value};
-  if(hu||tu){p.phan_bo=hu?[]:p.phan_bo;if(hu)p.co_hd_do=false}
-  let r;try{r=await rpc('kt_gui_de_nghi',{p_dong:p},true)}catch(x){DN.gui=false;nut.disabled=false;nut.textContent='Gửi đề nghị';e.textContent=x.message;return}
+  if(hu||tu){p.phan_bo=[];p.co_hd_do=false}   /* 20/10: ô đơn vị / HĐ bị ẩn khi đổi sang tạm ứng nhưng giá trị cũ vẫn gửi — Monsieur Claude */
+  let r;try{r=await rpc('kt_gui_de_nghi',{p_dong:p},true)}catch(x){DN.gui=false;nut.disabled=false;nut.textContent=hu?'Gửi hoàn ứng':tu?'Gửi đề nghị tạm ứng':'Gửi đề nghị';e.textContent=x.message;return}
   try{localStorage.setItem('kt_dn_ten',p.nguoi_de_nghi);localStorage.setItem('kt_dn_ds',JSON.stringify([{id:r.id,ma:r.ma,nd:p.noi_dung,tien:t,luc:Date.now()},...dnDa()].slice(0,20)))}catch(x){}
   nut.textContent='Đang tải hồ sơ...';dnVeFile();const loi=await dnTaiFile(r.ma,DN.files,i=>'dn-tt-'+i);
   DN.gui=false;DN.files=[];
