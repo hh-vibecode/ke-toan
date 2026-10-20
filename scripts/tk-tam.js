@@ -19,7 +19,12 @@ async function taoTam(ten, viTri = 'supreme', quyen = ['*'], hoTen) {
   return { ten, mk, phien: j.phien, id };
 }
 async function xoaTam(ten) {
-  await sql(`delete from kt_nhat_ky where hanh_dong in ('dang_nhap','dang_xuat') and nguoi in (select ho_ten from kt_nguoi_dung where ten_dang_nhap = '${ten}');
+  // 20/10/2026: dọn cả dữ liệu thử gắn với TK tạm (bình luận, chat, đã đọc, đang trong app) — trước đây vướng khoá ngoại nên TK tạm bị sót lại
+  await sql(`delete from kt_binh_luan where nguoi_id in (select id from kt_nguoi_dung where ten_dang_nhap = '${ten}');
+    delete from kt_tin_nhan where nguoi_id in (select id from kt_nguoi_dung where ten_dang_nhap = '${ten}');
+    delete from kt_tin_doc where nguoi_id in (select id from kt_nguoi_dung where ten_dang_nhap = '${ten}');
+    delete from kt_dang_xem where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap = '${ten}');
+    delete from kt_nhat_ky where hanh_dong in ('dang_nhap','dang_xuat') and nguoi in (select ho_ten from kt_nguoi_dung where ten_dang_nhap = '${ten}');
     delete from kt_thong_bao where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap = '${ten}');
     delete from kt_phien where nguoi_dung_id in (select id from kt_nguoi_dung where ten_dang_nhap = '${ten}');
     delete from kt_nguoi_dung where ten_dang_nhap = '${ten}'`);

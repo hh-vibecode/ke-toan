@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.144';
-const APP_VERSION='20/10/2026 14:04';
+const APP_SO='1.145';
+const APP_VERSION='20/10/2026 14:14';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1903,7 +1903,7 @@ const thuNgay=d=>['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 
 function goiYNoiDungThu(){const f=$('#f');const nd=f.querySelector('[name=noi_dung]');if(nd.value&&!nd.dataset.auto)return;
   const d=dv(f.querySelector('[name=don_vi_id]').value),l=lo(f.querySelector('[name=loai_id]').value);
   nd.value=[d&&d.ten,l&&l.ten].filter(Boolean).join(' - ');nd.dataset.auto=1}
-async function luuThu(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);const ht=htDoc(o);if(o.khong_hach_toan)o.don_vi_id=null;
+async function luuThu(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);if(o.so_tien<0)return alert('Số tiền phải lớn hơn 0');const ht=htDoc(o);if(o.khong_hach_toan)o.don_vi_id=null;
   const thieu=[!ht&&'hạch toán',!o.ngay&&'ngày thu',!o.so_tien&&'số tiền',!o.loai_id&&'loại thu',!o.don_vi_id&&!o.khong_hach_toan&&'cơ sở',!o.tai_khoan_id&&'tài khoản nhận',!o.noi_dung&&'nội dung'].filter(Boolean);
   if(thieu.length)return alert('Còn thiếu ô bắt buộc (*): '+thieu.join(', '));
   const nid=await save('kt_luu_thu',{p_dong:o});if(!id)ctGuiMoi('thu',nid);S.f.thu_chon=null;await render();if(!id&&nid)formThu(nid)}
@@ -2370,7 +2370,7 @@ function docChi(){const f=$('#f');const o={};['nguoi_de_nghi','bo_phan_id','noi_
   else if(dvc)o.phan_bo=dvc.value?[{don_vi_id:Number(dvc.value),so_tien:o.so_tien}]:[];
   else{o.phan_bo=(cu&&cu.phan_bo)||[];const t=sumBy(o.phan_bo,p=>p.so_tien);if(cu&&Math.abs(t-o.so_tien)>1&&t)o.phan_bo=o.phan_bo.map(p=>({...p,so_tien:Math.round(p.so_tien*o.so_tien/t)}))}   // đổi số tiền → giữ tỷ lệ phân bổ
   return o}
-async function luuChi(id){const o=docChi();o.id=id;const ck=($('#f [name=hinh_thuc_nhan]')||{}).value!=='tien_mat';
+async function luuChi(id){const o=docChi();o.id=id;if(o.so_tien<0)return alert('Số tiền phải lớn hơn 0');const ck=($('#f [name=hinh_thuc_nhan]')||{}).value!=='tien_mat';
   if(!ck){o.thu_huong_nh=null;o.thu_huong_stk=null}else if(o.thu_huong_stk)o.thu_huong_stk=String(o.thu_huong_stk).replace(/[\s.\-]/g,'');
   const ht=o.hach_toan;delete o.hach_toan;
   const thieu=[!ht&&'hạch toán',!o.nguoi_de_nghi&&'người đề nghị',!o.bo_phan_id&&'bộ phận',!o.noi_dung&&'nội dung chi',!o.so_tien&&'số tiền',!o.ngay_su_dung&&'ngày sử dụng',!o.ngay_de_nghi&&'ngày đề nghị',
@@ -2664,7 +2664,8 @@ async function doiTTChi(id,tt){
   const fhd=$('#fhd');if(fhd)Object.assign(o,formData(fhd));
   if(tt)o.trang_thai=tt;else delete o.trang_thai;
   if(tt==='cho_tt'&&!o.tai_khoan_id)return alert('Chọn tài khoản đi tiền');
-  if(tt==='da_tt'&&(!o.tai_khoan_id||(!o.loai_id&&!o.khong_hach_toan)||!o.ngay_tt))return alert('Cần ngày thanh toán, tài khoản chi, loại chi');
+  if(tt==='da_tt'){const thieu=[!o.ngay_tt&&'ngày thanh toán',!o.tai_khoan_id&&'tài khoản chi',!o.loai_id&&!o.khong_hach_toan&&'loại chi'].filter(Boolean);   // 20/10 rà soát: chỉ báo đúng ô còn thiếu
+    if(thieu.length)return alert('Còn thiếu: '+thieu.join(', '))}
   if(tt==='da_tt'&&(tk(+o.tai_khoan_id)||{}).loai==='tien_mat'&&!String(o.nguoi_nhan_tien||'').trim())return alert('Chi tiền mặt: ghi tên người đến nhận tiền');
   if(o.kiot==='khong_tao'&&!(o.kiot_ly_do||'').trim())return alert('Ghi lý do không tạo phiếu Kiot');
   await save('kt_luu_chi',{p_dong:o},{cho_gd:'Đã xác nhận lượt 1 — chuyển giám đốc',cho_tt:'Đã xác nhận — chờ chi tiền',da_tt:'Đã chi tiền — hoàn tất',tu_choi:'Đã từ chối',cho_duyet:'Đã chuyển về chờ kế toán kiểm'}[tt]||'Đã lưu');render()}
@@ -2732,7 +2733,7 @@ function formDC(id){
   if(!g)box.querySelectorAll('#f input,#f select').forEach(e=>e.disabled=true);setTimeout(ganCT,0);if(id)setTimeout(()=>hdTai('dieu_chuyen',id),0);
 }
 function dongDCCT(){if($('#modal')){closeModal();return}S.f.dc_chon=null;const p=$('#dc-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
-async function luuDC(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);const ht=htDoc(o);
+async function luuDC(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);if(o.so_tien<0)return alert('Số tiền phải lớn hơn 0');const ht=htDoc(o);
   if(!o.so_tien||!o.tk_di_id||!o.tk_nhan_id||!ht)return alert('Cần đủ: số tiền, TK đi, TK nhận, hạch toán');
   if(o.tk_di_id===o.tk_nhan_id)return alert('TK đi và TK nhận phải khác nhau');
   const nid=await save('kt_luu_dieu_chuyen',{p_dong:o});if(!id)ctGuiMoi('dieu_chuyen',nid);S.f.dc_chon=nid||id;await render()}
@@ -4469,6 +4470,12 @@ try{const th=localStorage.getItem('kt_theme');if(th)document.documentElement.dat
   if(!p)return renderGate();S.phien=p;try{await boot()}catch(e){if(S.phien)renderGate(e.message)}})();
 document.addEventListener('click',()=>{const d=$('.tb-dd.open');if(d)d.classList.remove('open')});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(PAGES[h]&&h!==S.page&&S.toi){S.page=h;shell()}});
+
+// 20/10/2026 rà soát (anh: "rà đủ các case người dùng có thể ấn nhầm"): bấm đúp nút Lưu tạo 2 phiếu → mỗi hàm lưu / duyệt chỉ chạy 1 lượt
+// cho CÙNG 1 phiếu tại 1 thời điểm (khoá theo tham số đầu = id phiếu; phiếu mới = null), lượt bấm thêm khi đang chạy bị bỏ qua.
+(()=>{const khoaLuu=fn=>{const dang=new Set();return async function(...a){const k=String(a[0]);if(dang.has(k))return;dang.add(k);try{return await fn.apply(this,a)}finally{dang.delete(k)}}};
+  ['luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuNS','luuTL','luuTT','luuNganSach','luuLoaiNo','luuDcf','luuNap']
+    .forEach(k=>{if(typeof window[k]==='function')window[k]=khoaLuu(window[k])})})();
 </script>
 </body>
 </html>
