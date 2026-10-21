@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.152';
-const APP_VERSION='21/10/2026 10:19';
+const APP_SO='1.153';
+const APP_VERSION='21/10/2026 13:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2075,11 +2075,15 @@ function chonHetChi(on){const ids=$$('#chi-bang tr[data-id]').map(r=>+r.dataset.
 function veThanhChon(){const el=$('#chi-chon');if(!el)return;const ds=(S.f.chi_sel||[]).map(id=>S.cache.chi.find(c=>c.id===id)).filter(Boolean);
   if(!ds.length){el.innerHTML='';el.style.display='none';return}
   const kt=[],gd=ds.filter(x=>['cho_duyet','cho_gd'].includes(x.trang_thai)&&(chiDuyet()||chiGD())),tc=ds.filter(x=>(x.trang_thai==='cho_duyet'&&(chiDuyet()||chiGD()))||(x.trang_thai==='cho_gd'&&chiGD()));
+  // 21/10 kế toán: tick chọn nhiều phiếu cũng theo luồng mới — duyệt lệnh hàng loạt, tự chi hàng loạt
+  const dl=ds.filter(x=>x.trang_thai==='cho_tt'&&x.lap_lenh_luc&&(chiDuyet()||chiGD())),tcN=ds.filter(x=>can('chi_thang')&&x.tao_boi===S.toi.ho_ten&&['cho_duyet','cho_gd'].includes(x.trang_thai));
   el.style.display='';el.innerHTML=`<b>Đã chọn ${ds.length} phiếu · ${fmt(sumBy(ds,x=>x.so_tien))} đ</b>
     ${kt.length?`<button class="m-btn sm pri" onclick="duyetLoat('cho_gd')">✓ Kế toán kiểm ${kt.length} phiếu</button>`:''}
     ${gd.length?`<button class="m-btn sm pri" onclick="duyetLoat('cho_tt')" title="Phiếu chưa chọn tài khoản đi tiền sẽ bị bỏ qua">✓ Xác nhận ${gd.length} phiếu</button>`:''}
+    ${dl.length?`<button class="m-btn sm pri" onclick="duyetLenhLoat()" title="Lệnh đã duyệt trên ngân hàng — ngày thanh toán = hôm nay">✓ Đã duyệt lệnh ${dl.length} phiếu</button>`:''}
+    ${tcN.length?`<button class="m-btn sm pri" onclick="tuChiLoat()" title="Phiếu mình tạo còn chờ duyệt → Đã thanh toán luôn">✓ Tự chi ${tcN.length} phiếu</button>`:''}
     ${tc.length?`<button class="m-btn sm bad" onclick="duyetLoat('tu_choi')">✕ Từ chối ${tc.length} phiếu</button>`:''}
-    ${!kt.length&&!gd.length&&!tc.length?'<span class="muted">Các phiếu đã chọn không có bước nào chờ anh/chị</span>':''}
+    ${!kt.length&&!gd.length&&!tc.length&&!dl.length&&!tcN.length?'<span class="muted">Các phiếu đã chọn không có bước nào chờ anh/chị</span>':''}
     <button class="m-btn sm" onclick="chonHetChi(false)">Bỏ chọn</button>`}
 async function duyetLoat(tt){
   const ds=(S.f.chi_sel||[]).map(id=>S.cache.chi.find(c=>c.id===id)).filter(x=>x&&(tt==='cho_gd'?x.trang_thai==='cho_duyet':tt==='cho_tt'?['cho_duyet','cho_gd'].includes(x.trang_thai)&&(chiDuyet()||chiGD()):['cho_duyet','cho_gd'].includes(x.trang_thai)));
@@ -2088,6 +2092,19 @@ async function duyetLoat(tt){
   let ok=0;const loi=[];
   for(const x of ds){try{await duyetNhanh(x.id,tt,true);ok++}catch(e){loi.push(('PC'+String(x.id).padStart(6,'0'))+': '+e.message)}}
   S.f.chi_sel=[];toast(`${ten}: ${ok}/${ds.length} phiếu`);if(loi.length)alert('Chưa xử lý được:\n'+loi.join('\n'));render()}
+const chiSel=f=>(S.f.chi_sel||[]).map(id=>S.cache.chi.find(c=>c.id===id)).filter(x=>x&&f(x));
+const sachO=x=>{const o={...x};['tao_luc','sua_luc','duyet_luc','kiem_luc'].forEach(k=>delete o[k]);return o};
+async function chayLoat(ds,lam,ten){let ok=0;const loi=[];for(const x of ds){try{await lam(x);ok++}catch(e){loi.push('PC'+String(x.id).padStart(6,'0')+': '+e.message)}}
+  S.f.chi_sel=[];toast(`${ten}: ${ok}/${ds.length} phiếu`);if(loi.length)alert('Chưa xử lý được:\n'+loi.join('\n'));S.cache={};render()}
+async function duyetLenhLoat(){const ds=chiSel(x=>x.trang_thai==='cho_tt'&&x.lap_lenh_luc);
+  if(!ds.length||!confirm(`Đã duyệt lệnh ${ds.length} phiếu, tổng ${fmt(sumBy(ds,x=>x.so_tien))} đ — ngày thanh toán hôm nay (${fmtD(homNay())})?`))return;
+  closeModal();chayLoat(ds,x=>{if(!x.loai_id&&!x.khong_hach_toan)throw new Error('chưa có loại chi — mở phiếu chọn loại chi');return rpc('kt_luu_chi',{p_dong:{...sachO(x),trang_thai:'da_tt',ngay_tt:homNay()}})},'Đã duyệt lệnh')}
+function tuChiLoat(){const ds=chiSel(x=>x.tao_boi===S.toi.ho_ten&&['cho_duyet','cho_gd'].includes(x.trang_thai));if(!ds.length)return;
+  modal(`<h2>Tự chi ${ds.length} phiếu · ${fmt(sumBy(ds,x=>x.so_tien))} đ</h2><div class="muted" style="font-size:12px;margin-bottom:8px">Các phiếu chuyển thẳng sang Đã thanh toán (báo giám đốc). Loại chi để trống = giữ loại đang có trên từng phiếu.</div>
+    ${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong'})}<div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="tuChiLoatLuu()">Đã thanh toán ${ds.length} phiếu</button></div>`)}
+async function tuChiLoatLuu(){const t=formData($('#ftt'));if(!t.tai_khoan_id||!t.ngay_tt)return alert('Chọn tài khoản chi và ngày thanh toán');
+  const ds=chiSel(x=>x.tao_boi===S.toi.ho_ten&&['cho_duyet','cho_gd'].includes(x.trang_thai));closeModal();
+  chayLoat(ds,x=>{const l=t.loai_id||x.loai_id;if(!l&&!x.khong_hach_toan)throw new Error('chưa có loại chi');return rpc('kt_luu_chi',{p_dong:{...sachO(x),trang_thai:'da_tt',ngay_tt:t.ngay_tt,tai_khoan_id:+t.tai_khoan_id,loai_id:l?+l:null,nguoi_nhan_tien:t.nguoi_nhan_tien||null}})},'Tự chi')}
 async function pageChi(){
   // THU CHI & NGÂN QUỸ · PHIẾU CHI — giao diện mẫu kế toán (13/10/2026): 6 thẻ có icon + so tháng trước · tab nút liền · hàng lọc ·
   // bảng (Loại, Hoá đơn, KiotViet dạng nhãn) + phân trang · khung chi tiết 5 tab bên phải. Giữ nguyên duyệt 2 lượt / thanh toán / chứng từ.
@@ -2158,7 +2175,7 @@ async function pageChi(){
       <div class="m-flt" style="align-items:center">${oTim('chi','Tìm số phiếu hoặc nội dung…')}        
         ${sel('chi_loai',S.dm.loai.filter(x=>x.nhom==='chi'),'Tất cả loại chi')}${sel('chi_nguon',[{id:'phieu',ten:'Phiếu đề nghị (link công khai)'},{id:'app',ten:'Tạo trên app'},{id:'sheet_cu',ten:'Chuyển từ sheet cũ'},{id:'bo_sung',ten:'Sheet cũ — cần bổ sung'},{id:'claude_soat',ten:'Tự gán loại — cần soát'},{id:'hoan_quy',ten:'Phiếu hoàn Quỹ ngoài cửa hàng'},{id:'tu_tru',ten:'Tài khoản tự trừ (phí NH / phí VC)'}],'Tất cả nguồn')}
         ${sel('chi_tk',S.dm.tai_khoan,'Tất cả tài khoản')}${sel('chi_hdve',HDV_N.map(([id,ten])=>({id,ten:'HĐ về '+ten})),'HĐ xuất về: tất cả')}${f.chi_tk?`<span class="badge" style="font-size:12px">${esc((tk(+f.chi_tk)||{}).ten||'')}: đã chi <b>${fmt(sumBy(l.filter(x=>x.trang_thai==='da_tt'),x=>x.so_tien))}</b> · ${l.length} phiếu · tổng <b>${fmt(sumBy(l.filter(x=>!bo(x)),x=>x.so_tien))}</b></span>`:''}
-        <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.chi_xuat()">${IC_XLS} Xuất Excel</button>${coTuTru()?`<button class="m-btn out" title="Phí ngân hàng, phí vận chuyển ĐVVC trừ khi hoàn COD… — tài khoản đã tự trừ: ghi 1 lần là Đã thanh toán, không duyệt, không up giao dịch" onclick="formTuTru()">+ Khoản tự trừ</button>`:''}${chiTao()?`<button class="m-btn pri" onclick="formChi()">+ Tạo phiếu chi</button>`:''}</div>
+        <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.chi_xuat()">${IC_XLS} Xuất Excel</button>${chiTao()?`<button class="m-btn pri" onclick="formChi()">+ Tạo phiếu chi</button>`:''}</div>
       <div class="m-chon" id="chi-chon" style="display:none"></div>
       <div class="m-card"><div class="scroll"><table class="m-t" id="chi-bang"><tr><th class="c"><input type="checkbox" title="Chọn cả trang" onclick="chonHetChi(this.checked)"></th><th title="Ngày sử dụng dịch vụ (quyết định phiếu thuộc tháng nào, như sheet)">Ngày SD</th><th>Số phiếu</th><th>Cơ sở</th><th>Loại chi</th><th>Nội dung</th><th>Nhà cung cấp</th><th class="num">Số tiền</th><th>Luồng duyệt · thao tác</th><th class="c">Hóa đơn</th></tr>
         ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemChi(${x.id})"><td class="c"><input type="checkbox" class="cb-chon" ${(S.f.chi_sel||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonChi(${x.id},this.checked)"></td>
@@ -2405,37 +2422,46 @@ function pbRow(p={}){return `<div class="pb"><select name="pb_dv">${opts(coSo(),
 function formChi(id){S.f.chi_form_id=id||null;
   const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ho_ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
   const moi=!id;
+  // 21/10 kế toán: "sắp xếp lại phiếu cho dễ nhìn, đúng logic" → 4 nhóm: Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Thanh toán
+  const SEC=t=>`<div class="sec" style="grid-column:1/-1;margin:12px 0 0">${t}</div>`;
+  const tuChi=moi?(chiDuyet()||can('chi_thang')):(can('chi_thang')&&x.tao_boi===S.toi.ho_ten&&['cho_duyet','cho_gd'].includes(x.trang_thai));
   modal(`<h2>${moi?'Đề nghị chi':'Sửa phiếu chi #'+id}</h2>
     <div class="form" id="f">
+      ${SEC('1. Đề nghị')}
       <label><span>Người đề nghị${BB}</span><input name="nguoi_de_nghi" list="dl-ndn" value="${esc(x.nguoi_de_nghi||'')}"></label>
       <label><span>Bộ phận / cửa hàng${BB}</span><select name="bo_phan_id">${opts(boPhan(),x.bo_phan_id,'— chọn —')}</select></label>
       <label class="full"><span>Nội dung chi (hạng mục, lý do)${BB}</span><input name="noi_dung" value="${esc(x.noi_dung||'')}"></label>
-      ${htSel(x,moi,"htKhoa(['dv_cp','thang_ht','co_hd_do','hd_ve'])")}
       <label><span>Số tiền đề nghị${BB}</span>${moneyIn('so_tien',x.so_tien,'onchange="pbTuDong()"')}</label>
       <label><span>Ngày sử dụng DV / giao hàng${BB}</span><input type="date" name="ngay_su_dung" value="${x.ngay_su_dung||''}"></label>
-      <label><span>Hình thức nhận tiền${BB}</span><select name="hinh_thuc_nhan" onchange="chiHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat" ${!moi&&!x.thu_huong_stk&&!x.thu_huong_nh&&x.thu_huong_ten?'selected':''}>Tiền mặt</option></select></label>
-      <label><span>Người thụ hưởng${BB}</span><input name="thu_huong_ten" list="dl-th" value="${esc(x.thu_huong_ten||'')}" onchange="dienThuHuong(this.value)"></label>
-      <label class="chi-ck"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}" placeholder="vd: Vietcombank, MB Bank, Techcombank"></label>
-      <label class="chi-ck"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" value="${esc(x.thu_huong_stk||'')}"></label>
-      <label class="chi-ck full">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="25" value="${esc(x.noi_dung_ck||'')}" placeholder="Quét QR là điền sẵn, người chuyển vẫn sửa được · để trống = số phiếu + nội dung chi"></label>
-      <label>Mong muốn thanh toán trước<input type="date" name="han_tt" value="${x.han_tt||''}"></label>
-      <label><span>Hoá đơn đỏ${BB}</span><select name="co_hd_do">${optsObj({false:'Không có hoá đơn đỏ',true:'Có hoá đơn đỏ'},String(!!x.co_hd_do))}</select></label>
-      <label class="hdve"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>
-      <label title="Tháng ghi nhận chi phí trên báo cáo kết quả kinh doanh. Để trống = tháng của ngày sử dụng dịch vụ">Tháng hạch toán chi phí<input type="month" name="thang_ht" value="${x.thang_ht||''}" placeholder="theo ngày sử dụng"></label>
-      <label class="full chk"><input type="checkbox" name="la_tam_ung" ${x.la_tam_ung?'checked':''}> Đề nghị <b>TẠM ỨNG</b> — tự chuyển sang Tạm ứng & hoàn ứng, không tính vào chi phí</label>
       <label><span>Ngày đề nghị${BB}</span><input type="date" name="ngay_de_nghi" value="${x.ngay_de_nghi}"></label>
+      <label>Mong muốn thanh toán trước<input type="date" name="han_tt" value="${x.han_tt||''}"></label>
+      <label class="full chk"><input type="checkbox" name="la_tam_ung" ${x.la_tam_ung?'checked':''}> Đề nghị <b>TẠM ỨNG</b> — tự chuyển sang Tạm ứng & hoàn ứng, không tính vào chi phí</label>
+      ${SEC('2. Hạch toán & hoá đơn')}
+      ${htSel(x,moi,"htKhoa(['dv_cp','thang_ht','co_hd_do','hd_ve'])")}
       ${(x.phan_bo||[]).length>1?`<div class="full"><span class="lbl">Đơn vị chịu chi phí${BB}</span><div class="muted" style="padding:6px 0">Đã phân bổ ${x.phan_bo.length} đơn vị (${x.phan_bo.map(p=>esc(dvCPTen(p.don_vi_id))).join(', ')}) — sửa ở tab "Phân bổ chi phí" trong chi tiết phiếu</div></div>`
         :`<label><span>Đơn vị chịu chi phí${BB}</span><select name="dv_cp">${DV_CP.map(([i,t])=>`<option value="${i}" ${(x.phan_bo[0]||{}).don_vi_id==i?'selected':''}>${t}</option>`).join('')}${(x.phan_bo[0]&&!DV_CP.some(d=>d[0]===+x.phan_bo[0].don_vi_id))?`<option value="${x.phan_bo[0].don_vi_id}" selected>${esc(dvCPTen(x.phan_bo[0].don_vi_id))} (cũ)</option>`:''}</select></label>`}
+      <label title="Tháng ghi nhận chi phí trên báo cáo kết quả kinh doanh. Để trống = tháng của ngày sử dụng dịch vụ">Tháng hạch toán chi phí<input type="month" name="thang_ht" value="${x.thang_ht||''}" placeholder="theo ngày sử dụng"></label>
+      <label><span>Hoá đơn đỏ${BB}</span><select name="co_hd_do">${optsObj({false:'Không có hoá đơn đỏ',true:'Có hoá đơn đỏ'},String(!!x.co_hd_do))}</select></label>
+      <label class="hdve"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>
+      ${SEC('<span class="nhan">3. Người nhận tiền</span>')}
+      <label class="nhan"><span>Hình thức nhận tiền${BB}</span><select name="hinh_thuc_nhan" onchange="chiHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat" ${!moi&&!x.thu_huong_stk&&!x.thu_huong_nh&&x.thu_huong_ten?'selected':''}>Tiền mặt</option></select></label>
+      <label class="nhan"><span>Người thụ hưởng${BB}</span><input name="thu_huong_ten" list="dl-th" value="${esc(x.thu_huong_ten||'')}" onchange="dienThuHuong(this.value)"></label>
+      <label class="chi-ck nhan"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}" placeholder="vd: Vietcombank, MB Bank, Techcombank"></label>
+      <label class="chi-ck nhan"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" value="${esc(x.thu_huong_stk||'')}"></label>
+      <label class="chi-ck full nhan">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="25" value="${esc(x.noi_dung_ck||'')}" placeholder="Quét QR là điền sẵn, người chuyển vẫn sửa được · để trống = số phiếu + nội dung chi"></label>
+      ${SEC('4. Ghi chú'+(tuChi?' & thanh toán':''))}
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
-      ${moi&&(chiDuyet()||can('chi_thang'))?`<label class="full chk"><input type="checkbox" name="tt_luon" onchange="$('#tt-luon').style.display=this.checked?'':'none'"> Đã thanh toán luôn (kế toán tự chi, không cần chờ duyệt)</label>
-        <div class="full" id="tt-luon" style="display:none;grid-column:1/-1">${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong'})}</div>`:''}
+      ${tuChi?`<label class="full chk"><input type="checkbox" name="tt_luon" onchange="ttLuon(this.checked)"> <b>Đã thanh toán luôn</b> — kế toán tự chi, không cần chờ duyệt (không cần thông tin người nhận)</label>
+        <div class="full" id="tt-luon" style="display:none;grid-column:1/-1">${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong',tai_khoan_id:x.tai_khoan_id,loai_id:x.loai_id})}</div>`:''}
     </div>
     ${ctBox('chi',id,id?chiCT(x):chiTao())}
     <div class="muted" style="font-size:11.5px;margin-top:6px"><b class="bb">*</b> ô bắt buộc · chuyển khoản cần ngân hàng + số tài khoản (để có mã QR)</div>
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuChi(${id||'null'})">Lưu</button></div>`);
   setTimeout(()=>{chiHT();htKhoa(['dv_cp','thang_ht','co_hd_do','hd_ve'])},0);
 }
-function chiHT(){const h=$('#f [name=hinh_thuc_nhan]');if(!h)return;$$('#f .chi-ck').forEach(x=>x.style.display=h.value==='ck'?'':'none')}
+// 21/10 kế toán: tick "Đã thanh toán luôn" → ẩn phần người nhận tiền (không bắt buộc)
+function ttLuon(on){$('#tt-luon').style.display=on?'':'none';$$('#f .nhan').forEach(e=>{const l=e.closest('label')||e;l.style.display=on?'none':''});if(!on)chiHT()}
+function chiHT(){const h=$('#f [name=hinh_thuc_nhan]');if(!h)return;if(($('#f [name=tt_luon]')||{}).checked)return;$$('#f .chi-ck').forEach(x=>x.style.display=h.value==='ck'?'':'none')}
 function fieldsThanhToan(x){return `<div class="form" id="ftt">
     <label><span>Ngày thanh toán${BB}</span><input type="date" name="ngay_tt" value="${x.ngay_tt||homNay()}" min="${MOC_TIEN}"></label>
     ${x.trang_thai==='cho_tt'&&!chiDuyet()&&!chiGD()?`<label><span>Tài khoản chi</span><input type="hidden" name="tai_khoan_id" value="${x.tai_khoan_id||''}"><b style="padding:8px 0;display:block">${esc((tk(x.tai_khoan_id)||{}).ten||'')} · ${htChi(x)==='tm'?'tiền mặt':'chuyển khoản'}</b></label>`:''}<label ${x.trang_thai==='cho_tt'&&!chiDuyet()&&!chiGD()?'style="display:none"':''}><span>Tài khoản chi${BB}</span><select name="tai_khoan_id" onchange="this.closest('.form').querySelector('.nnt').style.display=(tk(+this.value)||{}).loai==='tien_mat'?'':'none'">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label>
@@ -2457,11 +2483,11 @@ function docChi(){const f=$('#f');const o={};['nguoi_de_nghi','bo_phan_id','noi_
   else if(dvc)o.phan_bo=dvc.value?[{don_vi_id:Number(dvc.value),so_tien:o.so_tien}]:[];
   else{o.phan_bo=(cu&&cu.phan_bo)||[];const t=sumBy(o.phan_bo,p=>p.so_tien);if(cu&&Math.abs(t-o.so_tien)>1&&t)o.phan_bo=o.phan_bo.map(p=>({...p,so_tien:Math.round(p.so_tien*o.so_tien/t)}))}   // đổi số tiền → giữ tỷ lệ phân bổ
   return o}
-async function luuChi(id){const o=docChi();o.id=id;if(o.so_tien<0)return alert('Số tiền phải lớn hơn 0');const ck=($('#f [name=hinh_thuc_nhan]')||{}).value!=='tien_mat';
-  if(!ck){o.thu_huong_nh=null;o.thu_huong_stk=null;o.noi_dung_ck=null}else if(o.thu_huong_stk)o.thu_huong_stk=String(o.thu_huong_stk).replace(/[\s.\-]/g,'');
+async function luuChi(id){const o=docChi();o.id=id;if(o.so_tien<0)return alert('Số tiền phải lớn hơn 0');const tlOn=!!($('#f [name=tt_luon]')||{}).checked,ck=!tlOn&&($('#f [name=hinh_thuc_nhan]')||{}).value!=='tien_mat';
+  if(!ck&&!tlOn){o.thu_huong_nh=null;o.thu_huong_stk=null;o.noi_dung_ck=null}else if(o.thu_huong_stk)o.thu_huong_stk=String(o.thu_huong_stk).replace(/[\s.\-]/g,'');
   const ht=o.hach_toan;delete o.hach_toan;
   const thieu=[!ht&&'hạch toán',!o.nguoi_de_nghi&&'người đề nghị',!o.bo_phan_id&&'bộ phận',!o.noi_dung&&'nội dung chi',!o.so_tien&&'số tiền',!o.ngay_su_dung&&'ngày sử dụng',!o.ngay_de_nghi&&'ngày đề nghị',
-    !o.thu_huong_ten&&'người thụ hưởng',ck&&!o.thu_huong_nh&&'ngân hàng thụ hưởng',ck&&!o.thu_huong_stk&&'số tài khoản thụ hưởng',!o.phan_bo.length&&!o.khong_hach_toan&&'đơn vị chịu chi phí',
+    !tlOn&&!o.thu_huong_ten&&'người thụ hưởng',ck&&!o.thu_huong_nh&&'ngân hàng thụ hưởng',ck&&!o.thu_huong_stk&&'số tài khoản thụ hưởng',!o.phan_bo.length&&!o.khong_hach_toan&&'đơn vị chịu chi phí',
     !o.khong_hach_toan&&!$('#f [name=la_tam_ung]').checked&&!$('#f [name=hd_ve]').value&&'hoá đơn xuất về đâu'].filter(Boolean);
   if(thieu.length)return alert('Còn thiếu ô bắt buộc (*): '+thieu.join(', '));
   if(ck&&!/^\d{6,20}$/.test(o.thu_huong_stk))return alert('Số tài khoản thụ hưởng chỉ gồm 6–20 chữ số');
@@ -2541,6 +2567,7 @@ function xemChi(id){
     x.trang_thai==='cho_tt'&&chiTien(x)&&!x.lap_lenh_luc&&!tqLapLenh(x)?`<button class="m-btn duyet" title="Cần ảnh giao dịch (uỷ nhiệm chi / phiếu chi tiền mặt)" onclick="luuPhieu(${id},'da_tt')">✓ Đã chi tiền</button>`:'',
     tqLapLenh(x)&&!x.lap_lenh_luc?`<button class="m-btn duyet" title="Up ảnh lệnh chuyển (UNC) rồi bấm — kế toán duyệt lệnh xong bấm Đã duyệt lệnh mới tính đã chi" onclick="lapLenh(${id})">✓ Đã lập lệnh</button>`:'',
     x.trang_thai==='cho_tt'&&x.lap_lenh_luc&&(chiTQ()||dy||gd)?`<button class="m-btn mo" onclick="if(confirm('Huỷ đánh dấu đã lập lệnh?'))lapLenh(${id},true)">↩ Huỷ lập lệnh</button>`:'',
+    can('chi_thang')&&x.tao_boi===S.toi.ho_ten&&['cho_duyet','cho_gd'].includes(x.trang_thai)?`<button class="m-btn duyet" title="Phiếu mình tạo: chuyển thẳng Đã thanh toán, không cần chờ duyệt" onclick="formChi(${id});setTimeout(()=>{const c=$('#f [name=tt_luon]');if(c){c.checked=true;ttLuon(true)}},60)">✓ Tự chi (đã thanh toán)</button>`:'',
     x.trang_thai==='cho_tt'&&x.lap_lenh_luc&&(dy||gd)?`<button class="m-btn duyet" title="Lệnh đã duyệt trên ngân hàng — tiền đi ngày thanh toán bên trên" onclick="luuPhieu(${id},'da_tt')">✓ Đã duyệt lệnh</button>`:'',
     (dy||gd)&&['tu_choi','tu_choi_tt'].includes(x.trang_thai)?`<button class="m-btn mo" onclick="luuPhieu(${id},'cho_duyet')">Mở lại</button>`:'',
     !['tu_choi','tu_choi_tt'].includes(x.trang_thai)&&coTuTru(x.trang_thai!=='da_tt')?(x.tu_tru?`<button class="m-btn out" title="Bỏ đánh dấu: phiếu giữ trạng thái hiện tại, lại nhắc ảnh giao dịch nếu thiếu" onclick="danhDauTuTru(${id},true)">Bỏ tự trừ</button>`
@@ -3117,14 +3144,17 @@ async function pageBCLCTT(){
   for(const x of b.chi){const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung';if(ok(cs))cong(chi,x.loai,x.thang,x.tien)}
   const am=o=>Object.fromEntries(Object.entries(o).map(([m,v])=>[m,-v])),cg=(...os)=>{const r={};os.forEach(o=>Object.entries(o||{}).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
   const nhomChi=k=>{const l=loai[k]||{};return l.nhom_bc==='Chi đầu tư'?'dt':l.nhom_bc==='Chi tài chính'?'tc':'kd'};
-  const lThu=Object.keys(thu).sort((a,c)=>(+a)-(+c)),lChi=g=>Object.keys(chi).filter(k=>nhomChi(k)===g).sort((a,c)=>(+a)-(+c));
-  const TT=cg(...lThu.map(k=>thu[k])),CKD=am(cg(...lChi('kd').map(k=>chi[k]))),KD=cg(TT,CKD),DTU=am(cg(...lChi('dt').map(k=>chi[k]))),VN={},VT={};(b.vay||[]).forEach(x=>{VN[x.thang]=(VN[x.thang]||0)+(+x.nhan);VT[x.thang]=(VT[x.thang]||0)-(+x.tra)});const TC=cg(am(cg(...lChi('tc').map(k=>chi[k]))),VN,VT),RONG=cg(KD,DTU,TC);
+  // 21/10 kế toán: dòng tiền xếp + đặt tên loại giống báo cáo chi phí (thứ tự danh mục); giao dịch cá nhân (loai -1) tách mục riêng
+  const ord=k=>{const l=loai[k];return l?(+l.thu_tu||999)*1e5+(+k):9e9+(+k)};
+  const lThu=Object.keys(thu).filter(k=>k!=='-1').sort((a,c)=>ord(a)-ord(c)),lChi=g=>Object.keys(chi).filter(k=>k!=='-1'&&nhomChi(k)===g).sort((a,c)=>ord(a)-ord(c));
+  const CNT=thu['-1']||{},CNC=am(chi['-1']||{}),CN=cg(CNT,CNC);
+  const TT=cg(...lThu.map(k=>thu[k])),CKD=am(cg(...lChi('kd').map(k=>chi[k]))),KD=cg(TT,CKD),DTU=am(cg(...lChi('dt').map(k=>chi[k]))),VN={},VT={};(b.vay||[]).forEach(x=>{VN[x.thang]=(VN[x.thang]||0)+(+x.nhan);VT[x.thang]=(VT[x.thang]||0)-(+x.tra)});const TC=cg(am(cg(...lChi('tc').map(k=>chi[k]))),VN,VT),RONG=cg(KD,DTU,TC,CN);
   // số dư: chỉ khi không lọc cơ sở và tháng từ mốc tồn đầu
   const rongTK=Object.fromEntries(b.rong.map(x=>[x.thang,+x.rong])),dau={},cuoi={};let sd=b.dau!=null&&!sel?+b.dau:null;
   // mốc tồn đầu là ngày đầu tháng (01/09/2026) → số dư bắt đầu từ tháng chứa mốc
   for(const m of ky.ms){if(sd==null||m<String(b.dau_ngay).slice(0,7)||m>homNay().slice(0,7)){dau[m]=null;cuoi[m]=null;continue}dau[m]=sd;sd+=rongTK[m]||0;cuoi[m]=sd}
   const kd=bcMoOn('hdkd'),dt=bcMoOn('lcdt'),tc=bcMoOn('lctc'),ct=tab==='ct';
-  const tenL=k=>(loai[k]||{}).ten||'Khác',chiTenNgan=k=>tenL(k).replace(/^(OPEX|COGS|CAPEX|FINANCE|TAX)\s*-\s*/,'Chi ');
+  const tenL=k=>(loai[k]||{}).ten||'Chưa phân loại',chiTenNgan=k=>tenL(k).replace(/^(OPEX|COGS|CAPEX|FINANCE|TAX)\s*-\s*/i,'');
   const ms=ky.ms.filter(m=>m<=homNay().slice(0,7));
   const msSD=ms.filter(m=>dau[m]!=null);
   const rows=[{so:'A.',ten:'Tiền đầu kỳ',v:dau,kieu:'so_du',tongSD:dau[msSD[0]],an:!!sel},
@@ -3133,8 +3163,9 @@ async function pageBCLCTT(){
     {so:'2.',ten:'Tiền chi ra',v:CKD,kieu:'nhom2',an:!(ct||kd)},...lChi('kd').map(k=>({ten:'· '+chiTenNgan(k),v:am(chi[k]),kieu:'con2',an:!(ct||kd)})),
     {so:'II.',ten:'Lưu chuyển tiền từ hoạt động đầu tư',v:DTU,kieu:'nhom',mo:ct||dt,key:'lcdt'},...lChi('dt').map(k=>({ten:'· '+chiTenNgan(k),v:am(chi[k]),kieu:'con2',an:!(ct||dt)})),
     {so:'III.',ten:'Lưu chuyển tiền từ hoạt động tài chính',v:TC,kieu:'nhom',mo:ct||tc,key:'lctc'},{ten:'· Nhận tiền vay (giải ngân)',v:VN,kieu:'con2',an:!(ct||tc)},{ten:'· Trả nợ vay (trang Vay & lãi vay)',v:VT,kieu:'con2',an:!(ct||tc)},...lChi('tc').map(k=>({ten:'· '+chiTenNgan(k)+' (gồm cả gốc + lãi)',v:am(chi[k]),kieu:'con2',an:!(ct||tc)})),
-    {so:'IV.',ten:'Lưu chuyển tiền thuần trong kỳ',v:RONG,kieu:'tong'},
-    {so:'V.',ten:'Tiền cuối kỳ',v:cuoi,kieu:'so_du',tongSD:cuoi[msSD[msSD.length-1]],an:!!sel}];
+    ...(Object.keys(CNT).length||Object.keys(CNC).length?[{so:'IV.',ten:'Giao dịch cá nhân (không hạch toán)',v:CN,kieu:'nhom',mo:ct||bcMoOn('lccn'),key:'lccn'},{ten:'· Tiền vào',v:CNT,kieu:'con2',an:!(ct||bcMoOn('lccn'))},{ten:'· Tiền ra',v:CNC,kieu:'con2',an:!(ct||bcMoOn('lccn'))}]:[]),
+    {so:'V.',ten:'Lưu chuyển tiền thuần trong kỳ',v:RONG,kieu:'tong'},
+    {so:'VI.',ten:'Tiền cuối kỳ',v:cuoi,kieu:'so_du',tongSD:cuoi[msSD[msSD.length-1]],an:!!sel}];
   const bang=bcBang(rows,ky,{luyKe:tab==='lk'});
   S.cache.bc_xuat=()=>xuatCSV('dong-tien-'+ky.tu+'_'+ky.den,[['Chỉ tiêu',r=>(r.so||'')+' '+r.ten],...ky.ms.map(m=>['T'+m.slice(5)+'/'+m.slice(0,4),r=>r.v[m]==null?'':Math.round(r.v[m])]),['Tổng',r=>r.kieu==='so_du'?Math.round(r.tongSD||0):Math.round(sumBy(ky.ms,m=>r.v[m]||0))]],rows);
   const lech=!sel&&ky.ms.some(m=>dau[m]!=null&&Math.abs((RONG[m]||0)-(rongTK[m]||0))>=1);
@@ -4212,9 +4243,12 @@ const LOGIC2=[
  ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
  ['thu_chi','Chuyển khoản TK công ty: lập lệnh → duyệt lệnh','Thủ quỹ lập lệnh trên ngân hàng, up ảnh lệnh (UNC), bấm "✓ Đã lập lệnh" → chuông báo kế toán. Kế toán duyệt lệnh trên ngân hàng xong bấm "✓ Đã duyệt lệnh" (ngày thanh toán mặc định hôm duyệt). Tab Cần chú ý: Chờ duyệt lệnh.','Chỉ khi Đã duyệt lệnh phiếu mới thành Đã thanh toán và trừ số dư — hết lệch khi lập lệnh hôm trước, duyệt hôm sau. Két tiền mặt vẫn bấm Đã chi tiền như cũ.','20/10'],
  ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Chưa bấm vẫn tính vào số dư két — kiểm két cuối ngày sẽ lộ nếu chưa nhận thật.','20/10'],
- ['thu_chi','Khoản tài khoản tự trừ','Phí ngân hàng, phí vận chuyển / thu hộ COD (đơn vị vận chuyển trừ khi hoàn COD)…: Phiếu chi → "+ Khoản tự trừ" — ghi 1 lần là Đã thanh toán, không kiểm / xác nhận / chi tiền, không cần ảnh giao dịch. Phiếu có sẵn (đồng bộ từ sheet đề nghị, phiếu cũ thiếu ảnh) → mở phiếu bấm "Tài khoản tự trừ".','Vẫn có loại chi + đơn vị chịu chi phí → vào chi phí / lãi lỗ. Hoàn COD: phiếu thu công nợ khách đủ tiền + khoản tự trừ phí vận chuyển. Phiếu chưa chi chỉ kế toán xác nhận / giám đốc / người được tự chi đánh dấu được. Chuông báo giám đốc. Lọc: nguồn "Tài khoản tự trừ".','21/10'],
+ ['thu_chi','Khoản tài khoản tự trừ','Phí ngân hàng, phí vận chuyển / COD… (tài khoản tự trừ): tạo phiếu chi, tick "Đã thanh toán luôn" (quyền tự chi). Bỏ nút "+ Khoản tự trừ" riêng (21/10).','','21/10'],
  ['thu_chi','Sửa ngày thanh toán phiếu đã chi','Người có quyền sửa Chi mở phiếu đã chi → đổi ô Ngày thanh toán → Lưu (vd ngân hàng trừ tiền khác ngày ghi trên phiếu, lệch quỹ cuối ngày).','Tháng đã khoá sổ không đổi được. Nhật ký ghi ngày cũ → ngày mới.','21/10'],
  ['thu_chi','Kế toán tự chi không cần duyệt','Tài khoản có quyền "Chi — tự chi không cần duyệt" tạo phiếu chi tick "Đã thanh toán luôn" (vd phiếu cân tài khoản cuối ngày).','Mỗi phiếu tự chi có chuông báo giám đốc; vẫn nhắc Thiếu ảnh giao dịch.','20/10'],
+ ['thu_chi','Tự chi: phiếu đang chờ + chọn nhiều phiếu','Phiếu mình tạo còn chờ duyệt: nút "✓ Tự chi (đã thanh toán)" trong phiếu. Tick chọn nhiều phiếu trên bảng → "✓ Tự chi n phiếu" (chọn tài khoản, ngày, loại chi 1 lần) hoặc "✓ Đã duyệt lệnh n phiếu" (kế toán).','Tick "Đã thanh toán luôn" thì không cần thông tin người nhận tiền.','21/10'],
+ ['bao_cao','Dòng tiền khớp phân loại chi phí','Báo cáo dòng tiền đặt tên + thứ tự loại chi giống báo cáo chi phí (theo danh mục). Giao dịch cá nhân tách mục riêng "IV. Giao dịch cá nhân".','Vẫn tính vào tiền thuần trong kỳ và số dư (tiền thật đi qua tài khoản).','21/10'],
+ ['thu_chi','Form phiếu chi 4 nhóm','Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Ghi chú & thanh toán.','','21/10'],
  ['thu_chi','Giao dịch cá nhân','Phiếu chi / thu / điều chuyển chọn Hạch toán: Không — giao dịch cá nhân → không hỏi đơn vị chịu chi phí, hoá đơn đỏ, hoá đơn xuất về, loại chi / loại thu. Mỗi trang có nút Giao dịch công ty / Giao dịch cá nhân để xem riêng, không lẫn.','Không vào báo cáo kết quả kinh doanh; vẫn tính vào số dư tài khoản (tiền thật đi qua tài khoản).','20/10'],
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
  ['chung','Chat trong app','Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
@@ -4578,7 +4612,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(PAGE
 // 20/10/2026 rà soát (anh: "rà đủ các case người dùng có thể ấn nhầm"): bấm đúp nút Lưu tạo 2 phiếu → mỗi hàm lưu / duyệt chỉ chạy 1 lượt
 // cho CÙNG 1 phiếu tại 1 thời điểm (khoá theo tham số đầu = id phiếu; phiếu mới = null), lượt bấm thêm khi đang chạy bị bỏ qua.
 (()=>{const khoaLuu=fn=>{const dang=new Set();return async function(...a){const k=String(a[0]);if(dang.has(k))return;dang.add(k);try{return await fn.apply(this,a)}finally{dang.delete(k)}}};
-  ['lapLenh','tqNhan','luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuNS','luuTL','luuTT','luuNganSach','luuLoaiNo','luuDcf','luuNap']
+  ['tuChiLoatLuu','duyetLenhLoat','lapLenh','tqNhan','luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuNS','luuTL','luuTT','luuNganSach','luuLoaiNo','luuDcf','luuNap']
     .forEach(k=>{if(typeof window[k]==='function')window[k]=khoaLuu(window[k])})})();
 </script>
 </body>
