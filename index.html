@@ -898,8 +898,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.159';
-const APP_VERSION='21/10/2026 14:33';
+const APP_SO='1.160';
+const APP_VERSION='21/10/2026 14:34';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1720,7 +1720,8 @@ async function pageDongTien(){
     ra:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12l7-7 7 7"/></svg>',
     ket:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4zm8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>'};
   const the=(c,ic,l,v,s1,on)=>`<div class="m-k ${on?'click':''}" style="--c:var(--${c})" ${on?`onclick="${on}"`:''}><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
-  const tabs=[['so_du','Số dư tài khoản'],['dcf','Đối chiếu file dòng tiền'],['so_quy','Sổ quỹ theo ngày'],['ket','Kiểm két cuối ngày'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']];
+  if(tab==='dcf'){f.sq_tab='so_du';return render()}   /* 21/10 anh: gỡ tab Đối chiếu file dòng tiền (file ngừng ghi từ 19/10, app là nguồn chính) */
+  const tabs=[['so_du','Số dư tài khoản'],['so_quy','Sổ quỹ theo ngày'],['ket','Kiểm két cuối ngày'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']];
   let body='';
   if(tab==='so_du'){
     body=!coSD?'<div class="m-card"><div class="m-empty">Số dư từng tài khoản tính từ 01/09/2026 — chọn kỳ từ 01/09</div></div>':`<div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Tài khoản</th><th>Loại</th><th class="num">Đầu kỳ</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Điều chuyển</th><th class="num">Cuối kỳ (sổ sách)</th><th class="num">Thực tế gần nhất</th><th class="num">Lệch</th><th class="c">Trạng thái</th></tr>
@@ -4192,7 +4193,6 @@ const LOGIC2=[
  ['chi_so','Sổ quỹ · Tổng số dư (sổ sách)','Tồn đầu kỳ của tài khoản (ngày mốc) + thu − chi ± điều chuyển ± vay, đến cuối ngày đang xem; cộng mọi tài khoản đang dùng.','Tiền mặt = két + quỹ quầy cửa hàng; Ngân hàng = các tài khoản ngân hàng.','19/10'],
  ['chi_so','Sổ quỹ · Thu / Chi trong kỳ','Tiền thật vào / ra tài khoản theo ngày thu / ngày chi, KHÔNG gồm điều chuyển nội bộ.','Khác \"Chi phí hạch toán\" ở Tổng quan (theo tháng sử dụng / phân bổ).','19/10'],
  ['chi_so','Sổ quỹ · Kiểm két hôm nay','Số đếm két cuối ngày (thủ quỹ nhập) so với số dư sổ sách cuối ngày.','Lệch → Đối soát lỗi tự báo.','19/10'],
- ['chi_so','Sổ quỹ · Đối chiếu file dòng tiền','Mỗi tài khoản × ngày: số trong file \"Kiểm soát dòng tiền\" so với số app; lệch thì tự ghi chú.','File là chuẩn (anh chốt 17/10). Kéo file 30 phút / lần.','19/10'],
  // ── DỮ LIỆU CHUNG
  ['chung','Phạm vi dữ liệu','Số chuẩn tính từ 01/09/2026; trước đó là số tham khảo.','Việc / câu hỏi chỉ dính trước T9 đóng tạm; HĐ đỏ chưa nhận đếm từ 01/09.','09/10'],
  ['chung','Phạm vi dữ liệu','Có dữ liệu cả năm 2026: Kiot và chi từ 01/01, điều chuyển từ 01/05, số dư tài khoản từ 01/09.','Trước 01/09 sheet cũ không ghi thu ngoài Kiot (lãi, hộ trả tiền, GĐ nộp…) → kỳ trước 01/09 có nhãn cảnh báo, không hiện số dư.','09/10'],
@@ -4219,7 +4219,6 @@ const LOGIC2=[
  ['thu_chi','Nối hoàn ứng','Kế toán nối phiếu hoàn ứng vào phiếu tạm ứng ngay trong cửa sổ phiếu (khung Tạm ứng · hoàn ứng / Nối vào phiếu tạm ứng) → xác nhận tiền về → clear.','Cũng làm được ở trang Tạm ứng & hoàn ứng.','16/10'],
  ['thu_chi','Clear tạm ứng','Khoản tạm ứng chỉ "Đã clear" khi tiền trả lại đã về và kế toán bấm Xác nhận tiền về (tạo phiếu thu "Thu hoàn ứng" vào tài khoản nhận). Chưa đủ → "Đã tạm ứng · chưa clear", theo dõi ở Tạm ứng & hoàn ứng.','Anh 16/10.','16/10'],
  ['thu_chi','Tiền mặt quầy cửa hàng','Kiot thu tiền mặt ở quầy Hiền Thủy / Chánh Tâm vào quỹ "TIỀN MẶT QUẦY CỬA HÀNG (chưa nộp két)", KHÔNG vào thẳng két. Cửa hàng nộp tiền về két = điều chuyển quầy → két (đúng ngày nộp, như file dòng tiền).','Anh 16/10 (khớp file dòng tiền). Số dư quầy = tiền cửa hàng đang giữ chưa nộp.','16/10'],
- ['thu_chi','Đối chiếu file dòng tiền','Sổ quỹ → tab Đối chiếu: số file (tab 3.CASHFLOW TỔNG) từng TK × ngày so với app; ngày lệch tự ghi chú, kế toán sửa ghi chú. File tự kéo 30 phút / lần (máy anh).','App theo phát sinh; file tự sai (tồn cộng nhầm, trùng dòng) thì ghi chú, không sửa app theo.','16/10'],
  ['thu_chi','Tài khoản ngừng dùng','Bỏ tick "Đang dùng" ở Cài đặt → Danh mục: ẩn khỏi lựa chọn, số dư, tổng tồn; phiếu cũ giữ nguyên tên TK.','Xem lại: Sổ quỹ → "TK ngừng dùng".','16/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền vào = phiếu thu Đã thu, theo ngày thu.','','05/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền ra = phiếu chi Đã thanh toán, theo ngày thanh toán.','Phiếu chờ duyệt / chờ thanh toán / từ chối không tính.','05/10'],
