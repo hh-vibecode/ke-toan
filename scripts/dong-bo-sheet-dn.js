@@ -11,6 +11,8 @@
 // Không in số tài khoản. Monsieur Claude
 const { docXlsx } = require('./doc-xlsx'), { sql } = require('./sql');
 const [TEP, CHE_DO] = process.argv.slice(2), GHI = CHE_DO === 'ghi', TU_MOI = '2026-10-01';
+// 21/10 anh: kéo bù dòng cũ chưa lên app — KT_THEM_DONG="3,62,…" (số dòng sheet) cho phép thêm dù trước TU_MOI
+const THEM = new Set(String(process.env.KT_THEM_DONG || '').split(',').filter(Boolean).map(Number));
 const ngay = v => v === undefined || v === '' || isNaN(+v) || +v < 40000 ? null : new Date(Date.UTC(1899, 11, 30) + Math.floor(+v) * 864e5).toISOString().slice(0, 10);
 const luc = v => v === undefined || v === '' || isNaN(+v) || +v < 40000 ? null : new Date(Date.UTC(1899, 11, 30) + (+v) * 864e5 - 7 * 3600e3).toISOString();
 const so = v => { const t = String(v ?? '').trim(); if (/^-?\d+(\.\d+)?(e[+-]?\d+)?$/i.test(t)) return Math.round(+t); const n = Math.round(+t.replace(/[^\d-]/g, '')); return isNaN(n) ? 0 : n; };
@@ -80,7 +82,7 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
       continue;
     }
     // 2. dòng mới
-    if ((dA || '') < TU_MOI) { bao.push(`r${r._r} ${dA} không khớp app (cũ, bỏ qua): ${nd.slice(0, 40)} ${f(tien)}`); continue; }
+    if ((dA || '') < TU_MOI && !THEM.has(r._r)) { bao.push(`r${r._r} ${dA} không khớp app (cũ, bỏ qua): ${nd.slice(0, 40)} ${f(tien)}`); continue; }
     const dvs = String(r.K || '').split(',').map(x => x.trim()).filter(Boolean).map(x => tim(dm.dv, x)).filter(Boolean);
     const pb = dvs.map((d, i) => ({ don_vi_id: d.id, so_tien: i < dvs.length - 1 ? Math.floor(tien / dvs.length) : tien - Math.floor(tien / dvs.length) * (dvs.length - 1) }));
     let tt = st, ghi = sach(r.N); if (tt === 'da_tt' && (!tk || !lo)) { tt = 'cho_tt'; ghi = '[Sheet ghi Đã thanh toán nhưng thiếu ' + [!tk && 'TK chi', !lo && 'loại chi'].filter(Boolean).join(', ') + ']' + (ghi ? ' ' + ghi : ''); }
