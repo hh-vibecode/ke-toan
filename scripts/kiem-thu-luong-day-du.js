@@ -61,7 +61,7 @@ async function don(tk) {   // xoá sạch dữ liệu thử
       tk[k] = await taoTam('tam-e2e-' + k, vt, q);
     const mo = async (k, hash = 'chi') => {
       if (!trang[k]) { const ctx = await br.newContext({ viewport: { width: 1500, height: 950 }, timezoneId: 'Asia/Ho_Chi_Minh' });
-        await ctx.route('https://ke-toan.test/**', rt => rt.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
+        await ctx.route('https://ke-toan.test/**', rt => rt.request().url().includes('phien-ban.txt') ? rt.fulfill({ status: 200, contentType: 'text/plain', body: require('fs').readFileSync(require('path').join(__dirname, '..', 'phien-ban.txt')) }) : rt.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
         await ctx.addInitScript(p => sessionStorage.setItem('kt_phien', p), tk[k].phien);
         const pg = await ctx.newPage(); pg.hop = [];
         pg.on('dialog', d => { pg.hop.push(d.message()); d.accept(); }); pg.on('pageerror', e => console.log(`  [${k}] LỖI TRANG`, e.message));
@@ -181,7 +181,7 @@ async function don(tk) {   // xoá sạch dữ liệu thử
     // ── LUỒNG 7: phiếu đề nghị công khai (không đăng nhập) + ảnh
     console.log('\nLUỒNG 7 — phiếu đề nghị công khai (link không đăng nhập)');
     const ctx = await br.newContext({ viewport: { width: 420, height: 900 } });
-    await ctx.route('https://ke-toan.test/**', rt => rt.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
+    await ctx.route('https://ke-toan.test/**', rt => rt.request().url().includes('phien-ban.txt') ? rt.fulfill({ status: 200, contentType: 'text/plain', body: require('fs').readFileSync(require('path').join(__dirname, '..', 'phien-ban.txt')) }) : rt.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
     const pc = await ctx.newPage(); pc.hop = []; pc.on('dialog', d => { pc.hop.push(d.message()); d.accept(); });
     await pc.goto('https://ke-toan.test/#de-nghi'); await pc.waitForSelector('#dn', { timeout: 30000 }); await pc.waitForTimeout(1500);
     await pc.evaluate(([tag, hom]) => { const f = document.querySelector('#dn'); const set = (k, v) => { const e = f.querySelector(`[name=${k}]`); if (!e) return; if (e.tagName === 'SELECT' && v === '*') { const o = [...e.options].find(o => o.value); e.value = o ? o.value : ''; } else e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); e.dispatchEvent(new Event('input', { bubbles: true })); };

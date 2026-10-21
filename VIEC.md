@@ -167,6 +167,17 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **21/10/2026 (81)** — phiên cloud. (1) Kế toán: "phí vận chuyển qua đơn vị vận chuyển / phí ngân hàng — tài khoản tự trừ; admin làm bù phiếu chi rồi chị duyệt lại từ đầu, bấm chi tiền,
+  lại bắt up giao dịch — làm lại luồng" + "hoàn COD tự trừ phí vận chuyển: phiếu thu công nợ đủ tiền + 1 phiếu chi phí vận chuyển". → `supabase-schema-kt-tu-tru.sql`: cờ **kt_chi.tu_tru**
+  (giữ nguồn phiếu), `kt_chi_tu_tru` (Phiếu chi → "+ Khoản tự trừ": loại khoản Phí vận chuyển / Phí ngân hàng / Khác → gợi ý loại chi Logistics / Phí tài chính, TK bị trừ (không két), ngày,
+  số tiền, đơn vị trừ tiền, đơn vị chịu chi phí, HĐ đỏ, chứng từ tuỳ chọn → ĐÃ THANH TOÁN ngay, không duyệt, không bắt ảnh), `kt_danh_dau_tu_tru` (nút "Tài khoản tự trừ" trong cửa sổ phiếu:
+  phiếu đã chi → hết nhắc thiếu ảnh; phiếu chưa chi (vd đồng bộ từ sheet đề nghị) → hỏi TK / loại / ngày rồi ghi luôn Đã thanh toán; "Bỏ tự trừ"). `kt_thieu_unc` bỏ phiếu tự trừ.
+  Quyền: tạo mới / đánh dấu phiếu đã chi = sửa Chi / xác nhận / GĐ / tự chi; đánh dấu phiếu CHƯA chi (bỏ qua duyệt) = xác nhận / GĐ / tự chi. Chuông báo GĐ. Lọc nguồn "Tài khoản tự trừ", nhãn "Tự trừ".
+  Hiện có 29 phiếu cũ trông như tự trừ (phí thu COD, phí VC Nhất Tín cấn trừ, phí QLTK) đang ở "Thiếu ảnh giao dịch" — CHƯA tự đổi, kế toán mở phiếu bấm "Tài khoản tự trừ" (hoặc anh bảo thì đổi loạt).
+  (2) Trang (admin.ketoan): "phiếu trừ tiền sai ngày nên lệch quỹ cuối ngày — không có chỗ sửa ngày thanh toán" → đúng: chỉ người xác nhận / GĐ / thủ quỹ sửa được (Trang bị bỏ quyền xác nhận 19/10).
+  `supabase-schema-kt-doi-ngay-tt.sql` hàm `kt_doi_ngay_tt` (quyền sửa Chi, phiếu đã chi, nhật ký ngày cũ → mới; tháng khoá sổ trigger chặn) + ô Ngày thanh toán sửa được trong khối "Thanh toán" → Lưu.
+  Thử trình duyệt `scripts/kiem-thu-tu-tru.js`: tự trừ 13 bước ĐẠT (tạo, gợi ý loại, Đã TT ngay, không nhắc thiếu ảnh, chứng từ lên kho, thủ quỹ không có nút, đánh dấu phiếu chưa chi / đã chi / bỏ);
+  ô sửa ngày CHƯA kiểm xong trên trình duyệt (bộ thử chập chờn: route thử trả index.html cho cả phien-ban.txt → app tự tải lại giữa chừng; đã sửa route, đang kiểm tiếp). Đẩy v1.152 theo anh "up cho mọi người dùng đã, lỗi test sau".
 - **20/10/2026 (80)** — phiên cloud. Anh: "test tạo cẩn thận đầy đủ phiếu, lưu bước đến cùng" + "chạy xong phải clear hết dữ liệu test" + "nhớ dùng view as — tương tác bằng quyền mới chuẩn".
   (1) **`scripts/kiem-thu-luong-day-du.js`** — trình duyệt thật, mỗi vai 1 TK tạm quyền CHÉP TK thật (thuquy, admin.ketoan; Admin như ketoan; GĐ như giamdoc; NV chỉ đề nghị), bấm đúng nút trong cửa sổ phiếu,
   tải ảnh thật: L1 TK ngân hàng (đề nghị → kế toán xác nhận chọn TK → thủ quỹ không có "Đã chi tiền", up UNC, "Đã lập lệnh" → kế toán "Đã duyệt lệnh" → Đã TT) · L2 két (GĐ chọn két → admin kế toán
