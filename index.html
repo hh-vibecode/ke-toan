@@ -892,8 +892,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.153';
-const APP_VERSION='21/10/2026 13:58';
+const APP_SO='1.154';
+const APP_VERSION='21/10/2026 14:07';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1053,29 +1053,34 @@ async function dnForm(){
     <div class="muted" id="dn-loai-g" style="font-size:12px;margin:-4px 0 10px"></div>
     ${da.length?`<div class="gt-da"><b>Phiếu đã gửi từ máy này</b>${da.map(x=>`<a onclick="location.hash='phieu=${x.ma}';gateTab('phieu')">#${x.id} · ${esc(String(x.nd).slice(0,40))} · ${fmt(x.tien)} đ</a>`).join('')}</div>`:''}
     <div class="form" id="dn" oninput="$('#dn-err').textContent='';dnQR()">
-      <label><span>1. Họ và tên người đề nghị${BB}</span><input name="nguoi_de_nghi" maxlength="80" value="${esc(ten)}" autocomplete="name"></label>
-      <label><span>2. Bộ phận${BB}</span><select name="bo_phan_id">${opts(DN.dm.bo_phan,null,'— chọn bộ phận —')}</select></label>
-      <label class="full"><span id="dn-l3">3. Nội dung chi (hạng mục, lý do)${BB}</span><textarea name="noi_dung" rows="2" maxlength="1000" placeholder="vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online"></textarea></label>
+      <div class="sec" style="grid-column:1/-1;margin:4px 0 0">1. Đề nghị</div>
+      <label><span>Họ và tên người đề nghị${BB}</span><input name="nguoi_de_nghi" maxlength="80" value="${esc(ten)}" autocomplete="name"></label>
+      <label><span>Bộ phận${BB}</span><select name="bo_phan_id">${opts(DN.dm.bo_phan,null,'— chọn bộ phận —')}</select></label>
+      <label class="full"><span id="dn-l3">Nội dung chi (hạng mục, lý do)${BB}</span><textarea name="noi_dung" rows="2" maxlength="1000" placeholder="vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online"></textarea></label>
       <label class="dn-hu"><span>Số tiền đã tạm ứng trước đó (nếu nhớ)</span><input name="tu_da_ung" inputmode="numeric" style="text-align:right" oninput="fmtMoney(this)"></label>
       <label class="dn-hu"><span>Trả lại bằng${BB}</span><select name="hu_ht"><option value="Chuyển khoản">Chuyển khoản</option><option value="Nộp tiền mặt">Nộp tiền mặt cho thủ quỹ</option></select></label>
-      <label><span id="dn-l4">4. Ngày sử dụng dịch vụ / nhận hàng${BB}</span><input type="date" name="ngay_su_dung" value="${h}"></label>
-      <label><span id="dn-l5">5. Số tiền đề nghị (đồng)${BB}</span><input name="so_tien" inputmode="numeric" style="text-align:right" oninput="fmtMoney(this);dnPb();dnChenh()"><span class="dn-chu" id="dn-chu"></span></label>
-      <label class="dn-tt"><span>6. Hình thức nhận tiền${BB}</span><select name="hinh_thuc" onchange="dnHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat">Tiền mặt</option></select></label>
-      <label class="dn-tt"><span>7. Người / đơn vị thụ hưởng${BB}</span><input name="thu_huong_ten" maxlength="150"></label>
-      <label class="dn-ck"><span>8. Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
-      <label class="dn-ck"><span>9. Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
-      <label class="dn-ck full"><span>Nội dung chuyển khoản (không bắt buộc)</span><input name="noi_dung_ck" maxlength="25" placeholder="vd: TT tien hang T10 — quét QR là điền sẵn, vẫn sửa được"></label>
-      <div class="dn-ck full" id="dn-qr" style="font-size:11.5px;margin-top:-4px"></div>
-      <div class="full dn-pb"><div class="dn-l">10. Đơn vị chịu chi phí * <span class="muted">— chọn 1 (kế toán phân bổ thêm sau nếu cần)</span></div>
+      <label><span id="dn-l5">Số tiền đề nghị (đồng)${BB}</span><input name="so_tien" inputmode="numeric" style="text-align:right" oninput="fmtMoney(this);dnPb();dnChenh()"><span class="dn-chu" id="dn-chu"></span></label>
+      <label><span id="dn-l4">Ngày sử dụng dịch vụ / nhận hàng${BB}</span><input type="date" name="ngay_su_dung" value="${h}"></label>
+      <label class="dn-tt">Mong muốn thanh toán trước ngày<input type="date" name="han_tt" min="${h}"></label>
+      <!-- 21/10 anh: form công khai và form phiếu chi trong app LUÔN đồng bộ (cùng 4 nhóm, cùng thứ tự) — sửa 1 bên thì sửa bên kia — Monsieur Claude -->
+      <div class="sec dn-hd" style="grid-column:1/-1;margin:12px 0 0">2. Hạch toán & hoá đơn</div>
+      <div class="full dn-pb"><div class="dn-l">Đơn vị chịu chi phí * <span class="muted">— chọn 1 (kế toán phân bổ thêm sau nếu cần)</span></div>
         <div class="dn-dv">${(DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)).length?DV_CP.filter(([i])=>DN.dm.don_vi.some(d=>d.id===i)):DN.dm.don_vi.map(d=>[d.id,d.ten])).map(([i,t])=>`<label class="chk"><input type="radio" name="dv" value="${i}" onchange="dnPb()"> ${esc(t)}</label>`).join('')}</div>
         <div id="dn-chia"></div></div>
-      <label class="dn-tt">11. Mong muốn thanh toán trước ngày<input type="date" name="han_tt" min="${h}"></label>
-      <label class="dn-hd"><span>12. Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
+      <label class="dn-hd"><span>Có hoá đơn đỏ (VAT) không?${BB}</span><select name="co_hd_do"><option value="">— chọn —</option><option value="true">Có hoá đơn đỏ</option><option value="false">Không có hoá đơn đỏ</option></select></label>
       <label id="dn-hdve" class="dn-hd"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,'')}</select></label>
-      <label class="full">13. Ghi chú<input name="ghi_chu" maxlength="500"></label>
-      <div class="full"><div class="dn-l">14. Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 60 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
+      <div class="sec dn-tt" style="grid-column:1/-1;margin:12px 0 0">3. Người nhận tiền</div>
+      <label class="dn-tt"><span>Hình thức nhận tiền${BB}</span><select name="hinh_thuc" onchange="dnHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat">Tiền mặt</option></select></label>
+      <label class="dn-tt"><span>Người / đơn vị thụ hưởng${BB}</span><input name="thu_huong_ten" maxlength="150"></label>
+      <label class="dn-ck"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
+      <label class="dn-ck"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
+      <label class="dn-ck full"><span>Nội dung chuyển khoản (không bắt buộc)</span><input name="noi_dung_ck" maxlength="25" placeholder="vd: TT tien hang T10 — quét QR là điền sẵn, vẫn sửa được"></label>
+      <div class="dn-ck full" id="dn-qr" style="font-size:11.5px;margin-top:-4px"></div>
+      <div class="sec" style="grid-column:1/-1;margin:12px 0 0">4. Hồ sơ & ghi chú</div>
+      <div class="full"><div class="dn-l">Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14">— ảnh / PDF hoá đơn, báo giá, hợp đồng (tối đa 60 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V</span></div>
         <label class="dn-drop" id="dn-drop">+ Chọn ảnh / PDF / Excel / Word<input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="dnThemFile(this.files);this.value=''"></label>
         <div id="dn-files"></div></div>
+      <label class="full">Ghi chú<input name="ghi_chu" maxlength="500"></label>
       <input name="web" tabindex="-1" autocomplete="off" class="dn-bay" aria-hidden="true">
     </div>
     <div class="err" id="dn-err"></div>
@@ -1105,9 +1110,9 @@ function dnLoai(k){DN.loai=k;const hu=k==='hoan_ung',tt=k==='thanh_toan',f=$('#d
   $$('#dn .dn-hu').forEach(x=>x.style.display=hu?'':'none');$$('#dn .dn-tt').forEach(x=>x.style.display=hu?'none':'');$$('#dn .dn-hd').forEach(x=>x.style.display=tt?'':'none');
   const pb=$('#dn .dn-pb');if(pb)pb.style.display=tt?'':'none';
   if(hu)$$('#dn .dn-ck').forEach(x=>x.style.display='none');else dnHT();
-  $('#dn-l3').innerHTML=(hu?'3. Hoàn ứng cho khoản ứng nào (ngày ứng, lý do)':k==='tam_ung'?'3. Lý do tạm ứng':'3. Nội dung chi (hạng mục, lý do)')+BB;
-  $('#dn-l4').innerHTML=(hu?'4. Ngày trả lại tiền':k==='tam_ung'?'4. Ngày cần dùng tiền':'4. Ngày sử dụng dịch vụ / nhận hàng')+BB;
-  $('#dn-l5').innerHTML=(hu?'5. Số tiền trả lại (đồng)':k==='tam_ung'?'5. Số tiền xin tạm ứng (đồng)':'5. Số tiền đề nghị (đồng)')+BB;
+  $('#dn-l3').innerHTML=(hu?'Hoàn ứng cho khoản ứng nào (ngày ứng, lý do)':k==='tam_ung'?'Lý do tạm ứng':'Nội dung chi (hạng mục, lý do)')+BB;
+  $('#dn-l4').innerHTML=(hu?'Ngày trả lại tiền':k==='tam_ung'?'Ngày cần dùng tiền':'Ngày sử dụng dịch vụ / nhận hàng')+BB;
+  $('#dn-l5').innerHTML=(hu?'Số tiền trả lại (đồng)':k==='tam_ung'?'Số tiền xin tạm ứng (đồng)':'Số tiền đề nghị (đồng)')+BB;
   const nd=$('#dn [name=noi_dung]');if(nd)nd.placeholder=hu?'vd: Trả lại tiền tạm ứng ngày 05/10 đi công tác Hà Nội (ứng 5.000.000, chi hết 3.200.000)':k==='tam_ung'?'vd: Tạm ứng mua vật tư sửa cửa hàng Chánh Tâm':'vd: Thanh toán tiền quảng cáo Facebook tháng 10 cho Sales Online';
   $('#dn-l14').textContent=hu?'— ảnh chuyển khoản / biên nhận nộp tiền mặt (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':k==='tam_ung'?'— ảnh / PDF báo giá, kế hoạch chi, giấy đề nghị (bắt buộc). Bấm chọn, kéo thả hoặc dán Ctrl+V':'— ảnh / PDF hoá đơn, báo giá, hợp đồng (bắt buộc, tối đa 60 file, mỗi file ≤ 15 MB). Bấm chọn, kéo thả hoặc dán Ctrl+V';
   $('#dn-gui').textContent=hu?'Gửi hoàn ứng':k==='tam_ung'?'Gửi đề nghị tạm ứng':'Gửi đề nghị'}
@@ -2423,7 +2428,7 @@ function formChi(id){S.f.chi_form_id=id||null;
   const x=id?S.cache.chi.find(c=>c.id===id):{ngay_de_nghi:homNay(),nguoi_de_nghi:S.toi.ho_ten,ngay_su_dung:homNay(),phan_bo:[],chung_tu:[],co_hd_do:false,kiot:'khong'};
   const moi=!id;
   // 21/10 kế toán: "sắp xếp lại phiếu cho dễ nhìn, đúng logic" → 4 nhóm: Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Thanh toán
-  const SEC=t=>`<div class="sec" style="grid-column:1/-1;margin:12px 0 0">${t}</div>`;
+  /* anh 21/10: LUÔN đồng bộ với form đề nghị công khai (dnForm) — cùng nhóm, cùng thứ tự */ const SEC=t=>`<div class="sec" style="grid-column:1/-1;margin:12px 0 0">${t}</div>`;
   const tuChi=moi?(chiDuyet()||can('chi_thang')):(can('chi_thang')&&x.tao_boi===S.toi.ho_ten&&['cho_duyet','cho_gd'].includes(x.trang_thai));
   modal(`<h2>${moi?'Đề nghị chi':'Sửa phiếu chi #'+id}</h2>
     <div class="form" id="f">
@@ -2449,7 +2454,7 @@ function formChi(id){S.f.chi_form_id=id||null;
       <label class="chi-ck nhan"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}" placeholder="vd: Vietcombank, MB Bank, Techcombank"></label>
       <label class="chi-ck nhan"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" value="${esc(x.thu_huong_stk||'')}"></label>
       <label class="chi-ck full nhan">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="25" value="${esc(x.noi_dung_ck||'')}" placeholder="Quét QR là điền sẵn, người chuyển vẫn sửa được · để trống = số phiếu + nội dung chi"></label>
-      ${SEC('4. Ghi chú'+(tuChi?' & thanh toán':''))}
+      ${SEC('4. Hồ sơ & ghi chú'+(tuChi?' · thanh toán':''))}
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
       ${tuChi?`<label class="full chk"><input type="checkbox" name="tt_luon" onchange="ttLuon(this.checked)"> <b>Đã thanh toán luôn</b> — kế toán tự chi, không cần chờ duyệt (không cần thông tin người nhận)</label>
         <div class="full" id="tt-luon" style="display:none;grid-column:1/-1">${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong',tai_khoan_id:x.tai_khoan_id,loai_id:x.loai_id})}</div>`:''}
