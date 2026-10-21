@@ -899,8 +899,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.162';
-const APP_VERSION='21/10/2026 15:26';
+const APP_SO='1.163';
+const APP_VERSION='21/10/2026 15:33';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2439,9 +2439,10 @@ function formChi(id,tu){S.f.chi_form_id=id||null;
       <label title="Tháng ghi nhận chi phí trên báo cáo kết quả kinh doanh. Để trống = tháng của ngày sử dụng dịch vụ">Tháng hạch toán chi phí<input type="month" name="thang_ht" value="${x.thang_ht||''}"></label>
       <label><span>Hoá đơn đỏ${BB}</span><select name="co_hd_do">${optsObj({false:'Không có hoá đơn đỏ',true:'Có hoá đơn đỏ'},String(!!x.co_hd_do))}</select></label>
       <label class="hdve"><span>Hoá đơn xuất về${BB}</span><select name="hd_ve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>
+      ${tuChi?`<label class="ttl" style="display:none"><span>Loại chi${BB}</span><select name="loai_tt">${opts(loai('chi'),x.loai_id,'— chọn —')}</select></label>`:''}
       ${SEC('3. Người nhận tiền')}
       ${tuChi?`<label class="full chk"><input type="checkbox" name="tt_luon" onchange="ttLuon(this.checked)"> Đã thanh toán luôn / Tài khoản tự trừ</label>
-        <div class="full" id="tt-luon" style="display:none;grid-column:1/-1">${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong',tai_khoan_id:x.tai_khoan_id,loai_id:x.loai_id})}</div>`:''}
+        <div class="full" id="tt-luon" style="display:none;grid-column:1/-1"><div class="form" id="ftt"><label><span>Tài khoản chi${BB}</span><select name="tai_khoan_id">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label><label><span>Ngày thanh toán${BB}</span><input type="date" name="ngay_tt" value="${homNay()}" min="${MOC_TIEN}"></label></div></div>`:''}
       <label class="nhan"><span>Hình thức nhận tiền${BB}</span><select name="hinh_thuc_nhan" onchange="chiHT()"><option value="ck">Chuyển khoản</option><option value="tien_mat" ${!moi&&!x.thu_huong_stk&&!x.thu_huong_nh&&x.thu_huong_ten?'selected':''}>Tiền mặt</option></select></label>
       <label class="nhan"><span>Người thụ hưởng${BB}</span><input name="thu_huong_ten" list="dl-th" value="${esc(x.thu_huong_ten||'')}" onchange="dienThuHuong(this.value)"></label>
       <label class="chi-ck nhan"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}"></label>
@@ -2458,7 +2459,7 @@ function chiTU(){$$('#f .ht-g').forEach(e=>e.style.display='none');
   ['hach_toan','dv_cp','thang_ht','co_hd_do','hd_ve'].forEach(n=>{const e=$('#f [name='+n+']');const l=e&&e.closest('label');if(l)l.style.display='none'});
   const pb=$('#f .full .lbl');if(pb&&pb.closest('.full'))pb.closest('.full').style.display='none'}
 // 21/10 kế toán: tick "Đã thanh toán luôn" → ẩn phần người nhận tiền (không bắt buộc)
-function ttLuon(on){$('#tt-luon').style.display=on?'':'none';$$('#f .nhan').forEach(e=>{const l=e.closest('label')||e;l.style.display=on?'none':''});if(!on)chiHT()}
+function ttLuon(on){$('#tt-luon').style.display=on?'':'none';$$('#f .ttl').forEach(e=>e.style.display=on&&($('#f [name=hach_toan]')||{}).value!=='khong'?'':'none');$$('#f .nhan').forEach(e=>{const l=e.closest('label')||e;l.style.display=on?'none':''});if(!on)chiHT()}
 function chiHT(){const h=$('#f [name=hinh_thuc_nhan]');if(!h)return;if(($('#f [name=tt_luon]')||{}).checked)return;$$('#f .chi-ck').forEach(x=>x.style.display=h.value==='ck'?'':'none')}
 function fieldsThanhToan(x){return `<div class="form" id="ftt">
     <label><span>Ngày thanh toán${BB}</span><input type="date" name="ngay_tt" value="${x.ngay_tt||homNay()}" min="${MOC_TIEN}"></label>
@@ -2493,7 +2494,7 @@ async function luuChi(id){const o=docChi();o.id=id;if(o.so_tien<0)return alert('
   {const c0=id?(S.cache.chi||[]).find(c=>c.id===id):null;   /* 20/10: máy chủ đưa phiếu về chờ GĐ nếu đổi người nhận sau xác nhận */
    if(c0&&c0.trang_thai==='cho_tt'&&!chiGD()&&['thu_huong_ten','thu_huong_nh','thu_huong_stk'].some(k=>(c0[k]||'')!==(o[k]||''))&&!confirm('Phiếu đã được giám đốc xác nhận. Đổi người nhận / ngân hàng / số tài khoản thì phiếu quay về Chờ giám đốc xác nhận lại. Tiếp tục?'))return}
   const tl=$('#f [name=tt_luon]');
-  if(tl&&tl.checked){Object.assign(o,formData($('#ftt')));o.trang_thai='da_tt';if(!o.tai_khoan_id||(!o.loai_id&&!o.khong_hach_toan))return alert('Thanh toán luôn: cần tài khoản chi'+(o.khong_hach_toan?'':' + loại chi'))}
+  if(tl&&tl.checked){Object.assign(o,formData($('#ftt')));const lt=$('#f [name=loai_tt]');if(lt)o.loai_id=lt.value?+lt.value:null;delete o.loai_tt;o.trang_thai='da_tt';if(!o.tai_khoan_id||(!o.loai_id&&!o.khong_hach_toan))return alert('Thanh toán luôn: cần tài khoản chi'+(o.khong_hach_toan?'':' + loại chi'))}
   const bs={hd_ve:$('#f [name=hd_ve]').value,la_tam_ung:$('#f [name=la_tam_ung]').checked,thang_ht:$('#f [name=thang_ht]').value||''};
   const cuBS=id?(S.cache.chi||[]).find(c=>c.id===id)||{}:{};
   const nid=await save('kt_luu_chi',{p_dong:o});
