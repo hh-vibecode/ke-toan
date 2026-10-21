@@ -48,7 +48,8 @@ async function don(tk) {   // xoá sạch dữ liệu thử
 
 (async () => {
   if (!fs.existsSync(ANH)) throw new Error('thiếu ảnh thử: ' + ANH);
-  const that = Object.fromEntries((await sql(`select ten_dang_nhap, quyen from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.quyen]));
+  const VT = Object.fromEntries((await sql(`select ten_dang_nhap, vi_tri from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.vi_tri]));   // 21/10: chép cả VỊ TRÍ (admin.ketoan lên Admin 21/10)
+  const that = Object.fromEntries((await sql(`select ten_dang_nhap, quyen, vi_tri from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.quyen]));
   const id = (await sql(`select (select id from kt_tai_khoan where hoat_dong and loai='tien_mat' and thu_quy_chi limit 1) ket,
       (select id from kt_tai_khoan where hoat_dong and loai='tien_mat' and not coalesce(thu_quy_chi,false) limit 1) quay,
       (select id from kt_tai_khoan where hoat_dong and loai='ngan_hang' and thu_quy_chi order by id limit 1) nh,
@@ -57,7 +58,7 @@ async function don(tk) {   // xoá sạch dữ liệu thử
   const tk = {}, br = await chromium.launch({ proxy: { server: process.env.HTTPS_PROXY } }), html = fs.readFileSync(path.join(__dirname, '..', 'index.html'));
   const trang = {};
   try {
-    for (const [k, vt, q] of [['nv', 'nhan_vien', ['chi_de_nghi']], ['adm', 'admin', ['*']], ['gd', 'admin', ['chi_gd']], ['tq', 'nhan_vien', [...that.thuquy, 'dong_tien']], ['akt', 'nhan_vien', that['admin.ketoan']]])
+    for (const [k, vt, q] of [['nv', 'nhan_vien', ['chi_de_nghi']], ['adm', 'admin', ['*']], ['gd', 'admin', ['chi_gd']], ['tq', VT.thuquy, [...that.thuquy, 'dong_tien']], ['akt', VT['admin.ketoan'], that['admin.ketoan']], ['sua', 'nhan_vien', ['chi', 'chi:ghi']]])
       tk[k] = await taoTam('tam-e2e-' + k, vt, q);
     const mo = async (k, hash = 'chi') => {
       if (!trang[k]) { const ctx = await br.newContext({ viewport: { width: 1500, height: 950 }, timezoneId: 'Asia/Ho_Chi_Minh' });
@@ -102,7 +103,7 @@ async function don(tk) {   // xoá sạch dữ liệu thử
     // T1 — admin kế toán tạo khoản tự trừ phí vận chuyển
     console.log('\nT1 — "+ Khoản tự trừ" (admin kế toán)');
     pg = await mo('akt'); pg.hop = [];
-    kq(!!(await pg.$('button[onclick="formTuTru()"]')), '[admin kế toán] có nút "+ Khoản tự trừ"');
+    kq(!!(await pg.waitForSelector('button[onclick="formTuTru()"]', { timeout: 15000 }).catch(() => null)), '[admin kế toán] có nút "+ Khoản tự trừ"');
     await pg.evaluate(() => formTuTru()); await pg.waitForTimeout(600);
     await chon(pg, 'kieu', 'van_chuyen'); await pg.evaluate(() => tuTruKieu());
     for (const [n, x] of Object.entries({ tai_khoan_id: id.nh, ngay: hom, so_tien: '52.500', thu_huong_ten: 'THỬ HỆ THỐNG Nhất Tín', noi_dung: TAG + ' T1 phi van chuyen', dv_cp: 2 })) await chon(pg, n, x);
@@ -114,7 +115,8 @@ async function don(tk) {   // xoá sạch dữ liệu thử
     kq(r1.trang_thai === 'da_tt' && r1.tu_tru, '[admin kế toán] ghi nhận → Đã thanh toán ngay + cờ tự trừ', JSON.stringify({ tt: r1.trang_thai, tu_tru: r1.tu_tru, nguon: r1.nguon, pb: r1.phan_bo }) + (pg.hop.length ? ' · ' + pg.hop.join(' / ') : ''));
     if (r1.id) { kq(await thieuUNC(r1.id) === false, 'khoản tự trừ KHÔNG bị nhắc "Thiếu ảnh giao dịch"'); kq(await choCT('chi', r1.id, false), 'chứng từ đính kèm (bảng đối soát) đã lên kho'); }
     // T2 — thủ quỹ không có nút
-    pg = await mo('tq'); kq(!(await pg.$('button[onclick="formTuTru()"]')), '[thủ quỹ] không có nút "+ Khoản tự trừ"');
+    pg = await mo('tq'); await pg.waitForSelector('button[onclick="S.cache.chi_xuat()"]', { timeout: 15000 }).catch(() => null);
+    kq(!(await pg.$('button[onclick="formTuTru()"]')), '[thủ quỹ] không có nút "+ Khoản tự trừ"');
     // T3 — phiếu chưa chi (như phiếu đồng bộ từ sheet đề nghị) → đánh dấu tự trừ, ghi luôn Đã thanh toán
     console.log('\nT3 — phiếu chưa chi → "Tài khoản tự trừ"');
     const c3 = await taoDeNghi('T3 sheet', 5500);
@@ -142,11 +144,12 @@ async function don(tk) {   // xoá sạch dữ liệu thử
     kq(await thieuUNC(c4) === true && (await db1(`select trang_thai from kt_chi where id=${c4}`)).trang_thai === 'da_tt', '[admin kế toán] "Bỏ tự trừ" → nhắc lại, phiếu vẫn Đã thanh toán', pg.hop.join(' / '));
     // T5 — sửa ngày thanh toán phiếu đã chi (câu hỏi của Trang)
     console.log('\nT5 — sửa ngày thanh toán phiếu đã chi');
-    pg = await moPhieu('akt', c4); pg.hop = [];
-    const o5 = await pg.$('#pc-ngay-tt'); kq(!!o5, '[admin kế toán] có ô sửa Ngày thanh toán trên phiếu đã chi');
+    pg = await moPhieu('sua', c4); pg.hop = [];
+    const o5 = await pg.$('#pc-ngay-tt'); kq(!!o5, '[nhân viên có quyền sửa Chi, không xác nhận] có ô sửa Ngày thanh toán trên phiếu đã chi');
+    if (!o5) console.log('  khối Thanh toán:', await pg.evaluate(() => { const m = document.querySelector('#modal'); return m ? (m.innerHTML.match(/.{0,250}Ngày thanh toán.{0,250}/s) || ['(không có chữ Ngày thanh toán)'])[0].replace(/\s+/g, ' ') : 'không có cửa sổ'; }));
     if (o5) { await o5.fill(homQua); await nut(pg, '^Lưu$'); await pg.waitForTimeout(2000); }
     const r5 = await db1(`select ngay_tt::text n from kt_chi where id = ${c4}`);
-    kq(r5.n === homQua, '[admin kế toán] đổi ngày → Lưu → ngày thanh toán đã đổi', r5.n + (pg.hop.length ? ' · ' + pg.hop.join(' / ') : ''));
+    kq(r5.n === homQua, '[nhân viên có quyền sửa Chi] đổi ngày → Lưu → ngày thanh toán đã đổi', r5.n + (pg.hop.length ? ' · ' + pg.hop.join(' / ') : ''));
     kq(!!(await db1(`select 1 x from kt_nhat_ky where bang='kt_chi' and dong_id=${c4} and hanh_dong='doi_ngay_tt'`)).x, 'nhật ký ghi lần đổi ngày');
     pg = await moPhieu('tq', c4).catch(() => null);
     if (pg) kq(!(await pg.$('#pc-ngay-tt')), '[thủ quỹ] không có ô sửa ngày (không có quyền sửa Chi)'); else kq(true, '[thủ quỹ] không thấy phiếu đã chi này trong danh sách (đúng phạm vi thủ quỹ)');

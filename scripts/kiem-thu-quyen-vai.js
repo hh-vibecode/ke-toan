@@ -9,7 +9,8 @@ const { docKhoa } = require('./khoa');
 
 const lit = s => "'" + String(s).replace(/'/g, "''") + "'";
 (async () => {
-  const that = Object.fromEntries((await sql(`select ten_dang_nhap, quyen from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.quyen]));
+  const VT = Object.fromEntries((await sql(`select ten_dang_nhap, vi_tri from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.vi_tri]));   // 21/10: chép cả VỊ TRÍ (admin.ketoan lên Admin 21/10)
+  const that = Object.fromEntries((await sql(`select ten_dang_nhap, quyen, vi_tri from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.quyen]));
   if (!that.thuquy || !that['admin.ketoan']) throw new Error('không thấy TK thuquy / admin.ketoan để chép quyền');
   const id = (await sql(`select (select id from kt_loai where nhom='chi' and hoat_dong order by id limit 1) lc, (select id from kt_loai where nhom='thu' and hoat_dong order by id limit 1) lt,
       (select min(id) from kt_don_vi where la_co_so and hoat_dong) dv, (select min(id) from kt_don_vi where la_bo_phan and hoat_dong) bp,
@@ -19,9 +20,9 @@ const lit = s => "'" + String(s).replace(/'/g, "''") + "'";
       (select id from kt_tai_khoan where hoat_dong and loai='ngan_hang' and thu_quy_chi order by id offset 1 limit 1) nh2,
       (select id from kt_tai_khoan where hoat_dong and loai='ngan_hang' and not coalesce(thu_quy_chi,false) order by id limit 1) cn`))[0];
   const VAI = [
-    ['tq', 'nhan_vien', that.thuquy, 'thủ quỹ (quyền như TK thuquy)'],
-    ['tq2', 'nhan_vien', [...that.thuquy, 'dong_tien'], 'thủ quỹ + tick Sổ quỹ'],
-    ['akt', 'nhan_vien', that['admin.ketoan'], 'admin kế toán (quyền như TK admin.ketoan)'],
+    ['tq', VT.thuquy, that.thuquy, 'thủ quỹ (quyền như TK thuquy)'],
+    ['tq2', VT.thuquy, [...that.thuquy, 'dong_tien'], 'thủ quỹ + tick Sổ quỹ'],
+    ['akt', VT['admin.ketoan'], that['admin.ketoan'], 'admin kế toán (vị trí + quyền như TK admin.ketoan)'],
     ['adm', 'admin', ['*'], 'vị trí Admin toàn quyền (như TK ketoan)'],
     ['gd', 'admin', ['chi_gd'], 'giám đốc (như TK giamdoc)'],
     ['nv', 'nhan_vien', ['chi_de_nghi'], 'nhân viên chỉ tạo đề nghị'],

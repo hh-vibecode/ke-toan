@@ -48,7 +48,8 @@ async function don(tk) {   // xoá sạch dữ liệu thử
 
 (async () => {
   if (!fs.existsSync(ANH)) throw new Error('thiếu ảnh thử: ' + ANH);
-  const that = Object.fromEntries((await sql(`select ten_dang_nhap, quyen from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.quyen]));
+  const VT = Object.fromEntries((await sql(`select ten_dang_nhap, vi_tri from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.vi_tri]));   // 21/10: chép cả VỊ TRÍ (admin.ketoan lên Admin 21/10)
+  const that = Object.fromEntries((await sql(`select ten_dang_nhap, quyen, vi_tri from kt_nguoi_dung where ten_dang_nhap in ('thuquy','admin.ketoan')`)).map(x => [x.ten_dang_nhap, x.quyen]));
   const id = (await sql(`select (select id from kt_tai_khoan where hoat_dong and loai='tien_mat' and thu_quy_chi limit 1) ket,
       (select id from kt_tai_khoan where hoat_dong and loai='tien_mat' and not coalesce(thu_quy_chi,false) limit 1) quay,
       (select id from kt_tai_khoan where hoat_dong and loai='ngan_hang' and thu_quy_chi order by id limit 1) nh,
@@ -57,7 +58,7 @@ async function don(tk) {   // xoá sạch dữ liệu thử
   const tk = {}, br = await chromium.launch({ proxy: { server: process.env.HTTPS_PROXY } }), html = fs.readFileSync(path.join(__dirname, '..', 'index.html'));
   const trang = {};
   try {
-    for (const [k, vt, q] of [['nv', 'nhan_vien', ['chi_de_nghi']], ['adm', 'admin', ['*']], ['gd', 'admin', ['chi_gd']], ['tq', 'nhan_vien', [...that.thuquy, 'dong_tien']], ['akt', 'nhan_vien', that['admin.ketoan']]])
+    for (const [k, vt, q] of [['nv', 'nhan_vien', ['chi_de_nghi']], ['adm', 'admin', ['*']], ['gd', 'admin', ['chi_gd']], ['tq', VT.thuquy, [...that.thuquy, 'dong_tien']], ['akt', VT['admin.ketoan'], that['admin.ketoan']]])
       tk[k] = await taoTam('tam-e2e-' + k, vt, q);
     const mo = async (k, hash = 'chi') => {
       if (!trang[k]) { const ctx = await br.newContext({ viewport: { width: 1500, height: 950 }, timezoneId: 'Asia/Ho_Chi_Minh' });
