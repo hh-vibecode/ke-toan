@@ -118,6 +118,7 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 | 16 | **HĐ mua vào 2 hộ (Chánh Tâm, Hiền Thủy)** — anh 14/10: thông tin "lấy từ file 3TShop như trước" đang SAI, xử lý sau. Đã bỏ dòng đó khỏi `tra-loi-ke-toan-14-10.txt`; chưa sửa chữ trên app (trang HĐ đầu vào, Logic) | chờ anh nói nguồn đúng |
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
+- **Phiếu / form gọn: chỉ đầu mục + tên ô**, không dòng chú thích, không placeholder "vd: …", không hướng dẫn (anh 21/10: "gọn gàng dễ nhìn nhất").
 - **Tạm ứng / hoàn ứng tạo ở trang Tạm ứng & hoàn ứng**, KHÔNG để lựa chọn tạm ứng trong form phiếu chi / thu (anh 21/10). Form công khai giữ tab Tạm ứng & hoàn ứng.
 - **Form đề nghị công khai và form phiếu chi trong app LUÔN đồng bộ** (anh 21/10): cùng 4 nhóm, cùng thứ tự (1. Đề nghị · 2. Hạch toán & hoá đơn · 3. Người nhận tiền · 4. Hồ sơ & ghi chú), thêm / sửa ô bên này thì sửa luôn bên kia trong cùng lần đẩy.
 - **Trả lời kế toán (anh 17/10/2026):** viết trong khung code (``` … ```) chữ thường, không markdown đậm / bảng, để anh bấm copy dán thẳng cho chị.
@@ -169,6 +170,7 @@ dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ
 
 ## 5. NHẬT KÝ (mới nhất trước)
 
+- **21/10/2026 (86)** — Anh: "bỏ hết chú thích, chỉ cần đầu mục" + "các phiếu clear hết chú thích / minh hoạ, gọn gàng dễ nhìn nhất" → bỏ ở form công khai (câu giới thiệu, mô tả loại phiếu, placeholder vd, "chọn 1…", "không bắt buộc", hướng dẫn hồ sơ), form phiếu chi (placeholder, nhãn dài Đã thanh toán luôn, dòng * ô bắt buộc), phiếu thu (dòng giải thích Kiot), tạm ứng (giải thích + placeholder), cửa sổ phiếu chi (gợi ý ai chi, đổi TK, yêu cầu HĐ NCC, hướng dẫn QR). Thử mở các phiếu không lỗi. Ghi quy tắc mục 3. Monsieur Claude
 - **21/10/2026 (85)** — Kế toán gửi số dư ngân hàng BIDV HT ngày 01/10 → app lệch đúng bằng phiếu thu #114576 (khoản nhỏ). Mục (82) mình kết luận "app đúng theo sao kê" là SAI: hôm 19/10 mình đổi #114576 từ 05/10 sang 26/09 thành "lãi tiền gửi T9" không đúng → trả về 05/10, nội dung "Chênh thu doanh thu CK Hiền Thủy (theo file dòng tiền)", có ghi chú. Giờ BIDV HT 30/09 = file, 01/10 = số dư ngân hàng. Monsieur Claude
 - **21/10/2026 (84)** — Anh: "sao form chi có đề nghị tạm ứng, tưởng phiếu riêng" / "tạm ứng hoàn ứng phải về phần tạm ứng mà tạo" (ô tick do Claude thêm 16/10 — lỗi) → bỏ ô tick khỏi form phiếu chi; trang Tạm ứng có nút "+ Đề nghị tạm ứng" (form đề nghị kiểu tạm ứng, ẩn nhóm Hạch toán & hoá đơn, vẫn đi luồng xác nhận → chi tiền); nút cũ đổi tên "+ Ghi khoản đã ứng". Hoàn ứng vẫn ghi ở trang Tạm ứng. Test 5/5, dọn 0 sót. Monsieur Claude
 - **21/10/2026 (83)** — Anh (ảnh form công khai): "m không đồng bộ bên này à" + "2 cái luôn phải đồng bộ với nhau" → form đề nghị công khai sắp theo đúng 4 nhóm + thứ tự form phiếu chi trong app, bỏ đánh số lẻ (ô Nội dung CK / Hoá đơn xuất về không số); nhóm 4 app đổi tên "Hồ sơ & ghi chú"; tạm ứng / hoàn ứng tự ẩn nhóm không dùng. Ghi quy tắc mục 3. Test form công khai 8/8 (gửi thanh toán, tạm ứng, hoàn ứng, thứ tự nhóm), dọn 0 sót. Monsieur Claude
