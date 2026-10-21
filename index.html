@@ -899,8 +899,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.165';
-const APP_VERSION='21/10/2026 16:53';
+const APP_SO='1.166';
+const APP_VERSION='21/10/2026 17:17';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4455,10 +4455,32 @@ async function dcfHtml(){const f=S.f;let body='';
           <td style="min-width:240px">${coGhi('so_du')?`<input class="m-in" style="height:28px;font-size:12px;width:100%" value="${esc(x.ghi_chu||'')}" placeholder="${lech(x)?'Ghi lý do lệch…':''}" onchange="luuDcf(${x.tk},'${x.ngay}',this.value)">`:esc(x.ghi_chu||'')}${x.gc_boi?`<div class="muted" style="font-size:10.5px">${esc(x.gc_boi)}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có ngày lệch</td></tr>'}</table></div>
       <div class="m-pg">Số file = tab 3.CASHFLOW TỔNG của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (thu / chi gồm cả điều chuyển). Số app tính trực tiếp từ sổ quỹ — sửa phiếu xong lệch tự cập nhật.</div></div>`;
   return body}
+// 21/10 anh: đối chiếu đề nghị thanh toán ↔ chi phí công ty ↔ 4 P&L (HT, CT, Shidai T1–8; Thị trường T1–6) — để tạm trong Nhật ký so khớp (scripts/doi-chieu-pnl.js)
+async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=f.dcp_tab||'phieu',th=f.dcp_th||'';
+  const ms=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'],tg=m=>'T'+(+m.slice(5));
+  const pc=d.phieu.filter(x=>!th||String(x.ngay).slice(0,7)===th),pcc=pc.filter(x=>!x.khop),cp=d.cp.filter(x=>!th||x.thang===th),cpc=cp.filter(x=>!x.chi_id);
+  const CSN={HT:'Hiền Thủy',CT:'Chánh Tâm',SD:'Shidai',TT:'Thị trường'},cs=f.dcp_cs||'HT';
+  const pn=d.pnl.filter(x=>x.nguon===cs&&(!th||x.thang===th)),pnl=f.dcp_all?pn:pn.filter(x=>Math.abs(+x.lech||0)>=1000);
+  const so=v=>v==null?'':fmt(v),lc=v=>!+v?'<span class="muted">0</span>':`<span class="${+v>0?'pos-t':'neg-t'}">${+v>0?'+':''}${fmt(v)}</span>`;
+  const bang=(cols,rows,trong)=>`<div class="m-card"><div class="scroll"><table class="m-t"><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr>${rows.slice(0,800).map(r=>`<tr>${cols.map(c=>`<td class="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="m-empty">${trong}</td></tr>`}</table></div>${rows.length>800?`<div class="m-pg">Hiện 800 / ${rows.length} dòng — lọc theo tháng để xem hết</div>`:''}</div>`;
+  let body='';
+  if(t==='phieu')body=bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Số phiếu',x=>`<span class="m-link" onclick="moPhieu('PC',${x.id})">PC${String(x.id).padStart(6,'0')}</span>`,'nw'],['Nội dung',x=>esc(x.nd||''),'ten'],['Người nhận',x=>esc(x.th||''),'nw'],['Loại chi',x=>esc((lo(x.loai)||{}).ten||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],pcc,'Mọi phiếu đều thấy trong chi phí công ty');
+  else if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Sheet',x=>esc(x.sheet),'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],cpc,'Mọi dòng đều có phiếu đề nghị');
+  else body=`<div class="m-flt" style="align-items:center"><div class="m-seg">${Object.entries(CSN).map(([k,v])=>`<button class="${cs===k?'on':''}" onclick="S.f.dcp_cs='${k}';render()">${v}</button>`).join('')}</div>
+      <label class="chk" style="font-size:12px;margin-left:auto"><input type="checkbox" ${f.dcp_all?'checked':''} onchange="S.f.dcp_all=this.checked;render()"> Hiện cả dòng khớp</label></div>`
+    +bang([['Tháng',x=>tg(x.thang),'nw'],['Mục',x=>esc(x.ma),'nw'],['Tên',x=>esc(x.ten),'ten'],['Target',x=>so(x.target),'num'],['P&L thực hiện',x=>so(x.th),'num'],['App',x=>so(x.app),'num'],['Lệch (P&L − app)',x=>lc(x.lech),'num']],pnl,cs==='TT'?'Tab P&L Thị trường không có mã mục (1, 1.1…) — chưa so được':'Không có dòng lệch');
+  return `<div class="m-kpis m-k3">
+      <div class="m-k"><div style="flex:1"><div class="l">Phiếu đề nghị (đã chi) ${th?tg(th):'T1–T8'}</div><div class="v">${fmt(pc.length)}</div><div class="s">khớp chi phí công ty ${fmt(pc.length-pcc.length)} · <b class="neg-t">chưa ${fmt(pcc.length)}</b></div></div></div>
+      <div class="m-k"><div style="flex:1"><div class="l">Dòng chi phí công ty</div><div class="v">${fmt(cp.length)}</div><div class="s">có phiếu đề nghị ${fmt(cp.length-cpc.length)} · <b class="neg-t">không có ${fmt(cpc.length)}</b></div></div></div>
+      <div class="m-k"><div style="flex:1"><div class="l">P&L ${CSN[cs]} — mục lệch app</div><div class="v">${fmt(pn.filter(x=>Math.abs(+x.lech||0)>=1000).length)}</div><div class="s">/ ${fmt(pn.length)} ô mục × tháng</div></div></div></div>
+    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['phieu','Đề nghị chưa khớp'],['cp','Chi phí công ty không có đề nghị'],['pnl','P&L ↔ app']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
+      <select class="m-in" style="margin-left:auto" onchange="S.f.dcp_th=this.value;render()"><option value="">Tất cả T1–T8</option>${ms.map(m=>`<option value="${m}" ${th===m?'selected':''}>${tg(m)}/2026</option>`).join('')}</select>
+      <span class="badge">Chạy ${d.chay_luc?fmtDT(d.chay_luc):'—'}</span></div>${body}`}
 async function pageKiotLog(){
   const el=$('#page'),sua=heThong();
   // 21/10 anh: trang đổi tên "Nhật ký so khớp" — tab Kiot + tab File dòng tiền (chuyển từ Sổ quỹ)
-  const nkSeg=`<div class="m-seg" style="margin-bottom:12px">${[['kiot','Kiot'],['dcf','File dòng tiền']].map(([k,t])=>`<button class="${(S.f.nk_tab||'kiot')===k?'on':''}" onclick="S.f.nk_tab='${k}';render()">${t}</button>`).join('')}</div>`;
+  const nkSeg=`<div class="m-seg" style="margin-bottom:12px">${[['kiot','Kiot'],['dcf','File dòng tiền'],['pnl','P&L T1–T8']].map(([k,t])=>`<button class="${(S.f.nk_tab||'kiot')===k?'on':''}" onclick="S.f.nk_tab='${k}';render()">${t}</button>`).join('')}</div>`;
+  if(S.f.nk_tab==='pnl'){el.innerHTML='<div class="empty">Đang tải...</div>';const h=await dcpHtml();el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+nkSeg+h;return}
   if(S.f.nk_tab==='dcf'){el.innerHTML='<div class="empty">Đang tải...</div>';const h=await dcfHtml();el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+nkSeg+h;return}
   el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+'<div class="empty">Đang tải...</div>';
   const r=await rpc('kt_ds_keo_kiot');S.cache.kl=r;
