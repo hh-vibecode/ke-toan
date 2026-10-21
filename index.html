@@ -898,8 +898,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.160';
-const APP_VERSION='21/10/2026 14:34';
+const APP_SO='1.161';
+const APP_VERSION='21/10/2026 14:36';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1326,7 +1326,7 @@ const PAGES={
   cd_logic:{ten:'Logic xử lý',nv:'he_thong',cd:'Hệ thống',fn:()=>pageCaiDat('logic')},
   cd_nhat_ky:{ten:'Nhật ký chỉnh sửa',nv:'he_thong',cd:'Quản trị',fn:()=>pageCaiDat('nhat_ky')},
   // Nhật ký kéo + so khớp Kiot theo tháng (anh 14/10/2026) — quyền theo trang Nhật ký
-  cd_kiot:{ten:'Nhật ký kéo & so khớp Kiot',nv:'he_thong',cd:'Hệ thống',fn:()=>pageKiotLog()},
+  cd_kiot:{ten:'Nhật ký so khớp',nv:'he_thong',cd:'Hệ thống',fn:()=>pageKiotLog()},
   cd_doi_mk:{ten:'Đổi mật khẩu',nv:'he_thong',cd:'Hệ thống',fn:()=>pageCaiDat('doi_ma')},
 };
 function go(p){S.page=p;location.hash=p;shell();dxBao()}
@@ -1720,7 +1720,7 @@ async function pageDongTien(){
     ra:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12l7-7 7 7"/></svg>',
     ket:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4zm8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>'};
   const the=(c,ic,l,v,s1,on)=>`<div class="m-k ${on?'click':''}" style="--c:var(--${c})" ${on?`onclick="${on}"`:''}><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
-  if(tab==='dcf'){f.sq_tab='so_du';return render()}   /* 21/10 anh: gỡ tab Đối chiếu file dòng tiền (file ngừng ghi từ 19/10, app là nguồn chính) */
+  if(tab==='dcf'){f.sq_tab='so_du';return render()}   /* 21/10 anh: đối chiếu file dòng tiền chuyển sang Hệ thống → Nhật ký so khớp */
   const tabs=[['so_du','Số dư tài khoản'],['so_quy','Sổ quỹ theo ngày'],['ket','Kiểm két cuối ngày'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']];
   let body='';
   if(tab==='so_du'){
@@ -1733,25 +1733,6 @@ async function pageDongTien(){
       <tr class="tong"><td colspan="2"><b>Tổng</b></td><td class="num"><b>${fmt(sumBy(tks,t=>t.dau_ky))}</b></td><td class="num"><b>${fmt(sumBy(tks,t=>t.thu))}</b></td><td class="num"><b>${fmt(sumBy(tks,t=>t.chi))}</b></td><td class="num"><b>${fmt(sumBy(tks,t=>t.dc))}</b></td><td class="num"><b>${fmt(sumBy(tks,t=>t.cuoi_ky))}</b></td><td></td><td></td><td></td></tr></table></div>
       ${ngung.length?`<div class="m-pg"><span class="m-link" onclick="S.f.sq_ngung=!S.f.sq_ngung;render()">${f.sq_ngung?'Ẩn':'Xem'} ${ngung.length} tài khoản ngừng dùng</span> <span class="muted">— không tính vào tổng số dư; phiếu cũ giữ nguyên. Ngừng / dùng lại: Cài đặt → Danh mục → Tài khoản.</span></div>`:''}
       <div class="m-pg">Bấm 1 tài khoản để xem sổ quỹ theo ngày và nhập số dư thực tế (sao kê / đếm két). Lệch = sổ sách − thực tế tại ngày nhập thực tế.</div></div>`;
-  }else if(tab==='dcf'){
-    // 16/10/2026 (anh): đối chiếu với trang quỹ & số dư của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (tab 3.CASHFLOW TỔNG) — từng TK × ngày, lệch thì ghi chú ngay
-    let d;try{d=await rpc('kt_ds_dcf',{p_tu:S.tu,p_den:S.den})}catch(e){d={ngay:[],dau:[]}}S.cache.dcf=d;
-    const L=(d.ngay||[]).map(x=>({...x,lt:Math.round(+x.a_thu-(+x.f_thu)),lc:Math.round(+x.a_chi-(+x.f_chi)),lton:x.f_ton==null?null:Math.round(+x.a_ton-(+x.f_ton))}));
-    // 21/10 anh "lý do gì lệch ghê thế": file ngừng ghi từ ~19/10 (app chạy chính thức) → chỉ so tới ngày cuối file còn ghi số của từng TK
-    const cuoiF={};L.forEach(x=>{if((+x.f_thu||+x.f_chi)&&(!cuoiF[x.tk]||x.ngay>cuoiF[x.tk]))cuoiF[x.tk]=x.ngay});
-    const cu=x=>!!cuoiF[x.tk]&&x.ngay>cuoiF[x.tk];
-    const lech=x=>!cu(x)&&(x.lt||x.lc||x.lton),tkF=[...new Set(L.map(x=>x.tk))],chon=f.dcf_tk?+f.dcf_tk:null,chiLech=f.dcf_all?false:true;
-    const ds=L.filter(x=>(!chon||x.tk===chon)&&(!chiLech||lech(x)));
-    const tong=tkF.map(id=>{const r=L.filter(x=>x.tk===id&&!cu(x)),cuoi=r[r.length-1]||{};return {id,ten:(tk(id)||{}).ten||('TK '+id),ngay_lech:r.filter(lech).length,chua:r.filter(x=>lech(x)&&!x.ghi_chu).length,lt:sumBy(r,x=>x.lt),lc:sumBy(r,x=>x.lc),f_ton:cuoi.f_ton,a_ton:cuoi.a_ton,ngay:cuoi.ngay}});
-    const so=v=>v?`<span class="${v>0?'pos-t':'neg-t'}">${v>0?'+':''}${fmt(v)}</span>`:'<span class="muted">0</span>';
-    body=`<div class="m-card"><div class="m-ch">Tổng hợp theo tài khoản <span class="m-cnt">(file nạp ${d.nap_luc?fmtDT(d.nap_luc):'—'} · lệch = app − file)</span></div><div class="scroll"><table class="m-t"><tr><th>Tài khoản</th><th class="num">Số ngày lệch</th><th class="num">Chưa ghi chú</th><th class="num">Lệch thu</th><th class="num">Lệch chi</th><th class="num">Tồn file (ngày cuối)</th><th class="num">Tồn app</th><th class="num">Lệch tồn</th></tr>
-        ${tong.map(t=>`<tr class="click ${chon===t.id?'on':''}" onclick="S.f.dcf_tk=${chon===t.id?'null':t.id};render()"><td><b>${esc(t.ten)}</b>${cuoiF[t.id]?`<div class="muted" style="font-size:11px">file ghi tới ${fmtD(cuoiF[t.id])}</div>`:''}</td><td class="num">${t.ngay_lech?`<b class="neg-t">${t.ngay_lech}</b>`:pill('Khớp','ok')}</td><td class="num">${t.chua||''}</td><td class="num">${so(t.lt)}</td><td class="num">${so(t.lc)}</td><td class="num">${t.f_ton==null?'—':fmt(t.f_ton)}</td><td class="num">${fmt(t.a_ton)}</td><td class="num">${t.f_ton==null?'':so(Math.round(+t.a_ton-(+t.f_ton)))}</td></tr>`).join('')||'<tr><td colspan="8" class="m-empty">Chưa nạp file dòng tiền cho kỳ này</td></tr>'}</table></div></div>
-      <div class="m-card" style="margin-top:10px"><div class="m-ch">${chiLech?'Các ngày lệch':'Tất cả các ngày'}${chon?' · '+esc((tk(chon)||{}).ten||''):''} <span class="m-cnt">(${ds.length})</span><span class="r"><label class="chk" style="font-size:12px"><input type="checkbox" ${chiLech?'':'checked'} onchange="S.f.dcf_all=this.checked;render()"> Hiện cả ngày khớp</label></span></div>
-      <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Tài khoản</th><th class="num">Thu file</th><th class="num">Thu app</th><th class="num">Chi file</th><th class="num">Chi app</th><th class="num">Tồn file</th><th class="num">Tồn app</th><th class="num">Lệch tồn</th><th>Ghi chú lệch</th></tr>
-        ${ds.map(x=>`<tr ${cu(x)?'style="opacity:.55" title="File chưa cập nhật ngày này — không tính lệch"':''}><td class="nw">${fmtD(x.ngay)}${cu(x)?'<div class="muted" style="font-size:11px">file chưa cập nhật</div>':''}</td><td class="nw">${esc(((tk(x.tk)||{}).ten||'').slice(0,22))}</td><td class="num">${fmt(x.f_thu)}</td><td class="num ${x.lt?'neg-t':''}">${fmt(x.a_thu)}</td><td class="num">${fmt(x.f_chi)}</td><td class="num ${x.lc?'neg-t':''}">${fmt(x.a_chi)}</td>
-          <td class="num">${x.f_ton==null?'—':fmt(x.f_ton)}</td><td class="num">${fmt(x.a_ton)}</td><td class="num">${x.lton==null?'':so(x.lton)}</td>
-          <td style="min-width:240px">${coGhi('dong_tien')?`<input class="m-in" style="height:28px;font-size:12px;width:100%" value="${esc(x.ghi_chu||'')}" placeholder="${lech(x)?'Ghi lý do lệch…':''}" onchange="luuDcf(${x.tk},'${x.ngay}',this.value)">`:esc(x.ghi_chu||'')}${x.gc_boi?`<div class="muted" style="font-size:10.5px">${esc(x.gc_boi)}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có ngày lệch</td></tr>'}</table></div>
-      <div class="m-pg">Số file = tab 3.CASHFLOW TỔNG của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (thu / chi gồm cả điều chuyển). Số app tính trực tiếp từ sổ quỹ — sửa phiếu xong lệch tự cập nhật.</div></div>`;
   }else if(tab==='so_quy'){
     f.dt_tk=f.dt_tk||(tkOn()[0]||{}).id;const id=Number(f.dt_tk);
     if(!coSD)body='<div class="m-card"><div class="m-empty">Số dư từng tài khoản tính từ 01/09/2026</div></div>';else{
@@ -4423,8 +4404,31 @@ const thangDS=()=>{const ds=[],nay=ymd(new Date()).slice(0,7);for(let m='2026-01
 const cnOK=cn=>locCSAll()||locCS().includes(csCuaCN(cn));
 function kqCong(o){const t={so_hd:0,tien_hang:0,doanh_thu:0,so_tra:0,tra_hang:0};for(const cn in (o||{}))if(cnOK(cn))for(const k in t)t[k]+=+(o[cn][k]||0);t.thuan=t.doanh_thu-t.tra_hang;return t}
 const pillDC=d=>!d?pill('Chưa soát',''):d.khop?pill('Khớp','ok'):d.so_sua>=d.so_lech?pill('Đã tự bù '+d.so_sua+' phiếu','info'):pill('Lệch '+(d.so_lech-d.so_sua)+' phiếu','bad');
+async function dcfHtml(){const f=S.f;let body='';
+    // 16/10/2026 (anh): đối chiếu với trang quỹ & số dư của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (tab 3.CASHFLOW TỔNG) — từng TK × ngày, lệch thì ghi chú ngay
+    let d;try{d=await rpc('kt_ds_dcf',{p_tu:S.tu,p_den:S.den})}catch(e){d={ngay:[],dau:[]}}S.cache.dcf=d;
+    const L=(d.ngay||[]).map(x=>({...x,lt:Math.round(+x.a_thu-(+x.f_thu)),lc:Math.round(+x.a_chi-(+x.f_chi)),lton:x.f_ton==null?null:Math.round(+x.a_ton-(+x.f_ton))}));
+    // 21/10 anh "lý do gì lệch ghê thế": file ngừng ghi từ ~19/10 (app chạy chính thức) → chỉ so tới ngày cuối file còn ghi số của từng TK
+    const cuoiF={};L.forEach(x=>{if((+x.f_thu||+x.f_chi)&&(!cuoiF[x.tk]||x.ngay>cuoiF[x.tk]))cuoiF[x.tk]=x.ngay});
+    const cu=x=>!!cuoiF[x.tk]&&x.ngay>cuoiF[x.tk];
+    const lech=x=>!cu(x)&&(x.lt||x.lc||x.lton),tkF=[...new Set(L.map(x=>x.tk))],chon=f.dcf_tk?+f.dcf_tk:null,chiLech=f.dcf_all?false:true;
+    const ds=L.filter(x=>(!chon||x.tk===chon)&&(!chiLech||lech(x)));
+    const tong=tkF.map(id=>{const r=L.filter(x=>x.tk===id&&!cu(x)),cuoi=r[r.length-1]||{};return {id,ten:(tk(id)||{}).ten||('TK '+id),ngay_lech:r.filter(lech).length,chua:r.filter(x=>lech(x)&&!x.ghi_chu).length,lt:sumBy(r,x=>x.lt),lc:sumBy(r,x=>x.lc),f_ton:cuoi.f_ton,a_ton:cuoi.a_ton,ngay:cuoi.ngay}});
+    const so=v=>v?`<span class="${v>0?'pos-t':'neg-t'}">${v>0?'+':''}${fmt(v)}</span>`:'<span class="muted">0</span>';
+    body=`<div class="m-card"><div class="m-ch">Tổng hợp theo tài khoản <span class="m-cnt">(file nạp ${d.nap_luc?fmtDT(d.nap_luc):'—'} · lệch = app − file)</span></div><div class="scroll"><table class="m-t"><tr><th>Tài khoản</th><th class="num">Số ngày lệch</th><th class="num">Chưa ghi chú</th><th class="num">Lệch thu</th><th class="num">Lệch chi</th><th class="num">Tồn file (ngày cuối)</th><th class="num">Tồn app</th><th class="num">Lệch tồn</th></tr>
+        ${tong.map(t=>`<tr class="click ${chon===t.id?'on':''}" onclick="S.f.dcf_tk=${chon===t.id?'null':t.id};render()"><td><b>${esc(t.ten)}</b>${cuoiF[t.id]?`<div class="muted" style="font-size:11px">file ghi tới ${fmtD(cuoiF[t.id])}</div>`:''}</td><td class="num">${t.ngay_lech?`<b class="neg-t">${t.ngay_lech}</b>`:pill('Khớp','ok')}</td><td class="num">${t.chua||''}</td><td class="num">${so(t.lt)}</td><td class="num">${so(t.lc)}</td><td class="num">${t.f_ton==null?'—':fmt(t.f_ton)}</td><td class="num">${fmt(t.a_ton)}</td><td class="num">${t.f_ton==null?'':so(Math.round(+t.a_ton-(+t.f_ton)))}</td></tr>`).join('')||'<tr><td colspan="8" class="m-empty">Chưa nạp file dòng tiền cho kỳ này</td></tr>'}</table></div></div>
+      <div class="m-card" style="margin-top:10px"><div class="m-ch">${chiLech?'Các ngày lệch':'Tất cả các ngày'}${chon?' · '+esc((tk(chon)||{}).ten||''):''} <span class="m-cnt">(${ds.length})</span><span class="r"><label class="chk" style="font-size:12px"><input type="checkbox" ${chiLech?'':'checked'} onchange="S.f.dcf_all=this.checked;render()"> Hiện cả ngày khớp</label></span></div>
+      <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Tài khoản</th><th class="num">Thu file</th><th class="num">Thu app</th><th class="num">Chi file</th><th class="num">Chi app</th><th class="num">Tồn file</th><th class="num">Tồn app</th><th class="num">Lệch tồn</th><th>Ghi chú lệch</th></tr>
+        ${ds.map(x=>`<tr ${cu(x)?'style="opacity:.55" title="File chưa cập nhật ngày này — không tính lệch"':''}><td class="nw">${fmtD(x.ngay)}${cu(x)?'<div class="muted" style="font-size:11px">file chưa cập nhật</div>':''}</td><td class="nw">${esc(((tk(x.tk)||{}).ten||'').slice(0,22))}</td><td class="num">${fmt(x.f_thu)}</td><td class="num ${x.lt?'neg-t':''}">${fmt(x.a_thu)}</td><td class="num">${fmt(x.f_chi)}</td><td class="num ${x.lc?'neg-t':''}">${fmt(x.a_chi)}</td>
+          <td class="num">${x.f_ton==null?'—':fmt(x.f_ton)}</td><td class="num">${fmt(x.a_ton)}</td><td class="num">${x.lton==null?'':so(x.lton)}</td>
+          <td style="min-width:240px">${coGhi('dong_tien')?`<input class="m-in" style="height:28px;font-size:12px;width:100%" value="${esc(x.ghi_chu||'')}" placeholder="${lech(x)?'Ghi lý do lệch…':''}" onchange="luuDcf(${x.tk},'${x.ngay}',this.value)">`:esc(x.ghi_chu||'')}${x.gc_boi?`<div class="muted" style="font-size:10.5px">${esc(x.gc_boi)}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có ngày lệch</td></tr>'}</table></div>
+      <div class="m-pg">Số file = tab 3.CASHFLOW TỔNG của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (thu / chi gồm cả điều chuyển). Số app tính trực tiếp từ sổ quỹ — sửa phiếu xong lệch tự cập nhật.</div></div>`;
+  return body}
 async function pageKiotLog(){
   const el=$('#page'),sua=heThong();
+  // 21/10 anh: trang đổi tên "Nhật ký so khớp" — tab Kiot + tab File dòng tiền (chuyển từ Sổ quỹ)
+  const nkSeg=`<div class="m-seg" style="margin-bottom:12px">${[['kiot','Kiot'],['dcf','File dòng tiền']].map(([k,t])=>`<button class="${(S.f.nk_tab||'kiot')===k?'on':''}" onclick="S.f.nk_tab='${k}';render()">${t}</button>`).join('')}</div>`;
+  if(S.f.nk_tab==='dcf'){el.innerHTML='<div class="empty">Đang tải...</div>';const h=await dcfHtml();el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+nkSeg+h;return}
   el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+'<div class="empty">Đang tải...</div>';
   const r=await rpc('kt_ds_keo_kiot');S.cache.kl=r;
   const nut=(t,on,cls='')=>sua?`<button class="btn ${cls}" onclick="${on}">${t}</button>`:'';
@@ -4490,7 +4494,7 @@ async function pageKiotLog(){
     ${ds.map(x=>{const k=x.kq||{},l=loiChay(x);return `<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc((LICH_KT[lichCua(x)]||[x.viec])[0])}</td><td class="nw muted">${esc(x.nguoi||'')}</td>
       <td style="font-size:11.5px">${l?`<span class="neg-t">${esc(String(k.loi||'').slice(0,240))}</span>${k.da_xong?'<br><span class="muted">Đã xong trước lỗi: '+tomTatChay({...x,kq:k.da_xong})+'</span>':''}`:tomTatChay(x)}</td>
       <td class="num">${k.giay??''}</td><td>${l?pill('Lỗi','bad'):pill('OK','ok')}</td></tr>`}).join('')||'<tr><td colspan="6" class="m-empty">Chưa có</td></tr>'}</table></div>`;
-  el.innerHTML=top+kp+bang+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS
+  el.innerHTML=top+nkSeg+kp+bang+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS
     +`<div class="sec">Lịch chạy tự động <span class="badge">${r.lich.length} lịch</span></div>`+lich+ls;
 }
 async function kiotChay(b,body,hoi){
