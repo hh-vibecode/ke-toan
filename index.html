@@ -899,8 +899,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.163';
-const APP_VERSION='21/10/2026 15:33';
+const APP_SO='1.164';
+const APP_VERSION='21/10/2026 15:44';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -919,9 +919,16 @@ const VI_TRI={supreme:'Admin (chủ app)',admin:'Admin (toàn quyền)',ke_toan:
 // chi_de_nghi / chi_duyet (08/10): quyền 1 ô (không chia xem / sửa) — QUYEN_1_O.
 const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_thang','chi_gd','chi_tt','he_thong'];
 // 20/10 anh: "không có sổ quỹ trong này à" — quyền Sổ quỹ (dong_tien) trước tên "Dòng tiền & đối soát" ở nhóm Báo cáo → đổi tên, chuyển vào Nghiệp vụ
-const NHOM_QUYEN=[['Nghiệp vụ',['thu','chi','chi_de_nghi','chi_duyet','chi_thang','dieu_chuyen','dong_tien','tam_ung','cong_no','sap_tra','vay','tai_san']],['Báo cáo tài chính',['tong_quan','pl','khoa_ky']],['Báo cáo kinh doanh (Kiot)',['ban_hang','khach_hang','ncc','hang_hoa']],['Thuế',['hoa_don_thue']],['Hệ thống & cài đặt',['he_thong']]];
+// 21/10 anh: "xếp lại phân quyền 1 lượt" — nhóm theo đúng menu trái; Sổ quỹ chia 4 quyền theo 4 tab
+const NHOM_QUYEN=[['Tổng quan',['tong_quan']],
+  ['Thu chi & Ngân quỹ',['chi','chi_de_nghi','chi_duyet','chi_thang','thu','dieu_chuyen','so_du','so_quy','kiem_ket','quy_ch','tam_ung','vay']],
+  ['Công nợ & Thanh toán',['khach_hang','ncc','sap_tra']],['Hoá đơn & Thuế',['hoa_don_thue']],
+  ['Báo cáo quản trị & Chốt kỳ',['pl','khoa_ky','ban_hang','hang_hoa']],['Hệ thống & Cài đặt',['he_thong']]];
 const TRANG_QUYEN={he_thong:'Hệ thống & cài đặt — danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic (đổi mật khẩu luôn mở)',tong_quan:'Tổng quan',dong_tien:'Sổ quỹ & số dư tài khoản (kiểm két, đối chiếu dòng tiền · kèm báo cáo Dòng tiền)',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán xác nhận & chọn tài khoản đi tiền',chi_thang:'Chi — tự chi không cần duyệt (phiếu cân tài khoản, báo giám đốc)',chi_gd:'Chi — giám đốc xác nhận + chi tài khoản cá nhân',chi_tt:'Chi — thủ quỹ chi tiền (két, TK công ty) & up ảnh giao dịch',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
   sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',khoa_ky:'Khoá kỳ / chốt tháng (mở khoá: chỉ Supreme / Admin)',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
+Object.assign(TRANG_QUYEN,{chi:'Phiếu chi — mọi phiếu',thu:'Phiếu thu',dieu_chuyen:'Điều chuyển tiền',so_du:'Sổ quỹ — Số dư tài khoản (kèm báo cáo Dòng tiền)',so_quy:'Sổ quỹ — Sổ quỹ theo ngày',
+  kiem_ket:'Sổ quỹ — Kiểm két cuối ngày',quy_ch:'Sổ quỹ — Quỹ tiền mặt cửa hàng (Kiot)',khach_hang:'Phải thu khách hàng',ncc:'Phải trả nhà cung cấp',sap_tra:'Lịch đến hạn trả',
+  pl:'Báo cáo quản trị (P&L, ngân sách, hiệu suất…)',ban_hang:'Số liệu bán hàng Kiot',hang_hoa:'Hàng hoá & tồn kho',tong_quan:'Tổng quan & đối soát lỗi'});
 const LOAI_TK={ngan_hang:'Ngân hàng',tien_mat:'Tiền mặt',vay:'Tài khoản vay',khac:'Khác'};
 const KIOT={khong:'Không ảnh hưởng TK cửa hàng',da_tao:'Đã tạo phiếu trên Kiot (4A)',khong_tao:'Không tạo phiếu Kiot (4B)'};
 const IC={
@@ -967,11 +974,14 @@ const tk=id=>S.dm.tai_khoan.find(x=>x.id==id), dv=id=>S.dm.don_vi.find(x=>x.id==
 const tkOn=()=>S.dm.tai_khoan.filter(x=>x.hoat_dong), coSo=()=>S.dm.don_vi.filter(x=>x.hoat_dong&&x.la_co_so),
       boPhan=()=>S.dm.don_vi.filter(x=>x.hoat_dong&&x.la_bo_phan), loai=n=>S.dm.loai.filter(x=>x.hoat_dong&&x.nhom===n);
 // Phân quyền giống app MKT/Sale (anh chốt 05/10): Supreme / Admin toàn quyền; vị trí khác tick từng trang (xem / sửa).
-const can=(p,ghi)=>!!S.toi&&(S.toi.toan_quyen||((S.toi.quyen||[]).includes(p)&&(!ghi||(S.toi.quyen||[]).includes(p+':ghi'))));
+// 21/10 anh: Sổ quỹ tách 4 quyền (so_du · so_quy · kiem_ket · quy_ch); quyền cũ dong_tien = đủ 4 (máy chủ kt_co_quyen cũng vậy)
+const SQ4=['so_du','so_quy','kiem_ket','quy_ch'];
+const can=(p,ghi)=>!!S.toi&&(S.toi.toan_quyen||((S.toi.quyen||[]).includes(p)&&(!ghi||(S.toi.quyen||[]).includes(p+':ghi')))
+  ||(SQ4.includes(p)&&(S.toi.quyen||[]).includes('dong_tien')&&(!ghi||(S.toi.quyen||[]).includes('dong_tien:ghi'))));
 const coGhi=p=>can(p||S.page,true);
 // 19/10 anh: Hệ thống & cài đặt = 1 quyền riêng (Supreme / Admin / giám đốc / tick he_thong); Đổi mật khẩu mở cho mọi tài khoản
 const heThong=()=>can('he_thong')||can('chi_gd');
-const coXem=p=>p==='cd_doi_mk'?!!S.toi:/^cd_/.test(p)?heThong():/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):/^bc_(don|du_kien|ngan_sach|ton|vay|cs)$/.test(p)?can('pl'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'||p==='cd_kiot'?can('nhat_ky'):p==='bc_dong_tien'?can('dong_tien')||can('pl'):p==='pl_thuc_thu'?can('pl'):p==='chi'?can('chi')||can('chi_de_nghi')||can('chi_tt'):/^cd_/.test(p)||can(p);
+const coXem=p=>p==='cd_doi_mk'?!!S.toi:/^cd_/.test(p)?heThong():/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):/^bc_(don|du_kien|ngan_sach|ton|vay|cs)$/.test(p)?can('pl'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'||p==='cd_kiot'?can('nhat_ky'):p==='bc_dong_tien'?can('so_du')||can('pl'):p==='dong_tien'?SQ4.some(k=>can(k)):p==='pl_thuc_thu'?can('pl'):p==='chi'?can('chi')||can('chi_de_nghi')||can('chi_tt'):/^cd_/.test(p)||can(p);
 // Chi: tạo đề nghị (sửa trang Chi hoặc quyền chỉ đề nghị) · sửa phiếu x (phiếu mình còn chờ duyệt) · duyệt / thanh toán (chỉ quyền chi_duyet)
 const chiTao=()=>coGhi('chi')||can('chi_de_nghi'), chiDuyet=()=>can('chi_duyet');
 // Giám đốc xác nhận lượt 2: KHÔNG đi theo Admin — chỉ Supreme hoặc tick riêng (giống hàm SQL kt_co_quyen)
@@ -1706,8 +1716,12 @@ function shellBadges(){if(!S.cache.dem||!S.toi)return;
 async function luuDcf(tk,ngay,v){try{await rpc('kt_luu_dcf_ghi_chu',{p_tk:tk,p_ngay:ngay,p_ghi_chu:v,p_da_xu_ly:false});toast(v?'Đã lưu ghi chú':'Đã xoá ghi chú')}catch(e){alert(e.message)}}
 async function pageDongTien(){
   // SỔ QUỸ & SỐ DƯ TÀI KHOẢN — giao diện mới (14/10/2026): thẻ số · tab Số dư tài khoản / Sổ quỹ theo ngày / Kiểm két cuối ngày / Quỹ cửa hàng
-  const el=$('#page'),f=S.f,tab=f.sq_tab||'so_du';el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const [b,r,kq]=await Promise.all([rpc('kt_so_du_tk',{p_tu:S.tu,p_den:S.den}),rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den}),rpc('kt_ds_kiem_quy',{p_tu:S.tu,p_den:S.den})]);
+  // 21/10 anh: mỗi tab 1 quyền — chỉ hiện + tải phần được xem
+  const el=$('#page'),f=S.f;el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const TQ={so_du:'so_du',so_quy:'so_quy',ket:'kiem_ket',quy:'quy_ch'},duoc=k=>can(TQ[k]);
+  const tab=duoc(f.sq_tab||'so_du')?(f.sq_tab||'so_du'):(['so_du','so_quy','ket','quy'].find(duoc)||'so_du');
+  const coSDQ=can('so_du'),coSQ=can('so_quy'),coKK=can('kiem_ket');
+  const [b,r,kq]=await Promise.all([coSDQ?rpc('kt_so_du_tk',{p_tu:S.tu,p_den:S.den}):{tai_khoan:[],thuc_te:[]},coSDQ||coSQ?rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den}):{dau_ky:{},phat_sinh:[],thuc_te:[]},coKK?rpc('kt_ds_kiem_quy',{p_tu:S.tu,p_den:S.den}):[]]);
   S.cache.bc=b;S.cache.kq=kq;
   const ngung=b.tai_khoan.filter(t=>!t.hoat_dong&&(+t.cuoi_ky||+t.thu||+t.chi||+t.dc));
   const tks=b.tai_khoan.filter(t=>t.hoat_dong||(f.sq_ngung&&ngung.includes(t))).filter(t=>locTK().length===LOC_TK.length||locTK().includes(tkNhom(t.id)));
@@ -1722,7 +1736,8 @@ async function pageDongTien(){
     ket:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4zm8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>'};
   const the=(c,ic,l,v,s1,on)=>`<div class="m-k ${on?'click':''}" style="--c:var(--${c})" ${on?`onclick="${on}"`:''}><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
   if(tab==='dcf'){f.sq_tab='so_du';return render()}   /* 21/10 anh: đối chiếu file dòng tiền chuyển sang Hệ thống → Nhật ký so khớp */
-  const tabs=[['so_du','Số dư tài khoản'],['so_quy','Sổ quỹ theo ngày'],['ket','Kiểm két cuối ngày'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']];
+  const tabs=[['so_du','Số dư tài khoản'],['so_quy','Sổ quỹ theo ngày'],['ket','Kiểm két cuối ngày'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']].filter(([k])=>duoc(k));
+  const tabsCu=[['so_du','Số dư tài khoản'],['so_quy','Sổ quỹ theo ngày'],['ket','Kiểm két cuối ngày'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']];
   let body='';
   if(tab==='so_du'){
     body=!coSD?'<div class="m-card"><div class="m-empty">Số dư từng tài khoản tính từ 01/09/2026 — chọn kỳ từ 01/09</div></div>':`<div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Tài khoản</th><th>Loại</th><th class="num">Đầu kỳ</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Điều chuyển</th><th class="num">Cuối kỳ (sổ sách)</th><th class="num">Thực tế gần nhất</th><th class="num">Lệch</th><th class="c">Trạng thái</th></tr>
@@ -1745,21 +1760,21 @@ async function pageDongTien(){
         <span class="badge" style="align-self:flex-end">Đầu kỳ ${fmt(r.dau_ky[id]||0)}</span></div>
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Điều chuyển</th><th class="num">Tồn sổ sách</th><th class="num">Tồn thực tế (sao kê / đếm két)</th><th class="num">Lệch</th></tr>
       ${rows.slice().reverse().map(x=>`<tr ${x.thu||x.chi||x.dc?`class="click" title="Bấm để xem từng khoản trong ngày" onclick="sqMo(this,'${x.ng}',${id})"`:''}><td class="nw">${x.thu||x.chi||x.dc?'<span class="muted">▸</span> ':''}${fmtD(x.ng)}</td><td class="num pos-t">${x.thu?fmt(x.thu):''}</td><td class="num neg-t">${x.chi?fmt(x.chi):''}</td><td class="num">${x.dc?fmt(x.dc):''}</td><td class="num"><b class="${x.ton<0?'neg-t':''}">${fmt(x.ton)}</b></td>
-        <td class="num" onclick="event.stopPropagation()">${coGhi('dong_tien')?`<input class="m-in tt-in" inputmode="numeric" value="${x.tt!=null?fmt(x.tt):''}" oninput="fmtMoney(this)" onchange="luuTT(${id},'${x.ng}',this.value)">`:fmt(x.tt)}</td>
+        <td class="num" onclick="event.stopPropagation()">${coGhi('so_quy')||coGhi('so_du')?`<input class="m-in tt-in" inputmode="numeric" value="${x.tt!=null?fmt(x.tt):''}" oninput="fmtMoney(this)" onchange="luuTT(${id},'${x.ng}',this.value)">`:fmt(x.tt)}</td>
         <td class="num ${x.tt!=null&&x.ton-x.tt!==0?'neg-t':''}">${x.tt!=null?fmt(x.ton-x.tt):''}</td></tr>`).join('')}
       <tr class="tong"><td><b>Tổng kỳ</b></td><td class="num"><b>${fmt(sumBy(rows,x=>x.thu))}</b></td><td class="num"><b>${fmt(sumBy(rows,x=>x.chi))}</b></td><td class="num"><b>${fmt(sumBy(rows,x=>x.dc))}</b></td><td class="num"><b>${fmt(rows.length?rows[rows.length-1].ton:0)}</b></td><td></td><td></td></tr></table></div></div>`}
   }else if(tab==='ket'){
     body=`<div class="m-flt" style="align-items:center"><span class="muted">Thủ quỹ đếm két cuối mỗi ngày, nhập số đếm + chụp sổ quỹ. App so với sổ sách; lệch thì báo ở Đối soát lỗi.</span><span style="margin-left:auto"></span>
-        ${coGhi('dong_tien')?`<button class="m-btn pri" onclick="formKiemKet()">+ Kiểm két hôm nay</button>`:''}</div>
+        ${coGhi('kiem_ket')?`<button class="m-btn pri" onclick="formKiemKet()">+ Kiểm két hôm nay</button>`:''}</div>
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Két / tài khoản</th><th class="num">Số đếm</th><th class="num">Sổ sách cuối ngày</th><th class="num">Chênh lệch</th><th class="c">Trạng thái</th><th class="c">Ảnh sổ</th><th>Người kiểm</th><th>Ghi chú</th></tr>
       ${kq.map(k=>{const l=+k.so_dem-(+k.so_sach);return `<tr class="click" onclick="formKiemKet(${k.id})"><td class="nw">${fmtD(k.ngay)}</td><td>${esc((tk(k.tk)||{}).ten||'')}</td><td class="num"><b>${fmt(k.so_dem)}</b></td><td class="num">${fmt(k.so_sach)}</td>
         <td class="num ${l?'neg-t':''}">${l>0?'+':''}${fmt(l)}</td><td class="c">${l?pill(l>0?'Thừa':'Thiếu','bad'):pill('Khớp','ok')}</td><td class="c">${+k.so_anh?pill(k.so_anh+' ảnh','info'):pill('Chưa có','warn')}</td>
         <td class="nw">${esc(k.nguoi||'')}</td><td class="ten">${esc(k.ghi_chu||'')}</td></tr>`}).join('')||'<tr><td colspan="9" class="m-empty">Chưa có lần kiểm két nào trong kỳ</td></tr>'}</table></div></div>`;
   }
-  el.innerHTML=`<div class="m-kpis m-k3">${the('accent','vi','Tổng số dư (sổ sách)',coSD?fmt(sumBy(tks,t=>t.cuoi_ky)):'—','cuối '+fmtD(S.den))}
+  el.innerHTML=`${coSDQ?`<div class="m-kpis m-k3">${the('accent','vi','Tổng số dư (sổ sách)',coSD?fmt(sumBy(tks,t=>t.cuoi_ky)):'—','cuối '+fmtD(S.den))}
       ${the('ok','tm','Tiền mặt',coSD?fmt(sumBy(tm,t=>t.cuoi_ky)):'—',tm.length+' két / quỹ')}${the('info','nh','Ngân hàng',coSD?fmt(sumBy(nh,t=>t.cuoi_ky)):'—',nh.length+' tài khoản')}
       ${(()=>{const vv=sumBy(b.tai_khoan,x=>+x.vay_vao||0),vr=sumBy(b.tai_khoan,x=>+x.vay_ra||0);return the('ok','vao','Thu trong kỳ',fmt(sumBy(b.tai_khoan,x=>+x.thu)-vv),'không gồm điều chuyển'+(vv?' · nhận vay tính riêng: '+fmt(vv):''))+the('bad','ra','Chi trong kỳ',fmt(sumBy(b.tai_khoan,x=>+x.chi)-vr),'phiếu chi, không gồm điều chuyển'+(vr?' · trả nợ vay tính riêng: '+fmt(vr):''))})()}
-      ${the(homKet?'ok':'warn','ket','Kiểm két hôm nay',homKet?'Đã kiểm':'Chưa kiểm',lech.length?lech.length+' tài khoản lệch thực tế':'Không có lệch',"S.f.sq_tab='ket';render()")}</div>
+      ${the(homKet?'ok':'warn','ket','Kiểm két hôm nay',homKet?'Đã kiểm':'Chưa kiểm',lech.length?lech.length+' tài khoản lệch thực tế':'Không có lệch',"S.f.sq_tab='ket';render()")}</div>`:''}
     <div class="m-seg" style="margin-bottom:12px">${tabs.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.sq_tab='${k}';render()">${t}${k==='ket'&&kq.length?`<span class="c">${kq.length}</span>`:''}</button>`).join('')}</div>
     <div id="sq-body">${body}</div>`;
   if(tab==='quy')await veQuyCuaHang($('#sq-body'));
@@ -1776,8 +1791,8 @@ function formKiemKet(id){
     <div class="kk-mg">${MENH_GIA.map(m=>`<label><span>${fmt(m)}</span><input inputmode="numeric" data-mg="${m}" value="${mg[m]||''}" placeholder="0" oninput="kkTong()"><em id="kkm${m}"></em></label>`).join('')}</div>
     <div class="form" style="margin-top:10px"><label>Tổng số đếm${moneyIn('so_dem',x.so_dem,'oninput="fmtMoney(this)"')}</label><label>Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label></div>
     ${id?`<div class="m-kv" style="margin-top:10px"><div>Sổ sách cuối ngày</div><div>${fmt(x.so_sach)}</div><div>Chênh lệch</div><div class="${+x.so_dem-(+x.so_sach)?'neg-t':'pos-t'}"><b>${fmt(+x.so_dem-(+x.so_sach))}</b></div><div>Người kiểm</div><div>${esc(x.nguoi||'')} · ${fmtDT(x.luc)}</div></div>`:''}
-    ${ctBox('kiem_quy',id,coGhi('dong_tien'))}</div>
-    <div class="m-pn-f"><span style="margin-left:auto"></span><button class="m-btn" onclick="closeModal()">Đóng</button>${coGhi('dong_tien')?`<button class="m-btn pri" onclick="luuKiemKet(${id||'null'})">Lưu</button>`:''}</div></div>`,true);
+    ${ctBox('kiem_quy',id,coGhi('kiem_ket'))}</div>
+    <div class="m-pn-f"><span style="margin-left:auto"></span><button class="m-btn" onclick="closeModal()">Đóng</button>${coGhi('kiem_ket')?`<button class="m-btn pri" onclick="luuKiemKet(${id||'null'})">Lưu</button>`:''}</div></div>`,true);
   kkTong(true);
 }
 function kkTong(dau){let t=0,co=false;document.querySelectorAll('.kk-mg input').forEach(i=>{const n=+String(i.value).replace(/\D/g,'')||0;if(n)co=true;t+=n*(+i.dataset.mg);const e=$('#kkm'+i.dataset.mg);if(e)e.textContent=n?fmt(n*(+i.dataset.mg)):''});
@@ -4251,6 +4266,7 @@ const LOGIC2=[
  ['chung','Bình luận: @nhắc tên, Nhắc việc, âm báo','Ô bình luận trong phiếu (chi, thu, điều chuyển, tạm ứng, vay): gõ @ chọn tên người có tài khoản app kế toán → người đó nhận chuông. Tick "Nhắc việc" → bình luận thành việc cần làm: nhãn "Cần bổ sung" trên phiếu + mục lọc ở dải Cần chú ý, tới khi bấm "✓ Đã xong".','Việc nhắc mở quá 2 ngày: 8:00 sáng hằng ngày báo chuông lại người ghi + kế toán (lịch kt-nhac-viec). Có thông báo mới: tiếng "bzzzz" rung + màn hình rung nhẹ như BUZZ Yahoo ngày xưa (tự tổng hợp, sau khi đã bấm vào trang 1 lần). Người gửi phiếu không có tài khoản: không nhắc — giám đốc / kế toán up thay.','19/10'],
  ['chung','Báo có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App kiểm ngay 4 giây sau khi mở, rồi mỗi phút và lúc quay lại tab; có bản mới → hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình (như app MKT).','Không đang mở cửa sổ nhập liệu → đếm 10 giây rồi tự tải lại; đang nhập dở → chỉ hiện nút, bấm Tải lại khi xong. Lúc Xem như thì không báo.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
+ ['chung','Phân quyền theo menu · Sổ quỹ 4 quyền','Trang Phân quyền xếp nhóm đúng menu trái (Tổng quan · Thu chi & Ngân quỹ · Công nợ · Hoá đơn & Thuế · Báo cáo · Hệ thống). Sổ quỹ chia 4 quyền theo 4 tab: Số dư tài khoản · Sổ quỹ theo ngày · Kiểm két cuối ngày · Quỹ tiền mặt cửa hàng — chỉ thấy tab, thẻ số và dữ liệu được cấp (máy chủ chặn phần còn lại).','Tài khoản có quyền Sổ quỹ cũ = đủ 4 quyền; mở sửa ở Phân quyền rồi Lưu là đổi sang 4 quyền mới. Quyền của trang ẩn (không hiện trên bảng) giữ nguyên khi lưu.','21/10'],
  ['thu_chi','Cửa sổ phiếu chi — 1 nút Lưu','Trong cửa sổ phiếu chi, đổi ô nào (hạch toán, phân bổ, hoàn quỹ, hoá đơn đỏ, hoá đơn xuất về, tài khoản đi tiền, loại chi…) cũng CHƯA lưu; bấm Lưu ở chân cửa sổ mới lưu hết.','Nút chuyển bước (Xác nhận, Đã chi tiền, Từ chối…) cũng lưu hết các thay đổi rồi mới chuyển bước. Đóng cửa sổ không bấm Lưu = bỏ thay đổi.','19/10'],
  ['thu_chi','Phiếu chi — chờ chi tiền: tiền mặt / chuyển khoản','Mỗi phiếu chờ chi có nhãn "Tiền mặt · KÉT…" hoặc "Chuyển khoản · <tài khoản>" (thẻ Chờ chi tiền chỉ còn tổng tiền + số phiếu — anh 19/10 bỏ khối chia theo tài khoản).','Đổi tài khoản đi tiền sau khi đã xác nhận: người xác nhận (kế toán có quyền xác nhận / giám đốc) bấm "Đổi tài khoản đi tiền" trong phiếu, báo chuông người chi mới; thủ quỹ không tự đổi được.','19/10'],
  ['thu_chi','Phiếu chi — hoá đơn đỏ theo HKD','Thủ quỹ theo dõi thủ công hoá đơn đỏ xuất về 2 HKD: thấy mọi phiếu ĐÃ CHI có cần hoá đơn, sửa được "Hoá đơn xuất về" + Đã nhận / ngày nhận trong cửa sổ phiếu.','Thẻ "Chưa nhận HĐ" chia theo HKD Hiền Thủy / HKD Chánh Tâm / Công ty / Chưa ghi xuất về (bấm để lọc); bộ lọc "HĐ xuất về" trên danh sách.','19/10'],
@@ -4422,7 +4438,7 @@ async function dcfHtml(){const f=S.f;let body='';
       <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Tài khoản</th><th class="num">Thu file</th><th class="num">Thu app</th><th class="num">Chi file</th><th class="num">Chi app</th><th class="num">Tồn file</th><th class="num">Tồn app</th><th class="num">Lệch tồn</th><th>Ghi chú lệch</th></tr>
         ${ds.map(x=>`<tr ${cu(x)?'style="opacity:.55" title="File chưa cập nhật ngày này — không tính lệch"':''}><td class="nw">${fmtD(x.ngay)}${cu(x)?'<div class="muted" style="font-size:11px">file chưa cập nhật</div>':''}</td><td class="nw">${esc(((tk(x.tk)||{}).ten||'').slice(0,22))}</td><td class="num">${fmt(x.f_thu)}</td><td class="num ${x.lt?'neg-t':''}">${fmt(x.a_thu)}</td><td class="num">${fmt(x.f_chi)}</td><td class="num ${x.lc?'neg-t':''}">${fmt(x.a_chi)}</td>
           <td class="num">${x.f_ton==null?'—':fmt(x.f_ton)}</td><td class="num">${fmt(x.a_ton)}</td><td class="num">${x.lton==null?'':so(x.lton)}</td>
-          <td style="min-width:240px">${coGhi('dong_tien')?`<input class="m-in" style="height:28px;font-size:12px;width:100%" value="${esc(x.ghi_chu||'')}" placeholder="${lech(x)?'Ghi lý do lệch…':''}" onchange="luuDcf(${x.tk},'${x.ngay}',this.value)">`:esc(x.ghi_chu||'')}${x.gc_boi?`<div class="muted" style="font-size:10.5px">${esc(x.gc_boi)}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có ngày lệch</td></tr>'}</table></div>
+          <td style="min-width:240px">${coGhi('so_du')?`<input class="m-in" style="height:28px;font-size:12px;width:100%" value="${esc(x.ghi_chu||'')}" placeholder="${lech(x)?'Ghi lý do lệch…':''}" onchange="luuDcf(${x.tk},'${x.ngay}',this.value)">`:esc(x.ghi_chu||'')}${x.gc_boi?`<div class="muted" style="font-size:10.5px">${esc(x.gc_boi)}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có ngày lệch</td></tr>'}</table></div>
       <div class="m-pg">Số file = tab 3.CASHFLOW TỔNG của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (thu / chi gồm cả điều chuyển). Số app tính trực tiếp từ sổ quỹ — sửa phiếu xong lệch tự cập nhật.</div></div>`;
   return body}
 async function pageKiotLog(){
@@ -4561,7 +4577,7 @@ async function luuDM(bang,id){const o=formData($('#f'));o.id=id;
   if(id&&bang==='loai')o.nhom=S.dm.loai.find(x=>x.id===id).nhom;
   await save('kt_luu_danh_muc',{p_bang:bang,p_dong:o});await reloadDm();render()}
 function formND(id){const x=id?S.cache.nd.find(n=>n.id===id):{vi_tri:'nhan_vien',hoat_dong:true,quyen:[]};
-  const q=x.quyen||[],sup=x.vi_tri==='supreme',full=sup||x.vi_tri==='admin'||q.includes('*');
+  const q0=x.quyen||[],q=[...q0,...(q0.includes('dong_tien')?SQ4:[]),...(q0.includes('dong_tien:ghi')?SQ4.map(k=>k+':ghi'):[])],sup=x.vi_tri==='supreme',full=sup||x.vi_tri==='admin'||q.includes('*');
   modal(`<h2>${id?'Sửa tài khoản — '+esc(x.ho_ten||''):'Thêm tài khoản'}</h2>
     <div class="nd-tab"><button class="on" onclick="ndTab(this,'nd-tt')">Thông tin tài khoản</button><button onclick="ndTab(this,'nd-pq')">Phân quyền</button></div>
     <div id="f"><div class="form nd-p" id="nd-tt">
@@ -4595,6 +4611,9 @@ async function luuND(id){const f=$('#f');const x=id?S.cache.nd.find(n=>n.id===id
   if($('#q_gd')&&$('#q_gd').checked)q.add('chi_gd');else q.delete('chi_gd');   // ô riêng, giữ cả khi Toàn quyền
   if($('#q_tq')&&$('#q_tq').checked)q.add('chi_tt');else if($('#q_tq'))q.delete('chi_tt');   // 19/10: vai trò thủ quỹ ở mục Phân quyền
   o.quyen=[...q];
+  // giữ quyền không hiện trên bảng (trang ẩn: tai_san, cong_no…); bỏ quyền cũ dong_tien (đã tách 4)
+  const hien=new Set(NHOM_QUYEN.flatMap(([,ks])=>ks.flatMap(k=>[k,k+':ghi'])).concat(['chi_gd','chi_tt','*','dong_tien','dong_tien:ghi']));
+  if(!toan)(x.quyen||[]).forEach(k=>{if(!hien.has(k)&&!o.quyen.includes(k))o.quyen.push(k)});
   if(!/^[a-z0-9._-]{3,40}$/.test(o.ten_dang_nhap))return alert('Tên đăng nhập 3–40 ký tự: chữ thường không dấu, số, dấu chấm, gạch');
   if(!o.ho_ten)return alert('Nhập họ tên');if(!id&&o.mk_moi.length<8)return alert('Mật khẩu từ 8 ký tự');
   if(!toan&&!o.quyen.filter(k=>k!=='chi_gd').length){ndTab($$('.nd-tab button')[1],'nd-pq');return alert('Chưa tick quyền trang nào (tab Phân quyền)')}
