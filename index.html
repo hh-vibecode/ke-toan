@@ -90,6 +90,12 @@ a{color:var(--accent);font-weight:700;text-decoration:none}
 .form label>input,.form label>select,.form label>textarea{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);width:100%}
 .form .chk{flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:12.5px;color:var(--text2)}
 .form .chk input{width:auto}
+/* 21/10 anh: form tạo phiếu trong app trình bày y như form màn đăng nhập (thoáng) — dùng chung 1 kiểu cho #dn và form trong cửa sổ */
+#dn,.modal .form,.pn-to .form{gap:14px 18px}
+#dn label,.modal .form label,.pn-to .form label{gap:6px;font-size:11.5px}
+#dn label>input,#dn label>select,#dn label>textarea,.modal .form label>input,.modal .form label>select,.modal .form label>textarea,.pn-to .form label>input,.pn-to .form label>select,.pn-to .form label>textarea{font-size:14px;min-height:40px;padding:8px 12px}
+#dn .sec,.modal .form .sec,.pn-to .form .sec{font-size:15px;font-weight:800;color:var(--text);margin-top:18px}
+.modal>div:has(>.form){max-width:780px;padding:24px 28px}.modal h2{font-size:18px}
 .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .acts .left{margin-right:auto}
 .pb{display:grid;grid-template-columns:1fr 160px 30px;gap:6px;margin-bottom:6px}
@@ -892,8 +898,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.156';
-const APP_VERSION='21/10/2026 14:15';
+const APP_SO='1.158';
+const APP_VERSION='21/10/2026 14:17';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1113,7 +1119,6 @@ function dnLoai(k){DN.loai=k;const hu=k==='hoan_ung',tt=k==='thanh_toan',f=$('#d
   $('#dn-l3').innerHTML=(hu?'Hoàn ứng cho khoản ứng nào (ngày ứng, lý do)':k==='tam_ung'?'Lý do tạm ứng':'Nội dung chi (hạng mục, lý do)')+BB;
   $('#dn-l4').innerHTML=(hu?'Ngày trả lại tiền':k==='tam_ung'?'Ngày cần dùng tiền':'Ngày sử dụng dịch vụ / nhận hàng')+BB;
   $('#dn-l5').innerHTML=(hu?'Số tiền trả lại (đồng)':k==='tam_ung'?'Số tiền xin tạm ứng (đồng)':'Số tiền đề nghị (đồng)')+BB;
-  const nd=$('#dn [name=noi_dung]');if(nd)
   $('#dn-l14').textContent='';
   $('#dn-gui').textContent=hu?'Gửi hoàn ứng':k==='tam_ung'?'Gửi đề nghị tạm ứng':'Gửi đề nghị'}
 function dnChenh(){}
