@@ -2459,7 +2459,7 @@ function formChi(id,tu){S.f.chi_form_id=id||null;
       ${tuChi?`<label class="full chk"><input type="checkbox" name="tt_luon" onchange="ttLuon(this.checked)"> Đã thanh toán luôn</label>
         <div class="full" id="tt-luon" style="display:none;grid-column:1/-1">${fieldsThanhToan({ngay_tt:homNay(),kiot:'khong',tai_khoan_id:x.tai_khoan_id,loai_id:x.loai_id})}</div>`:''}
     </div>
-    ${ctBox('chi',id,id?chiCT(x):chiTao())}
+    ${ctBox('chi',id,id?chiCT(x):chiTao())}
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuChi(${id||'null'})">Lưu</button></div>`);
   setTimeout(()=>{chiHT();htKhoa(['dv_cp','thang_ht','co_hd_do','hd_ve']);if(x.la_tam_ung)chiTU()},0);
 }
