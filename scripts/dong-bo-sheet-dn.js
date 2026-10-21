@@ -39,7 +39,7 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
   const app = await sql(`select id, noi_dung, so_tien::bigint so_tien, trang_thai, nguon, ma_nguon, ngay_tt::text tt, ngay_su_dung::text sd, ngay_de_nghi::text dn, tai_khoan_id, loai_id, unc, kiot_so_quy_id, nguoi_de_nghi nn
     from kt_chi where not da_xoa and nguon <> 'kiot'`);
   const kiotCho = await sql(`select id, so_tien::bigint so_tien, ngay_de_nghi::text dn, noi_dung, kiot_so_quy_id, kiot_ma from kt_chi where not da_xoa and nguon = 'kiot' and trang_thai in ('cho_duyet','cho_gd','cho_tt')`);
-  const vayTra = await sql(`select id, goc::bigint goc, ngay::text ngay from kt_vay_tra where not da_xoa`);
+  const vayTra = await sql(`select id, (goc + lai)::bigint goc, ngay::text ngay from kt_vay_tra where not da_xoa`);
   const theoKhoa = new Map(); app.forEach(a => { const k = khoa(a.noi_dung, +a.so_tien); (theoKhoa.get(k) || theoKhoa.set(k, []).get(k)).push(a); });
   const dung = new Set(), dungVay = new Set(), dungKiot = new Set();
   const capNhat = [], them = [], vayMoi = [], ghepKiot = [], bao = [], gop = [];
@@ -48,7 +48,7 @@ const nhomVay = nd => /406004307224/.test(nd) ? 'BIDV — TK vay 406004307224' :
     const st = /từ chối/i.test(S + U) ? 'tu_choi' : /đã thanh toán/i.test(U) ? 'da_tt' : /đã duyệt/i.test(S) ? 'cho_tt' : 'cho_duyet';
     // 3. trả gốc vay → trang Vay
     if (laGoc(nd) && (!r.X || /^FINANCE/i.test(String(r.X))) && st === 'da_tt') {
-      const v = vayTra.find(x => !dungVay.has(x.id) && +x.goc === tien && lech(x.ngay, dTT) <= 3);
+      const v = vayTra.find(x => !dungVay.has(x.id) && +x.goc === tien && lech(x.ngay, dTT) <= 3);   // 21/10: so gốc + lãi — dòng đã đổi sang lãi trên app vẫn nhận ra (trước thêm trùng 6 dòng)
       if (v) { dungVay.add(v.id); continue; }
       const old = (theoKhoa.get(khoa(nd, tien)) || []).find(a => !dung.has(a.id)); if (old) dung.add(old.id);   // phiếu chi trả gốc còn sót trên app → ẩn
       vayMoi.push({ r, tien, dTT, tk: tim(dm.tk, r.W), nhom: nhomVay(nd), an: old && old.id }); continue;
