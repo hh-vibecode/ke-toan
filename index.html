@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.185';
-const APP_VERSION='22/10/2026 16:55';
+const APP_SO='1.186';
+const APP_VERSION='22/10/2026 16:59';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4391,6 +4391,7 @@ const LOGIC2=[
  ['thu_chi','Điều chuyển','Nhập ngày, TK đi, TK nhận (khác nhau), số tiền; kế toán xác nhận ngay trên dòng.','Chưa xác nhận vẫn tính vào tồn.','14/10'],
  ['thu_chi','Sổ quỹ & kiểm két','Thủ quỹ điền tổng số đếm cuối ngày + up ảnh chụp sổ (bắt buộc, anh 22/10 — bỏ đếm theo mệnh giá); app so với sổ sách cuối ngày. Dòng chính = kết quả MỚI NHẤT (sổ sách hiện tại); có phiếu ghi lùi sau giờ kiểm → mũi tên ▸ mở lịch sử Ngày giờ · Nội dung thay đổi · Kết quả, bắt đầu từ số lúc kiểm.','Lệch → Đối soát lỗi tự báo. Trạng thái theo kết quả mới nhất: Khớp / Đã xử lý · khớp / Thiếu n / Thừa n. Mỗi TK 1 lần / ngày, đếm lại thì ghi đè.','14/10'],
  ['thu_chi','Sổ quỹ & kiểm két','Quỹ tiền mặt 3 cửa hàng (Kiot): thu quầy − chi quầy − nộp về két = tiền còn giữ ở quầy.','Cuối ngày nộp đủ thì về 0.','09/10'],
+ ['thu_chi','Nộp két tính theo ngày thủ quỹ nhận','Tiền điều chuyển vào két (nộp két từ quầy cửa hàng…) ghi vào sổ theo NGÀY THỦ QUỸ BẤM ĐÃ NHẬN, không theo ngày doanh thu / ngày lập phiếu. Ngày cũ giữ lại (ngay_goc); huỷ nhận thì trả về ngày cũ.','Anh 22/10 (két 21/10 lệch vì tiền doanh thu 21 về két ngày 22). Kỳ đã khoá sổ thì giữ nguyên ngày.','22/10'],
  ['thu_chi','Tạm ứng & hoàn ứng','Sổ theo dõi ai đang cầm tiền ứng; không đổi số dư (tiền ra bằng Phiếu chi, trả lại bằng Phiếu thu).','','14/10'],
  ['thu_chi','Tạm ứng & hoàn ứng','Hoàn ứng 3 cách: chứng từ chi phí / trả lại tiền / trừ lương; không cho hoàn vượt số còn lại.','Quá hạn = còn phải hoàn và đã qua hạn.','14/10'],
  ['thu_chi','Vay','Khoản vay tách riêng khỏi Phiếu chi: trang Vay ghi các lần NHẬN TIỀN (giải ngân) và các lần TRẢ (gốc, lãi), mỗi lần gắn tài khoản → tính vào số dư.','Dư nợ = tổng nhận − gốc đã trả. 98 phiếu trả gốc cũ đã chuyển sang 7 khoản vay (15/10).','15/10'],
