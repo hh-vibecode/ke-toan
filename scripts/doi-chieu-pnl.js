@@ -37,34 +37,44 @@ const tai = (id, dir, laThuMuc) => { fs.mkdirSync(dir, { recursive: true });
     for (const f of tai(THU_MUC_CP, path.join(goc, 'CP'), true)) {
       const t = +(path.basename(f).match(/THÁNG (\d+)/) || [])[1]; if (!t || t > 8) continue;
       const F = docXlsx(f), thang = '2026-' + String(t).padStart(2, '0'); let n0 = dong.length;
-      for (const sh of F.sheets) { const b = bo(sh.name); if (/luong|giao van|ti le/.test(b)) continue; const R = F.load(sh);
-        let h = null, nhom = '';
+      for (const sh of F.sheets) { const b = bo(sh.name); if (/luong|giao van|ti le|kho hn/.test(b)) continue; const R = F.load(sh);   // 22/10 anh: bỏ hết nhà hàng — CP KHO HN chỉ Saikung / Hongkong
+        let h = null, nhom = '', pb = null;
         for (const r of Object.keys(R).map(Number).sort((a, c) => a - c)) { const x = R[r];
           if (!h) { const c = Object.fromEntries(Object.entries(x).map(([cc, v]) => [bo(v), cc])); const ten = k => Object.keys(c).find(z => k.test(z));
             if (ten(/^noi dung/)) h = { ngay: c[ten(/^ngay( chi| thanh toan)?$/)], nd: c[ten(/^noi dung/)], tien: c[ten(/^so tien/)], nguon: c[ten(/^nguon thanh toan/)], dv: c[ten(/don vi chiu/)] };
             continue; }
           const a = String(x.A || '');
-          if (/^\d+\.\s*\S/.test(a) && !/^\d+\.0$/.test(a)) { nhom = a; continue; }   // dòng nhóm "1. CHI PHÍ VĂN PHÒNG…"
+          // dòng tên các cột phân bổ (HIỀN THUỶ · CHÁNH TÂM · … · SAIKUNG · HONGKONG) ngay dưới tiêu đề
+          if (!pb && !x[h.nd] && Object.values(x).some(v => /hien thuy|saikung/.test(bo(v)))) { pb = Object.fromEntries(Object.entries(x).map(([cc, v]) => [cc, bo(v)])); continue; }
+          // 22/10: dòng nhóm "1. CHI PHÍ…" phải có chữ sau số — trước đây ngày giờ dạng số lẻ (46238.0003…) bị tưởng là dòng nhóm nên MẤT dòng đó
+          if (/^\d+\.\s*[^\d\s]/.test(a)) { nhom = a; continue; }   // dòng nhóm "1. CHI PHÍ VĂN PHÒNG…"
           let tien = so(x[h.tien]); if (!tien && /mkt/.test(b)) tien = Object.entries(x).filter(([cc]) => cc >= 'G' && cc.length === 1).reduce((s, [, v]) => s + (so(v) || 0), 0) || null;   // CP MKT: số tiền nằm ở cột phân bổ
           const nd = String(x[h.nd] || ''); if (!tien || !nd || /khong phat sinh/.test(bo(nd))) continue;
-          const ng = ngayEx(x[h.ngay]);
-          dong.push({ nguon: 'CPCT', sheet: sh.name, dong: r, ngay: ng && ng.slice(0, 7) >= '2026-01' && ng.slice(0, 7) <= thang ? ng : null, thang, danh_muc: nhom || (h.dv ? String(x[h.dv] || '') : ''), noi_dung: nd, so_tien: tien,
+          const ng = ngayEx(x[h.ngay]), dv = h.dv ? String(x[h.dv] || '') : '';
+          // 22/10 anh: "các khoản liên quan tới nhà hàng bỏ hết, chỉ lấy khoản liên quan tới đồ thờ" — đơn vị chịu là nhà hàng / chỉ chia cho Saikung, Hongkong
+          if (/saikung|hongkong|hong kong|amhp/.test(bo(dv + ' ' + nd))) continue;
+          if (pb) { const co = Object.keys(pb).filter(cc => cc >= 'G' && cc.length === 1 && so(x[cc])); if (co.length && co.every(cc => /saikung|hongkong/.test(pb[cc]))) continue; }
+          dong.push({ nguon: 'CPCT', sheet: sh.name, dong: r, ngay: ng && ng.slice(0, 7) >= '2026-01' && ng.slice(0, 7) <= thang ? ng : null, thang, danh_muc: nhom || dv, noi_dung: nd, so_tien: tien,
             nguon_tt: String(x[h.nguon] || '') }); }
       }
       F.xoa(); console.log('CP T' + t, dong.length - n0, 'dòng');
     }
   } finally { fs.rmSync(goc, { recursive: true, force: true }); }
   // ── B2. đề nghị thanh toán trên app T1–T8 (đã chi; bỏ nhập hàng, trả gốc vay, trả thẻ, tạm ứng, phiếu Kiot, giao dịch cá nhân) ↔ dòng chi phí công ty
-  const app = await sql(`select c.id, coalesce(c.ngay_tt, c.ngay_de_nghi)::text ngay, c.so_tien::bigint so_tien, c.noi_dung, c.thu_huong_ten from kt_chi c
+  const app = await sql(`select c.id, coalesce(c.ngay_tt, c.ngay_de_nghi)::text ngay, c.so_tien::bigint so_tien, c.noi_dung, c.thu_huong_ten, kt_dcp_nhom_dn(c.noi_dung, c.hoan_quy) gop from kt_chi c
     where not c.da_xoa and c.trang_thai = 'da_tt' and coalesce(c.ngay_tt, c.ngay_de_nghi) between '2026-01-01' and '2026-08-31' and c.nguon <> 'kiot' and not c.la_tam_ung
       and coalesce(c.loai_id, 0) not in (5, 15, 16) and not c.khong_hach_toan`);
   const tok = s => new Set(bo(s).split(/[^a-z0-9]+/).filter(w => w.length > 2)), giong = (a, b) => { const A = tok(a), B = tok(b); let n = 0; A.forEach(w => B.has(w) && n++); return n; };
   const lech = (a, b) => Math.abs((new Date(a) - new Date(b)) / 864e5);
   const theoTien = {}; dong.forEach(d => (theoTien[d.so_tien] = theoTien[d.so_tien] || []).push(d));
   let khopApp = 0;
-  for (const p of app.sort((a, b) => a.ngay < b.ngay ? -1 : 1)) {
+  // 22/10 anh: quỹ ngoài / thẻ Visa công ty khớp GỘP (phiếu thanh toán quỹ ngoài của cơ sở ↔ các khoản chi quỹ ngoài đó) — không ghép lẻ 1-1
+  const nguonDS = [...new Set(dong.map(d => d.nguon_tt || ''))];
+  const gopM = Object.fromEntries((await sql(`select n, kt_dcp_nhom_cp(n) g from unnest(array[${nguonDS.map(n => `$q$${n.replace(/\$q\$/g, '')}$q$`).join(',')}]::text[]) n`)).map(r => [r.n, r.g]));
+  dong.forEach(d => d.gop = gopM[d.nguon_tt || ''] || null);
+  for (const p of app.sort((a, b) => a.ngay < b.ngay ? -1 : 1)) {   // phiếu thanh toán quỹ ngoài / thẻ vẫn ghép 1-1 với dòng "Thanh toán quỹ ngoài…" trong file
     const nd = p.noi_dung + ' ' + (p.thu_huong_ten || '');
-    const d = (theoTien[p.so_tien] || []).filter(z => !z.chi_id && (z.ngay ? lech(z.ngay, p.ngay) <= 10 : z.thang === p.ngay.slice(0, 7)))
+    const d = (theoTien[p.so_tien] || []).filter(z => !z.chi_id && !z.gop && (z.ngay ? lech(z.ngay, p.ngay) <= 10 : z.thang === p.ngay.slice(0, 7)))
       .sort((a, b) => (giong(nd, b.noi_dung) - giong(nd, a.noi_dung)) || ((a.ngay ? lech(a.ngay, p.ngay) : 15) - (b.ngay ? lech(b.ngay, p.ngay) : 15)))[0];
     if (d) { d.chi_id = p.id; p.khop = true; khopApp++; }
   }

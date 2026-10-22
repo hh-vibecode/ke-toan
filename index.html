@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.176';
-const APP_VERSION='22/10/2026 15:00';
+const APP_SO='1.177';
+const APP_VERSION='22/10/2026 15:17';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1338,9 +1338,8 @@ const PAGES={
   cd_giai_dap:{ten:'Cần giải đáp',nv:'he_thong',cd:'Hỗ trợ',fn:()=>pageGiaiDap()},
   cd_logic:{ten:'Logic xử lý',nv:'he_thong',cd:'Hỗ trợ',fn:()=>pageCaiDat('logic')},
   // 22/10 anh: nhóm "Nhật ký" đổi thành "Log" + thêm Log lưu lượng (Supabase) + Log lịch chạy (tách từ cuối Log so khớp)
-  cd_nhat_ky:{ten:'Log chỉnh sửa',nv:'he_thong',cd:'Log',fn:()=>pageCaiDat('nhat_ky')},
-  cd_luu_luong:{ten:'Log lưu lượng',nv:'he_thong',cd:'Log',fn:()=>pageLuuLuong()},
-  cd_lich:{ten:'Log lịch chạy',nv:'he_thong',cd:'Log',fn:()=>pageLich()},
+  // 22/10 anh: "chỉnh sửa, lịch sử, lưu lượng gộp làm 1, chia tab bên trong" → Log hệ thống (tab Chỉnh sửa · Lưu lượng · Lịch chạy)
+  cd_nhat_ky:{ten:'Log hệ thống',nv:'he_thong',cd:'Log',fn:()=>pageLogHT()},
   // Nhật ký kéo + so khớp Kiot theo tháng (anh 14/10/2026) — quyền theo trang Nhật ký
   cd_kiot:{ten:'Log so khớp',nv:'he_thong',cd:'Log',fn:()=>pageKiotLog()},
   cd_doi_mk:{ten:'Đổi mật khẩu',nv:null,cd:'Tài khoản',   /* 22/10 anh: đổi mật khẩu ở menu tài khoản rồi, bỏ khỏi Cài đặt */fn:()=>pageCaiDat('doi_ma')},
@@ -1350,7 +1349,13 @@ function go(p){S.page=p;location.hash=p;shell();dxBao()}
 function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0}
 const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Hệ thống & Cài đặt chia nhóm, có tiêu đề nhỏ
-const CD_NHOM=['Danh mục','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_luu_luong','cd_lich','cd_giai_dap','cd_logic'];
+const CD_NHOM=['Danh mục','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
+// Log hệ thống: 1 trang, 3 tab — mỗi tab dùng lại hàm trang cũ, chèn thanh tab ngay dưới tiêu đề
+const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy']];
+async function pageLogHT(){const t=S.f.log_tab||'sua';
+  await (t==='luu_luong'?pageLuuLuong():t==='lich'?pageLich():pageCaiDat('nhat_ky'));
+  const seg=`<div class="m-seg" style="margin-bottom:12px">${LOG_TAB.map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.log_tab='${k}';render()">${v}</button>`).join('')}</div>`;
+  const top=document.querySelector('#page .top');if(top)top.insertAdjacentHTML('afterend',seg);else $('#page').insertAdjacentHTML('afterbegin',seg)}
 const sbMuc=(ks,nb)=>{const mot=k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`;
   if(!ks.every(k=>PAGES[k].cd))return ks.map(mot).join('');
   const xs=[...ks].sort((a,b)=>(CD_THU.indexOf(a)+99)%99-(CD_THU.indexOf(b)+99)%99);
@@ -4318,7 +4323,7 @@ const LOGIC2=[
  ['thu_chi','Tự chi: phiếu đang chờ + chọn nhiều phiếu','Phiếu mình tạo còn chờ duyệt: nút "✓ Tự chi (đã thanh toán)" trong phiếu. Tick chọn nhiều phiếu trên bảng → "✓ Tự chi n phiếu" (chọn tài khoản, ngày, loại chi 1 lần) hoặc "✓ Đã duyệt lệnh n phiếu" (kế toán).','Tick "Đã thanh toán luôn" thì không cần thông tin người nhận tiền.','21/10'],
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
  ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
- ['chung','Log lưu lượng Supabase','23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
+ ['chung','Log hệ thống → tab Lưu lượng','Cài đặt → Log hệ thống có 3 tab: Chỉnh sửa · Lưu lượng · Lịch chạy. 23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
  ['chung','Số dư tài khoản không gồm TK vay','Sổ quỹ → Số dư: bỏ tài khoản loại Vay (thuộc mục Khoản vay).','Anh 22/10.','22/10'],
  ['bao_cao','Dòng tiền khớp phân loại chi phí','Báo cáo dòng tiền đặt tên + thứ tự loại chi giống báo cáo chi phí (theo danh mục). Giao dịch cá nhân tách mục riêng "IV. Giao dịch cá nhân".','Vẫn tính vào tiền thuần trong kỳ và số dư (tiền thật đi qua tài khoản).','21/10'],
  ['thu_chi','Form phiếu chi 4 nhóm','Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Ghi chú & thanh toán.','','21/10'],
@@ -4538,23 +4543,31 @@ async function dcfHtml(){const f=S.f;let body='';
 const DCP_FILE={'2026-01':'19cGA6relEHQnEMz3NjX1WkZTk8JjkDCQ7Z_AWHyuwsk','2026-02':'1UwN1rd_cxNOrKjvA4_ieLwWcNRZudtwztCcZJcdX63E','2026-03':'1Z4kAQSEnd1D94V2a1_GEi4LQ3KHQNNTBa-TUXeAvwz0','2026-04':'1RgVdUSzz2QT3fL1kHNmwhmg2OzAwvZqGzlJvlqRP2jA',
   '2026-05':'1dVNJt-cyEDIvOfdRXKToiNnmz69FWZKz4RhXYft7o-k','2026-06':'1BdmQ6uzpx5kTVexQIH95jsCisHipVUMedWQsB_nkdek','2026-07':'1gAg1lSmSLhEG0QCK643ze_jy2FbKOSnBkLRGJp-O_ns','2026-08':'1OVOrqneNRjlO7TE2lTY_BR03qeQg4dbBCbDDSpFt2Rg'};
 const dcpLink=x=>DCP_FILE[x.thang]?`<a class="m-link" href="https://docs.google.com/spreadsheets/d/${DCP_FILE[x.thang]}/edit" target="_blank" rel="noopener">File T${+x.thang.slice(5)}</a><div class="muted" style="font-size:11px">${esc(x.sheet)}${x.dong?' · dòng '+x.dong:''}</div>`:'';
-async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=f.dcp_tab==='cp'?'cp':'phieu',th=f.dcp_th||'';
+async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop'].includes(f.dcp_tab)?f.dcp_tab:'phieu',th=f.dcp_th||'';
   const ms=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'],tg=m=>'T'+(+m.slice(5));
-  const pc=d.phieu.filter(x=>!th||String(x.ngay).slice(0,7)===th),pcc=pc.filter(x=>!x.khop),cp=d.cp.filter(x=>!th||x.thang===th),cpc=cp.filter(x=>!x.chi_id);
+  // 22/10 anh: quỹ ngoài + Visa công ty đã khớp với ĐNTT thanh toán quỹ ngoài của từng cơ sở / thanh toán thẻ — khớp GỘP, không nằm trong danh sách chưa khớp
+  const pc=d.phieu.filter(x=>!th||String(x.ngay).slice(0,7)===th),pcc=pc.filter(x=>!x.khop&&!x.nhom),cp=d.cp.filter(x=>!th||x.thang===th),cpc=cp.filter(x=>!x.chi_id&&!x.gop);
+  const cpG=cp.filter(x=>x.gop),dnG=(d.gop||[]).filter(x=>th?String(x.ngay).slice(0,7)===th:String(x.ngay)>='2026-01-01'&&String(x.ngay)<='2026-08-31');
   const tong=a=>a.reduce((s,x)=>s+(+x.so_tien||0),0);
   const bang=(cols,rows,trong,nguon)=>`<div class="m-card"><div class="scroll"><table class="m-t"><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr>${rows.slice(0,800).map(r=>`<tr>${cols.map(c=>`<td class="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="m-empty">${trong}</td></tr>`}</table></div>${rows.length>800?`<div class="m-pg">Hiện 800 / ${rows.length} dòng — lọc theo tháng để xem hết</div>`:''}<div class="m-pg">${nguon}</div></div>`;
   // 21/10 anh: "ghi rõ số liệu lấy ở đâu ra, ghi ở dưới dashboard" — lời đời thường, không mã bảng
-  const NG_PHIEU='<b>Phiếu đề nghị</b> = mọi phiếu chi đã thanh toán trên app (gồm phiếu chép từ sheet Đề nghị thanh toán), ngày thanh toán 01/01–31/08/2026. Không tính: nhập hàng, trả gốc vay, trả thẻ tín dụng, tạm ứng, phiếu kéo từ KiotViet, giao dịch cá nhân không hạch toán.',
-    NG_CP='<b>Chi phí công ty</b> = từng khoản chi kế toán ghi trong 8 file "CHI PHÍ CÔNG TY THÁNG 1…8/2026" (Drive, thư mục chi phí tổng quan), các sheet chi phí như CP TOÀN CÔNG TY, CP KHO KIẾN AN, CP KHO TỔNG, CP MKT, CP RIÊNG TỪNG CƠ SỞ — cột Ngày, Nội dung, Số tiền, Nguồn thanh toán (sheet CP MKT: cộng các cột chia theo cơ sở). Không lấy sheet LƯƠNG+BHXH, CP GIAO VẬN, TỈ LỆ vì đó là bảng chia tiền cho cơ sở, không phải khoản chi.',
+  const NG_PHIEU='<b>Phiếu đề nghị</b> = mọi phiếu chi đã thanh toán trên app (gồm phiếu chép từ sheet Đề nghị thanh toán), ngày thanh toán 01/01–31/08/2026. Không tính: nhập hàng, trả gốc vay, trả thẻ tín dụng (xem tab Khớp gộp), tạm ứng, phiếu kéo từ KiotViet, giao dịch cá nhân không hạch toán.',
+    NG_CP='<b>Chi phí công ty</b> = từng khoản chi kế toán ghi trong 8 file "CHI PHÍ CÔNG TY THÁNG 1…8/2026" (Drive, thư mục chi phí tổng quan), các sheet chi phí như CP TOÀN CÔNG TY, CP KHO KIẾN AN, CP KHO TỔNG, CP MKT, CP RIÊNG TỪNG CƠ SỞ — cột Ngày, Nội dung, Số tiền, Nguồn thanh toán (sheet CP MKT: cộng các cột chia theo cơ sở). Không lấy sheet LƯƠNG+BHXH, CP GIAO VẬN, TỈ LỆ vì đó là bảng chia tiền cho cơ sở, không phải khoản chi. Bỏ mọi khoản của nhà hàng (sheet CP KHO HN, đơn vị chịu hoặc phân bổ chỉ cho Saikung / Hongkong) — chỉ so khoản đồ thờ.',
     NG_GHEP='<b>Thế nào là khớp:</b> file chi phí có một dòng cùng số tiền với phiếu, ngày lệch không quá 10 ngày (dòng không ghi ngày thì cùng tháng); nhiều dòng cùng tiền thì chọn dòng có nội dung giống nhất. Mỗi dòng chỉ ghép với 1 phiếu.';
   let body='';
-  if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Mở file',dcpLink,'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],cpc,'Mọi khoản chi phí đều có phiếu đề nghị',`Khoản có trong file chi phí công ty nhưng không tìm thấy phiếu đề nghị nào trên app. ${NG_CP} ${NG_PHIEU} ${NG_GHEP}`);
+  const GOP={'QN-HT':'Quỹ ngoài Hiền Thuỷ','QN-CT':'Quỹ ngoài Chánh Tâm','QN-SD':'Quỹ ngoài kho Shidai','QN-VP':'Quỹ ngoài văn phòng','VS-NTC':'Visa Nguyễn Thị Chuyện','VS-OANH':'Visa Đặng Thị Minh Oanh',
+    'VS-BP':'Visa Nguyễn Thị Bích Phương','VS-HUE':'Visa Nguyễn Thị Huế','VS-HXT':'Visa Hồ Xuân Thịnh','VS-KHAC':'Visa (chưa rõ chủ thẻ)'};
+  if(t==='gop')body=bang([['Quỹ / thẻ',x=>`<b>${esc(GOP[x]||x)}</b>`,'nw'],['Khoản chi trong file',x=>fmt(cpG.filter(z=>z.gop===x).length),'num'],['Tổng file chi phí',x=>fmt(tong(cpG.filter(z=>z.gop===x))),'num'],
+      ['ĐNTT thanh toán',x=>dnG.filter(z=>z.nhom===x).map(z=>`<span class="m-link" onclick="moPhieu('PC',${z.id})">PC${String(z.id).padStart(6,'0')}</span>`).join(' ')||'<span class="muted">—</span>',''],['Tổng ĐNTT',x=>fmt(tong(dnG.filter(z=>z.nhom===x))),'num']],
+    Object.keys(GOP).filter(k=>cpG.some(z=>z.gop===k)||dnG.some(z=>z.nhom===k)),'Không có',
+    '<b>Khớp gộp:</b> khoản chi trả bằng quỹ ngoài hoặc thẻ Visa công ty (cột Nguồn thanh toán trong file chi phí) không có ĐNTT riêng từng khoản — kế toán gom lại thành ĐNTT "thanh toán quỹ ngoài" của từng cơ sở / "thanh toán thẻ Visa" của chủ thẻ. Hai bên chênh vì đợt thanh toán gối tháng (ĐNTT tháng sau trả cho chi tháng trước).');
+  else if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Mở file',dcpLink,'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],cpc,'Mọi khoản chi phí đều có phiếu đề nghị',`Khoản có trong file chi phí công ty nhưng không tìm thấy phiếu đề nghị nào trên app. ${NG_CP} ${NG_PHIEU} ${NG_GHEP}`);
   else body=bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Số phiếu',x=>`<span class="m-link" onclick="moPhieu('PC',${x.id})">PC${String(x.id).padStart(6,'0')}</span>`,'nw'],['Nội dung',x=>esc(x.nd||''),'ten'],['Người nhận',x=>esc(x.th||''),'nw'],['Loại chi',x=>esc((lo(x.loai)||{}).ten||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],pcc,'Mọi phiếu đều có trong file chi phí công ty',`Phiếu đề nghị đã chi trên app nhưng không thấy trong file chi phí công ty. ${NG_PHIEU} ${NG_CP} ${NG_GHEP}`);
   return `<div class="m-kpis m-k3">
       <div class="m-k"><div style="flex:1"><div class="l">Đề nghị không thấy trong file chi phí ${th?tg(th):'T1–T8'}</div><div class="v neg-t">${fmt(tong(pcc))}</div><div class="s">${fmt(pcc.length)} / ${fmt(pc.length)} phiếu đề nghị đã chi</div></div></div>
       <div class="m-k"><div style="flex:1"><div class="l">File chi phí có, không có đề nghị</div><div class="v neg-t">${fmt(tong(cpc))}</div><div class="s">${fmt(cpc.length)} / ${fmt(cp.length)} khoản trong file chi phí công ty</div></div></div>
-      <div class="m-k"><div style="flex:1"><div class="l">Đã khớp hai bên</div><div class="v">${fmt(tong(pc)-tong(pcc))}</div><div class="s">${fmt(pc.length-pcc.length)} phiếu ↔ ${fmt(cp.length-cpc.length)} khoản</div></div></div></div>
-    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['phieu','Đề nghị không có trong file chi phí'],['cp','File chi phí có, thiếu đề nghị']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
+      <div class="m-k"><div style="flex:1"><div class="l">Đã khớp hai bên</div><div class="v">${fmt(tong(pc)-tong(pcc))}</div><div class="s">${fmt(pc.length-pcc.length)} phiếu ↔ ${fmt(cp.length-cpc.length)} khoản (gồm ${fmt(cpG.length)} khoản quỹ ngoài / Visa khớp gộp)</div></div></div></div>
+    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['phieu','Đề nghị không có trong file chi phí'],['cp','File chi phí có, thiếu đề nghị'],['gop','Khớp gộp quỹ ngoài & Visa']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
       <span class="badge">So với 4 P&L: chưa làm</span>
       <select class="m-in" style="margin-left:auto" onchange="S.f.dcp_th=this.value;render()"><option value="">Tất cả T1–T8</option>${ms.map(m=>`<option value="${m}" ${th===m?'selected':''}>${tg(m)}/2026</option>`).join('')}</select>
       <span class="badge">Chạy ${d.chay_luc?fmtDT(d.chay_luc):'—'}</span></div>${body}`}
@@ -4629,7 +4642,7 @@ async function pageLuuLuong(){const el=$('#page');el.innerHTML='<div class="m-em
   const mau=(v,t)=>v/t>0.8?'bad':v/t>0.6?'warn':'ok';
   const kp=`<div class="m-kpis m-k3">${k(mau(+nay.db_bytes,8*GB),'Dung lượng CSDL (cả 3 app)',fmtGB(nay.db_bytes),pt(+nay.db_bytes,8*GB)+' của 8 GB gói Pro · kế toán '+fmtGB(nay.kt_bytes))}
     ${k(mau(kho(nay),100*GB),'Kho tệp (ảnh, chứng từ)',fmtGB(kho(nay)),pt(kho(nay),100*GB)+' của 100 GB · '+fmt(tep(nay))+' tệp')}
-    ${k(du.fs_size_bytes?mau(+du.fs_used_bytes,+du.fs_size_bytes):'grey','Đĩa máy chủ',du.fs_size_bytes?fmtGB(du.fs_used_bytes):'—',du.fs_size_bytes?pt(+du.fs_used_bytes,+du.fs_size_bytes)+' của '+fmtGB(du.fs_size_bytes)+' (tự nới khi đầy)':'chưa chụp')}
+    ${k(du.fs_size_bytes?mau(+du.fs_used_bytes,+du.fs_size_bytes):'grey','Ổ cứng máy chủ (chứa CSDL)',du.fs_size_bytes?fmtGB(du.fs_used_bytes):'—',du.fs_size_bytes?pt(+du.fs_used_bytes,+du.fs_size_bytes)+' của ổ '+fmtGB(du.fs_size_bytes)+' · gồm CSDL + bản ghi tạm của Postgres · đầy thì Supabase tự nới (tính thêm tiền nếu quá 8 GB)':'chưa chụp')}
     ${k('info','Lượt gọi 24 giờ',g24?fmt(g24.rest+g24.auth+g24.storage+g24.realtime):'—',g24?`REST ${fmt(g24.rest)} · tệp ${fmt(g24.storage)} · đăng nhập ${fmt(g24.auth)}`:'')}
     ${k(+nay.ket_noi>(m.ket_noi_truc_tiep||60)*0.8?'bad':'ok','Kết nối CSDL lúc này',fmt(nay.ket_noi),'tối đa '+fmt(m.ket_noi_truc_tiep||60)+' trực tiếp · '+fmt(m.ket_noi_pooler||200)+' qua pooler')}
     ${k(+l24.loi_kt?'bad':'ok','Lịch chạy 24 giờ',fmt(l24.lan),(l24.loi||0)+' lần lỗi (kt-: '+(l24.loi_kt||0)+')')}</div>`;

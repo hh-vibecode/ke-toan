@@ -42,7 +42,7 @@ begin
   perform kt_ghi_nhat_ky('Hệ thống', 'kt_luu_luong', null, 'luu_luong', jsonb_build_object('db_bytes', d->'db_bytes', 'kho_bytes', v_kho, 'canh_bao', to_jsonb(cb)));
   if cardinality(cb) > 0 then
     perform kt_bao(array(select id from kt_nguoi_dung where hoat_dong and vi_tri = 'supreme'), 'Hệ thống', 'he_thong',
-      'Supabase: ' || cardinality(cb) || ' cảnh báo lưu lượng — cần xem', array_to_string(cb, ' · ') || ' | Cài đặt → Log lưu lượng');
+      'Supabase: ' || cardinality(cb) || ' cảnh báo lưu lượng — cần xem', array_to_string(cb, ' · ') || ' | Cài đặt → Log hệ thống → Lưu lượng');
   end if;
   return d;
 end $f$;
