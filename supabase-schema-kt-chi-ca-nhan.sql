@@ -6,6 +6,8 @@ alter table kt_chi add column if not exists ca_nhan boolean not null default fal
 -- Giữ quy tắc ở máy chủ: cá nhân ⇒ không hạch toán; bật hạch toán ⇒ bỏ cá nhân (kt_dat_hach_toan cũ vẫn đúng)
 create or replace function public.kt_chi_ca_nhan_tg() returns trigger language plpgsql set search_path to 'public' as $f$
 begin
+  -- bật hạch toán trên phiếu đang cá nhân (kt_dat_hach_toan cũ chỉ đổi khong_hach_toan) ⇒ bỏ cá nhân (22/10 máy: bản cloud thiếu dòng này → không bật lại được hạch toán)
+  if tg_op = 'UPDATE' and old.ca_nhan and new.ca_nhan and old.khong_hach_toan and not new.khong_hach_toan then new.ca_nhan := false; end if;
   if new.ca_nhan then new.khong_hach_toan := true; end if;
   if not new.khong_hach_toan then new.ca_nhan := false; end if;
   return new;
@@ -13,7 +15,7 @@ end $f$;
 drop trigger if exists kt_chi_ca_nhan on kt_chi;
 create trigger kt_chi_ca_nhan before insert or update of ca_nhan, khong_hach_toan on kt_chi for each row execute function kt_chi_ca_nhan_tg();
 
--- kt_luu_chi: nhận thêm p_dong.ca_nhan (cùng điều kiện quyền như khong_hach_toan). Vá tại chỗ, chạy lại không vá trùng.
+-- ĐÃ ÁP 22/10/2026 (phiên máy, từng lệnh). kt_luu_chi: nhận thêm p_dong.ca_nhan (cùng điều kiện quyền như khong_hach_toan). Vá tại chỗ, chạy lại không vá trùng.
 do $d$ declare d text := pg_get_functiondef('kt_luu_chi(text,jsonb)'::regprocedure); n int := length(d);
 begin
   if position('ca_nhan' in d) > 0 then return; end if;
@@ -42,3 +44,12 @@ revoke all on function public.kt_dat_kieu_ht(text,bigint,text) from public; gran
 
 -- Dữ liệu cũ (22/10 chỉ có 2 phiếu không hạch toán): #1729 "Chuyển tiền cá nhân" → cá nhân; #1670 nộp lại BHXH → giữ không hạch toán (công ty)
 update kt_chi set ca_nhan = true where id = 1729 and khong_hach_toan;
+
+-- 22/10 phiên máy: báo cáo dòng tiền — mục "IV. Giao dịch cá nhân" chỉ lấy phiếu chi cá nhân; phiếu chi "không hạch toán" của công ty
+-- (vd #1670 nộp lại BHXH) xếp theo loại chi như phiếu công ty. Vá tại chỗ (đã áp).
+do $d$ declare d text := pg_get_functiondef('kt_bc_lctt(text,date,date)'::regprocedure); n int := length(d);
+begin
+  d := replace(d, 'case when c.khong_hach_toan then -1 else c.loai_id end', 'case when c.ca_nhan then -1 else c.loai_id end');
+  if length(d) = n then return; end if;
+  execute d;
+end $d$;
