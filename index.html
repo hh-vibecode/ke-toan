@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.173';
-const APP_VERSION='22/10/2026 14:33';
+const APP_SO='1.174';
+const APP_VERSION='22/10/2026 14:42';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1599,7 +1599,8 @@ async function pageTongQuan(){
       ${ND.so?`<tr class="click" onclick="xemDonTQ(null,1)"><td>Nghi đã đi hàng (khách có hoá đơn không gắn đơn sau ngày đặt — cần soát)</td><td class="num">${fmt(ND.so)}</td><td class="num">${fmt(ND.tong)}</td><td class="num">${fmt(ND.coc)}</td></tr>`:''}
       <tr class="muted"><td>Phiếu tạm không có tiền (báo giá — không tính)</td><td class="num">${fmt(BG.so)}</td><td class="num">${fmt(BG.tong)}</td><td></td></tr>
       <tr class="muted"><td>Báo giá không chốt (huỷ chưa cọc)</td><td class="num">${fmt(dg('bg_dong').so)}</td><td class="num">${fmt(dg('bg_dong').tong)}</td><td></td></tr>
-      <tr class="muted"><td>Đã huỷ (đã cọc / COD trả lại)</td><td class="num">${fmt(HU.so)}</td><td class="num">${fmt(HU.tong)}</td><td></td></tr></table>
+      <tr class="muted"><td>Đã huỷ (đã cọc / COD trả lại)</td><td class="num">${fmt(HU.so)}</td><td class="num">${fmt(HU.tong)}</td><td></td></tr>
+      ${dg('tang').so?`<tr class="muted"><td>Hàng tặng / mẫu / khuyến mãi (0đ — không tính)</td><td class="num">${fmt(dg('tang').so)}</td><td class="num">0</td><td></td></tr>`:''}</table>
     ${ccT.length?`<table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đã cọc chưa đi hàng · theo tháng đặt</th><th class="num">Số đơn</th><th class="num">Giá trị đơn</th><th class="num">Tiền cọc</th></tr>
       ${ccT.map(r=>`<tr class="click" onclick="xemDonTQ('${r.m}')"><td>Tháng ${+r.m.slice(5)}/${r.m.slice(0,4)}</td><td class="num">${fmt(r.so)}</td><td class="num">${fmt(r.tong)}</td><td class="num">${fmt(r.coc)}</td></tr>`).join('')}</table>`:''}
     <div class="tq-note">Doanh thu thực tế = hoá đơn hoàn thành − trả hàng. Đã cọc · chưa đi hàng = đơn ĐẶT trong kỳ đang lọc mà đến hôm nay vẫn chưa ra hoá đơn — doanh thu DỰ KIẾN — ghi nhận vào tháng xuất hoá đơn (đi hàng), không cộng vào tháng đặt.
@@ -2571,7 +2572,7 @@ function xemChi(id){
   // ── cột trái
   const deNghi=the('Thông tin đề nghị',`<div class="pc-g">
       ${o('Nội dung',esc(ndChi(x)),1)}
-      ${o('Cơ sở',esc(csTen))}${o('Loại chi',x.khong_hach_toan?`<span class="muted">${x.ca_nhan?'Chi phí cá nhân':'Không hạch toán'} — không cần</span>`:l.ten?esc((l.ma?l.ma+' ':'')+l.ten):'<span class="muted">Chưa phân loại</span>')}${x.khong_hach_toan||!x.loai_id?'':o('Mục con (tự động)',loaiConO(x))}
+      ${o('Cơ sở',esc(csTen))}${o('Loại chi',x.khong_hach_toan?`<span class="muted">${x.ca_nhan?'Chi phí cá nhân':'Không hạch toán'} — không cần</span>`:l.ten?`${esc((l.ma?l.ma+' ':'')+l.ten)}${x.loai_con_id===x.loai_id?'':`<div style="margin-top:3px">› ${loaiConO(x)}</div>`}`:'<span class="muted">Chưa phân loại</span>')}
       ${o('Người đề nghị',esc(x.nguoi_de_nghi||''))}${o('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}
       ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${o('Ngày sử dụng dịch vụ',x.ngay_su_dung?fmtD(x.ngay_su_dung):'')}${o('Kỳ hạch toán chi phí',x.la_tam_ung?'<span class="muted">Tạm ứng — chưa là chi phí</span>':thgT(kyHT(x))+(x.thang_ht?' <span class="muted">· ghi tay</span>':''))}
       ${x.khong_hach_toan?'':o('Hoá đơn xuất về',hdG?`<select class="m-in" style="height:28px" id="pc-hdve">${optsObj(HD_VE,x.hd_ve||'')}</select>`:x.hd_ve?esc(hdVeT(x.hd_ve)):'<span class="neg-t">chưa chọn</span>')}${x.la_tam_ung?o('Loại đề nghị',pill('Tạm ứng','warn')+''):''}${x.loai_dn==='hoan_ung'?o('Loại đề nghị',pill('Hoàn ứng — trả lại tiền','info')+` <span class="muted">${fmt(x.so_tien)} — không chi tiền, ${x.trang_thai==='quyet_toan'?'kế toán đã xác nhận tiền về':`<span class="m-link" onclick="closeModal();S.f.tu_tab='hoan';go('tam_ung')">xác nhận tiền về ở Tạm ứng & hoàn ứng</span>`}</span>`):''}
@@ -3239,15 +3240,16 @@ const qtDau=(ten,ghi)=>head(ten+' <span class="badge" style="vertical-align:midd
 async function pageBCDon(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tính...</div>';
   const [ky,d]=await qtLay('don'),don=d.don.filter(x=>qtCS(x.cn)),hd=d.hd.filter(x=>qtCS(x.cn)),cho=d.cho.filter(x=>qtCS(x.cn));
   // 22/10 anh: huỷ chỉ khi khách đã cọc mà không lấy / đi COD bị trả lại; đơn huỷ chưa cọc = báo giá không chốt (không tính giá trị, không tính huỷ)
-  const nh=['di_hang','coc','nghi_di','bao_gia','huy','bg_dong'],T={di_hang:'Đã đi hàng',coc:'Đã cọc · chưa đi hàng',nghi_di:'Nghi đã đi hàng',bao_gia:'Báo giá (chưa cọc)',huy:'Đã huỷ',bg_dong:'Báo giá không chốt'};
+  // 22/10 rà T1–T10: đơn hoàn thành 0đ (tặng / mẫu / khuyến mãi / xuất dùng) = nhóm 'tang', không phải đơn bán — không tính
+  const nh=['di_hang','coc','nghi_di','bao_gia','huy','bg_dong','tang'],T={di_hang:'Đã đi hàng',coc:'Đã cọc · chưa đi hàng',nghi_di:'Nghi đã đi hàng',bao_gia:'Báo giá (chưa cọc)',huy:'Đã huỷ',bg_dong:'Báo giá không chốt',tang:'Hàng tặng / mẫu (0đ)'};
   const tinh=x=>['di_hang','coc','nghi_di'].includes(x.nhom);   // 22/10 anh: chỉ đơn đã cọc hoặc đã đi hàng mới là đơn đặt (phiếu tạm 0đ cọc = báo giá, không tính) — như Tổng quan
   const g=(ds,f)=>({so:sumBy(ds.filter(f),x=>+x.so),tong:sumBy(ds.filter(f),x=>+x.tong),coc:sumBy(ds.filter(f),x=>+x.coc||0)});
   const tc=g(don,()=>true),hh=g(don,tinh),di=g(don,x=>x.nhom==='di_hang'),co=g(don,x=>x.nhom==='coc'),nd=g(don,x=>x.nhom==='nghi_di');
   const theo=(key,ds)=>[...new Set(ds.map(x=>x[key]))].map(k=>{const r=ds.filter(x=>x[key]===k),o={k};nh.forEach(n=>o[n]=g(r,x=>x.nhom===n));o.all=g(r,tinh);return o}).sort((a,b)=>b.all.tong-a.all.tong);
-  const dong=o=>[`<b>${esc(o.ten||o.k)}</b>`,fmt(o.all.so),fmt(o.all.tong),fmt(o.di_hang.tong),fmt(o.coc.tong),fmt(o.bao_gia.tong),`<span class="muted">${fmt(o.bg_dong.so)} đơn</span>`,`<span class="muted">${fmt(o.huy.so)} đơn</span>`,qtPct(o.di_hang.so,o.all.so)];
-  const cols=[['','ten'],['Số đơn','num'],['Giá trị đơn','num'],['Đã đi hàng','num'],['Đã cọc · chưa đi','num'],['Báo giá chưa cọc (không tính)','num'],['Báo giá không chốt','num'],['Huỷ (đã cọc / COD trả lại)','num'],['Tỷ lệ đi hàng','num']];
+  const dong=o=>[`<b>${esc(o.ten||o.k)}</b>`,fmt(o.all.so),fmt(o.all.tong),fmt(o.di_hang.tong),fmt(o.coc.tong),fmt(o.bao_gia.tong),`<span class="muted">${fmt(o.bg_dong.so)} đơn</span>`,`<span class="muted">${fmt(o.huy.so)} đơn</span>`,`<span class="muted">${fmt(o.tang.so)} đơn</span>`,qtPct(o.di_hang.so,o.all.so)];
+  const cols=[['','ten'],['Số đơn','num'],['Giá trị đơn','num'],['Đã đi hàng','num'],['Đã cọc · chưa đi','num'],['Báo giá chưa cọc (không tính)','num'],['Báo giá không chốt','num'],['Huỷ (đã cọc / COD trả lại)','num'],['Hàng tặng / mẫu (0đ)','num'],['Tỷ lệ đi hàng','num']];
   const thg=theo('thang',don).sort((a,b)=>a.k<b.k?-1:1).map(o=>{o.ten=qtThg(o.k);const h=hd.filter(x=>x.thang===o.k);return [...dong(o),fmt(sumBy(h.filter(x=>x.qua_don),x=>+x.tong)),fmt(sumBy(h.filter(x=>!x.qua_don),x=>+x.tong))]});
-  S.cache.bc_xuat=()=>xuatCSV('hieu-suat-don-'+ky.tu+'_'+ky.den,[['Tháng',r=>r.k],['Số đơn',r=>r.all.so],['Giá trị',r=>r.all.tong],['Đã đi hàng',r=>r.di_hang.tong],['Đã cọc chưa đi',r=>r.coc.tong],['Báo giá đang mở',r=>r.bao_gia.tong],['Báo giá không chốt (đơn)',r=>r.bg_dong.so],['Huỷ (đơn)',r=>r.huy.so]],theo('thang',don));
+  S.cache.bc_xuat=()=>xuatCSV('hieu-suat-don-'+ky.tu+'_'+ky.den,[['Tháng',r=>r.k],['Số đơn',r=>r.all.so],['Giá trị',r=>r.all.tong],['Đã đi hàng',r=>r.di_hang.tong],['Đã cọc chưa đi',r=>r.coc.tong],['Báo giá đang mở',r=>r.bao_gia.tong],['Báo giá không chốt (đơn)',r=>r.bg_dong.so],['Huỷ (đơn)',r=>r.huy.so],['Hàng tặng / mẫu 0đ (đơn)',r=>r.tang.so]],theo('thang',don));
   el.innerHTML=qtDau('Hiệu suất kinh doanh & đơn hàng','Đơn đặt tạo trong kỳ · chia nhóm như Tổng quan')+`<div class="m-kpis m-k3">${qtK('info','Giá trị đơn đặt (đã cọc hoặc đã đi hàng)',fmt(hh.tong),fmt(hh.so)+' đơn · TB '+fmt(hh.so?hh.tong/hh.so:0)+' / đơn')}
       ${qtK('ok','Đã đi hàng',fmt(di.tong),fmt(di.so)+' đơn · '+qtPct(di.so,hh.so)+' số đơn')}${qtK('warn','Đã cọc · chưa đi hàng',fmt(co.tong),fmt(co.so)+' đơn · đã cọc '+fmt(co.coc)+(nd.so?' · loại '+fmt(nd.so)+' đơn nghi đã đi hàng (Tổng quan → bấm xem)':''))}</div>
     ${qtT('Theo tháng đặt',[...cols.map((c,i)=>i?c:['Tháng','nw']),['Doanh thu HĐ qua đơn đặt','num'],['Doanh thu bán thẳng (không qua đơn)','num']],thg)}
@@ -4308,6 +4310,7 @@ const LOGIC2=[
  ['thu_chi','Kế toán tự chi không cần duyệt','Tài khoản có quyền "Chi — tự chi không cần duyệt" tạo phiếu chi tick "Đã thanh toán luôn" (vd phiếu cân tài khoản cuối ngày).','Mỗi phiếu tự chi có chuông báo giám đốc; vẫn nhắc Thiếu ảnh giao dịch.','20/10'],
  ['thu_chi','Tự chi: phiếu đang chờ + chọn nhiều phiếu','Phiếu mình tạo còn chờ duyệt: nút "✓ Tự chi (đã thanh toán)" trong phiếu. Tick chọn nhiều phiếu trên bảng → "✓ Tự chi n phiếu" (chọn tài khoản, ngày, loại chi 1 lần) hoặc "✓ Đã duyệt lệnh n phiếu" (kế toán).','Tick "Đã thanh toán luôn" thì không cần thông tin người nhận tiền.','21/10'],
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
+ ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
  ['bao_cao','Dòng tiền khớp phân loại chi phí','Báo cáo dòng tiền đặt tên + thứ tự loại chi giống báo cáo chi phí (theo danh mục). Giao dịch cá nhân tách mục riêng "IV. Giao dịch cá nhân".','Vẫn tính vào tiền thuần trong kỳ và số dư (tiền thật đi qua tài khoản).','21/10'],
  ['thu_chi','Form phiếu chi 4 nhóm','Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Ghi chú & thanh toán.','','21/10'],
  ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
