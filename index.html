@@ -900,8 +900,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.169';
-const APP_VERSION='22/10/2026 11:13';
+const APP_SO='1.170';
+const APP_VERSION='22/10/2026 13:50';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4492,6 +4492,10 @@ async function dcfHtml(){const f=S.f;let body='';
       <div class="m-pg">Số file = tab 3.CASHFLOW TỔNG của file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" (thu / chi gồm cả điều chuyển). Số app tính trực tiếp từ sổ quỹ — sửa phiếu xong lệch tự cập nhật.</div></div>`;
   return body}
 // 21/10 anh: đối chiếu đề nghị thanh toán ↔ chi phí công ty ↔ 4 P&L (HT, CT, Shidai T1–8; Thị trường T1–6) — để tạm trong Nhật ký so khớp (scripts/doi-chieu-pnl.js)
+// 22/10 anh: gắn link file chi phí công ty từng tháng (Google Sheets) + tên sheet, số dòng để tìm nhanh
+const DCP_FILE={'2026-01':'19cGA6relEHQnEMz3NjX1WkZTk8JjkDCQ7Z_AWHyuwsk','2026-02':'1UwN1rd_cxNOrKjvA4_ieLwWcNRZudtwztCcZJcdX63E','2026-03':'1Z4kAQSEnd1D94V2a1_GEi4LQ3KHQNNTBa-TUXeAvwz0','2026-04':'1RgVdUSzz2QT3fL1kHNmwhmg2OzAwvZqGzlJvlqRP2jA',
+  '2026-05':'1dVNJt-cyEDIvOfdRXKToiNnmz69FWZKz4RhXYft7o-k','2026-06':'1BdmQ6uzpx5kTVexQIH95jsCisHipVUMedWQsB_nkdek','2026-07':'1gAg1lSmSLhEG0QCK643ze_jy2FbKOSnBkLRGJp-O_ns','2026-08':'1OVOrqneNRjlO7TE2lTY_BR03qeQg4dbBCbDDSpFt2Rg'};
+const dcpLink=x=>DCP_FILE[x.thang]?`<a class="m-link" href="https://docs.google.com/spreadsheets/d/${DCP_FILE[x.thang]}/edit" target="_blank" rel="noopener">File T${+x.thang.slice(5)}</a><div class="muted" style="font-size:11px">${esc(x.sheet)}${x.dong?' · dòng '+x.dong:''}</div>`:'';
 async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=f.dcp_tab==='cp'?'cp':'phieu',th=f.dcp_th||'';
   const ms=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'],tg=m=>'T'+(+m.slice(5));
   const pc=d.phieu.filter(x=>!th||String(x.ngay).slice(0,7)===th),pcc=pc.filter(x=>!x.khop),cp=d.cp.filter(x=>!th||x.thang===th),cpc=cp.filter(x=>!x.chi_id);
@@ -4502,7 +4506,7 @@ async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=f.dcp_tab===
     NG_CP='<b>Chi phí công ty</b> = từng khoản chi kế toán ghi trong 8 file "CHI PHÍ CÔNG TY THÁNG 1…8/2026" (Drive, thư mục chi phí tổng quan), các sheet chi phí như CP TOÀN CÔNG TY, CP KHO KIẾN AN, CP KHO TỔNG, CP MKT, CP RIÊNG TỪNG CƠ SỞ — cột Ngày, Nội dung, Số tiền, Nguồn thanh toán (sheet CP MKT: cộng các cột chia theo cơ sở). Không lấy sheet LƯƠNG+BHXH, CP GIAO VẬN, TỈ LỆ vì đó là bảng chia tiền cho cơ sở, không phải khoản chi.',
     NG_GHEP='<b>Thế nào là khớp:</b> file chi phí có một dòng cùng số tiền với phiếu, ngày lệch không quá 10 ngày (dòng không ghi ngày thì cùng tháng); nhiều dòng cùng tiền thì chọn dòng có nội dung giống nhất. Mỗi dòng chỉ ghép với 1 phiếu.';
   let body='';
-  if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Sheet',x=>esc(x.sheet),'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],cpc,'Mọi khoản chi phí đều có phiếu đề nghị',`Khoản có trong file chi phí công ty nhưng không tìm thấy phiếu đề nghị nào trên app. ${NG_CP} ${NG_PHIEU} ${NG_GHEP}`);
+  if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Mở file',dcpLink,'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],cpc,'Mọi khoản chi phí đều có phiếu đề nghị',`Khoản có trong file chi phí công ty nhưng không tìm thấy phiếu đề nghị nào trên app. ${NG_CP} ${NG_PHIEU} ${NG_GHEP}`);
   else body=bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Số phiếu',x=>`<span class="m-link" onclick="moPhieu('PC',${x.id})">PC${String(x.id).padStart(6,'0')}</span>`,'nw'],['Nội dung',x=>esc(x.nd||''),'ten'],['Người nhận',x=>esc(x.th||''),'nw'],['Loại chi',x=>esc((lo(x.loai)||{}).ten||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],pcc,'Mọi phiếu đều có trong file chi phí công ty',`Phiếu đề nghị đã chi trên app nhưng không thấy trong file chi phí công ty. ${NG_PHIEU} ${NG_CP} ${NG_GHEP}`);
   return `<div class="m-kpis m-k3">
       <div class="m-k"><div style="flex:1"><div class="l">Đề nghị không thấy trong file chi phí ${th?tg(th):'T1–T8'}</div><div class="v neg-t">${fmt(tong(pcc))}</div><div class="s">${fmt(pcc.length)} / ${fmt(pc.length)} phiếu đề nghị đã chi</div></div></div>
