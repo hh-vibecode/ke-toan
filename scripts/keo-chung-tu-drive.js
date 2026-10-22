@@ -16,8 +16,9 @@ const tachId = s => [...String(s || '').matchAll(/(?:id=|\/d\/)([A-Za-z0-9_-]{20
 const dk = KY === 'T9' ? `and c.ngay_tt between '2026-09-01' and '2026-09-30'` : KY === 'thieu' ? `and not exists (select 1 from kt_chung_tu k where k.bang = 'chi' and k.dong_id = c.id and not k.da_xoa)` : '';
   const rows = await sql(`select c.id, c.chung_tu, c.unc from kt_chi c where not c.da_xoa ${dk}
     and (array_to_string(c.chung_tu, ' ') ~ 'drive.google' or coalesce(c.unc, '') ~ 'drive.google') order by c.id`);
-  const da = new Set((await sql(`select duong_dan from kt_chung_tu where bang = 'chi' and duong_dan like '%/drive_%'`))
-    .map(x => (x.duong_dan.match(/\/drive_([A-Za-z0-9_-]{20,})_/) || [])[1]));
+  // 22/10: "đã có" tính theo TỪNG phiếu (phiếu + file Drive), bỏ dòng đã xoá — trước tính chung, phiếu #1804 bị bỏ vì file nằm ở phiếu trùng #535 đã xoá — Monsieur Claude
+  const da = new Set((await sql(`select dong_id, duong_dan from kt_chung_tu where bang = 'chi' and not da_xoa and duong_dan like '%/drive_%'`))
+    .map(x => x.dong_id + ':' + (x.duong_dan.match(/\/drive_([A-Za-z0-9_-]{20,})_/) || [])[1]));
   const viec = [];
   for (const r of rows) {
     for (const f of [...new Set(r.chung_tu.flatMap(tachId))]) viec.push({ chi: r.id, fid: f, loai: 'Hồ sơ' });
@@ -25,12 +26,18 @@ const dk = KY === 'T9' ? `and c.ngay_tt between '2026-09-01' and '2026-09-30'` :
   }
   const dem = { phieu: rows.length, file: viec.length, da_co: 0, tai_duoc: 0, can_dang_nhap: 0, loai_khac: 0, loi: 0, da_luu: 0, mb: 0 };
   for (const v of viec) {
-    if (da.has(v.fid)) { dem.da_co++; continue; }
+    if (da.has(v.chi + ':' + v.fid)) { dem.da_co++; continue; }
     try {
       let ct, buf, ten0;
       if (DUNG_RC) {
         let x; try { x = RC.taiFile(v.fid); } catch (e) { dem.can_dang_nhap++; continue; }
         ct = x.mime; ten0 = x.ten; buf = x.buf;
+        // 22/10: Drive trả octet-stream cho Word / Excel → đoán loại theo đuôi file — Monsieur Claude
+        if (!MIME_OK.test(ct || '')) {
+          const DUOI = { docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', xls: 'application/vnd.ms-excel', doc: 'application/msword', pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', heic: 'image/heic', webp: 'image/webp' };
+          const d = String(ten0 || '').toLowerCase().split('.').pop();
+          if (DUOI[d]) ct = DUOI[d];
+        }
         if (!MIME_OK.test(ct) || buf.length > 15 * 1024 * 1024) { dem.loai_khac++; continue; }
       } else if (G) {   // đăng nhập Drive của anh (OAuth riêng)
         let tt; try { tt = await G.thongTin(v.fid); } catch (e) { /404|403/.test(e.message) ? dem.can_dang_nhap++ : dem.loi++; continue; }
