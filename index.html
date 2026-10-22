@@ -861,8 +861,12 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-kh [id^="qr-"]{width:122px!important;height:122px!important}.pc-kh [id^="qr-"] img{width:120px!important;height:120px!important}
 .pc-kh details{margin-top:6px!important}.pc-h{padding:9px 22px}.pc-tien b{font-size:21px}.pc-f{padding:8px 22px}
 .pc-kh .pc-c:has(#pbf)>.m-st:first-child{display:none}   /* tiêu đề "Hạch toán + số tiền": số tiền đã ở đầu cửa sổ */
-.pc-kh #ftt:has([name=ngay_tt]){grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}.pc-kh #ftt:has([name=ngay_tt])>label.full{grid-column:auto}
-.pc-kh .ct-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}.pc-kh .ct-thumb{height:62px}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:62px}
+/* 22/10 anh (ảnh "ô lệch"): form thanh toán dàn hàng linh hoạt — nhãn 1 dòng, ô thẳng đáy, TK tự giãn khi ẩn ô người nhận tiền mặt */
+.pc-kh #ftt:has([name=ngay_tt]){display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px}
+.pc-kh #ftt:has([name=ngay_tt])>label{flex:1 1 200px;min-width:0}.pc-kh #ftt:has([name=ngay_tt])>label:has([name=ngay_tt]){flex:0 0 165px}
+.pc-kh #ftt>label>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pc-kh .ct-grid{grid-template-columns:repeat(auto-fill,minmax(122px,1fr))}
+.pc-kh .ct-grid{gap:6px}.pc-kh .ct-thumb{height:62px}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:62px}
 .pc-kh .ct-ten{font-size:10.5px}.pc-kh .pc-c .sec{margin-top:8px!important;font-size:12px}
 .pc-kh>.pc-kc{display:flex;flex-direction:column}.pc-kc>.pc-c{border:none;border-radius:0;background:none;padding:12px 16px}.pc-kc>.pc-c+.pc-c,.pc-kc>*+.pc-c{border-top:1px solid var(--border)}
 .pc-kh>.pc-kc+*,.pc-kh>*+.pc-kc{border-left:1px solid var(--border)}
@@ -953,8 +957,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.193';
-const APP_VERSION='22/10/2026 20:01';
+const APP_SO='1.194';
+const APP_VERSION='22/10/2026 20:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
