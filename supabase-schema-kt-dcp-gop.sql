@@ -40,5 +40,5 @@ begin
     -- 22/10 anh: số file chi phí đã chia cho từng cơ sở theo mục P&L (dòng tiêu đề nhóm, lương, giao vận, MKT) — so với 4 P&L
     'pb', (select coalesce(jsonb_agg(jsonb_build_object('thang', thang, 'cs', cs, 'ma', ma, 'so_tien', so_tien, 'nguon', nguon)), '[]') from kt_dcp_pb),
     'pnl', (select coalesce(jsonb_agg(jsonb_build_object('nguon', nguon, 'thang', thang, 'ma', ma, 'ten', ten, 'target', target, 'th', thuc_hien, 'app', app, 'lech', lech) order by nguon, thang, dong), '[]')
-               from kt_pnl_cu where ma is not null));
+               from kt_pnl_cu));   -- 22/10: lấy cả dòng không mã (P&L Thị trường chỉ ghi tên nhóm ở cột A)
 end $f$;

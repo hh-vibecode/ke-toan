@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.183';
-const APP_VERSION='22/10/2026 16:31';
+const APP_SO='1.184';
+const APP_VERSION='22/10/2026 16:44';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4596,10 +4596,13 @@ const dcpLD=(ds,x)=>{const b=boDau(String(x.nd||'')+' '+String(x.th||'')+' '+Str
 const PL_TEN=[[/luong bhxh nhan su truc tiep/,'1.1'],[/quy hoa hong/,'1.2'],[/bp sales online phan bo/,'2'],[/luong kho/,'3.1'],[/thue kho/,'3.2'],[/sua chua & khau hao kho/,'3.3'],[/khac kho tong/,'3.4'],
   [/luong bgd/,'4.1'],[/backoffice/,'4.2'],[/van phong & hanh chinh/,'4.3'],[/phan mem & he thong/,'4.4'],[/ke toan - thue/,'4.5'],[/ngan hang - tai chinh/,'4.6'],[/truyen thong cong ty/,'4.7'],
   [/truyen thong noi bo/,'4.8'],[/nghien cuu/,'4.9'],[/dao tao/,'4.10'],[/khac tong cong ty/,'4.11'],[/^chi phi marketing$/,'5'],[/vat tu tieu hao/,'7.1'],[/^chi phi cua hang$/,'R'],[/phi van chuyen/,'R'],
-  [/sua chua bao hanh/,'R'],[/khau hao cong cu/,'8.2']];
+  [/sua chua bao hanh/,'R'],[/khau hao cong cu/,'8.2'],[/thue cua hang/,'6.1'],
+  // P&L Thị trường chỉ có cấp nhóm (tên ở cột A, không mã)
+  [/^chi phi van hanh kho tong$/,'G3'],[/tong cong ty phan bo theo bp/,'G4'],[/^chi phi mkt/,'5']];
 const PL_NHAN={'1.1':'Lương + BHXH nhân sự trực tiếp','1.2':'Quỹ hoa hồng cửa hàng','2':'BP Sales Online phân bổ','3.1':'Lương kho phân bổ','3.2':'Thuê kho','3.3':'Sửa chữa & khấu hao kho','3.4':'Chi phí khác kho tổng',
   '4.1':'Lương BGĐ','4.2':'Lương Backoffice','4.3':'Văn phòng & hành chính','4.4':'Phần mềm & hệ thống','4.5':'Kế toán - thuế - pháp lý','4.6':'Ngân hàng - tài chính','4.7':'Truyền thông công ty','4.8':'Truyền thông nội bộ',
-  '4.9':'Nghiên cứu & phát triển','4.10':'Đào tạo nhân sự','4.11':'Chi phí khác tổng công ty','5':'Marketing','7.1':'Vật tư tiêu hao','R':'Chi phí riêng cơ sở (cửa hàng + vận chuyển + sửa chữa + khác)','8.2':'Khấu hao công cụ, tài sản'};
+  '4.9':'Nghiên cứu & phát triển','4.10':'Đào tạo nhân sự','4.11':'Chi phí khác tổng công ty','5':'Marketing','7.1':'Vật tư tiêu hao','R':'Chi phí riêng cơ sở (cửa hàng trừ tiền thuê + vận chuyển + sửa chữa + khác)','8.2':'Khấu hao công cụ, tài sản','6.1':'Thuê cửa hàng','G3':'Vận hành kho tổng (cả nhóm)','G4':'Tổng công ty phân bổ (cả nhóm)'};
+const DSMA_TT=['1.1','G3','G4','5','R'];
 const PL_NGOAI={'1.2':'P&L tự tính — file chi phí không có','8.2':'Khấu hao theo dõi riêng (KT 4)'};
 const CS4=[['HT','Hiền Thuỷ'],['CT','Chánh Tâm'],['SD','Shidai'],['TT','Thị trường']];
 const csCP=t=>{t=boDau(t||'').toLowerCase();return /hien thuy/.test(t)?'HT':/chanh tam/.test(t)?'CT':/shidai|sales online/.test(t)?'SD':/thi truong/.test(t)?'TT':null};
@@ -4607,11 +4610,22 @@ function dcpPL(d){const P={},F={},T={},add=(o,cs,th,ma,v)=>{const k=cs+'|'+th;(o
   for(const r of d.pnl){const tn=boDau(r.ten||'').toLowerCase().trim(),top=/^\d+$/.test(r.ma||'')&&!/^thue/.test(tn);
     if(top){T[r.nguon+'|'+r.thang]=(T[r.nguon+'|'+r.thang]||0)+(+r.th||0);if(/^chi phi khac$/.test(tn))add(P,r.nguon,r.thang,'R',r.th)}
     const m=PL_TEN.find(([re])=>re.test(tn));if(m&&!(m[1]==='R'&&top&&!/cua hang/.test(tn)))add(P,r.nguon,r.thang,m[1],r.th)}
-  for(const p of d.pb)add(F,p.cs,p.thang,p.ma==='GV'?'R':p.ma,p.so_tien);
+  // tiền thuê cửa hàng tách khỏi "riêng cơ sở" (nhóm 6 đã gồm 6.1) — so riêng, theo quý
+  for(const k in P)if(P[k]['6.1']&&P[k].R!=null)P[k].R-=P[k]['6.1'];
+  // P&L Thị trường: tổng chi phí = cộng các nhóm có số (file không đánh mã)
+  for(const r of d.pnl)if(r.nguon==='TT'&&!r.ma){const tn=boDau(r.ten||'').toLowerCase();if(/luong bhxh nhan su truc tiep|van hanh kho tong|tong cong ty phan bo|^chi phi mkt|^chi phi thi truong/.test(tn))T['TT|'+r.thang]=(T['TT|'+r.thang]||0)+(+r.th||0)}
+  // Shidai: lương BP Sales Online nằm luôn trong Shidai → P&L Shidai ghi vào 1.1, file ghi "Sales Online phân bổ"
+  for(const p of d.pb)add(F,p.cs,p.thang,p.ma==='GV'?'R':p.cs==='SD'&&p.ma==='2'?'1.1':p.ma,p.so_tien);
+  for(const k in F)if(k.startsWith('TT|')){const o=F[k];o.G3=['3.1','3.2','3.3','3.4','7.1'].reduce((s,m)=>s+(o[m]||0),0);o.G4=Object.keys(o).filter(m=>/^4\./.test(m)).reduce((s,m)=>s+(o[m]||0),0)}
   // chi phí riêng cơ sở: sheet CP RIÊNG TỪNG CƠ SỞ theo đơn vị chịu — bỏ dòng "thanh toán quỹ ngoài" (đợt nạp lại quỹ, trùng với các khoản chi lẻ)
   for(const x of d.cp){if(!/rieng/.test(boDau(x.sheet||'').toLowerCase()))continue;const cs=csCP(x.nhom);if(!cs)continue;const b=boDau(x.nd||'').toLowerCase();
-    if(/(thanh toan|tt) (tien )?quy ngoai|^quy ngoai/.test(b))continue;add(F,cs,x.thang,'R',x.so_tien)}
+    if(/(thanh toan|tt) (tien )?quy ngoai|^quy ngoai/.test(b))continue;add(F,cs,x.thang,/thue (cua hang|mat bang|nha)/.test(b)?'6.1':'R',x.so_tien)}
   return {P,F,T}}
+// lệch có giải thích (không coi là lệch): Marketing chênh đúng dòng "phân bổ chi phí online nến" (P&L không lấy); thuê cửa hàng khớp theo QUÝ
+function dcpGT(P,F,cs,th,ma,e){const kF=F[cs+'|'+th]||{};if(ma==='5'&&kF['5-nen']&&Math.abs(e+kF['5-nen'])<=10)return 'P&L không lấy dòng "phân bổ chi phí online nến"';
+  if(ma==='6.1'){const q=Math.floor((+th.slice(5)-1)/3),ms=[1,2,3].map(i=>'2026-'+String(q*3+i).padStart(2,'0')),sP=ms.reduce((s,m)=>s+((P[cs+'|'+m]||{})['6.1']||0),0),sF=ms.reduce((s,m)=>s+((F[cs+'|'+m]||{})['6.1']||0),0);
+    if(sF&&Math.abs(sP-sF)<=10)return 'Khớp theo quý '+(q+1)+' (trả tiền thuê theo quý)';if(!sF)return 'File chi phí không có dòng thuê cửa hàng'}
+  return ''}
 async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop','phieu','pl'].includes(f.dcp_tab)?f.dcp_tab:'tq',th=f.dcp_th||'';
   const ms=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'],tg=m=>'T'+(+m.slice(5));
   d.phieu.forEach(x=>x.ld=x.khop||x.nhom?'':dcpLD(DCP_LD_PC,x));d.cp.forEach(x=>x.ld=x.chi_id||x.gop?'':dcpLD(DCP_LD_CP,x));
@@ -4625,8 +4639,8 @@ async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop',
     NG_CP='<b>Chi phí công ty</b> = từng khoản chi kế toán ghi trong 8 file "CHI PHÍ CÔNG TY THÁNG 1…8/2026" (Drive, thư mục chi phí tổng quan), các sheet chi phí như CP TOÀN CÔNG TY, CP KHO KIẾN AN, CP KHO TỔNG, CP MKT, CP RIÊNG TỪNG CƠ SỞ — cột Ngày, Nội dung, Số tiền, Nguồn thanh toán (sheet CP MKT: cộng các cột chia theo cơ sở). Không lấy sheet LƯƠNG+BHXH, CP GIAO VẬN, TỈ LỆ vì đó là bảng chia tiền cho cơ sở, không phải khoản chi. Bỏ mọi khoản của nhà hàng (sheet CP KHO HN, đơn vị chịu hoặc phân bổ chỉ cho Saikung / Hongkong) — chỉ so khoản đồ thờ.',
     NG_GHEP='<b>Thế nào là khớp:</b> file chi phí có một dòng cùng số tiền với phiếu, ngày lệch không quá 10 ngày (dòng không ghi ngày thì cùng tháng); nhiều dòng cùng tiền thì chọn dòng có nội dung giống nhất. Mỗi dòng chỉ ghép với 1 phiếu. Khoản không có cặp nhưng thuộc 8 trường hợp kế toán giải thích (22/10, ghi "KT 1…8" ở cột Lý do) tính là đã rõ.',
     NG_PL='<b>P&L</b> = 4 file BÁO CÁO P&L (Hiền Thuỷ, Chánh Tâm, Shidai T1–T8; Thị trường T1–T6), cột THỰC HIỆN từng tháng; tổng chi phí = cộng các nhóm chi phí 1…9 (không gồm giá vốn, thuế). <b>File chi phí chia cho cơ sở</b> = số kế toán đã chia sẵn trong file chi phí công ty tháng: dòng tiêu đề nhóm sheet CP TOÀN CÔNG TY / CP KHO KIẾN AN, dòng "Tổng chi phí từng cơ sở" sheet CP MKT, sheet LƯƠNG+BHXH, dòng tổng sheet CP GIAO VẬN, và các khoản sheet CP RIÊNG TỪNG CƠ SỞ theo cột Đơn vị chịu (bỏ dòng "thanh toán quỹ ngoài" vì trùng với các khoản chi lẻ). Ghép theo tên mục, vì mỗi file P&L đánh mã khác nhau. Lệch ≤ 10 đ (làm tròn) coi là khớp.';
-  const {P,F,T}=dcpPL(d),KHOP=10,DSMA=['1.1','2','3.1','3.2','3.3','3.4','4.1','4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','5','7.1','R'];
-  const soPL=(thg,css)=>{let n=0,k=0,l=0;for(const [cs] of css)for(const ma of DSMA){const a=(P[cs+'|'+thg]||{})[ma],b=(F[cs+'|'+thg]||{})[ma];if(a==null&&b==null)continue;n++;const e=(a||0)-(b||0);if(Math.abs(e)<=KHOP)k++;else l+=Math.abs(e)}return {n,k,l}};
+  const {P,F,T}=dcpPL(d),KHOP=10,DSMA=['1.1','2','3.1','3.2','3.3','3.4','4.1','4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','5','7.1','6.1','R'],dsMa=cs=>cs==='TT'?DSMA_TT:DSMA;
+  const soPL=(thg,css)=>{let n=0,k=0,l=0;for(const [cs] of css)for(const ma of dsMa(cs)){const a=(P[cs+'|'+thg]||{})[ma],b=(F[cs+'|'+thg]||{})[ma];if(a==null&&b==null)continue;n++;const e=(a||0)-(b||0);if(Math.abs(e)<=KHOP||(dcpGT(P,F,cs,thg,ma,e)&&!/không có/.test(dcpGT(P,F,cs,thg,ma,e))))k++;else l+=Math.abs(e)}return {n,k,l}};
   let body='';
   const GOP={'QN-HT':'Quỹ ngoài Hiền Thuỷ','QN-CT':'Quỹ ngoài Chánh Tâm','QN-SD':'Quỹ ngoài kho Shidai','QN-VP':'Quỹ ngoài văn phòng','VS-NTC':'Visa Nguyễn Thị Chuyện','VS-OANH':'Visa Đặng Thị Minh Oanh',
     'VS-BP':'Visa Nguyễn Thị Bích Phương','VS-HUE':'Visa Nguyễn Thị Huế','VS-HXT':'Visa Hồ Xuân Thịnh','VS-KHAC':'Visa (chưa rõ chủ thẻ)'};
@@ -4642,11 +4656,12 @@ async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop',
     const m=th||'2026-08',rows=[];
     for(const [cs,ten] of CS4){const kP=P[cs+'|'+m]||{},kF=F[cs+'|'+m]||{};if(!T[cs+'|'+m]&&!Object.keys(kF).length)continue;
       rows.push({__cls:'tong',cs:ten,ma:'',ten:`<b>${ten}</b>`,p:T[cs+'|'+m]||0,f:null,ng:'Tổng chi phí P&L (nhóm 1–9)'});
-      for(const ma of [...DSMA,'1.2','8.2']){const a=kP[ma],b=kF[ma];if(a==null&&b==null)continue;if((a||0)===0&&(b||0)===0)continue;
-        const e=(a||0)-(b||0),ngoai=PL_NGOAI[ma],nen=ma==='5'&&kF['5-nen']?` · file gồm "phân bổ chi phí online nến" ${fmt(kF['5-nen'])}`:'';
-        rows.push({cs:ten,ma,ten:esc(PL_NHAN[ma]||ma),p:a,f:ngoai?null:b||0,e:ngoai?null:e,ng:ngoai||((Math.abs(e)<=KHOP?'':'')+nen)})}}
+      for(const ma of [...dsMa(cs),'1.2','8.2']){const a=kP[ma],b=kF[ma];if(a==null&&b==null)continue;if((a||0)===0&&(b||0)===0)continue;
+        const e=(a||0)-(b||0),ngoai=PL_NGOAI[ma],gt=Math.abs(e)>KHOP?dcpGT(P,F,cs,m,ma,e):'',nen=!gt&&ma==='5'&&kF['5-nen']?`file gồm "phân bổ chi phí online nến" ${fmt(kF['5-nen'])}`:'';
+        const sd=cs==='SD'&&a!=null&&b!=null&&Math.abs(e)>KHOP&&!gt?'P&L Shidai không lấy theo file chi phí (ô trống / số tròn / chép tháng khác)':'',t4=cs==='HT'&&m==='2026-04'&&!a&&b?'P&L Hiền Thuỷ T4 ghi 0':'';
+        rows.push({cs:ten,ma,ten:esc(PL_NHAN[ma]||ma),p:a,f:ngoai?null:b||0,e:ngoai?null:e,gt:!!gt&&!/không có/.test(gt),ng:ngoai||gt||nen||t4||sd})}}
     body=bang([['Mục P&L',r=>r.ten,''],['P&L ghi',r=>r.p==null?'—':fmt(r.p),'num'],['File chi phí chia cho cơ sở',r=>r.f==null?(r.ma?'<span class="muted">—</span>':''):fmt(r.f),'num'],
-      ['Lệch (P&L − file)',r=>r.e==null?'':`<span class="${Math.abs(r.e)<=KHOP?'pos-t':'neg-t'}">${Math.abs(r.e)<=KHOP?'Khớp':fmt(r.e)}</span>`,'num'],['Ghi chú',r=>`<span class="muted" style="font-size:12px">${r.ng||''}</span>`,'']],rows,'Tháng này chưa có P&L',
+      ['Lệch (P&L − file)',r=>r.e==null?'':`<span class="${Math.abs(r.e)<=KHOP||r.gt?'pos-t':'neg-t'}">${Math.abs(r.e)<=KHOP?'Khớp':r.gt?'Khớp có giải thích':fmt(r.e)}</span>`,'num'],['Ghi chú',r=>`<span class="muted" style="font-size:12px">${r.ng||''}</span>`,'']],rows,'Tháng này chưa có P&L',
       `${tg(m)}/2026 — so từng mục P&L của từng cơ sở với số file chi phí công ty đã chia cho cơ sở đó. ${NG_PL}`);
   }else if(t==='gop')body=bang([['Quỹ / thẻ',x=>`<b>${esc(GOP[x]||x)}</b>`,'nw'],['Khoản chi trong file',x=>fmt(cpG.filter(z=>z.gop===x).length),'num'],['Tổng file chi phí',x=>fmt(tong(cpG.filter(z=>z.gop===x))),'num'],
       ['ĐNTT thanh toán',x=>dnG.filter(z=>z.nhom===x).map(z=>`<span class="m-link" onclick="moPhieu('PC',${z.id})">PC${String(z.id).padStart(6,'0')}</span>`).join(' ')||'<span class="muted">—</span>',''],['Tổng ĐNTT',x=>fmt(tong(dnG.filter(z=>z.nhom===x))),'num']],
