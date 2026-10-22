@@ -821,30 +821,33 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-o>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.pc-o>div{font-size:13px;font-weight:500;word-break:break-word}
 .pc-ls{display:flex;flex-direction:column;gap:8px}.pc-ls>div{display:flex;flex-direction:column;border-left:2px solid var(--border);padding-left:10px}.pc-ls b{font-size:12.5px}.pc-ls span{font-size:11.5px;color:var(--muted)}
 .pc-drive{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12.5px}
-/* 22/10 anh: mốc Bước 1 → Bước 3 ngoài cùng bên trái, ứng với từng nhóm khung (thay khung Luồng duyệt) */
-.pc-bs{display:flex;flex-direction:column}
-.pc-buoc{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;position:relative;padding-bottom:16px}
-.pc-buoc:last-child{padding-bottom:0}
-.pc-buoc::before{content:'';position:absolute;left:15px;top:40px;bottom:4px;width:2px;background:var(--border)}
+/* 22/10 anh (hình vẽ + "trạng thái như cũ, rộng hơn, nối ở bên trái"): mỗi hàng = ô B1 / B2 / B3 (vòng trạng thái như Luồng duyệt cũ) + 1 khung nội dung;
+   các ô nối nhau bằng đường dọc bên trái (xanh khi bước đã xong); 3 hàng xếp dọc, hết chiều ngang */
+.pc-cot1{display:flex;flex-direction:column;gap:20px}
+.pc-bs{display:flex;flex-direction:column;gap:20px}
+.pc-buoc{display:grid;grid-template-columns:210px minmax(0,1fr);gap:16px;align-items:start;position:relative}
+.pc-buoc::before{content:'';position:absolute;left:30px;top:30px;bottom:-20px;width:3px;border-radius:2px;background:var(--border);z-index:0}
 .pc-buoc:last-child::before{display:none}
-.pc-buoc.xong::before{background:var(--ok)}
-.pc-moc{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:start;padding-top:6px;position:sticky;top:0;align-self:start}
-.pc-moc>i{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:13px;background:var(--surface);border:2px solid var(--border);color:var(--muted)}
-.pc-moc>div{display:flex;flex-direction:column;gap:3px;min-width:0;padding-top:1px}
-.pc-moc .bn{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.pc-moc .bt{font-size:13px;font-weight:700;line-height:1.25}
+.pc-buoc.xong::before{background:#16a34a}
+.pc-moc{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 10px;align-items:center;padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:var(--surface);position:sticky;top:0;z-index:1}
+.pc-moc>i{grid-row:span 2;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:14px;background:var(--surface);border:2px solid var(--border);color:var(--muted)}
+.pc-moc .bs{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted)}
+.pc-moc .bt{font-size:13.5px;font-weight:700;line-height:1.25}
+.pc-moc .bx{grid-column:1/-1;display:flex;flex-direction:column;gap:4px;margin-top:4px}
 .pc-moc .ba{font-size:11.5px;color:var(--text2);line-height:1.35;word-break:break-word}
-.pc-buoc.xong .pc-moc>i{background:var(--ok);border-color:var(--ok);color:#fff}
-.pc-buoc.dang .pc-moc>i{background:var(--warn);border-color:var(--warn);color:#fff}
-.pc-buoc.loi .pc-moc>i{background:var(--bad);border-color:var(--bad);color:#fff}
+.pc-buoc{--bx:var(--border)}.pc-buoc.xong{--bx:#16a34a}.pc-buoc.dang{--bx:#eab308}.pc-buoc.loi{--bx:#dc2626}   /* 22/10 anh: xanh = xong · vàng = chờ · đỏ = từ chối */
+.pc-buoc:is(.xong,.dang,.loi) .pc-moc{border-color:var(--bx);background:color-mix(in srgb,var(--bx) 12%,var(--surface))}
+.pc-buoc:is(.xong,.dang,.loi) .pc-moc>i{background:var(--bx);border-color:var(--bx);color:#fff}
+.pc-buoc.dang .pc-moc>i{color:#422006}
 .pc-buoc.chua .pc-moc .bt,.pc-buoc.bo .pc-moc .bt{color:var(--muted)}
+@media (max-width:900px){.pc-buoc{grid-template-columns:1fr;gap:8px}.pc-buoc::before{display:none}.pc-moc{position:static}}
 /* 22/10 anh: "mỗi bước 1 khung" — Bước 1 thông tin · Bước 2 hạch toán · Bước 3 chi tiền: các phần trong bước chỉ cách nhau đường kẻ, không khung con */
-.pc-buoc>.pc-kh{display:flex;flex-direction:column;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 18px}
-.pc-kh>.pc-c{border:none;border-radius:0;background:none;padding:14px 0}
+.pc-buoc>.pc-kh{display:flex;flex-direction:column;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px 26px}
+.pc-kh>.pc-c{border:none;border-radius:0;background:none;padding:20px 0}
+.pc-kh .pc-g{gap:14px 28px}.pc-kh .pbf,.pc-kh .pbf-t,.pc-kh .pbf+div{max-width:760px}
 .pc-kh>.pc-c+.pc-c,.pc-kh>.pc-c+div:not(:empty),.pc-kh>div:not(:empty)+.pc-c{border-top:1px solid var(--border)}
 .pc-kh>.pc-c h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)}
-.pc-buoc.dang>.pc-kh{border-color:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 12%,transparent)}
-@media (max-width:900px){.pc-buoc{grid-template-columns:1fr;gap:8px}.pc-buoc::before{display:none}.pc-moc{position:static;padding-top:0}}
+.pc-buoc.dang>.pc-kh{border-color:#eab308;box-shadow:0 0 0 3px color-mix(in srgb,#eab308 16%,transparent)}
 .pc-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 22px;border-top:1px solid var(--border);background:var(--surface)}
 @media (max-width:900px){.pc-cot,.pc-g{grid-template-columns:1fr}.pc-h{flex-wrap:wrap;padding:12px 14px}.pc-tien{text-align:left}.pc-b{padding:12px}.pc-f{padding:10px 12px}.modal.pc-m{padding:0}.modal.pc-m>div{max-height:100vh;height:100vh;border-radius:0}}
 .pc-hd{display:flex;gap:8px;flex-wrap:wrap}.pc-hd select{flex:1 1 220px}.pc-hd input{flex:0 0 160px}
@@ -925,8 +928,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.191';
-const APP_VERSION='22/10/2026 19:46';
+const APP_SO='1.192';
+const APP_VERSION='22/10/2026 19:50';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2611,9 +2614,9 @@ async function doiHDVe(id,v){try{await rpc('kt_dat_hd_do',{p_id:id,p_hd_ve:v||''
 // 22/10 anh: "thêm bước 1 → bước 3 ở ngoài cùng bên trái ứng với từng bước" — mốc lấy từ luongChi (thay khung Luồng duyệt bên phải)
 function pcBuoc(x,nhom){const ds=luongChi(x);
   return nhom.map((noi,i)=>{if(!String(noi||'').trim())return '';const b=ds[i]||{},k={xong:'xong',dang:'dang',loi:'loi',bo:'bo'}[b.tt]||'chua';
-    const tt=k==='dang'?pill('Đang chờ'+(b.cho?' '+b.cho+' ngày':''),b.cho>=3?'bad':'warn'):k==='loi'?pill('Từ chối','bad'):k==='xong'?pill('Xong','ok'):k==='bo'?pill('Bỏ qua',''):pill('Chưa tới','');
+    const tt=k==='dang'?`<span class="m-pill" style="background:#fef08a;color:#713f12">Đang chờ${b.cho?' '+b.cho+' ngày':''}</span>`:k==='loi'?pill('Từ chối','bad'):k==='xong'?pill('Xong','ok'):k==='bo'?pill('Bỏ qua',''):pill('Chưa tới','');
     const ai=[b.ai,b.luc?(String(b.luc).length>10?fmtDT(b.luc):fmtD(b.luc)):'',b.ghi].filter(Boolean).map(esc).join(' · ');
-    return `<div class="pc-buoc ${k}"><div class="pc-moc"><i>${k==='xong'?'✓':k==='loi'?'✕':i+1}</i><div><span class="bn">Bước ${i+1}</span><span class="bt">${esc(b.ten||'')}</span><span>${tt}</span>${ai?`<span class="ba">${ai}</span>`:''}${k==='dang'&&ds.quaHan?`<span class="ba neg-t">Quá hạn mong muốn (${fmtD(x.han_tt)})</span>`:''}</div></div><div class="pc-kh">${noi}</div></div>`}).join('')}
+    return `<div class="pc-buoc ${k}"><div class="pc-moc"><i>${k==='xong'?'✓':k==='loi'?'✕':i+1}</i><b class="bs">BƯỚC ${i+1}</b><span class="bt">${esc(b.ten||'')}</span><div class="bx"><span>${tt}</span>${ai?`<span class="ba">${ai}</span>`:''}${k==='dang'&&ds.quaHan?`<span class="ba neg-t">Quá hạn mong muốn (${fmtD(x.han_tt)})</span>`:''}</div></div><div class="pc-kh">${noi}</div></div>`}).join('')}
 function xemChi(id){
   // 16/10/2026 (anh): phiếu chi mở thành CỬA SỔ LỚN (như app MKT), 1 màn đủ thông tin — trái: đề nghị · người nhận + QR · phân bổ · thanh toán · hoá đơn;
   // phải: luồng duyệt · chứng từ · lịch sử. Nút xử lý cố định ở chân cửa sổ.
@@ -2676,10 +2679,10 @@ function xemChi(id){
     /* 21/10 anh: bỏ nút "Tài khoản tự trừ" ở chân phiếu — dùng ô "Đã thanh toán luôn / Tài khoản tự trừ" trong form */
     ''].join('');
   const html=`<div class="pc-h"><span class="m-loai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm3 8h8v2H9zm0 4h8v2H9z"/></svg></span>
-      <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.ca_nhan?pill('Chi phí cá nhân',''):x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.tu_tru?pill('Tài khoản tự trừ','info'):''}<span class="pc-nho"><button class="m-btn sm out" title="Mở chat, điền sẵn mã phiếu — người nhận bấm mã là mở thẳng phiếu" onclick="guiPhieuChat('${esc(so)}',${JSON.stringify(String(ndChi(x)).slice(0,80)).replace(/"/g,'&quot;')},${+x.so_tien||0})">Gửi vào chat</button><button class="m-btn sm out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu in</button>${g?`<button class="m-btn sm" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:''}</span></div><div class="pc-nd">${esc(ndChi(x))}</div></div>
+      <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.ca_nhan?pill('Chi phí cá nhân',''):x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.tu_tru?pill('Tài khoản tự trừ','info'):''}<span class="pc-nho"><button class="m-btn sm out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu in</button>${g?`<button class="m-btn sm" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:''}</span></div><div class="pc-nd">${esc(ndChi(x))}</div></div>
       <div class="pc-tien"><span>Số tiền</span><b>${fmt(x.so_tien)}</b></div><button class="x" title="Đóng" onclick="dongChiCT()">✕</button></div>
     <div class="pc-b">${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
-      <div class="pc-cot"><div class="pc-bs">${pcBuoc(x,[deNghi+ct+((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung')?`<div id="pc-tu-${id}"></div>`:''),pb+hd+xacNhan,nhan+hqChi(x,dy)+ttoan])}</div><div>${lsO}</div></div></div>
+      <div class="pc-cot1"><div class="pc-bs">${pcBuoc(x,[deNghi+ct+((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung')?`<div id="pc-tu-${id}"></div>`:''),pb+hd+xacNhan,nhan+hqChi(x,dy)+ttoan])}</div><div>${lsO}</div></div></div>
     <div class="pc-f">${nut}</div>`;
   hienChiCT(id,html);setTimeout(()=>hdTai('chi',id),0);if((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung'))setTimeout(()=>veTUChi(x),0);
 }
@@ -4169,15 +4172,17 @@ function tiengBao(){try{if(!AC)return;const t=AC.currentTime,out=AC.createGain()
 // Mã phiếu trong tin (PC000123 / PT000123 / DC000123) thành link mở thẳng phiếu.
 const CHAT={kenh:'chung',mo:false,tin:{},tong:[],so:0,dang:false,cam:{},doc:{}};
 const IC_CHAT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6" stroke-linecap="round"/></svg>';
-const chatNut=()=>`<div class="tb-dd tb-chat"><button class="tb-btn chat-btn" title="Chat" onclick="event.stopPropagation();CHAT.mo?dongChat():moChat()">${IC_CHAT}<span class="cb-so" id="chat-so" ${CHAT.so?'':'hidden'}>${CHAT.so>99?'99+':CHAT.so}</span></button></div>`;
+// 22/10 anh: "bỏ phần chat với mọi người và gửi phiếu vào chat — tạm thời không cần" → tắt nút + không gọi máy chủ; bật lại: CHAT_TAT=false
+const CHAT_TAT=true;
+const chatNut=()=>CHAT_TAT?'':`<div class="tb-dd tb-chat"><button class="tb-btn chat-btn" title="Chat" onclick="event.stopPropagation();CHAT.mo?dongChat():moChat()">${IC_CHAT}<span class="cb-so" id="chat-so" ${CHAT.so?'':'hidden'}>${CHAT.so>99?'99+':CHAT.so}</span></button></div>`;
 function chatKhung(){let d=document.getElementById('chat');if(d)return d;d=document.createElement('div');d.id='chat';d.className='chat';
   d.innerHTML=`<div class="chat-h"><b>Chat</b><span class="muted" id="chat-kt"></span><button class="x" onclick="dongChat()">✕</button></div>
     <div class="chat-b"><div class="chat-ds" id="chat-ds"></div><div class="chat-k"><div class="chat-tin" id="chat-tin"></div>
     <div class="chat-n"><textarea id="chat-o" rows="1" placeholder="Nhắn tin… (Enter gửi)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatGui()}"></textarea><button class="m-btn pri" onclick="chatGui()">Gửi</button></div></div></div>`;
   document.body.appendChild(d);return d}
-async function moChat(kenh){if(!S.phien)return;const d=chatKhung();CHAT.mo=true;d.classList.add('mo');if(kenh)CHAT.kenh=kenh;await chatTong();veChatDs();await chatTai(true);const o=$('#chat-o');if(o)o.focus()}
+async function moChat(kenh){if(CHAT_TAT||!S.phien)return;const d=chatKhung();CHAT.mo=true;d.classList.add('mo');if(kenh)CHAT.kenh=kenh;await chatTong();veChatDs();await chatTai(true);const o=$('#chat-o');if(o)o.focus()}
 function dongChat(){CHAT.mo=false;const d=document.getElementById('chat');if(d)d.classList.remove('mo')}
-async function chatTong(){if(!S.phien||!S.toi)return;try{const t=await rpc('kt_chat_tong');CHAT.tong=t;const so=t.reduce((a,x)=>a+(+x.chua_doc||0),0);
+async function chatTong(){if(CHAT_TAT||!S.phien||!S.toi)return;try{const t=await rpc('kt_chat_tong');CHAT.tong=t;const so=t.reduce((a,x)=>a+(+x.chua_doc||0),0);
   if(so>CHAT.so&&!(CHAT.mo&&document.visibilityState==='visible'&&(t.find(x=>x.kenh===CHAT.kenh)||{}).chua_doc==so))tiengBao();
   CHAT.so=so;const b=$('#chat-so');if(b){b.textContent=so>99?'99+':so;b.hidden=!so}if(CHAT.mo)veChatDs()}catch(e){}}
 function veChatDs(){const el=$('#chat-ds');if(!el)return;el.innerHTML=CHAT.tong.map(x=>`<div class="chat-i ${x.kenh===CHAT.kenh?'on':''}" onclick="chatChon('${x.kenh}')">
@@ -4403,7 +4408,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — 3 loại hạch toán','Hạch toán (chi phí công ty) · Không hạch toán (khoản công ty không tính chi phí, vd nộp lại BHXH — ở nhóm Giao dịch công ty) · Chi phí cá nhân (tự là không hạch toán, sang nhóm Giao dịch cá nhân). Chọn ở form tạo phiếu và ô Hạch toán trong mục Phân bổ của cửa sổ phiếu.','Anh + kế toán 22/10. Hai loại không hạch toán đều không vào chi phí / P&L, vẫn trừ tiền tài khoản. Báo cáo dòng tiền: chỉ chi phí cá nhân vào mục IV. Giao dịch cá nhân. Phiếu thu / điều chuyển giữ 2 lựa chọn.','22/10'],
  ['thu_chi','Giao dịch cá nhân','Phiếu chi / thu / điều chuyển chọn Hạch toán: Không — giao dịch cá nhân → không hỏi đơn vị chịu chi phí, hoá đơn đỏ, hoá đơn xuất về, loại chi / loại thu. Mỗi trang có nút Giao dịch công ty / Giao dịch cá nhân để xem riêng, không lẫn.','Không vào báo cáo kết quả kinh doanh; vẫn tính vào số dư tài khoản (tiền thật đi qua tài khoản).','20/10'],
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
- ['chung','Chat trong app','Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
+ ['chung','Chat trong app','TẠM TẮT 22/10 (anh: "tạm thời không cần") — ẩn nút chat + nút Gửi vào chat, không gọi máy chủ; bật lại: CHAT_TAT=false. Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
  ['chung','Bình luận: @nhắc tên, Nhắc việc, âm báo','Ô bình luận trong phiếu (chi, thu, điều chuyển, tạm ứng, vay): gõ @ chọn tên người có tài khoản app kế toán → người đó nhận chuông. Tick "Nhắc việc" → bình luận thành việc cần làm: nhãn "Cần bổ sung" trên phiếu + mục lọc ở dải Cần chú ý, tới khi bấm "✓ Đã xong".','Việc nhắc mở quá 2 ngày: 8:00 sáng hằng ngày báo chuông lại người ghi + kế toán (lịch kt-nhac-viec). Có thông báo mới: tiếng "bzzzz" rung + màn hình rung nhẹ như BUZZ Yahoo ngày xưa (tự tổng hợp, sau khi đã bấm vào trang 1 lần). Người gửi phiếu không có tài khoản: không nhắc — giám đốc / kế toán up thay.','19/10'],
  ['chung','Báo có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App kiểm ngay 4 giây sau khi mở, rồi mỗi phút và lúc quay lại tab; có bản mới → hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình (như app MKT).','Không đang mở cửa sổ nhập liệu → đếm 10 giây rồi tự tải lại; đang nhập dở → chỉ hiện nút, bấm Tải lại khi xong. Lúc Xem như thì không báo.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
