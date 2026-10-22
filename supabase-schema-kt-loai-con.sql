@@ -156,4 +156,4 @@ update kt_chi set loai_con_id = null, loai_con_boi = null, loai_con_luc = null w
 update kt_chi set loai_con_boi = 'Hệ thống' where loai_con_id is not null and gan_loai_tu_dong = 'vua';
 update kt_chi set loai_con_boi = 'Kế toán (đã soát)' where loai_con_id is not null and gan_loai_tu_dong is null and loai_con_boi = 'Ghi trực tiếp';
 select kt_phan_loai_con();
-select cron.schedule('kt-phan-loai-con', '0 16 * * *', 'select public.kt_phan_loai_con()');   -- 23:00 giờ VN
+select cron.schedule('kt-phan-loai-con', '0 */4 * * *', 'select public.kt_phan_loai_con()');   -- 22/10 anh: 4 giờ / lần (trước 23:00 hằng ngày)

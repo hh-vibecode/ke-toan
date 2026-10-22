@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.181';
-const APP_VERSION='22/10/2026 16:11';
+const APP_SO='1.182';
+const APP_VERSION='22/10/2026 16:25';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2145,10 +2145,10 @@ const sachO=x=>{const o={...x};['tao_luc','sua_luc','duyet_luc','kiem_luc'].forE
 async function chayLoat(ds,lam,ten){let ok=0;const loi=[];for(const x of ds){try{await lam(x);ok++}catch(e){loi.push('PC'+String(x.id).padStart(6,'0')+': '+e.message)}}
   S.f.chi_sel=[];toast(`${ten}: ${ok}/${ds.length} phiếu`);if(loi.length)alert('Chưa xử lý được:\n'+loi.join('\n'));S.cache={};render()}
 // 21/10: kế toán xác nhận loại chi hệ thống tự gán (danh mục P&L mới) là đúng
-// 22/10 anh: mục con tự phân loại 23:00 mỗi ngày (kt_phan_loai_con), không cho sửa; KXĐ → chỉ giám đốc chọn
+// 22/10 anh: mục con tự phân loại 4 giờ / lần (anh 22/10, trước 23:00 hằng ngày) (kt_phan_loai_con), không cho sửa; KXĐ → chỉ giám đốc chọn
 function loaiConO(x){const c=lo(x.loai_con_id);
   if(c)return `${esc((c.ma?c.ma+' ':'')+c.ten)} <span class="muted" style="font-size:11px">· ${esc(x.loai_con_boi||'Hệ thống')}</span>`;
-  if(!x.loai_con_kxd)return '<span class="muted">Chờ phân loại (23:00 hằng ngày)</span>';
+  if(!x.loai_con_kxd)return '<span class="muted">Chờ phân loại (4 giờ / lần)</span>';
   const con=S.dm.loai.filter(l=>l.hoat_dong&&l.id!==x.loai_id&&(()=>{let p=l;while(p&&p.cha_id){if(p.cha_id===x.loai_id)return true;p=lo(p.cha_id)}return false})()).sort((a,b)=>(a.thu_tu-b.thu_tu)||(a.id-b.id));
   return pill('KXĐ — chờ giám đốc','vio')+(chiGD()&&!xnDoc()?` <select class="m-in" style="height:28px;margin-top:4px" onchange="datLoaiCon(${x.id},this.value)">${opts(con.map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten})),null,'— chọn mục con —')}</select>`:'')}
 async function datLoaiCon(id,v){if(!v)return;try{await rpc('kt_dat_loai_con',{p_id:id,p_con:+v});toast('Đã chọn mục con');S.cache={};await render();xemChi(id)}catch(e){alert(e.message)}}
@@ -2786,13 +2786,13 @@ function pbForm(x){
   return `<div class="m-st">Hạch toán <span class="r">${fmt(x.so_tien)}</span></div>
   <div class="m-seg ht3" style="margin:2px 0 10px">${[['co','Hạch toán vào chi phí P&L'],['khong','Không hạch toán'],['ca_nhan','Khoản chi cá nhân']].map(([k,t])=>`<button type="button" class="${v===k?'on':''}" data-k="${k}" onclick="pcHT3('${k}')">${t}</button>`).join('')}</div>
   <input type="hidden" id="pc-ht" value="${v}"><div id="pb-cn" style="${v==='ca_nhan'?'':'display:none'}">${pbCaNhan}</div>
+  <div id="pc-loai-w" style="${v==='ca_nhan'?'display:none':''};margin-bottom:10px"><div class="m-st">Loại chi</div><select class="m-in" id="pc-loai" data-cu="${x.loai_id||''}">${opts(v==='khong'?loaiKhong():loai('chi'),x.loai_id,'— chọn —')}</select></div>
   <div id="pb-wrap" style="${v==='co'?'':'display:none'}"><div class="m-st">Phân bổ chi phí cho đơn vị</div>
   ${(x.phan_bo||[])[0]&&x.phan_bo[0].ds?`<div class="m-st" style="color:var(--info)">Đang chia theo % doanh số thực đạt tháng ${+x.phan_bo[0].ds.slice(5)}/${x.phan_bo[0].ds.slice(0,4)} — hệ thống tự chia lại mỗi đêm theo doanh số mới nhất đến hết tháng sau</div>`:''}
   <div class="pbf" id="pbf" data-tong="${x.so_tien}" data-ds="${((x.phan_bo||[])[0]||{}).ds||''}">${DV_CP.map(([i,t])=>`<label><span>${t}</span>${moneyIn('pb_'+i,pb[i]||'','oninput="fmtMoney(this);$(\'#pbf\').dataset.ds=\'\';pbTong()"')}<em id="pbp_${i}"></em></label>`).join('')}
     ${(x.phan_bo||[]).filter(p=>!DV_CP.some(d=>d[0]===+p.don_vi_id)).map(p=>`<div class="muted">Đơn vị cũ: ${esc(dvCPTen(p.don_vi_id))} ${fmt(p.so_tien)} — lưu lại sẽ chuyển sang 4 đơn vị trên</div>`).join('')}
     <div class="pbf-t">Đã chia: <b id="pbt"></b></div></div>
   <div class="pbf-nut"><button class="m-btn" onclick="pbChia('deu3')">Chia đều HT / CT / SD</button><button class="m-btn" onclick="pbChia('ds','${th0}')">Chia theo % doanh số thực đạt tháng ${+th0.slice(5)}/${th0.slice(0,4)}</button><button class="m-btn" onclick="pbChia('cty')">Cả về Tổng công ty</button></div></div>
-  <div id="pc-loai-w" style="${v==='ca_nhan'?'display:none':''}"><div class="m-st">Loại chi</div><select class="m-in" id="pc-loai" data-cu="${x.loai_id||''}">${opts(v==='khong'?loaiKhong():loai('chi'),x.loai_id,'— chọn —')}</select></div>
   <div id="pb-wrap2" style="${v==='co'?'':'display:none'}">
   <details style="margin-top:10px" ${thg.length>1?'open':''}><summary class="m-st" style="cursor:pointer;display:list-item">Chia chi phí ra nhiều tháng <span class="muted" style="font-weight:400">· mặc định ghi cả vào tháng ${thgT(kyHT(x))}</span></summary>
   <div class="pbf-nut"><label class="m-f"><span>Từ tháng</span><input type="month" id="pbm_tu" class="m-in" value="${(thg[0]||{}).thang||kyHT(x)||th0}"></label>
@@ -4292,7 +4292,7 @@ const LOGIC2=[
  ['chung','Phạm vi dữ liệu','Mỗi tài khoản có tồn đầu tại 1 ngày mốc (mặc định 01/09/2026); phát sinh trước mốc không tính.','Xem bảng "Mốc tồn đầu" ở tab Danh mục.','05/10'],
  ['chung','Phạm vi dữ liệu','Không gồm 2 nhà hàng AMHP (Saikung / Hongkong).','Đã ẩn phiếu thu / chi của nhà hàng (trước 01/09, không ảnh hưởng số dư).','12/10'],
  ['chung','Phạm vi dữ liệu','Shidai = Công ty THT (Tổng kho sỉ Shidai trên Kiot).','','12/10'],
- ['chung','Phạm vi dữ liệu','Loại chi tháng 1–4 (sheet không ghi) do hệ thống tự gán theo mẫu phiếu từ T5.','Từ 22/10 phiếu chỉ giữ mục cha; mục con do bước phân loại 23:00 hằng ngày gán (xem dòng "Loại chi: chọn mục cha, mục con tự động").','22/10'],
+ ['chung','Phạm vi dữ liệu','Loại chi tháng 1–4 (sheet không ghi) do hệ thống tự gán theo mẫu phiếu từ T5.','Từ 22/10 phiếu chỉ giữ mục cha; mục con do bước phân loại 4 giờ / lần gán (xem dòng "Loại chi: chọn mục cha, mục con tự động").','22/10'],
  ['chung','Phân quyền','Đăng nhập tài khoản + mật khẩu riêng của app kế toán; sai 5 lần khoá 15 phút.','Không dùng chung tài khoản app MKT/Sale.','05/10'],
  ['chung','Phân quyền','Supreme / Admin toàn quyền; người khác tick từng trang: Xem / Nhập-sửa.','Quyền kiểm ở máy chủ, không chỉ ẩn nút.','05/10'],
  ['chung','Phân quyền','Quyền chi: "Kế toán kiểm lượt 1 & thanh toán" · "Giám đốc xác nhận lượt 2" (tick riêng, không theo Toàn quyền) · "Chỉ tạo đề nghị".','Tài khoản anh Hải luôn có quyền GĐ xác nhận.','08/10'],
@@ -4364,7 +4364,7 @@ const LOGIC2=[
  ['thu_chi','Form đề nghị 3 nhóm (gọn)','Đề nghị (gồm hoá đơn đỏ + hoá đơn xuất về) · Người nhận tiền · Hồ sơ & ghi chú. Người đề nghị KHÔNG chọn hạch toán, loại chi, đơn vị chịu chi phí, tháng hạch toán. Form công khai và form trong app giống nhau.','Kế toán 22/10. "Hoá đơn xuất về" hỏi với mọi hoá đơn (anh 16/10).','22/10'],
  ['thu_chi','Kế toán chọn hạch toán khi xác nhận','Cửa sổ phiếu (kế toán, phiếu chờ xác nhận) xếp: Thông tin → Hạch toán → Hoá đơn đỏ → Xác nhận & tài khoản đi tiền → QR. Khung Hạch toán có 3 nút: Hạch toán vào chi phí P&L (phân bổ đơn vị rồi Loại chi 9 mục, chia nhiều tháng nếu cần) · Không hạch toán (Loại chi: 1. Chi thanh toán tiền hàng 2. Chi đặt cọc) · Khoản chi cá nhân (không loại).','Xác nhận bị chặn khi chưa chọn loại chi; hạch toán P&L mà chưa phân bổ đơn vị cũng chặn. Không hạch toán vẫn theo dõi hoá đơn đỏ.','22/10'],
  ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
- ['thu_chi','Loại chi: chọn mục cha, mục con tự động','Ô Loại chi trên phiếu / form / bộ lọc chỉ có 9 mục cha (1 Nhân sự … 9 Khác). 23:00 hằng ngày hệ thống đọc mục cha + nội dung + người nhận, gán mục con theo bảng từ khoá; mục cha không có con thì mục con = chính nó.','Mục con chỉ hiện trong chi tiết phiếu, không sửa được. Không đoán được → "Loại chi KXĐ" (dải Cần chú ý); chỉ giám đốc chọn mục con. Đổi mục cha → mục con xoá, đêm đó phân loại lại. P&L tính theo mục con.','22/10'],
+ ['thu_chi','Loại chi: chọn mục cha, mục con tự động','Ô Loại chi trên phiếu / form / bộ lọc chỉ có 9 mục cha (1 Nhân sự … 9 Khác). 4 giờ / lần (3h, 7h, 11h, 15h, 19h, 23h) hệ thống đọc mục cha + nội dung + người nhận, gán mục con theo bảng từ khoá; mục cha không có con thì mục con = chính nó.','Mục con chỉ hiện trong chi tiết phiếu, không sửa được. Không đoán được → "Loại chi KXĐ" (dải Cần chú ý); chỉ giám đốc chọn mục con. Đổi mục cha → mục con xoá, đêm đó phân loại lại. P&L tính theo mục con.','22/10'],
  ['thu_chi','Phiếu chi — 3 loại hạch toán','Hạch toán (chi phí công ty) · Không hạch toán (khoản công ty không tính chi phí, vd nộp lại BHXH — ở nhóm Giao dịch công ty) · Chi phí cá nhân (tự là không hạch toán, sang nhóm Giao dịch cá nhân). Chọn ở form tạo phiếu và ô Hạch toán trong mục Phân bổ của cửa sổ phiếu.','Anh + kế toán 22/10. Hai loại không hạch toán đều không vào chi phí / P&L, vẫn trừ tiền tài khoản. Báo cáo dòng tiền: chỉ chi phí cá nhân vào mục IV. Giao dịch cá nhân. Phiếu thu / điều chuyển giữ 2 lựa chọn.','22/10'],
  ['thu_chi','Giao dịch cá nhân','Phiếu chi / thu / điều chuyển chọn Hạch toán: Không — giao dịch cá nhân → không hỏi đơn vị chịu chi phí, hoá đơn đỏ, hoá đơn xuất về, loại chi / loại thu. Mỗi trang có nút Giao dịch công ty / Giao dịch cá nhân để xem riêng, không lẫn.','Không vào báo cáo kết quả kinh doanh; vẫn tính vào số dư tài khoản (tiền thật đi qua tài khoản).','20/10'],
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
@@ -4525,7 +4525,7 @@ const LICH_KT={'kt-kiot':['Kéo Kiot','15 phút/lần · phút 02, 17, 32, 47 m�
   'kt-nop-ket':['Đồng bộ nộp két','15 phút/lần','Tiền cửa hàng nộp két 10 ngày gần nhất'],
   'kt-nhac-viec':['Nhắc việc','08:00 hằng ngày','Nhắc lại việc còn treo'],
   'kt-pb-ds':['Phân bổ theo doanh số','00:15 hằng ngày','Tính lại tỷ lệ phân bổ chi phí theo doanh số'],
-  'kt-phan-loai-con':['Phân loại mục con loại chi','23:00 hằng ngày','Gán mục con theo mục cha + nội dung; không đoán được → Loại chi KXĐ'],
+  'kt-phan-loai-con':['Phân loại mục con loại chi','4 giờ / lần · 3h 7h 11h 15h 19h 23h','Gán mục con theo mục cha + nội dung; không đoán được → Loại chi KXĐ'],
   'kt-luu-luong':['Chụp lưu lượng Supabase','23:55 hằng ngày','CSDL, kho tệp, đĩa, lượt gọi, máy chủ → Log lưu lượng'],
   'kt-kiem-he-thong':['Kiểm hệ thống Supabase','09:00 ngày 15 + cuối tháng','Dung lượng, khoá RLS, lịch lỗi → chuông Supreme'],
   'dong_bo_sheet':['Đồng bộ sheet đề nghị (máy anh)','Theo lịch Windows','Sheet ĐNTT → phiếu chi'],
@@ -4579,33 +4579,88 @@ async function dcfHtml(){const f=S.f;let body='';
 const DCP_FILE={'2026-01':'19cGA6relEHQnEMz3NjX1WkZTk8JjkDCQ7Z_AWHyuwsk','2026-02':'1UwN1rd_cxNOrKjvA4_ieLwWcNRZudtwztCcZJcdX63E','2026-03':'1Z4kAQSEnd1D94V2a1_GEi4LQ3KHQNNTBa-TUXeAvwz0','2026-04':'1RgVdUSzz2QT3fL1kHNmwhmg2OzAwvZqGzlJvlqRP2jA',
   '2026-05':'1dVNJt-cyEDIvOfdRXKToiNnmz69FWZKz4RhXYft7o-k','2026-06':'1BdmQ6uzpx5kTVexQIH95jsCisHipVUMedWQsB_nkdek','2026-07':'1gAg1lSmSLhEG0QCK643ze_jy2FbKOSnBkLRGJp-O_ns','2026-08':'1OVOrqneNRjlO7TE2lTY_BR03qeQg4dbBCbDDSpFt2Rg'};
 const dcpLink=x=>DCP_FILE[x.thang]?`<a class="m-link" href="https://docs.google.com/spreadsheets/d/${DCP_FILE[x.thang]}/edit" target="_blank" rel="noopener">File T${+x.thang.slice(5)}</a><div class="muted" style="font-size:11px">${esc(x.sheet)}${x.dong?' · dòng '+x.dong:''}</div>`:'';
-async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop'].includes(f.dcp_tab)?f.dcp_tab:'phieu',th=f.dcp_th||'';
+// 22/10 anh: "so 2 cái khớp (đề nghị + file chi phí) với P&L; trình bày tổng quan từng tháng: P&L liệt kê chi phí bao nhiêu, ĐNTT bao nhiêu, file chi phí bao nhiêu,
+// tình trạng khớp ĐNTT ↔ file, P&L ↔ 2 cái kia" + logic kế toán 22/10 (8 điểm) để giải thích phần không có cặp.
+// Lý do theo giải thích kế toán — khoản không có cặp mà thuộc các trường hợp này coi như đã rõ, không tính là "chưa khớp"
+const DCP_LD_CP=[[x=>/phi (van chuyen|ship|giao hang|thu ho)|cuoc (thu ho|van chuyen|ship)|thu ho|nhat tin|ghtk|ghn|viettel ?post|j&t|vnpost|ninja ?van|best express/.test(x.b),'Phí vận chuyển / thu hộ bên thứ 3 — tự trừ tài khoản (KT 1)'],
+  [x=>/lai vay|phi vay|tra lai|khoan vay/.test(x.b),'Chi phí khoản vay → lãi vay & ngân hàng (KT 2)'],[x=>/\bcoc\b|dat coc/.test(x.b),'Tiền cọc — tất toán mới gộp vào khoản tổng (KT 3)'],
+  [x=>/khau hao/.test(x.b),'Khấu hao — theo dõi riêng, ghi theo chi phí tự kê (KT 4)'],[x=>x.thang==='2026-01'&&/yep|tat nien|tiec|truyen thong noi bo/.test(x.b),'Truyền thông nội bộ T1 — tiệc YEP, chi phí toàn công ty (KT 5)'],
+  [x=>/thue kho/.test(x.b),'Thuê kho Kiến An — khớp tiền thuê trả Vũ Thị Phương Lan (KT 6)'],[x=>/cong no|tien hang|nhap hang/.test(x.b),'Thanh toán công nợ NCC — vào giá vốn, không vào P&L (KT 7)'],
+  [x=>/mkt/.test(boDau(x.sheet||'').toLowerCase()),'Chi phí MKT — đã phân bổ ở sheet CP MKT (KT 8)']];
+const DCP_LD_PC=[[x=>(lo(x.loai)||{}).id===5||/cong no|tien hang|nhap hang|thanh toan ncc/.test(x.b),'Thanh toán công nợ NCC — vào giá vốn, không vào P&L (KT 7)'],
+  [x=>/lai vay|tra lai|khoan vay|\bvay\b/.test(x.b),'Chi phí khoản vay → lãi vay & ngân hàng (KT 2)'],[x=>/\bcoc\b|dat coc/.test(x.b),'Tiền cọc — tất toán mới gộp vào khoản tổng (KT 3)'],
+  [x=>/vu thi phuong lan|thue kho/.test(x.b),'Thuê kho Kiến An — khớp tiền thuê trả Vũ Thị Phương Lan (KT 6)'],[x=>/khau hao/.test(x.b),'Khấu hao — theo dõi riêng (KT 4)'],
+  [x=>/quang cao|\bads\b|facebook|\bfb\b|tiktok|\bmkt\b|marketing/.test(x.b),'Chi phí MKT — đã phân bổ ở sheet CP MKT (KT 8)'],[x=>/van chuyen|thu ho|ship/.test(x.b),'Phí vận chuyển / thu hộ (KT 1)']];
+const dcpLD=(ds,x)=>{const b=boDau(String(x.nd||'')+' '+String(x.th||'')+' '+String(x.nguon_tt||'')).toLowerCase(),r=ds.find(([f])=>f({...x,b}));return r?r[1]:''};
+// P&L: ghép theo TÊN mục (mỗi file P&L đánh mã khác nhau — Shidai "2" là kho, "3" là tổng công ty)
+const PL_TEN=[[/luong bhxh nhan su truc tiep/,'1.1'],[/quy hoa hong/,'1.2'],[/bp sales online phan bo/,'2'],[/luong kho/,'3.1'],[/thue kho/,'3.2'],[/sua chua & khau hao kho/,'3.3'],[/khac kho tong/,'3.4'],
+  [/luong bgd/,'4.1'],[/backoffice/,'4.2'],[/van phong & hanh chinh/,'4.3'],[/phan mem & he thong/,'4.4'],[/ke toan - thue/,'4.5'],[/ngan hang - tai chinh/,'4.6'],[/truyen thong cong ty/,'4.7'],
+  [/truyen thong noi bo/,'4.8'],[/nghien cuu/,'4.9'],[/dao tao/,'4.10'],[/khac tong cong ty/,'4.11'],[/^chi phi marketing$/,'5'],[/vat tu tieu hao/,'7.1'],[/^chi phi cua hang$/,'R'],[/phi van chuyen/,'R'],
+  [/sua chua bao hanh/,'R'],[/khau hao cong cu/,'8.2']];
+const PL_NHAN={'1.1':'Lương + BHXH nhân sự trực tiếp','1.2':'Quỹ hoa hồng cửa hàng','2':'BP Sales Online phân bổ','3.1':'Lương kho phân bổ','3.2':'Thuê kho','3.3':'Sửa chữa & khấu hao kho','3.4':'Chi phí khác kho tổng',
+  '4.1':'Lương BGĐ','4.2':'Lương Backoffice','4.3':'Văn phòng & hành chính','4.4':'Phần mềm & hệ thống','4.5':'Kế toán - thuế - pháp lý','4.6':'Ngân hàng - tài chính','4.7':'Truyền thông công ty','4.8':'Truyền thông nội bộ',
+  '4.9':'Nghiên cứu & phát triển','4.10':'Đào tạo nhân sự','4.11':'Chi phí khác tổng công ty','5':'Marketing','7.1':'Vật tư tiêu hao','R':'Chi phí riêng cơ sở (cửa hàng + vận chuyển + sửa chữa + khác)','8.2':'Khấu hao công cụ, tài sản'};
+const PL_NGOAI={'1.2':'P&L tự tính — file chi phí không có','8.2':'Khấu hao theo dõi riêng (KT 4)'};
+const CS4=[['HT','Hiền Thuỷ'],['CT','Chánh Tâm'],['SD','Shidai'],['TT','Thị trường']];
+const csCP=t=>{t=boDau(t||'').toLowerCase();return /hien thuy/.test(t)?'HT':/chanh tam/.test(t)?'CT':/shidai|sales online/.test(t)?'SD':/thi truong/.test(t)?'TT':null};
+function dcpPL(d){const P={},F={},T={},add=(o,cs,th,ma,v)=>{const k=cs+'|'+th;(o[k]=o[k]||{})[ma]=((o[k]||{})[ma]||0)+(+v||0)};
+  for(const r of d.pnl){const tn=boDau(r.ten||'').toLowerCase().trim(),top=/^\d+$/.test(r.ma||'')&&!/^thue/.test(tn);
+    if(top){T[r.nguon+'|'+r.thang]=(T[r.nguon+'|'+r.thang]||0)+(+r.th||0);if(/^chi phi khac$/.test(tn))add(P,r.nguon,r.thang,'R',r.th)}
+    const m=PL_TEN.find(([re])=>re.test(tn));if(m&&!(m[1]==='R'&&top&&!/cua hang/.test(tn)))add(P,r.nguon,r.thang,m[1],r.th)}
+  for(const p of d.pb)add(F,p.cs,p.thang,p.ma==='GV'?'R':p.ma,p.so_tien);
+  // chi phí riêng cơ sở: sheet CP RIÊNG TỪNG CƠ SỞ theo đơn vị chịu — bỏ dòng "thanh toán quỹ ngoài" (đợt nạp lại quỹ, trùng với các khoản chi lẻ)
+  for(const x of d.cp){if(!/rieng/.test(boDau(x.sheet||'').toLowerCase()))continue;const cs=csCP(x.nhom);if(!cs)continue;const b=boDau(x.nd||'').toLowerCase();
+    if(/(thanh toan|tt) (tien )?quy ngoai|^quy ngoai/.test(b))continue;add(F,cs,x.thang,'R',x.so_tien)}
+  return {P,F,T}}
+async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop','phieu','pl'].includes(f.dcp_tab)?f.dcp_tab:'tq',th=f.dcp_th||'';
   const ms=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'],tg=m=>'T'+(+m.slice(5));
-  // 22/10 anh: quỹ ngoài + Visa công ty đã khớp với ĐNTT thanh toán quỹ ngoài của từng cơ sở / thanh toán thẻ — khớp GỘP, không nằm trong danh sách chưa khớp
-  const pc=d.phieu.filter(x=>!th||String(x.ngay).slice(0,7)===th),pcc=pc.filter(x=>!x.khop&&!x.nhom),cp=d.cp.filter(x=>!th||x.thang===th),cpc=cp.filter(x=>!x.chi_id&&!x.gop);
+  d.phieu.forEach(x=>x.ld=x.khop||x.nhom?'':dcpLD(DCP_LD_PC,x));d.cp.forEach(x=>x.ld=x.chi_id||x.gop?'':dcpLD(DCP_LD_CP,x));
+  // 22/10 anh: quỹ ngoài + Visa công ty khớp GỘP; khoản có lý do theo giải thích kế toán = đã rõ — không nằm trong danh sách chưa khớp
+  const thOK=(x,k)=>!th||String(x[k]).slice(0,7)===th;
+  const pc=d.phieu.filter(x=>thOK(x,'ngay')),pcc=pc.filter(x=>!x.khop&&!x.nhom&&!x.ld),pcL=pc.filter(x=>!x.khop&&!x.nhom&&x.ld),cp=d.cp.filter(x=>thOK(x,'thang')),cpc=cp.filter(x=>!x.chi_id&&!x.gop&&!x.ld),cpL=cp.filter(x=>!x.chi_id&&!x.gop&&x.ld);
   const cpG=cp.filter(x=>x.gop),dnG=(d.gop||[]).filter(x=>th?String(x.ngay).slice(0,7)===th:String(x.ngay)>='2026-01-01'&&String(x.ngay)<='2026-08-31');
   const tong=a=>a.reduce((s,x)=>s+(+x.so_tien||0),0);
-  const bang=(cols,rows,trong,nguon)=>`<div class="m-card"><div class="scroll"><table class="m-t"><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr>${rows.slice(0,800).map(r=>`<tr>${cols.map(c=>`<td class="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="m-empty">${trong}</td></tr>`}</table></div>${rows.length>800?`<div class="m-pg">Hiện 800 / ${rows.length} dòng — lọc theo tháng để xem hết</div>`:''}<div class="m-pg">${nguon}</div></div>`;
-  // 21/10 anh: "ghi rõ số liệu lấy ở đâu ra, ghi ở dưới dashboard" — lời đời thường, không mã bảng
+  const bang=(cols,rows,trong,nguon)=>`<div class="m-card"><div class="scroll"><table class="m-t"><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr>${rows.slice(0,800).map(r=>`<tr${r.__cls?` class="${r.__cls}"`:''}>${cols.map(c=>`<td class="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="m-empty">${trong}</td></tr>`}</table></div>${rows.length>800?`<div class="m-pg">Hiện 800 / ${rows.length} dòng — lọc theo tháng để xem hết</div>`:''}<div class="m-pg">${nguon}</div></div>`;
   const NG_PHIEU='<b>Phiếu đề nghị</b> = mọi phiếu chi đã thanh toán trên app (gồm phiếu chép từ sheet Đề nghị thanh toán), ngày thanh toán 01/01–31/08/2026. Không tính: nhập hàng, trả gốc vay, trả thẻ tín dụng (xem tab Khớp gộp), tạm ứng, phiếu kéo từ KiotViet, giao dịch cá nhân không hạch toán.',
     NG_CP='<b>Chi phí công ty</b> = từng khoản chi kế toán ghi trong 8 file "CHI PHÍ CÔNG TY THÁNG 1…8/2026" (Drive, thư mục chi phí tổng quan), các sheet chi phí như CP TOÀN CÔNG TY, CP KHO KIẾN AN, CP KHO TỔNG, CP MKT, CP RIÊNG TỪNG CƠ SỞ — cột Ngày, Nội dung, Số tiền, Nguồn thanh toán (sheet CP MKT: cộng các cột chia theo cơ sở). Không lấy sheet LƯƠNG+BHXH, CP GIAO VẬN, TỈ LỆ vì đó là bảng chia tiền cho cơ sở, không phải khoản chi. Bỏ mọi khoản của nhà hàng (sheet CP KHO HN, đơn vị chịu hoặc phân bổ chỉ cho Saikung / Hongkong) — chỉ so khoản đồ thờ.',
-    NG_GHEP='<b>Thế nào là khớp:</b> file chi phí có một dòng cùng số tiền với phiếu, ngày lệch không quá 10 ngày (dòng không ghi ngày thì cùng tháng); nhiều dòng cùng tiền thì chọn dòng có nội dung giống nhất. Mỗi dòng chỉ ghép với 1 phiếu.';
+    NG_GHEP='<b>Thế nào là khớp:</b> file chi phí có một dòng cùng số tiền với phiếu, ngày lệch không quá 10 ngày (dòng không ghi ngày thì cùng tháng); nhiều dòng cùng tiền thì chọn dòng có nội dung giống nhất. Mỗi dòng chỉ ghép với 1 phiếu. Khoản không có cặp nhưng thuộc 8 trường hợp kế toán giải thích (22/10, ghi "KT 1…8" ở cột Lý do) tính là đã rõ.',
+    NG_PL='<b>P&L</b> = 4 file BÁO CÁO P&L (Hiền Thuỷ, Chánh Tâm, Shidai T1–T8; Thị trường T1–T6), cột THỰC HIỆN từng tháng; tổng chi phí = cộng các nhóm chi phí 1…9 (không gồm giá vốn, thuế). <b>File chi phí chia cho cơ sở</b> = số kế toán đã chia sẵn trong file chi phí công ty tháng: dòng tiêu đề nhóm sheet CP TOÀN CÔNG TY / CP KHO KIẾN AN, dòng "Tổng chi phí từng cơ sở" sheet CP MKT, sheet LƯƠNG+BHXH, dòng tổng sheet CP GIAO VẬN, và các khoản sheet CP RIÊNG TỪNG CƠ SỞ theo cột Đơn vị chịu (bỏ dòng "thanh toán quỹ ngoài" vì trùng với các khoản chi lẻ). Ghép theo tên mục, vì mỗi file P&L đánh mã khác nhau. Lệch ≤ 10 đ (làm tròn) coi là khớp.';
+  const {P,F,T}=dcpPL(d),KHOP=10,DSMA=['1.1','2','3.1','3.2','3.3','3.4','4.1','4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','5','7.1','R'];
+  const soPL=(thg,css)=>{let n=0,k=0,l=0;for(const [cs] of css)for(const ma of DSMA){const a=(P[cs+'|'+thg]||{})[ma],b=(F[cs+'|'+thg]||{})[ma];if(a==null&&b==null)continue;n++;const e=(a||0)-(b||0);if(Math.abs(e)<=KHOP)k++;else l+=Math.abs(e)}return {n,k,l}};
   let body='';
   const GOP={'QN-HT':'Quỹ ngoài Hiền Thuỷ','QN-CT':'Quỹ ngoài Chánh Tâm','QN-SD':'Quỹ ngoài kho Shidai','QN-VP':'Quỹ ngoài văn phòng','VS-NTC':'Visa Nguyễn Thị Chuyện','VS-OANH':'Visa Đặng Thị Minh Oanh',
     'VS-BP':'Visa Nguyễn Thị Bích Phương','VS-HUE':'Visa Nguyễn Thị Huế','VS-HXT':'Visa Hồ Xuân Thịnh','VS-KHAC':'Visa (chưa rõ chủ thẻ)'};
-  if(t==='gop')body=bang([['Quỹ / thẻ',x=>`<b>${esc(GOP[x]||x)}</b>`,'nw'],['Khoản chi trong file',x=>fmt(cpG.filter(z=>z.gop===x).length),'num'],['Tổng file chi phí',x=>fmt(tong(cpG.filter(z=>z.gop===x))),'num'],
+  if(t==='tq'){
+    const rows=ms.filter(m=>!th||m===th).map(m=>{const p=d.phieu.filter(x=>String(x.ngay).slice(0,7)===m),c=d.cp.filter(x=>x.thang===m),s=soPL(m,CS4);
+      return {m,pl:sumBy(CS4,([cs])=>T[cs+'|'+m]||0),cp:tong(c),dn:tong(p),dnK:p.filter(x=>x.khop||x.nhom||x.ld).length,dnN:p.length,cpK:c.filter(x=>x.chi_id||x.gop||x.ld).length,cpN:c.length,...s}});
+    const pct2=(a,b)=>b?Math.round(100*a/b)+'%':'—';
+    body=bang([['Tháng',r=>`<span class="m-link" onclick="S.f.dcp_tab='pl';S.f.dcp_th='${r.m}';render()">${tg(r.m)}/2026</span>`,'nw'],['P&L ghi chi phí (4 cơ sở)',r=>fmt(r.pl),'num'],['File chi phí công ty',r=>fmt(r.cp),'num'],['Đề nghị thanh toán',r=>fmt(r.dn),'num'],
+      ['ĐNTT ↔ File',r=>`${pill(pct2(r.dnK,r.dnN)+' phiếu',r.dnK===r.dnN?'ok':'warn')} ${pill(pct2(r.cpK,r.cpN)+' khoản',r.cpK===r.cpN?'ok':'warn')}<div class="muted" style="font-size:11px">${r.dnN-r.dnK} phiếu · ${r.cpN-r.cpK} khoản chưa rõ</div>`,'nw'],
+      ['P&L ↔ File (từng mục × cơ sở)',r=>`${pill(r.k+' / '+r.n+' mục khớp',r.k===r.n?'ok':'bad')}<div class="muted" style="font-size:11px">tổng lệch ${fmt(r.l)}</div>`,'nw']],rows,'Không có dữ liệu',
+      `Bấm tháng để xem P&L từng mục × cơ sở. ĐNTT ↔ File: % phiếu đề nghị / % khoản trong file đã khớp (từng phiếu, khớp gộp quỹ ngoài & Visa, hoặc có lý do theo giải thích kế toán). ${NG_PL} ${NG_GHEP}`);
+  }else if(t==='pl'){
+    const m=th||'2026-08',rows=[];
+    for(const [cs,ten] of CS4){const kP=P[cs+'|'+m]||{},kF=F[cs+'|'+m]||{};if(!T[cs+'|'+m]&&!Object.keys(kF).length)continue;
+      rows.push({__cls:'tong',cs:ten,ma:'',ten:`<b>${ten}</b>`,p:T[cs+'|'+m]||0,f:null,ng:'Tổng chi phí P&L (nhóm 1–9)'});
+      for(const ma of [...DSMA,'1.2','8.2']){const a=kP[ma],b=kF[ma];if(a==null&&b==null)continue;if((a||0)===0&&(b||0)===0)continue;
+        const e=(a||0)-(b||0),ngoai=PL_NGOAI[ma],nen=ma==='5'&&kF['5-nen']?` · file gồm "phân bổ chi phí online nến" ${fmt(kF['5-nen'])}`:'';
+        rows.push({cs:ten,ma,ten:esc(PL_NHAN[ma]||ma),p:a,f:ngoai?null:b||0,e:ngoai?null:e,ng:ngoai||((Math.abs(e)<=KHOP?'':'')+nen)})}}
+    body=bang([['Mục P&L',r=>r.ten,''],['P&L ghi',r=>r.p==null?'—':fmt(r.p),'num'],['File chi phí chia cho cơ sở',r=>r.f==null?(r.ma?'<span class="muted">—</span>':''):fmt(r.f),'num'],
+      ['Lệch (P&L − file)',r=>r.e==null?'':`<span class="${Math.abs(r.e)<=KHOP?'pos-t':'neg-t'}">${Math.abs(r.e)<=KHOP?'Khớp':fmt(r.e)}</span>`,'num'],['Ghi chú',r=>`<span class="muted" style="font-size:12px">${r.ng||''}</span>`,'']],rows,'Tháng này chưa có P&L',
+      `${tg(m)}/2026 — so từng mục P&L của từng cơ sở với số file chi phí công ty đã chia cho cơ sở đó. ${NG_PL}`);
+  }else if(t==='gop')body=bang([['Quỹ / thẻ',x=>`<b>${esc(GOP[x]||x)}</b>`,'nw'],['Khoản chi trong file',x=>fmt(cpG.filter(z=>z.gop===x).length),'num'],['Tổng file chi phí',x=>fmt(tong(cpG.filter(z=>z.gop===x))),'num'],
       ['ĐNTT thanh toán',x=>dnG.filter(z=>z.nhom===x).map(z=>`<span class="m-link" onclick="moPhieu('PC',${z.id})">PC${String(z.id).padStart(6,'0')}</span>`).join(' ')||'<span class="muted">—</span>',''],['Tổng ĐNTT',x=>fmt(tong(dnG.filter(z=>z.nhom===x))),'num']],
     Object.keys(GOP).filter(k=>cpG.some(z=>z.gop===k)||dnG.some(z=>z.nhom===k)),'Không có',
     '<b>Khớp gộp:</b> khoản chi trả bằng quỹ ngoài hoặc thẻ Visa công ty (cột Nguồn thanh toán trong file chi phí) không có ĐNTT riêng từng khoản — kế toán gom lại thành ĐNTT "thanh toán quỹ ngoài" của từng cơ sở / "thanh toán thẻ Visa" của chủ thẻ. Hai bên chênh vì đợt thanh toán gối tháng (ĐNTT tháng sau trả cho chi tháng trước).');
-  else if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Mở file',dcpLink,'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],cpc,'Mọi khoản chi phí đều có phiếu đề nghị',`Khoản có trong file chi phí công ty nhưng không tìm thấy phiếu đề nghị nào trên app. ${NG_CP} ${NG_PHIEU} ${NG_GHEP}`);
-  else body=bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Số phiếu',x=>`<span class="m-link" onclick="moPhieu('PC',${x.id})">PC${String(x.id).padStart(6,'0')}</span>`,'nw'],['Nội dung',x=>esc(x.nd||''),'ten'],['Người nhận',x=>esc(x.th||''),'nw'],['Loại chi',x=>esc((lo(x.loai)||{}).ten||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num']],pcc,'Mọi phiếu đều có trong file chi phí công ty',`Phiếu đề nghị đã chi trên app nhưng không thấy trong file chi phí công ty. ${NG_PHIEU} ${NG_CP} ${NG_GHEP}`);
+  else if(t==='cp')body=bang([['Tháng',x=>tg(x.thang),'nw'],['Ngày',x=>x.ngay?fmtD(x.ngay):'','nw'],['Mở file',dcpLink,'nw'],['Nhóm',x=>esc(String(x.nhom||'').slice(0,40)),''],['Nội dung',x=>esc(x.nd||''),'ten'],['Nguồn thanh toán',x=>esc(x.nguon_tt||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num'],['Lý do (kế toán)',x=>x.ld?`<span class="muted" style="font-size:12px">${esc(x.ld)}</span>`:'','']],[...cpc,...cpL],'Mọi khoản chi phí đều có phiếu đề nghị',`Khoản có trong file chi phí công ty nhưng không tìm thấy phiếu đề nghị nào trên app — ${fmt(cpc.length)} chưa rõ (lên đầu), ${fmt(cpL.length)} đã có lý do. ${NG_CP} ${NG_PHIEU} ${NG_GHEP}`);
+  else body=bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Số phiếu',x=>`<span class="m-link" onclick="moPhieu('PC',${x.id})">PC${String(x.id).padStart(6,'0')}</span>`,'nw'],['Nội dung',x=>esc(x.nd||''),'ten'],['Người nhận',x=>esc(x.th||''),'nw'],['Loại chi',x=>esc((lo(x.loai)||{}).ten||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num'],['Lý do (kế toán)',x=>x.ld?`<span class="muted" style="font-size:12px">${esc(x.ld)}</span>`:'','']],[...pcc,...pcL],'Mọi phiếu đều có trong file chi phí công ty',`Phiếu đề nghị đã chi trên app nhưng không thấy trong file chi phí công ty — ${fmt(pcc.length)} chưa rõ (lên đầu), ${fmt(pcL.length)} đã có lý do. ${NG_PHIEU} ${NG_CP} ${NG_GHEP}`);
+  const tl=ms.filter(m=>!th||m===th).reduce((o,m)=>{const x=soPL(m,CS4);o.n+=x.n;o.k+=x.k;o.l+=x.l;return o},{n:0,k:0,l:0});
   return `<div class="m-kpis m-k3">
-      <div class="m-k"><div style="flex:1"><div class="l">Đề nghị không thấy trong file chi phí ${th?tg(th):'T1–T8'}</div><div class="v neg-t">${fmt(tong(pcc))}</div><div class="s">${fmt(pcc.length)} / ${fmt(pc.length)} phiếu đề nghị đã chi</div></div></div>
-      <div class="m-k"><div style="flex:1"><div class="l">File chi phí có, không có đề nghị</div><div class="v neg-t">${fmt(tong(cpc))}</div><div class="s">${fmt(cpc.length)} / ${fmt(cp.length)} khoản trong file chi phí công ty</div></div></div>
-      <div class="m-k"><div style="flex:1"><div class="l">Đã khớp hai bên</div><div class="v">${fmt(tong(pc)-tong(pcc))}</div><div class="s">${fmt(pc.length-pcc.length)} phiếu ↔ ${fmt(cp.length-cpc.length)} khoản (gồm ${fmt(cpG.length)} khoản quỹ ngoài / Visa khớp gộp)</div></div></div></div>
-    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['phieu','Đề nghị không có trong file chi phí'],['cp','File chi phí có, thiếu đề nghị'],['gop','Khớp gộp quỹ ngoài & Visa']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
-      <span class="badge">So với 4 P&L: chưa làm</span>
-      <select class="m-in" style="margin-left:auto" onchange="S.f.dcp_th=this.value;render()"><option value="">Tất cả T1–T8</option>${ms.map(m=>`<option value="${m}" ${th===m?'selected':''}>${tg(m)}/2026</option>`).join('')}</select>
+      <div class="m-k"><div style="flex:1"><div class="l">ĐNTT chưa rõ trong file chi phí ${th?tg(th):'T1–T8'}</div><div class="v ${pcc.length?'neg-t':''}">${fmt(tong(pcc))}</div><div class="s">${fmt(pcc.length)} / ${fmt(pc.length)} phiếu · ${fmt(pcL.length)} phiếu có lý do kế toán</div></div></div>
+      <div class="m-k"><div style="flex:1"><div class="l">File chi phí chưa rõ ĐNTT</div><div class="v ${cpc.length?'neg-t':''}">${fmt(tong(cpc))}</div><div class="s">${fmt(cpc.length)} / ${fmt(cp.length)} khoản · ${fmt(cpL.length)} khoản có lý do kế toán · ${fmt(cpG.length)} khớp gộp</div></div></div>
+      <div class="m-k"><div style="flex:1"><div class="l">P&L ↔ file chi phí (mục × cơ sở)</div><div class="v ${tl.k<tl.n?'neg-t':''}">${fmt(tl.k)} / ${fmt(tl.n)} mục khớp</div><div class="s">tổng lệch ${fmt(tl.l)}</div></div></div></div>
+    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['tq','Tổng quan'],['pl','So với P&L'],['phieu','ĐNTT không có trong file'],['cp','File có, thiếu ĐNTT'],['gop','Khớp gộp quỹ ngoài & Visa']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
+      <select class="m-in" style="margin-left:auto" onchange="S.f.dcp_th=this.value;render()">${t==='pl'?'':'<option value="">Tất cả T1–T8</option>'}${ms.map(m=>`<option value="${m}" ${(th||(t==='pl'?'2026-08':''))===m?'selected':''}>${tg(m)}/2026</option>`).join('')}</select>
       <span class="badge">Chạy ${d.chay_luc?fmtDT(d.chay_luc):'—'}</span></div>${body}`}
 async function pageKiotLog(){
   const el=$('#page'),sua=heThong();

@@ -19,8 +19,27 @@ const tai = (id, dir, laThuMuc) => { fs.mkdirSync(dir, { recursive: true });
   if (laThuMuc) execFileSync(RC, ['copy', 'ktdrive2:', dir, '--drive-root-folder-id', id, '--include', '*/CHI PHÍ CÔNG TY THÁNG*'], { stdio: 'pipe', timeout: 600000 });
   else execFileSync(RC, ['backend', 'copyid', 'ktdrive2:', id, dir + path.sep, '--drive-export-formats', 'xlsx'], { stdio: 'pipe', timeout: 300000 });
   const all = []; const di = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => e.isDirectory() ? di(path.join(d, e.name)) : /\.xlsx$/i.test(e.name) && all.push(path.join(d, e.name))); di(dir); return all; };
+// 22/10 anh: "so 2 cái khớp đấy (đề nghị + file chi phí) với P&L" — số file chi phí đã chia cho từng cơ sở (HT / CT / SD / TT) theo mục P&L:
+//  dòng tiêu đề nhóm sheet CP TOÀN CÔNG TY (→ 4.3…4.11) · CP KHO KIẾN AN (→ 3.1…3.4, vật tư → 7.1) · dòng "TỔNG CHI PHÍ TỪNG CƠ SỞ" sheet CP MKT (→ 5)
+//  · sheet LƯƠNG+BHXH (BGĐ → 4.1, HCNS/MKT → 4.2, lương cơ sở + hỗ trợ → 1.1, Sales Online → 2) · dòng tổng sheet CP GIAO VẬN (→ GV)
+const CS_TEN = t => /hien thuy/.test(t) ? 'HT' : /chanh tam/.test(t) ? 'CT' : /shidai|^si /.test(t) ? 'SD' : /thi truong/.test(t) ? 'TT' : null;
+const MA_CTY = [[/van phong/, '4.3'], [/phan mem/, '4.4'], [/ke toan/, '4.5'], [/ngan hang/, '4.6'], [/truyen thong cong ty/, '4.7'], [/truyen thong noi bo/, '4.8'], [/nghien cuu/, '4.9'], [/dao tao/, '4.10'], [/khac/, '4.11']];
+const MA_KHO = [[/luong/, '3.1'], [/thue kho|mat bang/, '3.2'], [/vat tu|dong goi/, '7.1'], [/sua chua/, '3.3'], [/khac/, '3.4']];
+function pbSheet(b, R, thang, out) {
+  const rows = Object.keys(R).map(Number).sort((a, c) => a - c); let col = null;
+  for (const r of rows) { const e = Object.entries(R[r]); if (e.some(([cc, v]) => cc > 'C' && /hien thuy/.test(bo(v)))) { col = {}; e.forEach(([cc, v]) => { const cs = cc > 'C' && CS_TEN(bo(v)); if (cs && !Object.values(col).includes(cs)) col[cc] = cs; }); break; } }
+  if (!col) return;
+  const ghi = (r, ma, nguon) => Object.entries(col).forEach(([cc, cs]) => { const v = so(R[r][cc]); if (v) out.push({ thang, cs, ma, so_tien: v, nguon }); });
+  for (const r of rows) { const x = R[r], a = bo(x.A), c = bo(x.C);
+    if (/toan cong ty/.test(b) && /^\d+\.\s*[^\d\s]/.test(a)) { const m = MA_CTY.find(([re]) => re.test(a)); if (m) ghi(r, m[1], sheetTen(b, x.A)); }
+    else if (/kho kien an/.test(b) && /^\d+\.\s*[^\d\s]/.test(a)) { const m = MA_KHO.find(([re]) => re.test(a)); if (m) ghi(r, m[1], sheetTen(b, x.A)); }
+    else if (/mkt/.test(b) && /tong chi phi tung co so/.test(a)) ghi(r, '5', 'CP MKT · tổng từng cơ sở');
+    else if (/mkt/.test(b) && /online nen/.test(c)) ghi(r, '5-nen', 'CP MKT · ' + x.C);
+    else if (/luong/.test(b) && !/tong/.test(a)) { const ma = /bgd/.test(c) ? '4.1' : /hcns|mkt/.test(c) ? '4.2' : /sale onl/.test(c) ? '2' : /hien thuy|chanh tam|bp si|thi truong|ho tro/.test(c) ? '1.1' : null; if (ma) ghi(r, ma, 'LƯƠNG+BHXH · ' + String(x.C).replace(/\n/g, ' ')); }
+    else if (/giao van/.test(b) && /tong trong ki/.test(a)) ghi(r, 'GV', 'CP GIAO VẬN · tổng trong kì'); } }
+const sheetTen = (b, a) => (/toan cong ty/.test(b) ? 'CP TOÀN CÔNG TY · ' : 'CP KHO KIẾN AN · ') + String(a);
 (async () => {
-  const goc = fs.mkdtempSync(path.join(os.tmpdir(), 'dcp-')), pnl = [], dong = [];
+  const goc = fs.mkdtempSync(path.join(os.tmpdir(), 'dcp-')), pnl = [], dong = [], pbcs = [];
   try {
     // ── A. tab BÁO CÁO P&L của 4 file
     for (const [ma, id, den] of PNL) {
@@ -37,7 +56,8 @@ const tai = (id, dir, laThuMuc) => { fs.mkdirSync(dir, { recursive: true });
     for (const f of tai(THU_MUC_CP, path.join(goc, 'CP'), true)) {
       const t = +(path.basename(f).match(/THÁNG (\d+)/) || [])[1]; if (!t || t > 8) continue;
       const F = docXlsx(f), thang = '2026-' + String(t).padStart(2, '0'); let n0 = dong.length;
-      for (const sh of F.sheets) { const b = bo(sh.name); if (/luong|giao van|ti le|kho hn/.test(b)) continue; const R = F.load(sh);   // 22/10 anh: bỏ hết nhà hàng — CP KHO HN chỉ Saikung / Hongkong
+      for (const sh of F.sheets) { const b = bo(sh.name); if (!/ti le|kho hn|rieng/.test(b)) pbSheet(b, F.load(sh), thang, pbcs);
+        if (/luong|giao van|ti le|kho hn/.test(b)) continue; const R = F.load(sh);   // 22/10 anh: bỏ hết nhà hàng — CP KHO HN chỉ Saikung / Hongkong
         let h = null, nhom = '', pb = null;
         for (const r of Object.keys(R).map(Number).sort((a, c) => a - c)) { const x = R[r];
           if (!h) { const c = Object.fromEntries(Object.entries(x).map(([cc, v]) => [bo(v), cc])); const ten = k => Object.keys(c).find(z => k.test(z));
@@ -89,6 +109,7 @@ const tai = (id, dir, laThuMuc) => { fs.mkdirSync(dir, { recursive: true });
   Object.entries(tk).sort().forEach(([k, o]) => console.log('P&L', k.padEnd(10), JSON.stringify(o)));
   const tkc = {}; dong.forEach(d => { const o = tkc[d.thang] = tkc[d.thang] || { dong: 0, khop: 0 }; o.dong++; if (d.chi_id) o.khop++; });
   Object.entries(tkc).sort().forEach(([k, o]) => console.log('CP công ty', k, JSON.stringify(o)));
+  console.log('Số chia cơ sở theo mục P&L:', pbcs.length, 'ô');
   console.log('Phiếu đề nghị T1–T8:', app.length, '· khớp chi phí công ty', khopApp, '· chưa', app.length - khopApp);
   if (!GHI) { console.log('(CHẠY THỬ — chưa ghi)'); return; }
   const Q = s => s == null ? 'null' : `$q$${String(s).replace(/\$q\$/g, '')}$q$`;
@@ -101,6 +122,9 @@ const tai = (id, dir, laThuMuc) => { fs.mkdirSync(dir, { recursive: true });
     truncate kt_dcp_phieu; truncate kt_pnl_cu;`);
   for (let i = 0; i < dong.length; i += 300) await sql(`insert into kt_dcp_dong (sheet, dong, thang, ngay, danh_muc, noi_dung, so_tien, nguon_tt, chi_id) values ` +
     dong.slice(i, i + 300).map(d => `(${Q(d.sheet)},${d.dong},${Q(d.thang)},${d.ngay ? Q(d.ngay) : 'null'},${Q(d.danh_muc)},${Q(d.noi_dung.slice(0, 300))},${d.so_tien},${Q(d.nguon_tt || null)},${d.chi_id || 'null'})`).join(','));
+  await sql(`create table if not exists kt_dcp_pb (id bigserial primary key, thang text, cs text, ma text, so_tien bigint, nguon text, chay_luc timestamptz default now());
+    alter table kt_dcp_pb enable row level security; revoke all on kt_dcp_pb from anon, authenticated; truncate kt_dcp_pb;`);
+  for (let i = 0; i < pbcs.length; i += 400) await sql(`insert into kt_dcp_pb (thang, cs, ma, so_tien, nguon) values ` + pbcs.slice(i, i + 400).map(p => `(${Q(p.thang)},${Q(p.cs)},${Q(p.ma)},${p.so_tien},${Q(p.nguon)})`).join(','));
   for (let i = 0; i < app.length; i += 500) await sql(`insert into kt_dcp_phieu (chi_id, khop) values ` + app.slice(i, i + 500).map(p => `(${p.id},${!!p.khop})`).join(','));
   const ap = Object.fromEntries(ss.map(p => [p.nguon + '|' + p.thang + '|' + p.dong, p]));
   for (let i = 0; i < pnl.length; i += 400) await sql(`insert into kt_pnl_cu (nguon, thang, dong, ma, ten, target, thuc_hien, app, lech) values ` + pnl.slice(i, i + 400).map(p => { const s = ap[p.nguon + '|' + p.thang + '|' + p.dong];

@@ -37,6 +37,8 @@ begin
     -- mọi ĐNTT quỹ ngoài / thẻ Visa đã chi (kể cả phiếu trả thẻ không nằm trong danh sách phiếu so khớp), 15/12/2025 → 30/09/2026 để thấy đợt gối đầu
     'gop', (select coalesce(jsonb_agg(jsonb_build_object('id', c.id, 'ngay', c.ngay_tt, 'so_tien', c.so_tien, 'nd', c.noi_dung, 'nhom', kt_dcp_nhom_dn(c.noi_dung, c.hoan_quy)) order by c.ngay_tt), '[]')
                from kt_chi c where not c.da_xoa and c.trang_thai = 'da_tt' and c.ngay_tt between '2025-12-15' and '2026-09-30' and kt_dcp_nhom_dn(c.noi_dung, c.hoan_quy) is not null),
+    -- 22/10 anh: số file chi phí đã chia cho từng cơ sở theo mục P&L (dòng tiêu đề nhóm, lương, giao vận, MKT) — so với 4 P&L
+    'pb', (select coalesce(jsonb_agg(jsonb_build_object('thang', thang, 'cs', cs, 'ma', ma, 'so_tien', so_tien, 'nguon', nguon)), '[]') from kt_dcp_pb),
     'pnl', (select coalesce(jsonb_agg(jsonb_build_object('nguon', nguon, 'thang', thang, 'ma', ma, 'ten', ten, 'target', target, 'th', thuc_hien, 'app', app, 'lech', lech) order by nguon, thang, dong), '[]')
                from kt_pnl_cu where ma is not null));
 end $f$;
