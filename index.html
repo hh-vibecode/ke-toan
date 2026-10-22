@@ -817,7 +817,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-cot{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px;align-items:start}.pc-cot>div{display:flex;flex-direction:column;gap:14px;min-width:0}
 .pc-c{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
 .pc-c h4{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;font-size:13.5px}.pc-c>.sec:first-child,.pc-c>.m-st:first-child{margin-top:0!important}
-.pc-g{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}.pc-o{min-width:0}.pc-o.full{grid-column:1/-1}
+.pc-g{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}.pc-sub{grid-column:1/-1;margin-top:6px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.pc-o{min-width:0}.pc-o.full{grid-column:1/-1}
 .pc-o>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.pc-o>div{font-size:13px;font-weight:500;word-break:break-word}
 .pc-ls{display:flex;flex-direction:column;gap:8px}.pc-ls>div{display:flex;flex-direction:column;border-left:2px solid var(--border);padding-left:10px}.pc-ls b{font-size:12.5px}.pc-ls span{font-size:11.5px;color:var(--muted)}
 .pc-drive{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12.5px}
@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.174';
-const APP_VERSION='22/10/2026 14:42';
+const APP_SO='1.175';
+const APP_VERSION='22/10/2026 14:45';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2570,14 +2570,17 @@ function xemChi(id){
   const drive=(x.chung_tu||[]).filter(u=>/^https?:/.test(u));
   const hdO=!x.co_hd_do?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok')+(x.ngay_nhan_hd?' '+fmtD(x.ngay_nhan_hd):''):pill('Chưa nhận','bad')+'';
   // ── cột trái
+  // 22/10 anh: "nhóm phần thông tin cho dễ nhìn" — chia nhóm như form phiếu chi (Đề nghị · Hạch toán & hoá đơn · Ghi chú)
   const deNghi=the('Thông tin đề nghị',`<div class="pc-g">
       ${o('Nội dung',esc(ndChi(x)),1)}
-      ${o('Cơ sở',esc(csTen))}${o('Loại chi',x.khong_hach_toan?`<span class="muted">${x.ca_nhan?'Chi phí cá nhân':'Không hạch toán'} — không cần</span>`:l.ten?`${esc((l.ma?l.ma+' ':'')+l.ten)}${x.loai_con_id===x.loai_id?'':`<div style="margin-top:3px">› ${loaiConO(x)}</div>`}`:'<span class="muted">Chưa phân loại</span>')}
       ${o('Người đề nghị',esc(x.nguoi_de_nghi||''))}${o('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}
-      ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${o('Ngày sử dụng dịch vụ',x.ngay_su_dung?fmtD(x.ngay_su_dung):'')}${o('Kỳ hạch toán chi phí',x.la_tam_ung?'<span class="muted">Tạm ứng — chưa là chi phí</span>':thgT(kyHT(x))+(x.thang_ht?' <span class="muted">· ghi tay</span>':''))}
+      ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${o('Hạn mong muốn',fmtD(x.han_tt))}
+      <div class="pc-sub">Hạch toán & hoá đơn</div>
+      ${o('Cơ sở',esc(csTen))}${o('Loại chi',x.khong_hach_toan?`<span class="muted">${x.ca_nhan?'Chi phí cá nhân':'Không hạch toán'} — không cần</span>`:l.ten?`${esc((l.ma?l.ma+' ':'')+l.ten)}${x.loai_con_id===x.loai_id?'':`<div style="margin-top:3px">› ${loaiConO(x)}</div>`}`:'<span class="muted">Chưa phân loại</span>')}
+      ${o('Ngày sử dụng dịch vụ',x.ngay_su_dung?fmtD(x.ngay_su_dung):'')}${o('Kỳ hạch toán chi phí',x.la_tam_ung?'<span class="muted">Tạm ứng — chưa là chi phí</span>':thgT(kyHT(x))+(x.thang_ht?' <span class="muted">· ghi tay</span>':''))}
       ${x.khong_hach_toan?'':o('Hoá đơn xuất về',hdG?`<select class="m-in" style="height:28px" id="pc-hdve">${optsObj(HD_VE,x.hd_ve||'')}</select>`:x.hd_ve?esc(hdVeT(x.hd_ve)):'<span class="neg-t">chưa chọn</span>')}${x.la_tam_ung?o('Loại đề nghị',pill('Tạm ứng','warn')+''):''}${x.loai_dn==='hoan_ung'?o('Loại đề nghị',pill('Hoàn ứng — trả lại tiền','info')+` <span class="muted">${fmt(x.so_tien)} — không chi tiền, ${x.trang_thai==='quyet_toan'?'kế toán đã xác nhận tiền về':`<span class="m-link" onclick="closeModal();S.f.tu_tab='hoan';go('tam_ung')">xác nhận tiền về ở Tạm ứng & hoàn ứng</span>`}</span>`):''}
-      ${o('Hạn mong muốn',fmtD(x.han_tt))}${o('Nhà cung cấp',nccChiO(x))}
-      ${x.ghi_chu?o('Ghi chú',esc(x.ghi_chu),1):''}</div>`,sua?`<button class="m-btn out" style="height:30px" onclick="formChi(${id})">${IC_SUA} Chỉnh sửa</button>`:'');
+      ${o('Nhà cung cấp',nccChiO(x))}
+      ${x.ghi_chu?`<div class="pc-sub">Ghi chú</div>${o('',esc(x.ghi_chu),1)}`:''}</div>`,sua?`<button class="m-btn out" style="height:30px" onclick="formChi(${id})">${IC_SUA} Chỉnh sửa</button>`:'');
   const nhan=x.trang_thai!=='da_tt'&&x.thu_huong_stk?the('',qrChi(x))
     :the('Người nhận tiền',`<div class="pc-g">${o('Người thụ hưởng',esc(x.thu_huong_ten||''))}${o('Ngân hàng',esc(x.thu_huong_nh||''))}${o('Số tài khoản',esc(x.thu_huong_stk||''))}${o('Phương thức',x.thu_huong_stk?'Chuyển khoản':'Tiền mặt / chưa ghi')}</div>${x.trang_thai!=='da_tt'?qrChi(x):''}`);
   const pb=dy?the('',pbForm(x)):x.khong_hach_toan?the('Phân bổ chi phí & kỳ ghi nhận',pbHT(x,0)+pbCaNhan):the('Phân bổ chi phí & kỳ ghi nhận',`${kv((x.phan_bo||[]).map(p=>[esc(dvCPTen(p.don_vi_id)),fmt(p.so_tien)+' · '+pct(p.so_tien,x.so_tien)]))}
