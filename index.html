@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.171';
-const APP_VERSION='22/10/2026 14:09';
+const APP_SO='1.172';
+const APP_VERSION='22/10/2026 14:19';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3235,15 +3235,15 @@ async function pageBCDon(){const el=$('#page');el.innerHTML='<div class="m-empty
   const [ky,d]=await qtLay('don'),don=d.don.filter(x=>qtCS(x.cn)),hd=d.hd.filter(x=>qtCS(x.cn)),cho=d.cho.filter(x=>qtCS(x.cn));
   // 22/10 anh: huỷ chỉ khi khách đã cọc mà không lấy / đi COD bị trả lại; đơn huỷ chưa cọc = báo giá không chốt (không tính giá trị, không tính huỷ)
   const nh=['di_hang','coc','nghi_di','bao_gia','huy','bg_dong'],T={di_hang:'Đã đi hàng',coc:'Đã cọc · chưa đi hàng',nghi_di:'Nghi đã đi hàng',bao_gia:'Báo giá (chưa cọc)',huy:'Đã huỷ',bg_dong:'Báo giá không chốt'};
-  const tinh=x=>x.nhom!=='huy'&&x.nhom!=='bg_dong';
+  const tinh=x=>['di_hang','coc','nghi_di'].includes(x.nhom);   // 22/10 anh: chỉ đơn đã cọc hoặc đã đi hàng mới là đơn đặt (phiếu tạm 0đ cọc = báo giá, không tính) — như Tổng quan
   const g=(ds,f)=>({so:sumBy(ds.filter(f),x=>+x.so),tong:sumBy(ds.filter(f),x=>+x.tong),coc:sumBy(ds.filter(f),x=>+x.coc||0)});
   const tc=g(don,()=>true),hh=g(don,tinh),di=g(don,x=>x.nhom==='di_hang'),co=g(don,x=>x.nhom==='coc'),nd=g(don,x=>x.nhom==='nghi_di');
   const theo=(key,ds)=>[...new Set(ds.map(x=>x[key]))].map(k=>{const r=ds.filter(x=>x[key]===k),o={k};nh.forEach(n=>o[n]=g(r,x=>x.nhom===n));o.all=g(r,tinh);return o}).sort((a,b)=>b.all.tong-a.all.tong);
   const dong=o=>[`<b>${esc(o.ten||o.k)}</b>`,fmt(o.all.so),fmt(o.all.tong),fmt(o.di_hang.tong),fmt(o.coc.tong),fmt(o.bao_gia.tong),`<span class="muted">${fmt(o.bg_dong.so)} đơn</span>`,`<span class="muted">${fmt(o.huy.so)} đơn</span>`,qtPct(o.di_hang.so,o.all.so)];
-  const cols=[['','ten'],['Số đơn','num'],['Giá trị đơn','num'],['Đã đi hàng','num'],['Đã cọc · chưa đi','num'],['Báo giá đang mở','num'],['Báo giá không chốt','num'],['Huỷ (đã cọc / COD trả lại)','num'],['Tỷ lệ đi hàng','num']];
+  const cols=[['','ten'],['Số đơn','num'],['Giá trị đơn','num'],['Đã đi hàng','num'],['Đã cọc · chưa đi','num'],['Báo giá chưa cọc (không tính)','num'],['Báo giá không chốt','num'],['Huỷ (đã cọc / COD trả lại)','num'],['Tỷ lệ đi hàng','num']];
   const thg=theo('thang',don).sort((a,b)=>a.k<b.k?-1:1).map(o=>{o.ten=qtThg(o.k);const h=hd.filter(x=>x.thang===o.k);return [...dong(o),fmt(sumBy(h.filter(x=>x.qua_don),x=>+x.tong)),fmt(sumBy(h.filter(x=>!x.qua_don),x=>+x.tong))]});
   S.cache.bc_xuat=()=>xuatCSV('hieu-suat-don-'+ky.tu+'_'+ky.den,[['Tháng',r=>r.k],['Số đơn',r=>r.all.so],['Giá trị',r=>r.all.tong],['Đã đi hàng',r=>r.di_hang.tong],['Đã cọc chưa đi',r=>r.coc.tong],['Báo giá đang mở',r=>r.bao_gia.tong],['Báo giá không chốt (đơn)',r=>r.bg_dong.so],['Huỷ (đơn)',r=>r.huy.so]],theo('thang',don));
-  el.innerHTML=qtDau('Hiệu suất kinh doanh & đơn hàng','Đơn đặt tạo trong kỳ · chia nhóm như Tổng quan')+`<div class="m-kpis m-k3">${qtK('info','Giá trị đơn đặt (trừ huỷ, báo giá không chốt)',fmt(hh.tong),fmt(hh.so)+' đơn · TB '+fmt(hh.so?hh.tong/hh.so:0)+' / đơn')}
+  el.innerHTML=qtDau('Hiệu suất kinh doanh & đơn hàng','Đơn đặt tạo trong kỳ · chia nhóm như Tổng quan')+`<div class="m-kpis m-k3">${qtK('info','Giá trị đơn đặt (đã cọc hoặc đã đi hàng)',fmt(hh.tong),fmt(hh.so)+' đơn · TB '+fmt(hh.so?hh.tong/hh.so:0)+' / đơn')}
       ${qtK('ok','Đã đi hàng',fmt(di.tong),fmt(di.so)+' đơn · '+qtPct(di.so,hh.so)+' số đơn')}${qtK('warn','Đã cọc · chưa đi hàng',fmt(co.tong),fmt(co.so)+' đơn · đã cọc '+fmt(co.coc)+(nd.so?' · loại '+fmt(nd.so)+' đơn nghi đã đi hàng (Tổng quan → bấm xem)':''))}</div>
     ${qtT('Theo tháng đặt',[...cols.map((c,i)=>i?c:['Tháng','nw']),['Doanh thu HĐ qua đơn đặt','num'],['Doanh thu bán thẳng (không qua đơn)','num']],thg)}
     ${qtT('Theo kênh bán',cols.map((c,i)=>i?c:['Kênh','ten']),theo('kenh',don).map(dong))}
