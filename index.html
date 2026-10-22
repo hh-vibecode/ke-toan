@@ -900,8 +900,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.168';
-const APP_VERSION='22/10/2026 11:02';
+const APP_SO='1.169';
+const APP_VERSION='22/10/2026 11:13';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4295,6 +4295,7 @@ const LOGIC2=[
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
  ['bao_cao','Dòng tiền khớp phân loại chi phí','Báo cáo dòng tiền đặt tên + thứ tự loại chi giống báo cáo chi phí (theo danh mục). Giao dịch cá nhân tách mục riêng "IV. Giao dịch cá nhân".','Vẫn tính vào tiền thuần trong kỳ và số dư (tiền thật đi qua tài khoản).','21/10'],
  ['thu_chi','Form phiếu chi 4 nhóm','Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Ghi chú & thanh toán.','','21/10'],
+ ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
  ['thu_chi','Phiếu chi — 3 loại hạch toán','Hạch toán (chi phí công ty) · Không hạch toán (khoản công ty không tính chi phí, vd nộp lại BHXH — ở nhóm Giao dịch công ty) · Chi phí cá nhân (tự là không hạch toán, sang nhóm Giao dịch cá nhân). Chọn ở form tạo phiếu và ô Hạch toán trong mục Phân bổ của cửa sổ phiếu.','Anh + kế toán 22/10. Hai loại không hạch toán đều không vào chi phí / P&L, vẫn trừ tiền tài khoản. Báo cáo dòng tiền: chỉ chi phí cá nhân vào mục IV. Giao dịch cá nhân. Phiếu thu / điều chuyển giữ 2 lựa chọn.','22/10'],
  ['thu_chi','Giao dịch cá nhân','Phiếu chi / thu / điều chuyển chọn Hạch toán: Không — giao dịch cá nhân → không hỏi đơn vị chịu chi phí, hoá đơn đỏ, hoá đơn xuất về, loại chi / loại thu. Mỗi trang có nút Giao dịch công ty / Giao dịch cá nhân để xem riêng, không lẫn.','Không vào báo cáo kết quả kinh doanh; vẫn tính vào số dư tài khoản (tiền thật đi qua tài khoản).','20/10'],
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
@@ -4395,8 +4396,21 @@ async function pageCaiDat(mod){
     c.innerHTML=`${qt?'<div class="bar"><button class="btn pri" onclick="formDM(\'don_vi\')">+ Thêm</button></div>':''}<div class="card scroll"><table><tr><th>Tên</th><th class="c">Chịu chi phí / báo cáo</th><th class="c">Bộ phận đề nghị</th><th>Chi nhánh Kiot</th><th>Trạng thái</th></tr>
       ${S.dm.don_vi.map(x=>`<tr class="${qt?'click':''}" ${qt?`onclick="formDM('don_vi',${x.id})"`:''}><td>${esc(x.ten)}</td><td class="c">${x.la_co_so?'✓':''}</td><td class="c">${x.la_bo_phan?'✓':''}</td><td>${esc((x.kiot_chi_nhanh||[]).join(', '))}</td><td>${x.hoat_dong?vb('Đang dùng','ok'):vb('Tắt','grey')}</td></tr>`).join('')}</table></div>`;
   }else if(S.f.cd==='loai'){
-    c.innerHTML=`${qt?'<div class="bar"><button class="btn pri" onclick="formDM(\'loai\')">+ Thêm loại</button></div>':''}<div class="card scroll"><table><tr><th>Nhóm</th><th>Loại</th><th>Nhóm báo cáo</th><th>Cách chia</th><th>Trạng thái</th></tr>
-      ${S.dm.loai.map(x=>`<tr class="${qt?'click':''}" ${qt?`onclick="formDM('loai',${x.id})"`:''}><td>${x.nhom==='thu'?'Thu':'Chi'}</td><td>${esc(x.ten)}</td><td>${esc(x.nhom_bc||'')}</td><td>${x.nhom==='chi'?(x.cach_chia==='ty_le_thu'?'Theo tỉ lệ thu':'Riêng'):''}</td><td>${x.hoat_dong?vb('Đang dùng','ok'):vb('Tắt','grey')}</td></tr>`).join('')}</table></div>`;
+    // 22/10 kế toán: "cho chị nhóm cha nhóm con, nhìn cho dễ" — cây nhóm cha → mục con, bấm ▶ đóng / mở nhóm
+    const nh=S.f.cd_ln||'chi',tat=!!S.f.cd_tat,dong=S.f.cd_dong||(S.f.cd_dong={});
+    const ds=S.dm.loai.filter(x=>x.nhom===nh&&(tat||x.hoat_dong)),xep=a=>a.sort((p,q)=>(q.hoat_dong-p.hoat_dong)||(p.thu_tu-q.thu_tu)||(p.id-q.id));
+    const con=id=>xep(ds.filter(x=>x.cha_id===id)),goc=xep(ds.filter(x=>!x.cha_id||!ds.some(c=>c.id===x.cha_id)));
+    const soTat=S.dm.loai.filter(x=>x.nhom===nh&&!x.hoat_dong).length;
+    const dong1=(x,cap)=>{const cc=con(x.id),la=x.la_nhom||cc.length,mo=!dong[x.id];
+      return `<tr class="${qt?'click':''} ${x.hoat_dong?'':'muted'}" ${qt?`onclick="formDM('loai',${x.id})"`:''} style="${cap?'':la?'background:var(--bg2)':''}">
+        <td style="padding-left:${10+cap*22}px">${la?`<span class="m-link" style="display:inline-block;width:16px" onclick="event.stopPropagation();S.f.cd_dong[${x.id}]=${mo?1:0};render()">${mo?'▼':'▶'}</span>`:'<span style="display:inline-block;width:16px"></span>'}${x.ma?`<span class="muted" style="margin-right:6px">${esc(x.ma)}</span>`:''}${la&&!cap?`<b>${esc(x.ten)}</b>`:esc(x.ten)}${cc.length?` <span class="badge">${cc.length} mục</span>`:''}${x.la_nhom?' <span class="badge" title="Chỉ để gom mục con, không chọn trên phiếu">Nhóm</span>':''}
+          ${qt&&la?`<button class="m-btn sm out" style="margin-left:6px;height:22px;padding:0 7px" onclick="event.stopPropagation();formDM('loai',null,{cha_id:${x.id}})">+ mục con</button>`:''}</td>
+        <td>${esc(x.nhom_bc||'')}</td>${nh==='chi'?`<td>${x.cach_chia==='ty_le_thu'?'Theo tỉ lệ thu':'Riêng'}</td>`:''}<td>${x.hoat_dong?vb('Đang dùng','ok'):vb('Tắt','grey')}</td></tr>`+(mo?cc.map(c=>dong1(c,cap+1)).join(''):'')};
+    c.innerHTML=`<div class="bar" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div class="m-seg">${[['chi','Loại chi'],['thu','Loại thu']].map(([k,t])=>`<button class="${nh===k?'on':''}" onclick="S.f.cd_ln='${k}';render()">${t}<span class="c">${S.dm.loai.filter(x=>x.nhom===k&&x.hoat_dong&&!x.la_nhom).length}</span></button>`).join('')}</div>
+      ${soTat?`<label class="chk" style="font-size:12px"><input type="checkbox" ${tat?'checked':''} onchange="S.f.cd_tat=this.checked;render()"> Hiện loại đã tắt (${soTat})</label>`:''}
+      <span class="m-link" style="font-size:12px" onclick="S.f.cd_dong={};render()">Mở hết</span><span class="m-link" style="font-size:12px" onclick="S.f.cd_dong=Object.fromEntries(S.dm.loai.map(x=>[x.id,1]));render()">Thu gọn</span>
+      ${qt?`<button class="btn pri" style="margin-left:auto" onclick="formDM('loai')">+ Thêm loại</button>`:''}</div>
+      <div class="card scroll"><table><tr><th>Loại</th><th>Nhóm báo cáo</th>${nh==='chi'?'<th>Cách chia</th>':''}<th>Trạng thái</th></tr>${goc.map(x=>dong1(x,0)).join('')}</table></div>`;
   }else if(S.f.cd==='nguoi_dung'){
     const ds=await rpc('kt_ds_nguoi_dung');S.cache.nd=ds;const sua=heThong();
     const qtxt=x=>{const gdx=(x.vi_tri==='supreme'||(x.quyen||[]).includes('chi_gd'))?' <span class="badge" style="background:var(--teal-bg);color:var(--teal)">GĐ xác nhận chi</span>':'';
@@ -4610,9 +4624,14 @@ async function kiotBanner(el){
     +(coXem('cd_kiot')?`<a onclick="go('cd_kiot')">Nhật ký kéo Kiot</a>`:'');
   const top=el.querySelector(':scope>.top');if(top)top.after(b);else el.prepend(b)}
 function arrIn(v){return (v||'').split(',').map(s=>s.trim()).filter(Boolean)}
-function formDM(bang,id){
+function formDM(bang,id,dat){
   const src={tai_khoan:S.dm.tai_khoan,don_vi:S.dm.don_vi,loai:S.dm.loai}[bang];
-  const x=id?src.find(r=>r.id===id):{hoat_dong:true,thu_tu:100,loai:'ngan_hang',ngay_ton_dau:MOC_SODU,ton_dau:0,la_co_so:true,nhom:'chi',cach_chia:'rieng'};
+  const x=id?src.find(r=>r.id===id):{hoat_dong:true,thu_tu:100,loai:'ngan_hang',ngay_ton_dau:MOC_SODU,ton_dau:0,la_co_so:true,nhom:S.f.cd_ln||'chi',cach_chia:'rieng',...(dat||{})};
+  // 22/10: nhóm cha — cùng nhóm thu / chi, bỏ chính nó + các mục con của nó; thụt lề theo cấp
+  const conCua=i=>S.dm.loai.filter(l=>l.cha_id===i).flatMap(l=>[l.id,...conCua(l.id)]),bo=new Set(id?[id,...conCua(id)]:[]);
+  const capL=l=>{let n=0,c=l;while(c&&c.cha_id&&n<5){c=lo(c.cha_id);n++}return n};
+  const chaOpt=S.dm.loai.filter(l=>l.nhom===x.nhom&&!bo.has(l.id)&&(l.la_nhom||S.dm.loai.some(c=>c.cha_id===l.id)||l.id===+x.cha_id)).sort((p,q)=>p.thu_tu-q.thu_tu||p.id-q.id);
+  if(dat&&dat.cha_id){const ch=lo(dat.cha_id);if(ch){x.nhom_bc=ch.nhom_bc;x.cach_chia=ch.cach_chia;x.thu_tu=(Math.max(ch.thu_tu,...S.dm.loai.filter(l=>l.cha_id===ch.id).map(l=>+l.thu_tu||0))||0)+1}}
   const f={
     tai_khoan:`<label class="full">Tên tài khoản (ngân hàng + chủ + số)<input name="ten" value="${esc(x.ten||'')}"></label>
       <label>Loại<select name="loai">${optsObj(LOAI_TK,x.loai)}</select></label><label>Thứ tự<input name="thu_tu" type="number" value="${x.thu_tu}"></label>
@@ -4623,7 +4642,10 @@ function formDM(bang,id){
       <label class="chk"><input type="checkbox" name="la_bo_phan" ${x.la_bo_phan?'checked':''}> Là bộ phận đề nghị chi</label>
       <label>Thứ tự<input name="thu_tu" type="number" value="${x.thu_tu}"></label>
       <label>Chi nhánh Kiot tương ứng (cách nhau dấu phẩy)<input name="kiot_chi_nhanh" value="${esc((x.kiot_chi_nhanh||[]).join(', '))}"></label>`,
-    loai:`<label>Nhóm<select name="nhom" ${id?'disabled':''}>${optsObj({thu:'Thu',chi:'Chi'},x.nhom)}</select></label><label>Tên loại<input name="ten" value="${esc(x.ten||'')}"></label>
+    loai:`<label>Nhóm<select name="nhom" disabled>${optsObj({thu:'Thu',chi:'Chi'},x.nhom)}</select></label><label>Tên loại<input name="ten" value="${esc(x.ten||'')}"></label>
+      <label>Mã (vd 4.3)<input name="ma" value="${esc(x.ma||'')}" maxlength="12"></label>
+      <label>Nhóm cha<select name="cha_id"><option value="">— Không (nhóm gốc) —</option>${chaOpt.map(l=>`<option value="${l.id}" ${+x.cha_id===l.id?'selected':''}>${'　'.repeat(capL(l))}${esc((l.ma?l.ma+' ':'')+l.ten)}${l.hoat_dong?'':' (tắt)'}</option>`).join('')}</select></label>
+      <label class="full chk"><input type="checkbox" name="la_nhom" ${x.la_nhom?'checked':''}> Là nhóm — chỉ để gom mục con, không chọn được trên phiếu</label>
       <label>Nhóm báo cáo<input name="nhom_bc" value="${esc(x.nhom_bc||'')}" placeholder="vd: Chi vận hành & quản lý"></label>
       <label>Cách chia theo cơ sở (loại chi)<select name="cach_chia">${optsObj({rieng:'Riêng (theo phiếu)',ty_le_thu:'Theo tỉ lệ thu (chi phí chung)'},x.cach_chia)}</select></label>
       <label>Thứ tự<input name="thu_tu" type="number" value="${x.thu_tu}"></label>`}[bang];
