@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.177';
-const APP_VERSION='22/10/2026 15:17';
+const APP_SO='1.178';
+const APP_VERSION='22/10/2026 15:42';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1785,10 +1785,18 @@ async function pageDongTien(){
   }else if(tab==='ket'){
     body=`<div class="m-flt" style="align-items:center"><span class="muted">Thủ quỹ đếm két cuối mỗi ngày, nhập số đếm + chụp sổ quỹ. App so với sổ sách; lệch thì báo ở Đối soát lỗi.</span><span style="margin-left:auto"></span>
         ${coGhi('kiem_ket')?`<button class="m-btn pri" onclick="formKiemKet()">+ Kiểm két hôm nay</button>`:''}</div>
-      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Két / tài khoản</th><th class="num">Số đếm</th><th class="num">Sổ sách cuối ngày</th><th class="num">Chênh lệch</th><th class="c">Trạng thái</th><th class="c">Ảnh sổ</th><th>Người kiểm</th><th>Ghi chú</th></tr>
-      ${kq.map(k=>{const l=+k.so_dem-(+k.so_sach);return `<tr class="click" onclick="formKiemKet(${k.id})"><td class="nw">${fmtD(k.ngay)}</td><td>${esc((tk(k.tk)||{}).ten||'')}</td><td class="num"><b>${fmt(k.so_dem)}</b></td><td class="num">${fmt(k.so_sach)}</td>
-        <td class="num ${l?'neg-t':''}">${l>0?'+':''}${fmt(l)}</td><td class="c">${l?pill(l>0?'Thừa':'Thiếu','bad'):pill('Khớp','ok')}</td><td class="c">${+k.so_anh?pill(k.so_anh+' ảnh','info'):pill('Chưa có','warn')}</td>
-        <td class="nw">${esc(k.nguoi||'')}</td><td class="ten">${esc(k.ghi_chu||'')}</td></tr>`}).join('')||'<tr><td colspan="9" class="m-empty">Chưa có lần kiểm két nào trong kỳ</td></tr>'}</table></div></div>`;
+      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Két / tài khoản</th><th class="num">Số đếm</th><th class="num">Sổ sách lúc kiểm</th><th class="num">Lệch lúc kiểm</th><th class="num">Sổ sách hiện tại</th><th class="num">Lệch hiện tại</th><th class="c">Trạng thái</th><th class="c">Ảnh sổ</th><th>Người kiểm</th><th>Ghi chú</th></tr>
+      ${kq.map(k=>{
+        // 22/10 anh: giữ số lúc kiểm (hôm đó lệch thì vẫn thấy lệch) + số hiện tại (real time) + lịch sử phiếu thêm / sửa / xoá sau giờ kiểm
+        const s0=k.so_sach_luc_kiem!=null?+k.so_sach_luc_kiem:+k.so_sach,l0=+k.so_dem-s0,l1=+k.so_dem-(+k.so_sach),xl=k.xu_ly||[],sl=v=>`${v>0?'+':''}${fmt(v)}`;
+        const tt=!l1?(l0?pill('Đã xử lý · khớp','ok'):pill('Khớp','ok')):xl.length&&l0!==l1?pill('Lệch do phiếu ghi sau kiểm','warn'):pill(l1>0?'Thừa':'Thiếu','bad');
+        const VIEC={them:'tạo',sua:'sửa',xoa:'xoá',tq_nhan:'xác nhận nhận tiền',dong_bo_sheet:'đồng bộ sheet'},BANG={kt_thu:'Phiếu thu',kt_chi:'Phiếu chi',kt_dieu_chuyen:'Điều chuyển'};
+        const gx=[];xl.forEach(x=>{const g=gx.find(z=>z.bang===x.bang&&z.id===x.id);if(g)g.ds.push(x);else gx.push({...x,ds:[x]})});   // mỗi phiếu 1 dòng
+        const viecT=x=>VIEC[x.viec]||String(x.viec).replace(/^trang_thai:/,'đổi trạng thái → ');
+        const ls=gx.length?`<tr class="kk-xl"><td></td><td colspan="10"><div class="muted" style="font-size:12px;line-height:1.7">${gx.map(x=>`Sau kiểm · ${BANG[x.bang]||''} ghi ngày ${fmtD(x.ngay)}: ${esc(x.nd||'')} <b class="${+x.tien<0?'neg-t':'pos-t'}">${sl(+x.tien)}</b>${x.xoa?' (đã xoá)':''} — ${[...new Set(x.ds.map(z=>esc(z.nguoi||'')+' '+esc(viecT(z))))].join(', ')} lúc <b>${fmtDT(x.ds[0].luc)}</b>${x.ds.length>1?' … '+fmtDT(x.ds[x.ds.length-1].luc):''}`).join('<br>')}</div></td></tr>`:'';
+        return `<tr class="click" onclick="formKiemKet(${k.id})"><td class="nw">${fmtD(k.ngay)}</td><td>${esc((tk(k.tk)||{}).ten||'')}</td><td class="num"><b>${fmt(k.so_dem)}</b></td><td class="num">${fmt(s0)}</td>
+        <td class="num ${l0?'neg-t':''}">${sl(l0)}</td><td class="num">${fmt(k.so_sach)}</td><td class="num ${l1?'neg-t':''}">${sl(l1)}</td><td class="c">${tt}</td><td class="c">${+k.so_anh?pill(k.so_anh+' ảnh','info'):pill('Chưa có','warn')}</td>
+        <td class="nw">${esc(k.nguoi||'')}</td><td class="ten">${esc(k.ghi_chu||'')}</td></tr>${ls}`}).join('')||'<tr><td colspan="11" class="m-empty">Chưa có lần kiểm két nào trong kỳ</td></tr>'}</table></div></div>`;
   }
   el.innerHTML=`${coSDQ?`<div class="m-kpis m-k3">${the('accent','vi','Tổng số dư (sổ sách)',coSD?fmt(sumBy(tks,t=>t.cuoi_ky)):'—','cuối '+fmtD(S.den))}
       ${the('ok','tm','Tiền mặt',coSD?fmt(sumBy(tm,t=>t.cuoi_ky)):'—',tm.length+' két / quỹ')}${the('info','nh','Ngân hàng',coSD?fmt(sumBy(nh,t=>t.cuoi_ky)):'—',nh.length+' tài khoản')}
@@ -4352,7 +4360,7 @@ const LOGIC2=[
  ['thu_chi','Loại chi','Phiếu chọn loại khác luật đã chốt → nhãn "Nghi sai loại", kế toán bấm Đổi / Giữ.','Thẻ tín dụng → FINANCE; phí NH, tiền điện, bù quỹ ngoài → OPEX Vận hành; phí CK nước ngoài, vận chuyển TQ → COGS.','09/10'],
  ['thu_chi','Điều chuyển — Kiot','Điều chuyển không còn ô "Ảnh hưởng tài khoản cửa hàng trên Kiot" (bỏ 19/10, như Phiếu chi 16/10).','Kiot chỉ để đối soát. Tiền cửa hàng nộp về két: ghi điều chuyển Tiền mặt quầy → Két.','19/10'],
  ['thu_chi','Điều chuyển','Nhập ngày, TK đi, TK nhận (khác nhau), số tiền; kế toán xác nhận ngay trên dòng.','Chưa xác nhận vẫn tính vào tồn.','14/10'],
- ['thu_chi','Sổ quỹ & kiểm két','Thủ quỹ điền tổng số đếm cuối ngày + up ảnh chụp sổ (bắt buộc, anh 22/10 — bỏ đếm theo mệnh giá); app so với sổ sách cuối ngày.','Lệch → Đối soát lỗi tự báo. Mỗi TK 1 lần / ngày, đếm lại thì ghi đè.','14/10'],
+ ['thu_chi','Sổ quỹ & kiểm két','Thủ quỹ điền tổng số đếm cuối ngày + up ảnh chụp sổ (bắt buộc, anh 22/10 — bỏ đếm theo mệnh giá); app so với sổ sách cuối ngày. Bảng giữ 2 mốc: sổ sách LÚC KIỂM (số chốt khi lưu) và sổ sách HIỆN TẠI (tính lại theo thời gian thực) + dòng lịch sử các phiếu thêm / sửa / xoá sau giờ kiểm mà ghi lùi vào ngày đó.','Lệch → Đối soát lỗi tự báo. Lúc kiểm lệch, nay khớp → "Đã xử lý · khớp"; lúc kiểm khớp, nay lệch vì phiếu ghi sau → "Lệch do phiếu ghi sau kiểm". Mỗi TK 1 lần / ngày, đếm lại thì ghi đè.','14/10'],
  ['thu_chi','Sổ quỹ & kiểm két','Quỹ tiền mặt 3 cửa hàng (Kiot): thu quầy − chi quầy − nộp về két = tiền còn giữ ở quầy.','Cuối ngày nộp đủ thì về 0.','09/10'],
  ['thu_chi','Tạm ứng & hoàn ứng','Sổ theo dõi ai đang cầm tiền ứng; không đổi số dư (tiền ra bằng Phiếu chi, trả lại bằng Phiếu thu).','','14/10'],
  ['thu_chi','Tạm ứng & hoàn ứng','Hoàn ứng 3 cách: chứng từ chi phí / trả lại tiền / trừ lương; không cho hoàn vượt số còn lại.','Quá hạn = còn phải hoàn và đã qua hạn.','14/10'],
