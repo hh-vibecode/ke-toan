@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.182';
-const APP_VERSION='22/10/2026 16:25';
+const APP_SO='1.183';
+const APP_VERSION='22/10/2026 16:31';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4635,7 +4635,7 @@ async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop',
       return {m,pl:sumBy(CS4,([cs])=>T[cs+'|'+m]||0),cp:tong(c),dn:tong(p),dnK:p.filter(x=>x.khop||x.nhom||x.ld).length,dnN:p.length,cpK:c.filter(x=>x.chi_id||x.gop||x.ld).length,cpN:c.length,...s}});
     const pct2=(a,b)=>b?Math.round(100*a/b)+'%':'—';
     body=bang([['Tháng',r=>`<span class="m-link" onclick="S.f.dcp_tab='pl';S.f.dcp_th='${r.m}';render()">${tg(r.m)}/2026</span>`,'nw'],['P&L ghi chi phí (4 cơ sở)',r=>fmt(r.pl),'num'],['File chi phí công ty',r=>fmt(r.cp),'num'],['Đề nghị thanh toán',r=>fmt(r.dn),'num'],
-      ['ĐNTT ↔ File',r=>`${pill(pct2(r.dnK,r.dnN)+' phiếu',r.dnK===r.dnN?'ok':'warn')} ${pill(pct2(r.cpK,r.cpN)+' khoản',r.cpK===r.cpN?'ok':'warn')}<div class="muted" style="font-size:11px">${r.dnN-r.dnK} phiếu · ${r.cpN-r.cpK} khoản chưa rõ</div>`,'nw'],
+      ['ĐNTT ↔ File',r=>`${pill(pct2(r.dnK,r.dnN)+' phiếu',r.dnK===r.dnN?'ok':'warn')} ${pill(pct2(r.cpK,r.cpN)+' khoản',r.cpK===r.cpN?'ok':'warn')}<div style="font-size:11px">${r.dnN-r.dnK?`<span class="m-link" onclick="S.f.dcp_tab='phieu';S.f.dcp_th='${r.m}';render()">${r.dnN-r.dnK} phiếu</span>`:'0 phiếu'} · ${r.cpN-r.cpK?`<span class="m-link" onclick="S.f.dcp_tab='cp';S.f.dcp_th='${r.m}';render()">${r.cpN-r.cpK} khoản</span>`:'0 khoản'} <span class="muted">chưa rõ</span></div>`,'nw'],
       ['P&L ↔ File (từng mục × cơ sở)',r=>`${pill(r.k+' / '+r.n+' mục khớp',r.k===r.n?'ok':'bad')}<div class="muted" style="font-size:11px">tổng lệch ${fmt(r.l)}</div>`,'nw']],rows,'Không có dữ liệu',
       `Bấm tháng để xem P&L từng mục × cơ sở. ĐNTT ↔ File: % phiếu đề nghị / % khoản trong file đã khớp (từng phiếu, khớp gộp quỹ ngoài & Visa, hoặc có lý do theo giải thích kế toán). ${NG_PL} ${NG_GHEP}`);
   }else if(t==='pl'){
@@ -4656,10 +4656,11 @@ async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop',
   else body=bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Số phiếu',x=>`<span class="m-link" onclick="moPhieu('PC',${x.id})">PC${String(x.id).padStart(6,'0')}</span>`,'nw'],['Nội dung',x=>esc(x.nd||''),'ten'],['Người nhận',x=>esc(x.th||''),'nw'],['Loại chi',x=>esc((lo(x.loai)||{}).ten||''),'nw'],['Số tiền',x=>fmt(x.so_tien),'num'],['Lý do (kế toán)',x=>x.ld?`<span class="muted" style="font-size:12px">${esc(x.ld)}</span>`:'','']],[...pcc,...pcL],'Mọi phiếu đều có trong file chi phí công ty',`Phiếu đề nghị đã chi trên app nhưng không thấy trong file chi phí công ty — ${fmt(pcc.length)} chưa rõ (lên đầu), ${fmt(pcL.length)} đã có lý do. ${NG_PHIEU} ${NG_CP} ${NG_GHEP}`);
   const tl=ms.filter(m=>!th||m===th).reduce((o,m)=>{const x=soPL(m,CS4);o.n+=x.n;o.k+=x.k;o.l+=x.l;return o},{n:0,k:0,l:0});
   return `<div class="m-kpis m-k3">
-      <div class="m-k"><div style="flex:1"><div class="l">ĐNTT chưa rõ trong file chi phí ${th?tg(th):'T1–T8'}</div><div class="v ${pcc.length?'neg-t':''}">${fmt(tong(pcc))}</div><div class="s">${fmt(pcc.length)} / ${fmt(pc.length)} phiếu · ${fmt(pcL.length)} phiếu có lý do kế toán</div></div></div>
-      <div class="m-k"><div style="flex:1"><div class="l">File chi phí chưa rõ ĐNTT</div><div class="v ${cpc.length?'neg-t':''}">${fmt(tong(cpc))}</div><div class="s">${fmt(cpc.length)} / ${fmt(cp.length)} khoản · ${fmt(cpL.length)} khoản có lý do kế toán · ${fmt(cpG.length)} khớp gộp</div></div></div>
+      <div class="m-k click" onclick="S.f.dcp_tab='phieu';render()" title="Bấm để xem danh sách"><div style="flex:1"><div class="l">ĐNTT chưa rõ trong file chi phí ${th?tg(th):'T1–T8'}</div><div class="v ${pcc.length?'neg-t':''}">${fmt(tong(pcc))}</div><div class="s">${fmt(pcc.length)} / ${fmt(pc.length)} phiếu · ${fmt(pcL.length)} phiếu có lý do kế toán</div></div></div>
+      <div class="m-k click" onclick="S.f.dcp_tab='cp';render()" title="Bấm để xem danh sách"><div style="flex:1"><div class="l">File chi phí chưa rõ ĐNTT</div><div class="v ${cpc.length?'neg-t':''}">${fmt(tong(cpc))}</div><div class="s">${fmt(cpc.length)} / ${fmt(cp.length)} khoản · ${fmt(cpL.length)} khoản có lý do kế toán · ${fmt(cpG.length)} khớp gộp</div></div></div>
       <div class="m-k"><div style="flex:1"><div class="l">P&L ↔ file chi phí (mục × cơ sở)</div><div class="v ${tl.k<tl.n?'neg-t':''}">${fmt(tl.k)} / ${fmt(tl.n)} mục khớp</div><div class="s">tổng lệch ${fmt(tl.l)}</div></div></div></div>
-    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['tq','Tổng quan'],['pl','So với P&L'],['phieu','ĐNTT không có trong file'],['cp','File có, thiếu ĐNTT'],['gop','Khớp gộp quỹ ngoài & Visa']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
+    <div class="m-flt" style="align-items:center"><div class="m-seg">${[['tq','Tổng quan'],['pl','So với P&L'],['gop','Khớp gộp quỹ ngoài & Visa']].map(([k,v])=>`<button class="${t===k||(k==='tq'&&['phieu','cp'].includes(t))?'on':''}" onclick="S.f.dcp_tab='${k}';render()">${v}</button>`).join('')}</div>
+      ${['phieu','cp'].includes(t)?`<span class="m-link" onclick="S.f.dcp_tab='tq';render()">← Tổng quan</span><b>${t==='phieu'?'ĐNTT không có trong file chi phí':'File chi phí có, thiếu ĐNTT'}</b>`:''}
       <select class="m-in" style="margin-left:auto" onchange="S.f.dcp_th=this.value;render()">${t==='pl'?'':'<option value="">Tất cả T1–T8</option>'}${ms.map(m=>`<option value="${m}" ${(th||(t==='pl'?'2026-08':''))===m?'selected':''}>${tg(m)}/2026</option>`).join('')}</select>
       <span class="badge">Chạy ${d.chay_luc?fmtDT(d.chay_luc):'—'}</span></div>${body}`}
 async function pageKiotLog(){
