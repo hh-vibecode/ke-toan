@@ -179,6 +179,7 @@ td.num b{font-weight:800}
 .ct-nut{position:absolute;top:4px;right:4px;display:flex;gap:3px;opacity:.9}
 .ct-nut button{border:none;border-radius:5px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:2px 6px;cursor:pointer}
 .ct-them{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:118px;border:1.5px dashed var(--border);border-radius:8px;cursor:pointer;color:var(--accent);font-size:11.5px;font-weight:700}
+.ct.ct-chon .ct-them{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .ct-them small{font-size:10px;font-weight:600;color:var(--muted)}
 .ct-thumb{position:relative}.ct-item.dang img{opacity:.6}
 .ct-tt{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.62);color:#fff;font-size:10.5px;font-weight:700;padding:3px 6px;text-align:center}
@@ -1091,7 +1092,7 @@ async function dnForm(){
       <label class="dn-tt"><span>Người / đơn vị thụ hưởng${BB}</span><input name="thu_huong_ten" maxlength="150"></label>
       <label class="dn-ck"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
       <label class="dn-ck"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
-      <label class="dn-ck full"><span>Nội dung chuyển khoản</span><input name="noi_dung_ck" maxlength="25"></label>
+      <label class="dn-ck full"><span>Nội dung chuyển khoản</span><input name="noi_dung_ck" maxlength="16" placeholder="Số phiếu chi tự thêm ở đầu — gõ thêm nội dung"></label>
       <div class="dn-ck full" id="dn-qr" style="font-size:11.5px;margin-top:-4px"></div>
       <div class="sec" style="grid-column:1/-1;margin:12px 0 0">4. Hồ sơ & ghi chú</div>
       <div class="full"><div class="dn-l">Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14"></span></div>
@@ -2248,12 +2249,12 @@ async function napQR(){if(QR_LIB)return QR_LIB;await new Promise((ok,loi)=>{cons
 function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');if(!stk||!/^\d{6,20}$/.test(stk))return `<div class="m-st">Mã QR chuyển khoản</div><div class="muted" style="font-size:12px">${stk?'Số tài khoản "'+esc(x.thu_huong_stk)+'" không hợp lệ':'Phiếu chưa có số tài khoản người nhận'} — bấm Chỉnh sửa, điền người thụ hưởng, ngân hàng, số tài khoản để có mã QR quét chuyển khoản.</div>`;
   const bin=binNH(x.thu_huong_nh),so='PC'+String(x.id).padStart(6,'0');
   if(!bin)return `<div class="m-st">Mã QR chuyển khoản</div><div class="muted" style="font-size:12px">Không nhận ra ngân hàng "${esc(x.thu_huong_nh||'')}" để tạo QR — sửa tên ngân hàng trên phiếu (vd Vietcombank, MB Bank, Techcombank).</div>`;
-  const nd=boDau(x.noi_dung_ck||(so+' '+ndChi(x))).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,25);   // 20/10 anh: nội dung CK người làm phiếu điền → gài vào mã
-  setTimeout(async()=>{const o=document.getElementById('qr-'+x.id);if(!o)return;try{const Q=await napQR(),q=Q(0,'M');q.addData(vietQR(bin,stk,x.so_tien,S.f.qr_trong?'':nd));q.make();
+  const thm=String(x.noi_dung_ck||'').trim(),nd=boDau(so+' '+(thm&&!thm.toUpperCase().startsWith(so)?thm:thm.slice(so.length)||ndChi(x))).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,25);   // 22/10 anh: số phiếu chi tự có + nội dung người làm phiếu điền thêm; luôn gài vào mã
+  setTimeout(async()=>{const o=document.getElementById('qr-'+x.id);if(!o)return;try{const Q=await napQR(),q=Q(0,'M');q.addData(vietQR(bin,stk,x.so_tien,nd));q.make();
     o.innerHTML=`<img src="${q.createDataURL(4,8)}" alt="QR" style="width:168px;height:168px;image-rendering:pixelated;border:1px solid var(--border);border-radius:8px">`}catch(e){o.textContent=e.message}},0);
   return `<div class="m-st">Mã QR chuyển khoản</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div id="qr-${x.id}" style="width:170px;height:170px;flex:none;padding:0" class="m-empty">Đang tạo…</div>
     <div class="m-kv" style="flex:1;min-width:200px"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')}</div><div>Số tài khoản</div><div><b>${esc(stk)}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')}</div>
-      <div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${esc(nd)} <button class="m-btn out" style="height:24px;padding:0 8px" onclick="navigator.clipboard.writeText(${esc(JSON.stringify(nd))}).then(()=>toast('Đã chép nội dung — dán vào ô nội dung khi chuyển'),()=>toast('Không chép được — gõ tay'))">Chép</button><div class="muted" style="font-size:11px"><span class="m-link" onclick="S.f.qr_trong=!S.f.qr_trong;xemChi(${x.id})">${S.f.qr_trong?'Gài lại nội dung vào mã':'Bỏ nội dung khỏi mã'}</span></div></div></div></div>`}
+      <div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${esc(nd)} <button class="m-btn out" style="height:24px;padding:0 8px" onclick="navigator.clipboard.writeText(${esc(JSON.stringify(nd))}).then(()=>toast('Đã chép nội dung — dán vào ô nội dung khi chuyển'),()=>toast('Không chép được — gõ tay'))">Chép</button></div></div></div>`}
 
 // Phiếu hoàn quỹ ngoài cửa hàng (15/10): kê phiếu Kiot chi từ Quỹ ngoài trong đợt — chi phí ghi 1 lần ở phiếu này
 const CS_HQ={SD:'Shidai',HT:'Hiền Thủy',CT:'Chánh Tâm'};
@@ -2469,7 +2470,7 @@ function formChi(id,tu){S.f.chi_form_id=id||null;
       <label class="nhan"><span>Người thụ hưởng${BB}</span><input name="thu_huong_ten" list="dl-th" value="${esc(x.thu_huong_ten||'')}" onchange="dienThuHuong(this.value)"></label>
       <label class="chi-ck nhan"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}"></label>
       <label class="chi-ck nhan"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" value="${esc(x.thu_huong_stk||'')}"></label>
-      <label class="chi-ck full nhan">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="25" value="${esc(x.noi_dung_ck||'')}"></label>
+      <label class="chi-ck full nhan">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="25" placeholder="Số phiếu chi tự thêm ở đầu — gõ thêm nội dung" value="${esc(x.noi_dung_ck||'')}"></label>
       ${SEC('4. Hồ sơ & ghi chú')}
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
     </div>
@@ -3910,10 +3911,10 @@ const ctNhan=q=>({cho:'Chờ tải',nen:'Đang nén…',tai:'Đang tải '+(q.pc
 function ctO(q,i){return `<div class="ct-item dang ${q.tt}" data-q="${q.uid||''}">
     <div class="ct-thumb" ${q.tt==='loi'?`onclick="ctThuLai(${q.uid})" title="${esc(q.loi||'')}"`:''}>${q.url?`<img src="${q.url}" alt="">`:`<span class="ct-pdf">${ctNhanTep(q.file.type,q.file.name)}</span>`}<span class="ct-tt">${ctNhan(q)}</span></div>
     <div class="ct-ten" title="${esc(q.file.name)}">${esc(q.file.name)}</div>
-    ${q.tt==='moi'?`<div class="ct-nut"><button title="Bỏ" onclick="ctBoMoi('${q.bang}',${i})">✕</button></div>`:''}</div>`}
+    ${q.tt==='moi'?`<div class="ct-nut"><button title="Bỏ" onclick="ctBoMoi('${q.bang}',${q.uid})">✕</button></div>`:''}</div>`}
 const laUNC=t=>/^UNC_/i.test(t||'');
 function ctLuoi(bang,id,ds,u,sua,loc){
-  const dang=id?CTQ.filter(q=>q.k===bang+':'+id):(CT_MOI[bang]||[]);
+  const dang=id?CTQ.filter(q=>q.k===bang+':'+id):(CT_MOI[bang]||[]).filter(q=>loc!=='unc'||laUNC(q.file.name));
   return `<div class="ct-grid">${ds.map(x=>{const anh=/^image\//.test(x.mime||'');return `<div class="ct-item">
         <div class="ct-thumb" onclick="xemCT('${bang}',${id},${x.id})">${anh&&u[x.id]?`<img src="${esc(u[x.id])}" alt="${esc(x.ten)}" loading="lazy">`:`<span class="ct-pdf">${ctNhanTep(x.mime||'',x.ten||'')}</span>`}</div>
         <div class="ct-ten" title="${esc(x.ten)} · ${esc(x.tao_boi||'')} ${fmtDT(x.tao_luc)}">${esc(x.ten)}</div>
@@ -3924,8 +3925,8 @@ function ctLuoi(bang,id,ds,u,sua,loc){
     ${!ds.length&&!dang.length&&!sua?'<div class="muted" style="font-size:12px">Chưa có chứng từ</div>':''}`}
 async function veCT(el){
   const bang=el.dataset.bang,id=+el.dataset.id||0,sua=el.dataset.sua==='1';
-  if(!id){el.innerHTML=ctLuoi(bang,0,[],{},sua);return}
   const loc=el.dataset.loc||'';
+  if(!id){el.innerHTML=ctLuoi(bang,0,[],{},sua,loc);return}
   try{const ds=(await rpc('kt_ds_chung_tu',{p_bang:bang,p_dong_id:id})).filter(x=>loc!=='unc'||laUNC(x.ten));
     const urls=ds.length?(await ctFn({viec:'xem',ids:ds.map(x=>x.id)})).ds:[];const u=Object.fromEntries(urls.map(x=>[x.id,x.url]));
     S.cache['ct_'+bang+id]=ds.map(x=>({...x,url:u[x.id]}));
@@ -3948,7 +3949,7 @@ function ctThem(bang,id,files,loc){
 const CT_DUOI={pdf:'application/pdf',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',xls:'application/vnd.ms-excel',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',doc:'application/msword',csv:'text/csv',heic:'image/heic',heif:'image/heif'};
 function ctLoai(f){const d=(f.name.split('.').pop()||'').toLowerCase();if(f.type&&!/octet/.test(f.type))return f;return CT_DUOI[d]?new File([f],f.name,{type:CT_DUOI[d]}):f}
 const ctNhanTep=(mime,ten)=>/pdf/i.test(mime+ten)?'PDF':/sheet|excel|csv|\.xlsx?$|\.csv$/i.test(mime+' '+ten)?'XLS':/word|\.docx?$/i.test(mime+' '+ten)?'DOC':'TỆP';
-function ctBoMoi(bang,i){const d=CT_MOI[bang]||[];if(d[i]&&d[i].url)URL.revokeObjectURL(d[i].url);d.splice(i,1);veLaiCT(bang,0)}
+function ctBoMoi(bang,uid){const d=CT_MOI[bang]||[],i=d.findIndex(q=>q.uid===uid);if(i<0)return;if(d[i].url)URL.revokeObjectURL(d[i].url);d.splice(i,1);veLaiCT(bang,0)}
 // Gọi ngay sau khi lưu phiếu mới (có id) → đẩy ảnh đã chọn vào hàng đợi
 function ctGuiMoi(bang,id){const d=CT_MOI[bang]||[];CT_MOI[bang]=[];if(!id||!d.length)return;
   d.forEach(q=>{q.id=id;q.k=bang+':'+id;q.tt='cho'});CTQ.push(...d);chayCT()}
@@ -3973,14 +3974,20 @@ async function chayCT(){if(ctChay)return;ctChay=true;let n=0;
   const loi=CTQ.filter(x=>x.tt==='loi').length;
   if(n)toast(`Đã lưu ${n} chứng từ`+(loi?` · ${loi} lỗi (bấm ô lỗi để thử lại)`:''));else if(loi)toast(loi+' chứng từ tải lỗi — bấm ô lỗi để thử lại')}
 // Kéo thả / dán ảnh vào form hoặc ngăn kéo đang mở có ô chứng từ
-const ctDich=()=>{const m=$('#modal');return m&&m.querySelector('.ct[data-sua="1"]')};
+// 22/10 kế toán: dán ảnh vào "Ảnh giao dịch" lại nhảy sang "Chứng từ đính kèm" → nhận ô dưới con trỏ / ô bấm gần nhất, không lấy ô đầu tiên
+let ctChon=null;
+const ctDich=e=>{const m=$('#modal');if(!m)return null;const t=e&&e.target&&e.target.closest&&e.target.closest('.ct[data-sua="1"]');if(t&&m.contains(t))return t;
+  if(ctChon&&ctChon.isConnected&&m.contains(ctChon))return ctChon;return m.querySelector('.ct[data-sua="1"]')};
+const ctDanhDau=el=>{if(ctChon===el)return;if(ctChon)ctChon.classList.remove('ct-chon');ctChon=el;if(el)el.classList.add('ct-chon')};
+document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest('.ct[data-sua="1"]');if(t)ctDanhDau(t)});
+document.addEventListener('mouseover',e=>{const t=e.target.closest&&e.target.closest('.ct[data-sua="1"]');if(t)ctDanhDau(t)});
 const coFile=e=>e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files');
-document.addEventListener('paste',e=>{const el=ctDich();const fs=e.clipboardData?[...e.clipboardData.files]:[];if(!el||!fs.length)return;
-  e.preventDefault();ctThem(el.dataset.bang,+el.dataset.id||0,fs)});
-document.addEventListener('dragover',e=>{if(!coFile(e)||!ctDich())return;e.preventDefault();$('#modal').classList.add('keo')});
+document.addEventListener('paste',e=>{const el=ctDich(e);const fs=e.clipboardData?[...e.clipboardData.files]:[];if(!el||!fs.length)return;
+  e.preventDefault();ctThem(el.dataset.bang,+el.dataset.id||0,fs,el.dataset.loc||'')});
+document.addEventListener('dragover',e=>{if(!coFile(e))return;const el=ctDich(e);if(!el)return;e.preventDefault();ctDanhDau(el);$('#modal').classList.add('keo')});
 document.addEventListener('dragleave',e=>{if(!e.relatedTarget){const m=$('#modal');if(m)m.classList.remove('keo')}});
-document.addEventListener('drop',e=>{const el=ctDich();if(!el||!coFile(e))return;e.preventDefault();$('#modal').classList.remove('keo');
-  ctThem(el.dataset.bang,+el.dataset.id||0,e.dataTransfer.files)});
+document.addEventListener('drop',e=>{const el=ctDich(e);if(!el||!coFile(e))return;e.preventDefault();$('#modal').classList.remove('keo');
+  ctThem(el.dataset.bang,+el.dataset.id||0,e.dataTransfer.files,el.dataset.loc||'')});
 window.addEventListener('beforeunload',e=>{if(CTQ.some(x=>['cho','nen','tai'].includes(x.tt))){e.preventDefault();e.returnValue=''}});
 // Ghim giấy trên danh sách: số chứng từ, bấm mở thẳng trình xem
 const ghim=(bang,x)=>x.so_ct?`<span class="ghim" title="${x.so_ct} chứng từ — bấm để xem" onclick="event.stopPropagation();moCT('${bang}',${x.id})">${IC.ghim}${x.so_ct}</span>`:'';
@@ -3990,7 +3997,7 @@ async function moCT(bang,id){try{const ds=await rpc('kt_ds_chung_tu',{p_bang:ban
 async function taiVeCT(ids){try{const {ds}=await ctFn({viec:'xem',ids,tai_ve:true});
   for(const x of ds){if(!x.url)continue;const a=document.createElement('a');a.href=x.url;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();await new Promise(r=>setTimeout(r,400))}}catch(e){alert(e.message)}}
 async function xoaCT(bang,id,ctId){if(!confirm('Xoá chứng từ này? (ẩn khỏi phiếu, vẫn còn trong nhật ký)'))return;
-  try{await rpc('kt_xoa_chung_tu',{p_id:ctId});const el=$(`.ct[data-bang="${bang}"][data-id="${id}"]`);if(el){delete el.dataset.xong;ganCT()}}catch(e){alert(e.message)}}
+  try{await rpc('kt_xoa_chung_tu',{p_id:ctId});toast('Đã xoá chứng từ');veLaiCT(bang,id,true)}catch(e){alert(e.message)}}   // 22/10: vẽ lại MỌI ô của phiếu (Chứng từ + Ảnh giao dịch), trước chỉ ô đầu
 function xemCT(bang,id,ctId){const ds=S.cache['ct_'+bang+id]||[];let i=ds.findIndex(x=>x.id===ctId);if(i<0)return;
   const lb=document.createElement('div');lb.className='ct-lb';document.body.appendChild(lb);
   const ve=()=>{const x=ds[i];const anh=/^image\//.test(x.mime||'');

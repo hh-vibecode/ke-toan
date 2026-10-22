@@ -4,7 +4,8 @@ const fs = require('fs'), path = require('path'), os = require('os'), { execFile
 function docXlsx(tep) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'xl-')), zip = dir + '.zip';
   fs.copyFileSync(tep, zip);
-  execFileSync('powershell', ['-NoProfile', '-Command', `Expand-Archive -LiteralPath '${zip}' -DestinationPath '${dir}' -Force`], { stdio: 'pipe' });
+  if (process.platform === 'win32') execFileSync('powershell', ['-NoProfile', '-Command', `Expand-Archive -LiteralPath '${zip}' -DestinationPath '${dir}' -Force`], { stdio: 'pipe' });
+  else execFileSync('unzip', ['-q', '-o', zip, '-d', dir], { stdio: 'pipe' });   // phiên cloud (Linux) — 21/10/2026
   const rd = f => { const p = path.join(dir, f); return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : ''; };
   const dec = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&#10;/g, '\n').replace(/&amp;/g, '&');
   const ss = []; for (const m of rd('xl/sharedStrings.xml').matchAll(/<si>([\s\S]*?)<\/si>/g)) ss.push(dec([...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(a => a[1]).join('')));
