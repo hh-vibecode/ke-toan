@@ -899,8 +899,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.166';
-const APP_VERSION='21/10/2026 17:17';
+const APP_SO='1.167';
+const APP_VERSION='22/10/2026 10:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2049,7 +2049,11 @@ function luongDoc(x){const ds=luongChi(x);
     <div class="s">${esc(b.ai||'')}${b.luc?' · '+(String(b.luc).length>10?fmtDT(b.luc):fmtD(b.luc)):''}${b.ghi?' · '+esc(b.ghi):''}</div></div></div>`).join('')}
     ${ds.quaHan?`<div class="neg-t" style="font-size:12px">Quá hạn mong muốn thanh toán (${fmtD(x.han_tt)})</div>`:''}</div>`}
 // việc của tài khoản đang đăng nhập trên 1 phiếu
-const viecCuaToi=x=>((chiDuyet()||chiGD())&&['cho_duyet','cho_gd'].includes(x.trang_thai))||(x.trang_thai==='cho_tt'&&(x.lap_lenh_luc?chiDuyet()||chiGD():chiTien(x)));
+// 22/10/2026 (kế toán): tài khoản THỦ QUỸ (có quyền chi tiền chi_tt, không phải Admin / Supreme / giám đốc) chỉ thấy phiếu ĐẾN LƯỢT thủ quỹ:
+// đã xác nhận, đi tiền từ két / TK thủ quỹ chi, chưa lập lệnh — không thấy phiếu chờ xác nhận hay chờ duyệt lệnh dù có quyền kiểm
+const laThuQuyThuan=()=>!!S.toi&&can('chi_tt')&&!['admin','supreme'].includes(S.toi.vi_tri)&&!can('chi_gd');
+const viecCuaToi=x=>laThuQuyThuan()?x.trang_thai==='cho_tt'&&!x.lap_lenh_luc&&tkTQ(x)
+  :((chiDuyet()||chiGD())&&['cho_duyet','cho_gd'].includes(x.trang_thai))||(x.trang_thai==='cho_tt'&&(x.lap_lenh_luc?chiDuyet()||chiGD():chiTien(x)));
 // 20/10 (kế toán): thủ quỹ chỉ LẬP lệnh trên TK ngân hàng — người duyệt lệnh bấm "Đã duyệt lệnh" mới tính đã chi (ngày tiền đi thật)
 const laNH=x=>(tk(x.tai_khoan_id)||{}).loai==='ngan_hang',tqLapLenh=x=>x.trang_thai==='cho_tt'&&laNH(x)&&tkTQ(x)&&chiTQ()&&!chiDuyet()&&!chiGD();
 async function lapLenh(id,huy){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;
@@ -4229,6 +4233,8 @@ const LOGIC2=[
  ['thu_chi','Nối hoàn ứng','Kế toán nối phiếu hoàn ứng vào phiếu tạm ứng ngay trong cửa sổ phiếu (khung Tạm ứng · hoàn ứng / Nối vào phiếu tạm ứng) → xác nhận tiền về → clear.','Cũng làm được ở trang Tạm ứng & hoàn ứng.','16/10'],
  ['thu_chi','Clear tạm ứng','Khoản tạm ứng chỉ "Đã clear" khi tiền trả lại đã về và kế toán bấm Xác nhận tiền về (tạo phiếu thu "Thu hoàn ứng" vào tài khoản nhận). Chưa đủ → "Đã tạm ứng · chưa clear", theo dõi ở Tạm ứng & hoàn ứng.','Anh 16/10.','16/10'],
  ['thu_chi','Tiền mặt quầy cửa hàng','Kiot thu tiền mặt ở quầy Hiền Thủy / Chánh Tâm vào quỹ "TIỀN MẶT QUẦY CỬA HÀNG (chưa nộp két)", KHÔNG vào thẳng két. Cửa hàng nộp tiền về két = điều chuyển quầy → két (đúng ngày nộp, như file dòng tiền).','Anh 16/10 (khớp file dòng tiền). Số dư quầy = tiền cửa hàng đang giữ chưa nộp.','16/10'],
+ ['thu_chi','Chờ tôi xử lý — thủ quỹ','Tài khoản thủ quỹ chỉ thấy phiếu đến lượt mình: đã xác nhận, đi tiền từ két / TK thủ quỹ chi, chưa lập lệnh.','Kế toán 22/10. Admin / Supreme / giám đốc vẫn thấy như cũ.','22/10'],
+ ['thu_chi','Loại chi ẩn','Bỏ khỏi ô chọn: COGS - Giá vốn & Nhập hàng, CAPEX - Đầu tư, FINANCE - Lãi vay & phí tài chính / Trả gốc vay / Trả thẻ tín dụng.','Kế toán 22/10. Phiếu cũ giữ loại; bật lại ở Danh mục nếu cần.','22/10'],
  ['thu_chi','Tài khoản ngừng dùng','Bỏ tick "Đang dùng" ở Cài đặt → Danh mục: ẩn khỏi lựa chọn, số dư, tổng tồn; phiếu cũ giữ nguyên tên TK.','Xem lại: Sổ quỹ → "TK ngừng dùng".','16/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền vào = phiếu thu Đã thu, theo ngày thu.','','05/10'],
  ['thu_chi','Tiền vào / ra / tồn','Tiền ra = phiếu chi Đã thanh toán, theo ngày thanh toán.','Phiếu chờ duyệt / chờ thanh toán / từ chối không tính.','05/10'],
