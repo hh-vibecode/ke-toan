@@ -806,7 +806,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 }
 @media (max-width:900px){.sb-an-n,.sb-khoa-i{display:none}}
 /* Phiếu chi — cửa sổ lớn (16/10) */
-.modal.pc-m>div{max-width:1480px;width:96vw;padding:0;max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
+.modal.pc-m>div{max-width:1480px;width:96vw;padding:0;max-height:96vh;display:flex;flex-direction:column;overflow:hidden}
 .pc{display:flex;flex-direction:column;min-height:0;flex:1}
 .pc-h{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);background:var(--surface)}
 .pc-h .m-loai{flex:none}.pc-h1{flex:1;min-width:0}.pc-so{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pc-so b{font-size:18px}
@@ -823,10 +823,9 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-drive{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12.5px}
 /* 22/10 anh (hình vẽ + "trạng thái như cũ, rộng hơn, nối ở bên trái"): mỗi hàng = ô B1 / B2 / B3 (vòng trạng thái như Luồng duyệt cũ) + 1 khung nội dung;
    các ô nối nhau bằng đường dọc bên trái (xanh khi bước đã xong); 3 hàng xếp dọc, hết chiều ngang */
-.pc-cot1{display:flex;flex-direction:column;gap:20px}
-.pc-bs{display:flex;flex-direction:column;gap:20px}
-.pc-buoc{display:grid;grid-template-columns:210px minmax(0,1fr);gap:16px;align-items:start;position:relative}
-.pc-buoc::before{content:'';position:absolute;left:30px;top:30px;bottom:-20px;width:3px;border-radius:2px;background:var(--border);z-index:0}
+.pc-bs{display:flex;flex-direction:column;gap:12px}
+.pc-buoc{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:start;position:relative}
+.pc-buoc::before{content:'';position:absolute;left:28px;top:28px;bottom:-10px;width:3px;border-radius:2px;background:var(--border);z-index:0}
 .pc-buoc:last-child::before{display:none}
 .pc-buoc.xong::before{background:#16a34a}
 .pc-moc{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 10px;align-items:center;padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:var(--surface);position:sticky;top:0;z-index:1}
@@ -841,13 +840,39 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-buoc.dang .pc-moc>i{color:#422006}
 .pc-buoc.chua .pc-moc .bt,.pc-buoc.bo .pc-moc .bt{color:var(--muted)}
 @media (max-width:900px){.pc-buoc{grid-template-columns:1fr;gap:8px}.pc-buoc::before{display:none}.pc-moc{position:static}}
-/* 22/10 anh: "mỗi bước 1 khung" — Bước 1 thông tin · Bước 2 hạch toán · Bước 3 chi tiền: các phần trong bước chỉ cách nhau đường kẻ, không khung con */
-.pc-buoc>.pc-kh{display:flex;flex-direction:column;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px 26px}
-.pc-kh>.pc-c{border:none;border-radius:0;background:none;padding:20px 0}
-.pc-kh .pc-g{gap:14px 28px}.pc-kh .pbf,.pc-kh .pbf-t,.pc-kh .pbf+div{max-width:760px}
-.pc-kh>.pc-c+.pc-c,.pc-kh>.pc-c+div:not(:empty),.pc-kh>div:not(:empty)+.pc-c{border-top:1px solid var(--border)}
-.pc-kh>.pc-c h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)}
+/* 22/10 anh: "mỗi bước 1 khung" + "vừa 1 trang, không muốn cuộn, bình luận bên phải như cũ":
+   trái 3 hàng bước · phải Hoạt động; trong mỗi khung các phần xếp NGANG (cách nhau đường kẻ dọc) cho thấp lại */
+.pc-cot2{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.pc-cot2>div:last-child{display:flex;flex-direction:column;gap:12px;min-width:0;position:sticky;top:0}
+.pc-buoc>.pc-kh{display:flex;flex-direction:row;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 4px}
+.pc-kh>*{flex:1 1 0;min-width:0}.pc-kh>div:empty{display:none}
+.pc-kh>.pc-c{border:none;border-radius:0;background:none;padding:12px 16px}
+.pc-kh>.pc-c+.pc-c,.pc-kh>.pc-c+div:not(:empty),.pc-kh>div:not(:empty)+.pc-c{border-left:1px solid var(--border)}
+.pc-kh>.pc-c:has(#pbf){flex:2.3}.pc-buoc:first-child .pc-kh>.pc-c:first-child{flex:2.2}
+.pc-kh>.pc-c h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:8px}
+.pc-kh .pc-g{gap:8px 20px}.pc-buoc:first-child .pc-kh .pc-g{grid-template-columns:repeat(4,minmax(0,1fr))}.pc-buoc:first-child .pc-kh .pc-o.full{grid-column:span 2}
+.pc-kh .pc-c>.sec:first-child,.pc-kh .ct-them{margin-top:0}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:84px}
+.pc-kh .pbf{gap:4px}.pc-kh .pbf label{grid-template-columns:110px 1fr 44px;gap:6px}.pc-kh .pbf label input{height:28px}
+.pc-kh .pbf-nut{margin-top:6px}.pc-kh .pbf-nut .m-btn{height:28px;font-size:11.5px;padding:0 9px}
+.pc-kh .m-seg.ht3{margin-bottom:8px!important}.pc-kh .ht3 button{padding:0 8px;font-size:12px}
+.pc-kh .m-st{margin:6px 0 4px}.pc-kh .m-in{height:32px}
+.pc-kh .pbf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 10px}.pc-kh .pbf label{grid-template-columns:1fr auto;grid-template-areas:'t p' 'i i';gap:2px 4px;font-size:11.5px}.pc-kh .pbf label>span{grid-area:t;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc-kh .pbf label>em{grid-area:p}.pc-kh .pbf label>input{grid-area:i}.pc-kh .pbf>div,.pc-kh .pbf-t{grid-column:1/-1}
+.pc-kh #pc-loai-w{display:flex;align-items:center;gap:10px}.pc-kh #pc-loai-w .m-st{margin:0}.pc-kh #pc-loai-w select{max-width:320px}
+.pc-kh [id^="qr-"]{width:122px!important;height:122px!important}.pc-kh [id^="qr-"] img{width:120px!important;height:120px!important}
+.pc-kh details{margin-top:6px!important}.pc-h{padding:9px 22px}.pc-tien b{font-size:21px}.pc-f{padding:8px 22px}
+.pc-kh .pc-c:has(#pbf)>.m-st:first-child{display:none}   /* tiêu đề "Hạch toán + số tiền": số tiền đã ở đầu cửa sổ */
+.pc-kh #ftt:has([name=ngay_tt]){grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}.pc-kh #ftt:has([name=ngay_tt])>label.full{grid-column:auto}
+.pc-kh .ct-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}.pc-kh .ct-thumb{height:62px}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:62px}
+.pc-kh .ct-ten{font-size:10.5px}.pc-kh .pc-c .sec{margin-top:8px!important;font-size:12px}
+.pc-kh>.pc-kc{display:flex;flex-direction:column}.pc-kc>.pc-c{border:none;border-radius:0;background:none;padding:12px 16px}.pc-kc>.pc-c+.pc-c,.pc-kc>*+.pc-c{border-top:1px solid var(--border)}
+.pc-kh>.pc-kc+*,.pc-kh>*+.pc-kc{border-left:1px solid var(--border)}
+@media (max-width:1500px){.pc-cot2{grid-template-columns:minmax(0,1fr) 300px}.pc-buoc{grid-template-columns:150px minmax(0,1fr)}}
+.pc-kh .m-kv>div{padding:4px 10px}.pc-kh .m-kv{grid-template-columns:110px 1fr}
+.pc-cot2 .hd-tab button{white-space:nowrap;padding:6px 8px}.pc-cot2 .hd-bl{flex-wrap:wrap}.pc-cot2 .hd-bl>.bl-o{flex:1 1 100%}.pc-cot2 .hd-bl textarea{width:100%}
 .pc-buoc.dang>.pc-kh{border-color:#eab308;box-shadow:0 0 0 3px color-mix(in srgb,#eab308 16%,transparent)}
+.pc-b{padding:10px 16px}.pc-bs{gap:10px}.pc-moc{padding:10px 12px}
+@media (max-width:1100px){.pc-cot2{grid-template-columns:1fr}.pc-cot2>div:last-child{position:static}}
+@media (max-width:900px){.pc-kh{flex-direction:column!important}.pc-kh>.pc-c+.pc-c,.pc-kh>.pc-c+div:not(:empty),.pc-kh>div:not(:empty)+.pc-c{border-left:none;border-top:1px solid var(--border)}.pc-buoc:first-child .pc-kh .pc-g{grid-template-columns:1fr}}
 .pc-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 22px;border-top:1px solid var(--border);background:var(--surface)}
 @media (max-width:900px){.pc-cot,.pc-g{grid-template-columns:1fr}.pc-h{flex-wrap:wrap;padding:12px 14px}.pc-tien{text-align:left}.pc-b{padding:12px}.pc-f{padding:10px 12px}.modal.pc-m{padding:0}.modal.pc-m>div{max-height:100vh;height:100vh;border-radius:0}}
 .pc-hd{display:flex;gap:8px;flex-wrap:wrap}.pc-hd select{flex:1 1 220px}.pc-hd input{flex:0 0 160px}
@@ -928,8 +953,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.192';
-const APP_VERSION='22/10/2026 19:50';
+const APP_SO='1.193';
+const APP_VERSION='22/10/2026 20:01';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2178,7 +2203,7 @@ async function chayLoat(ds,lam,ten){let ok=0;const loi=[];for(const x of ds){try
 const conCuaLoai=id=>S.dm.loai.filter(l=>l.hoat_dong&&l.id!==id&&(()=>{let p=l;while(p&&p.cha_id){if(p.cha_id===id)return true;p=lo(p.cha_id)}return false})()).sort((a,b)=>(a.thu_tu-b.thu_tu)||(a.id-b.id));
 const gdSuaCon=()=>chiGD()&&!xnDoc(),xemCon=()=>chiGD();   // 22/10 anh: mục con không hiện public — chỉ giám đốc + Supreme thấy
 function loaiConO(x,bang){const c=lo(x.loai_con_id),con=conCuaLoai(x.loai_id);
-  if(gdSuaCon()&&con.length)return `<select class="m-in${bang?' ld-sel':''}" style="height:${bang?24:28}px;${bang?'font-size:11.5px':'margin-top:4px'}" title="Mục con — giám đốc sửa nếu cần${c?' · chọn bởi '+esc(x.loai_con_boi||'Hệ thống'):''}" onclick="event.stopPropagation()" onchange="datLoaiCon(${x.id},this.value,${bang?1:0})">${opts(con.map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten})),c?c.id:null,x.loai_con_kxd?'KXĐ — chọn mục con':'Chờ phân loại')}</select>`;
+  if(gdSuaCon()&&con.length)return `<select class="m-in${bang?' ld-sel':''}" style="height:${bang?24:28}px;width:auto;max-width:92%;${bang?'font-size:11.5px':''}" title="Mục con — giám đốc sửa nếu cần${c?' · chọn bởi '+esc(x.loai_con_boi||'Hệ thống'):''}" onclick="event.stopPropagation()" onchange="datLoaiCon(${x.id},this.value,${bang?1:0})">${opts(con.map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten})),c?c.id:null,x.loai_con_kxd?'KXĐ — chọn mục con':'Chờ phân loại')}</select>`;
   if(c)return `${esc((c.ma?c.ma+' ':'')+c.ten)}${bang?'':` <span class="muted" style="font-size:11px">· ${esc(x.loai_con_boi||'Hệ thống')}</span>`}`;
   if(!x.loai_con_kxd)return '<span class="muted">Chờ phân loại (4 giờ / lần)</span>';
   return pill(bang?'KXĐ':'KXĐ — chờ giám đốc','vio')}
@@ -2612,6 +2637,7 @@ async function xuLyTrung(id,gop){if(gop&&!confirm('Gộp phiếu Kiot #'+id+' v�
   await save('kt_xu_ly_trung',{p_id:id,p_gop_vao:gop},gop?'Đã gộp vào #'+gop:'Đã xác nhận 2 khoản khác nhau');render()}
 async function doiHDVe(id,v){try{await rpc('kt_dat_hd_do',{p_id:id,p_hd_ve:v||''});S.f.chi_doi=1;const x=(S.cache.chi||[]).find(c=>c.id===id);if(x)x.hd_ve=v||null;toast('Đã lưu hoá đơn xuất về')}catch(e){alert(e.message)}}
 // 22/10 anh: "thêm bước 1 → bước 3 ở ngoài cùng bên trái ứng với từng bước" — mốc lấy từ luongChi (thay khung Luồng duyệt bên phải)
+const pcCot=h=>String(h||'').trim()?`<div class="pc-kc">${h}</div>`:'';   // 22/10: gộp nhiều phần nhỏ thành 1 cột dọc trong khung bước
 function pcBuoc(x,nhom){const ds=luongChi(x);
   return nhom.map((noi,i)=>{if(!String(noi||'').trim())return '';const b=ds[i]||{},k={xong:'xong',dang:'dang',loi:'loi',bo:'bo'}[b.tt]||'chua';
     const tt=k==='dang'?`<span class="m-pill" style="background:#fef08a;color:#713f12">Đang chờ${b.cho?' '+b.cho+' ngày':''}</span>`:k==='loi'?pill('Từ chối','bad'):k==='xong'?pill('Xong','ok'):k==='bo'?pill('Bỏ qua',''):pill('Chưa tới','');
@@ -2640,7 +2666,6 @@ function xemChi(id){
       ${o('Người đề nghị',esc(x.nguoi_de_nghi||''))}${o('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}
       ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${o('Hạn mong muốn',fmtD(x.han_tt))}
       ${o('Ngày sử dụng dịch vụ',x.ngay_su_dung?fmtD(x.ngay_su_dung):'')}${o('Nhà cung cấp',nccChiO(x))}
-      ${x.ca_nhan||!x.co_hd_do||(dy&&['cho_duyet','cho_gd'].includes(x.trang_thai))?'':`<div class="pc-sub">Hoá đơn</div>${x.co_hd_do?o('Hoá đơn xuất về',hdG?`<select class="m-in" style="height:28px" id="pc-hdve">${optsObj(HD_VE,x.hd_ve||'')}</select>`:x.hd_ve?esc(hdVeT(x.hd_ve)):'<span class="neg-t">chưa chọn</span>'):''}`}
       ${x.la_tam_ung?o('Loại đề nghị',pill('Tạm ứng','warn')+''):''}${x.loai_dn==='hoan_ung'?o('Loại đề nghị',pill('Hoàn ứng — trả lại tiền','info')+` <span class="muted">${fmt(x.so_tien)} — không chi tiền, ${x.trang_thai==='quyet_toan'?'kế toán đã xác nhận tiền về':`<span class="m-link" onclick="closeModal();S.f.tu_tab='hoan';go('tam_ung')">xác nhận tiền về ở Tạm ứng & hoàn ứng</span>`}</span>`):''}
       ${x.ghi_chu?`<div class="pc-sub">Ghi chú</div>${o('',esc(x.ghi_chu),1)}`:''}</div>`,sua?`<button class="m-btn out" style="height:30px" onclick="formChi(${id})">${IC_SUA} Chỉnh sửa</button>`:'');
   // 22/10 anh: hạch toán thuộc Bước 2 (xác nhận) — người không có khung Hạch toán xem loại chi ở khung "Hạch toán & phân bổ"
@@ -2659,7 +2684,7 @@ function xemChi(id){
     :x.trang_thai==='da_tt'?the('Thanh toán',`<div class="pc-g">${o('Ngày thanh toán',g?`<input type="date" class="m-in" id="pc-ngay-tt" value="${x.ngay_tt||''}" min="${MOC_TIEN}" max="${homNay()}" title="Sửa ngày tiền thật ra khỏi tài khoản rồi bấm Lưu" style="height:30px">`:fmtD(x.ngay_tt))}${o('Tài khoản chi',esc(t.ten||''))}${x.nguoi_nhan_tien?o('Người đến nhận tiền',esc(x.nguoi_nhan_tien)):''}</div>${ctBox('chi',x.id,false,'unc')}`):'';
   const hdV=!x.co_hd_do?'khong':x.hd_do_nhan?'da':'chua';
   const hd=x.ca_nhan?'':the('Hoá đơn đỏ',hdG?`<div class="pc-hd"><select class="m-in" id="pc-hd" onchange="pcHD(this)">${optsObj({khong:'Không cần hoá đơn',chua:'Cần hoá đơn — chưa nhận',da:'Đã nhận hoá đơn'},hdV)}</select>
-      <input type="date" class="m-in" id="pc-hd-ngay" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" style="${hdV==='da'?'':'display:none'}"></div>${dy&&['cho_duyet','cho_gd'].includes(x.trang_thai)&&x.co_hd_do?`<label class="m-f" style="margin-top:8px"><span>Hoá đơn xuất về</span><select class="m-in" id="pc-hdve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>`:''}${hdvHtml(x)}`:`<div>${hdO}</div>${hdvHtml(x)}`);
+      <input type="date" class="m-in" id="pc-hd-ngay" title="Ngày nhận hoá đơn" value="${x.ngay_nhan_hd||homNay()}" style="${hdV==='da'?'':'display:none'}"></div>${x.co_hd_do?`<label class="m-f" style="margin-top:8px"><span>Hoá đơn xuất về</span><select class="m-in" id="pc-hdve">${optsObj(HD_VE,x.hd_ve||'')}</select></label>`:''}${hdvHtml(x)}`:`<div>${hdO}</div>${x.co_hd_do?`<div class="pc-o" style="margin-top:8px"><span>Hoá đơn xuất về</span><div>${x.hd_ve?esc(hdVeT(x.hd_ve)):'<span class="neg-t">chưa chọn</span>'}</div></div>`:''}${hdvHtml(x)}`);   // 22/10: hoá đơn xuất về thuộc Bước 2 (trước nằm ở Thông tin đề nghị)
   // ── cột phải
   // 22/10 anh: chứng từ đính kèm nằm trong khung Bước 1 (đề nghị); ảnh uỷ nhiệm chi nằm ở khung Bước 3 (chi tiền)
   const ct=the('',ctBox('chi',x.id,chiCT(x))+(drive.length?`<div class="pc-drive">${drive.map((u,i)=>`<a class="m-link" href="${esc(u)}" target="_blank" rel="noopener">Hồ sơ gốc trên Drive ${drive.length>1?i+1:''}</a>`).join('')}</div>`:''));
@@ -2682,7 +2707,7 @@ function xemChi(id){
       <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.ca_nhan?pill('Chi phí cá nhân',''):x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.tu_tru?pill('Tài khoản tự trừ','info'):''}<span class="pc-nho"><button class="m-btn sm out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu in</button>${g?`<button class="m-btn sm" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:''}</span></div><div class="pc-nd">${esc(ndChi(x))}</div></div>
       <div class="pc-tien"><span>Số tiền</span><b>${fmt(x.so_tien)}</b></div><button class="x" title="Đóng" onclick="dongChiCT()">✕</button></div>
     <div class="pc-b">${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
-      <div class="pc-cot1"><div class="pc-bs">${pcBuoc(x,[deNghi+ct+((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung')?`<div id="pc-tu-${id}"></div>`:''),pb+hd+xacNhan,nhan+hqChi(x,dy)+ttoan])}</div><div>${lsO}</div></div></div>
+      <div class="pc-cot2"><div class="pc-bs">${pcBuoc(x,[deNghi+ct+((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung')?`<div id="pc-tu-${id}"></div>`:''),pb+pcCot(hd+xacNhan),nhan+pcCot(hqChi(x,dy)+ttoan)])}</div><div>${lsO}</div></div></div>
     <div class="pc-f">${nut}</div>`;
   hienChiCT(id,html);setTimeout(()=>hdTai('chi',id),0);if((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung'))setTimeout(()=>veTUChi(x),0);
 }
@@ -2830,7 +2855,7 @@ function pbForm(x){
   <div class="pbf" id="pbf" data-tong="${x.so_tien}" data-ds="${((x.phan_bo||[])[0]||{}).ds||''}">${DV_CP.map(([i,t])=>`<label><span>${t}</span>${moneyIn('pb_'+i,pb[i]||'','oninput="fmtMoney(this);$(\'#pbf\').dataset.ds=\'\';pbTong()"')}<em id="pbp_${i}"></em></label>`).join('')}
     ${(x.phan_bo||[]).filter(p=>!DV_CP.some(d=>d[0]===+p.don_vi_id)).map(p=>`<div class="muted">Đơn vị cũ: ${esc(dvCPTen(p.don_vi_id))} ${fmt(p.so_tien)} — lưu lại sẽ chuyển sang 4 đơn vị trên</div>`).join('')}
     <div class="pbf-t">Đã chia: <b id="pbt"></b></div></div>
-  <div class="pbf-nut"><button class="m-btn" onclick="pbChia('deu3')">Chia đều HT / CT / SD</button><button class="m-btn" onclick="pbChia('ds','${th0}')">Chia theo % doanh số thực đạt tháng ${+th0.slice(5)}/${th0.slice(0,4)}</button><button class="m-btn" onclick="pbChia('cty')">Cả về Tổng công ty</button></div></div>
+  <div class="pbf-nut"><button class="m-btn" onclick="pbChia('deu3')">Chia đều HT / CT / SD</button><button class="m-btn" title="Chia theo % doanh số thực đạt tháng ${+th0.slice(5)}/${th0.slice(0,4)}" onclick="pbChia('ds','${th0}')">Theo % doanh số T${+th0.slice(5)}/${th0.slice(0,4)}</button><button class="m-btn" onclick="pbChia('cty')">Cả về Tổng công ty</button></div></div>
   <div id="pb-wrap2" style="${v==='co'?'':'display:none'}">
   <details style="margin-top:10px" ${thg.length>1?'open':''}><summary class="m-st" style="cursor:pointer;display:list-item">Chia chi phí ra nhiều tháng <span class="muted" style="font-weight:400">· mặc định ghi cả vào tháng ${thgT(kyHT(x))}</span></summary>
   <div class="pbf-nut"><label class="m-f"><span>Từ tháng</span><input type="month" id="pbm_tu" class="m-in" value="${(thg[0]||{}).thang||kyHT(x)||th0}"></label>
