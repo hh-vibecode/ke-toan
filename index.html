@@ -901,8 +901,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.175';
-const APP_VERSION='22/10/2026 14:45';
+const APP_SO='1.176';
+const APP_VERSION='22/10/2026 15:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1337,9 +1337,12 @@ const PAGES={
   cd_loai:{ten:'Loại thu / chi',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('loai')},
   cd_giai_dap:{ten:'Cần giải đáp',nv:'he_thong',cd:'Hỗ trợ',fn:()=>pageGiaiDap()},
   cd_logic:{ten:'Logic xử lý',nv:'he_thong',cd:'Hỗ trợ',fn:()=>pageCaiDat('logic')},
-  cd_nhat_ky:{ten:'Nhật ký chỉnh sửa',nv:'he_thong',cd:'Nhật ký',fn:()=>pageCaiDat('nhat_ky')},
+  // 22/10 anh: nhóm "Nhật ký" đổi thành "Log" + thêm Log lưu lượng (Supabase) + Log lịch chạy (tách từ cuối Log so khớp)
+  cd_nhat_ky:{ten:'Log chỉnh sửa',nv:'he_thong',cd:'Log',fn:()=>pageCaiDat('nhat_ky')},
+  cd_luu_luong:{ten:'Log lưu lượng',nv:'he_thong',cd:'Log',fn:()=>pageLuuLuong()},
+  cd_lich:{ten:'Log lịch chạy',nv:'he_thong',cd:'Log',fn:()=>pageLich()},
   // Nhật ký kéo + so khớp Kiot theo tháng (anh 14/10/2026) — quyền theo trang Nhật ký
-  cd_kiot:{ten:'Nhật ký so khớp',nv:'he_thong',cd:'Nhật ký',fn:()=>pageKiotLog()},
+  cd_kiot:{ten:'Log so khớp',nv:'he_thong',cd:'Log',fn:()=>pageKiotLog()},
   cd_doi_mk:{ten:'Đổi mật khẩu',nv:null,cd:'Tài khoản',   /* 22/10 anh: đổi mật khẩu ở menu tài khoản rồi, bỏ khỏi Cài đặt */fn:()=>pageCaiDat('doi_ma')},
 };
 function go(p){S.page=p;location.hash=p;shell();dxBao()}
@@ -1347,7 +1350,7 @@ function go(p){S.page=p;location.hash=p;shell();dxBao()}
 function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0}
 const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Hệ thống & Cài đặt chia nhóm, có tiêu đề nhỏ
-const CD_NHOM=['Danh mục','Người dùng','Nhật ký','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
+const CD_NHOM=['Danh mục','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_luu_luong','cd_lich','cd_giai_dap','cd_logic'];
 const sbMuc=(ks,nb)=>{const mot=k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`;
   if(!ks.every(k=>PAGES[k].cd))return ks.map(mot).join('');
   const xs=[...ks].sort((a,b)=>(CD_THU.indexOf(a)+99)%99-(CD_THU.indexOf(b)+99)%99);
@@ -1734,7 +1737,8 @@ async function pageDongTien(){
   const [b,r,kq]=await Promise.all([coSDQ?rpc('kt_so_du_tk',{p_tu:S.tu,p_den:S.den}):{tai_khoan:[],thuc_te:[]},coSDQ||coSQ?rpc('kt_dong_tien',{p_tu:S.tu,p_den:S.den}):{dau_ky:{},phat_sinh:[],thuc_te:[]},coKK?rpc('kt_ds_kiem_quy',{p_tu:S.tu,p_den:S.den}):[]]);
   S.cache.bc=b;S.cache.kq=kq;
   const ngung=b.tai_khoan.filter(t=>!t.hoat_dong&&(+t.cuoi_ky||+t.thu||+t.chi||+t.dc));
-  const tks=b.tai_khoan.filter(t=>t.hoat_dong||(f.sq_ngung&&ngung.includes(t))).filter(t=>locTK().length===LOC_TK.length||locTK().includes(tkNhom(t.id)));
+  const tks=b.tai_khoan.filter(t=>t.loai!=='vay')   // 22/10 anh: tài khoản vay thuộc Khoản vay, không nằm ở Số dư TK
+    .filter(t=>t.hoat_dong||(f.sq_ngung&&ngung.includes(t))).filter(t=>locTK().length===LOC_TK.length||locTK().includes(tkNhom(t.id)));
   const tt=Object.fromEntries((b.thuc_te||[]).map(x=>[x.tk,x])),coSD=S.den>=MOC_SODU;
   const tm=tks.filter(t=>t.loai==='tien_mat'),nh=tks.filter(t=>t.loai==='ngan_hang'),lech=tks.filter(t=>tt[t.id]&&Math.abs(+t.cuoi_ky-(+tt[t.id].so_tien))>0&&tt[t.id].ngay===S.den);
   const homKet=kq.filter(k=>k.ngay===homNay()).length,tmIds=tm.map(t=>t.id);
@@ -4314,6 +4318,8 @@ const LOGIC2=[
  ['thu_chi','Tự chi: phiếu đang chờ + chọn nhiều phiếu','Phiếu mình tạo còn chờ duyệt: nút "✓ Tự chi (đã thanh toán)" trong phiếu. Tick chọn nhiều phiếu trên bảng → "✓ Tự chi n phiếu" (chọn tài khoản, ngày, loại chi 1 lần) hoặc "✓ Đã duyệt lệnh n phiếu" (kế toán).','Tick "Đã thanh toán luôn" thì không cần thông tin người nhận tiền.','21/10'],
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
  ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
+ ['chung','Log lưu lượng Supabase','23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
+ ['chung','Số dư tài khoản không gồm TK vay','Sổ quỹ → Số dư: bỏ tài khoản loại Vay (thuộc mục Khoản vay).','Anh 22/10.','22/10'],
  ['bao_cao','Dòng tiền khớp phân loại chi phí','Báo cáo dòng tiền đặt tên + thứ tự loại chi giống báo cáo chi phí (theo danh mục). Giao dịch cá nhân tách mục riêng "IV. Giao dịch cá nhân".','Vẫn tính vào tiền thuần trong kỳ và số dư (tiền thật đi qua tài khoản).','21/10'],
  ['thu_chi','Form phiếu chi 4 nhóm','Đề nghị · Hạch toán & hoá đơn · Người nhận tiền · Ghi chú & thanh toán.','','21/10'],
  ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
@@ -4472,13 +4478,27 @@ const LICH_KT={'kt-kiot':['Kéo Kiot','15 phút/lần · phút 02, 17, 32, 47 m�
   'kt-kiot-hang-dem':['Kéo đầy đủ hàng hoá + so tồn','23:20 hằng ngày','Toàn bộ mặt hàng + tồn từng cơ sở (bắt cả chuyển kho, kiểm kho) · so tồn app với Kiot trước khi ghi đè'],
   'kt-ton-kho':['Chụp tồn cuối ngày','23:40 hằng ngày','Lưu giá trị tồn từng cơ sở; ngày cuối tháng lưu từng mã'],
   'kt-kiot-doi-chieu':['So khớp doanh thu','23:50 hằng ngày','Kéo lại hoá đơn + trả hàng tháng này và tháng trước, so từng mã, tự bù phần thiếu'],
-  'kt-meinvoice':['Kéo hoá đơn meInvoice','00:25 hằng ngày','Hoá đơn công ty tổng tháng này + tháng trước']};
+  'kt-meinvoice':['Kéo hoá đơn meInvoice','00:25 hằng ngày','Hoá đơn công ty tổng tháng này + tháng trước'],
+  'kt-meinvoice-bot':['Kéo hoá đơn đầu vào (MISA)','00:35 hằng ngày','HĐ mua vào tháng này + tháng trước, tự ghép phiếu chi chưa nhận HĐ'],
+  'kt-kiot-canh-bao':['Cảnh báo Kiot','Phút 05 mỗi giờ','Báo khi Kiot lâu chưa kéo được'],
+  'kt-nop-ket':['Đồng bộ nộp két','15 phút/lần','Tiền cửa hàng nộp két 10 ngày gần nhất'],
+  'kt-nhac-viec':['Nhắc việc','08:00 hằng ngày','Nhắc lại việc còn treo'],
+  'kt-pb-ds':['Phân bổ theo doanh số','00:15 hằng ngày','Tính lại tỷ lệ phân bổ chi phí theo doanh số'],
+  'kt-phan-loai-con':['Phân loại mục con loại chi','23:00 hằng ngày','Gán mục con theo mục cha + nội dung; không đoán được → Loại chi KXĐ'],
+  'kt-luu-luong':['Chụp lưu lượng Supabase','23:55 hằng ngày','CSDL, kho tệp, đĩa, lượt gọi, máy chủ → Log lưu lượng'],
+  'kt-kiem-he-thong':['Kiểm hệ thống Supabase','09:00 ngày 15 + cuối tháng','Dung lượng, khoá RLS, lịch lỗi → chuông Supreme'],
+  'dong_bo_sheet':['Đồng bộ sheet đề nghị (máy anh)','Theo lịch Windows','Sheet ĐNTT → phiếu chi'],
+  'nap_file_dong_tien':['Kéo file dòng tiền (máy anh)','Theo lịch Windows','File dòng tiền Drive → Log so khớp']};
 const TEN_KIOT={khach:'khách',ncc:'NCC',hang:'hàng',hoa_don:'HĐ',tra_hang:'trả hàng',nhap_hang:'nhập'};
 // lần chạy thuộc lịch nào (để hiện "lần cuối" trên thẻ lịch)
-const lichCua=x=>{const k=x.kq||{},d=k.da_xong||k;return x.viec==='doi_chieu_kiot'?'kt-kiot-doi-chieu':x.viec==='chup_ton_kho'?'kt-ton-kho':x.viec==='keo_meinvoice'?'kt-meinvoice':
+const lichCua=x=>{const k=x.kq||{},d=k.da_xong||k;return x.viec==='luu_luong'?'kt-luu-luong':x.viec==='kiem_he_thong'?'kt-kiem-he-thong':/^keo_misabot/.test(x.viec)?'kt-meinvoice-bot':
+  x.viec==='dong_bo_sheet'||x.viec==='nap_file_dong_tien'?x.viec:x.viec==='doi_chieu_kiot'?'kt-kiot-doi-chieu':x.viec==='chup_ton_kho'?'kt-ton-kho':x.viec==='keo_meinvoice'?'kt-meinvoice':
   (!d.so_quy&&d.hang&&d.hang.kieu==='day_du')||(!d.so_quy&&d.so_ton)?'kt-kiot-hang-dem':'kt-kiot'};
-const loiChay=x=>x.viec==='keo_kiot_loi'||!!(x.kq&&x.kq.loi);
+const loiChay=x=>/_loi$/.test(x.viec)||!!(x.kq&&x.kq.loi);
 function tomTatChay(x){const k=x.kq||{};
+  if(x.viec==='luu_luong')return `CSDL ${fmtGB(k.db_bytes)} · kho tệp ${fmtGB(k.kho_bytes)}${(k.canh_bao||[]).length?' · <span class="neg-t">'+esc(k.canh_bao.join(' · '))+'</span>':''}`;
+  if(x.viec==='kiem_he_thong')return (k.canh_bao||[]).length?'<span class="neg-t">'+esc(k.canh_bao.join(' · '))+'</span>':'Ổn';
+  if(/^keo_misabot|^dong_bo_sheet|^nap_file/.test(x.viec))return esc(JSON.stringify(k).slice(0,180));
   if(x.viec==='doi_chieu_kiot')return (k.doi_chieu||[]).map(d=>`T${+d.thang.slice(5)}/${d.thang.slice(2,4)}: ${d.khop?'khớp':`lệch ${d.so_lech}${d.so_sua?', đã bù '+d.so_sua:''}`}`).join(' · ');
   if(x.viec==='chup_ton_kho')return `${k.chi_nhanh||0} cơ sở${k.chi_tiet_cuoi_thang?' · '+fmt(k.chi_tiet_cuoi_thang)+' dòng cuối tháng':''}`;
   if(x.viec==='keo_meinvoice')return esc(JSON.stringify(k).slice(0,160));
@@ -4597,20 +4617,57 @@ async function pageKiotLog(){
       ${r.ton.map(t=>{const gk=sumBy(Object.values(t.ket_qua.kiot||{}),v=>+(v.gt||0)),ga=sumBy(Object.values(t.ket_qua.app||{}),v=>+(v.gt||0));
         return `<tr><td class="nw">${fmtDT(t.luc)}</td><td class="nw muted">${esc(t.nguoi||'')}</td><td class="num">${fmt(t.so_lech)}</td><td class="num">${tien(t.ket_qua.dv_phu)}</td><td class="num">${tien(gk-ga)}</td><td>${t.khop?pill('Khớp','ok'):pill('Đã ghi đè theo Kiot','info')}</td></tr>`}).join('')}</table></div>`:'';
   const dvPhu=ton&&ton.ket_qua.dv_phu?`<span class="badge" style="background:var(--warn-bg);color:var(--warn);white-space:normal">Lần so này app còn cộng trùng đơn vị quy đổi: ${fmt(ton.ket_qua.dv_phu)} — đã sửa 14/10</span>`:'';
-  // ── lịch + lịch sử
-  const cuoi={};for(const x of r.chay){const k=lichCua(x);if(!cuoi[k])cuoi[k]=x}
-  const lich=`<div class="kl-lich">${r.lich.map(j=>{const L=LICH_KT[j.ten]||[j.ten,j.lich,''],c=cuoi[j.ten],mau=!c?'grey':loiChay(c)?'bad':'ok';
-      return `<div class="kl-th" style="--c:var(--${mau})"><div class="kl-t"><b>${esc(L[0])}</b><span class="badge">${esc(L[1])}</span>${j.bat?'':pill('Đang tắt','bad')}</div>
-        <div class="muted kl-v">${esc(L[2])}</div><div class="kl-c">${c?`Lần cuối: <b>${fmtDT(c.luc)}</b> · ${tuLuc(c.luc)} · ${loiChay(c)?pill('Lỗi','bad'):pill('OK','ok')}`:'<span class="muted">Chưa thấy lần chạy trong 150 lần gần nhất</span>'}</div></div>`}).join('')}</div>`;
+  el.innerHTML=top+nkSeg+kp+bang+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS;
+}
+// 22/10 anh: dung lượng / lượt dùng Supabase chụp 23:55 mỗi ngày + thông tin máy chủ đang thuê (gói Pro: CSDL 8 GB, kho tệp 100 GB, băng thông 250 GB / tháng)
+const fmtGB=b=>b==null?'—':(+b>=1024**3?(b/1024**3).toFixed(2).replace('.',',')+' GB':Math.round(b/1024**2)+' MB');
+async function pageLuuLuong(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const r=await rpc('kt_ds_luu_luong'),ds=r.ngay,c=ds[0]?ds[0].d:{},a=c.api||{},nay=r.nay;
+  const kho=o=>sumBy(Object.values((o||{}).kho||{}),v=>+v.bytes),tep=o=>sumBy(Object.values((o||{}).kho||{}),v=>+v.tep);
+  const pt=(v,t)=>t?Math.round(100*v/t)+'%':'',GB=1024**3,du=a.disk_util||{},m=a.may||{},l24=nay.lich_24h||{},g24=a.goi_24h;
+  const k=(cl,l,v,s)=>`<div class="m-k" style="--c:var(--${cl})"><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div></div>`;
+  const mau=(v,t)=>v/t>0.8?'bad':v/t>0.6?'warn':'ok';
+  const kp=`<div class="m-kpis m-k3">${k(mau(+nay.db_bytes,8*GB),'Dung lượng CSDL (cả 3 app)',fmtGB(nay.db_bytes),pt(+nay.db_bytes,8*GB)+' của 8 GB gói Pro · kế toán '+fmtGB(nay.kt_bytes))}
+    ${k(mau(kho(nay),100*GB),'Kho tệp (ảnh, chứng từ)',fmtGB(kho(nay)),pt(kho(nay),100*GB)+' của 100 GB · '+fmt(tep(nay))+' tệp')}
+    ${k(du.fs_size_bytes?mau(+du.fs_used_bytes,+du.fs_size_bytes):'grey','Đĩa máy chủ',du.fs_size_bytes?fmtGB(du.fs_used_bytes):'—',du.fs_size_bytes?pt(+du.fs_used_bytes,+du.fs_size_bytes)+' của '+fmtGB(du.fs_size_bytes)+' (tự nới khi đầy)':'chưa chụp')}
+    ${k('info','Lượt gọi 24 giờ',g24?fmt(g24.rest+g24.auth+g24.storage+g24.realtime):'—',g24?`REST ${fmt(g24.rest)} · tệp ${fmt(g24.storage)} · đăng nhập ${fmt(g24.auth)}`:'')}
+    ${k(+nay.ket_noi>(m.ket_noi_truc_tiep||60)*0.8?'bad':'ok','Kết nối CSDL lúc này',fmt(nay.ket_noi),'tối đa '+fmt(m.ket_noi_truc_tiep||60)+' trực tiếp · '+fmt(m.ket_noi_pooler||200)+' qua pooler')}
+    ${k(+l24.loi_kt?'bad':'ok','Lịch chạy 24 giờ',fmt(l24.lan),(l24.loi||0)+' lần lỗi (kt-: '+(l24.loi_kt||0)+')')}</div>`;
+  const kv2=rs=>`<div class="m-kv">${rs.map(([x,y])=>`<div>${x}</div><div>${y}</div>`).join('')}</div>`;
+  const may=`<div class="sec">Máy chủ đang thuê <span class="badge">${ds[0]?'chụp '+fmtDT(ds[0].luc):'chưa chụp'}</span></div><div class="card" style="padding:12px 16px">${kv2([
+    ['Gói',a.goi?esc(String(a.goi).toUpperCase())+' <span class="muted">· CSDL 8 GB · kho tệp 100 GB · băng thông 250 GB / tháng (vượt tính thêm)</span>':'—'],
+    ['Máy chủ (compute)',m.ten?`${esc(m.ten)} · ${m.cpu} CPU ${m.cpu_rieng?'riêng':'dùng chung'} · ${m.ram_gb} GB RAM <span class="muted">· ${esc(m.gia||'')}</span>`:'—'],
+    ['Đĩa',a.disk?`${a.disk.size_gb} GB ${esc(a.disk.type||'')} · ${fmt(a.disk.iops)} IOPS · ${a.disk.throughput_mibps} MiB/s`:'—'],
+    ['Vùng đặt máy',a.vung?esc(a.vung)+(a.vung==='ap-southeast-1'?' (Singapore)':''):'—'],['Postgres',esc(a.postgres||'—')],
+    ['Dịch vụ',(a.dich_vu||[]).map(d=>pill(d.ten+(d.ok?'':' · lỗi'),d.ok?'ok':'bad')).join(' ')||'—'],
+    ['Edge Function',a.edge?fmt(a.edge.tong)+' hàm (kế toán '+fmt(a.edge.kt)+')':'—'],
+    ['Add-on khác',(a.addon_khac||[]).map(x=>esc(x.ten+' '+(x.gia||''))).join(' · ')||'<span class="muted">Không</span>'],
+    ['Băng thông (egress)','<span class="muted">API Supabase không trả số này — xem </span><a class="m-link" href="https://supabase.com/dashboard/org/_/usage" target="_blank" rel="noopener">Dashboard → Usage</a>']])}
+    ${(c.canh_bao||[]).length?`<div style="margin-top:8px">${c.canh_bao.map(x=>pill(x,'bad')).join(' ')}</div>`:''}</div>`;
+  const bl=`<div class="sec">Bảng kế toán lớn nhất</div><div class="card scroll"><table class="m-t"><tr><th>Bảng</th><th class="num">Dòng (ước)</th><th class="num">Dung lượng</th></tr>
+    ${(nay.bang_lon||[]).map(b=>`<tr><td>${esc(b.ten)}</td><td class="num">${fmt(b.dong)}</td><td class="num">${fmtGB(b.bytes)}</td></tr>`).join('')}</table></div>`;
+  const ng=`<div class="sec">Theo ngày <span class="badge">${ds.length} ngày</span></div><div class="card scroll"><table class="m-t"><tr><th>Ngày</th><th class="num">CSDL</th><th class="num">Kế toán</th><th class="num">Kho tệp</th><th class="num">Số tệp</th><th class="num">Đĩa đã dùng</th><th class="num">Lượt gọi 24h</th><th class="num">Lịch lỗi</th><th>Cảnh báo</th></tr>
+    ${ds.map((x,i)=>{const d=x.d,g=(d.api||{}).goi_24h,t=ds[i+1]&&ds[i+1].d,tang=t?kho(d)-kho(t):0;return `<tr><td class="nw">${fmtD(x.ngay)}</td><td class="num">${fmtGB(d.db_bytes)}</td><td class="num">${fmtGB(d.kt_bytes)}</td>
+      <td class="num">${fmtGB(kho(d))}${tang>0?` <span class="muted">+${fmtGB(tang)}</span>`:''}</td><td class="num">${fmt(tep(d))}</td><td class="num">${fmtGB(((d.api||{}).disk_util||{}).fs_used_bytes)}</td>
+      <td class="num">${g?fmt(g.rest+g.auth+g.storage+g.realtime):'—'}</td><td class="num">${fmt((d.lich_24h||{}).loi||0)}</td><td>${(d.canh_bao||[]).length?d.canh_bao.map(z=>pill(z,'bad')).join(' '):pill('Ổn','ok')}</td></tr>`}).join('')||'<tr><td colspan="9" class="m-empty">Chưa có — lịch chụp 23:55 hằng ngày</td></tr>'}</table></div>`;
+  el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Supabase · chụp 23:55 hằng ngày</span>')+kp+may+ng+bl;
+}
+// 22/10 anh: các lịch định kỳ / dữ liệu kéo hằng ngày — chuyển từ cuối Log so khớp sang trang riêng
+async function pageLich(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const r=await rpc('kt_ds_lich');
+  const the=(ten,lich,mo,bat,cuoi,loi,phu)=>`<div class="kl-th" style="--c:var(--${!cuoi?'grey':loi?'bad':'ok'})"><div class="kl-t"><b>${esc(ten)}</b><span class="badge">${esc(lich)}</span>${bat?'':pill('Đang tắt','bad')}</div>
+      <div class="muted kl-v">${esc(mo)}</div><div class="kl-c">${cuoi?`Lần cuối: <b>${fmtDT(cuoi)}</b> · ${tuLuc(cuoi)} · ${loi?pill('Lỗi','bad'):pill('OK','ok')}`:'<span class="muted">Chưa thấy lần chạy</span>'}${phu||''}</div></div>`;
+  const lich=`<div class="kl-lich">${r.lich.map(j=>{const L=LICH_KT[j.ten]||[j.ten,j.lich,''],c=j.cuoi||{};
+      return the(L[0],L[1],L[2],j.bat,c.luc,c.tt&&c.tt!=='succeeded',`<div class="muted" style="font-size:11.5px">7 ngày: ${fmt(j.lan_7n)} lần${+j.loi_7n?' · <span class="neg-t">'+fmt(j.loi_7n)+' lỗi</span>':''}</div>`)}).join('')}
+    ${r.may.map(m=>{const L=LICH_KT[m.viec]||[m.viec,'',''];return the(L[0],L[1],L[2],true,m.luc,false,`<div class="muted" style="font-size:11.5px">24 giờ: ${fmt(m.lan_24h)} lần</div>`)}).join('')}</div>`;
   const loc=S.f.kl_viec||'',ds=r.chay.filter(x=>!loc||lichCua(x)===loc);
-  const ls=`<div class="sec">Lịch sử kéo <span class="badge">${fmt(ds.length)} lần gần nhất</span>
+  const ls=`<div class="sec">Lịch sử chạy <span class="badge">${fmt(ds.length)} lần gần nhất</span>
       <select class="sel" style="margin-left:auto" onchange="S.f.kl_viec=this.value;render()"><option value="">Mọi việc</option>${Object.entries(LICH_KT).map(([k,v])=>`<option value="${k}" ${loc===k?'selected':''}>${v[0]}</option>`).join('')}</select></div>
     <div class="card scroll"><table class="m-t"><tr><th>Lúc</th><th>Việc</th><th>Người / lịch</th><th>Kết quả</th><th class="num">Giây</th><th>Trạng thái</th></tr>
     ${ds.map(x=>{const k=x.kq||{},l=loiChay(x);return `<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc((LICH_KT[lichCua(x)]||[x.viec])[0])}</td><td class="nw muted">${esc(x.nguoi||'')}</td>
       <td style="font-size:11.5px">${l?`<span class="neg-t">${esc(String(k.loi||'').slice(0,240))}</span>${k.da_xong?'<br><span class="muted">Đã xong trước lỗi: '+tomTatChay({...x,kq:k.da_xong})+'</span>':''}`:tomTatChay(x)}</td>
       <td class="num">${k.giay??''}</td><td>${l?pill('Lỗi','bad'):pill('OK','ok')}</td></tr>`}).join('')||'<tr><td colspan="6" class="m-empty">Chưa có</td></tr>'}</table></div>`;
-  el.innerHTML=top+nkSeg+kp+bang+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS
-    +`<div class="sec">Lịch chạy tự động <span class="badge">${r.lich.length} lịch</span></div>`+lich+ls;
+  el.innerHTML=head(PAGES[S.page].ten+` <span class="badge" style="vertical-align:middle">${r.lich.length} lịch tự động · ${r.may.length} việc trên máy anh</span>`)+lich+ls;
 }
 async function kiotChay(b,body,hoi){
   if(hoi&&!confirm(hoi))return;
