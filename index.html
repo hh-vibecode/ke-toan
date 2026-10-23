@@ -977,8 +977,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.206';
-const APP_VERSION='23/10/2026 14:39';
+const APP_SO='1.208';
+const APP_VERSION='23/10/2026 15:32';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2139,10 +2139,15 @@ function hdThe(h,ten,nut){
 const hdNut=(t,f,c)=>`<button class="hdv-n2 ${c||''}" onclick="${f}">${t}</button>`;
 function hdvHtml(x){
   const g=coGhi('chi'),dg=hdvGhep(x.id),gy=dg.length?[]:hdvGoiY(x.id);
-  if(!dg.length&&!gy.length&&!(g&&x.co_hd_do))return '';
-  return `<div class="hdv">${dg.length||gy.length?`<div class="hdv-lb">${dg.length?'Số hoá đơn (MISA)':'Hoá đơn MISA có thể khớp'}</div>`:''}${dg.map(h=>hdThe(h,h.ncc,
+  // 23/10 anh: 1 ô khai số hoá đơn — mặc định số đã gắn / số gợi ý (phiếu cần HĐ); đúng thì Lưu dùng luôn, sai thì kế toán gõ lại (gõ → hiện HĐ MISA khớp)
+  const goc=x.so_hd_do||(dg[0]?dg[0].so_hd:'')||'',mac=goc||(x.co_hd_do&&gy[0]?gy[0].so_hd||'':'');
+  const o=g?`<div class="hdv-lb">Số hoá đơn</div><div class="hdv-tim"><input class="m-in" id="pc-sohd" data-goc="${esc(goc)}" value="${esc(mac)}" placeholder="Số hoá đơn" oninput="hdTim(this,'vao',${x.id},${+x.so_tien||0})"><div class="hdv-kq"></div></div>${mac&&mac!==goc?'<div class="hdv-n muted">Số gợi ý — đúng thì bấm Lưu</div>':''}`
+    :goc?`<div class="hdv-lb">Số hoá đơn</div><div><b>${esc(goc)}</b></div>`:'';
+  if(!o&&!dg.length&&!gy.length)return '';
+  return `<div class="hdv">${o}${dg.map(h=>hdThe(h,h.ncc,
       hdNut('Xem',`xemHDMisa('chi',${x.id},'${esc(h.hd_ma)}')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
-    ${gy.slice(0,3).map(h=>hdThe(h,h.ncc,g?hdNut('✓ Đúng',`ghepHD(${x.id},'${esc(h.hd_ma)}')`):'')).join('')}${g&&!dg.length?hdTimO('vao',x.id,x.so_tien):''}</div>`;
+    ${gy.length?`<div class="hdv-lb">Hoá đơn MISA có thể khớp</div>`+gy.slice(0,3).map(h=>hdThe(h,h.ncc,g?hdNut('✓ Đúng',`ghepHD(${x.id},'${esc(h.hd_ma)}')`):'')).join(''):''}
+    ${x.so_hd_do&&!dg.length?'<div class="hdv-n muted">Số khai tay — chưa thấy HĐ này trên MISA</div>':''}</div>`;
 }
 // mở PDF hoá đơn MISA đã tải về chứng từ phiếu (tên file "HĐ {ký hiệu} số {số} (MISA).pdf"); chưa tải (job chạy đêm) thì báo
 async function xemHDMisa(bang,id,ma){
@@ -3009,6 +3014,10 @@ async function luuPhieu(id,tt){const x=S.cache.chi.find(c=>c.id===id);if(!x)retu
     if(doiHD||doiVe){const ng=doiHD&&hd.value==='da'?((hn&&hn.value)||homNay()):null;
       await rpc('kt_dat_hd_do',{p_id:id,p_trang:doiHD?hd.value:null,p_ngay:ng,p_hd_ve:doiVe?(hv.value||''):null});
       if(doiHD){x.co_hd_do=hd.value!=='khong';x.hd_do_nhan=hd.value==='da';x.ngay_nhan_hd=hd.value==='da'?ng:null}if(doiVe)x.hd_ve=hv.value||null;viec.push('hoá đơn')}
+    // 23/10 anh: ô Số hoá đơn — khác số đang có (kể cả số gợi ý điền sẵn) → lưu; thấy đúng 1 HĐ MISA cùng số thì gắn luôn
+    const sh=$('#pc-sohd'),shv=sh?sh.value.trim():'';
+    if(sh&&shv!==(sh.dataset.goc||'')&&!(hd&&hd.value==='khong'&&shv)){const r=await rpc('kt_dat_so_hd',{p_id:id,p_so:shv});x.so_hd_do=shv||null;if(shv){x.co_hd_do=true;x.hd_do_nhan=true}
+      viec.push(shv?(r.gan?'số hoá đơn (đã gắn HĐ MISA)':'số hoá đơn (khai tay)'):'bỏ số hoá đơn')}
     // 21/10 (admin kế toán): sửa ngày thanh toán phiếu đã chi (trừ tiền sai ngày → lệch quỹ cuối ngày)
     const ntt=$('#pc-ngay-tt');if(ntt&&ntt.value&&ntt.value!==(x.ngay_tt||'')){await rpc('kt_doi_ngay_tt',{p_id:id,p_ngay:ntt.value});x.ngay_tt=ntt.value;viec.push('ngày thanh toán')}
     const tkSel=$('#doi-tk')||(x.trang_thai==='cho_tt'?$('#ftt select[name=tai_khoan_id]'):null);
@@ -4345,15 +4354,18 @@ async function kiemQuyenDoi(){if(!S.phien||!S.toi||S.toi.vi_tri==='supreme'||xnD
 // 19/10 anh: có bản mới thì app mọi tài khoản tự tải lại — mỗi phút đọc file nhỏ phien-ban.txt (scripts/dong-dau.js ghi cùng APP_SO); số lớn hơn bản đang chạy → tải lại
 const soBan=v=>{const m=String(v||'').trim().match(/^1\.(\d+)$/);return m?+m[1]:0};
 // 19/10 anh: "không làm được thì làm cái nút báo có bản mới như MKT" — có bản mới: hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình
-// (như app MKT); không đang mở cửa sổ nhập liệu thì đếm 10 giây rồi tự tải lại, đang nhập dở thì chờ người dùng bấm. Kiểm ngay 4 giây sau khi mở app.
+// (như app MKT); 23/10 bỏ tự đếm 10 giây tải lại (anh: làm xong hãy tải lại) — chỉ nút. Kiểm ngay 4 giây sau khi mở app.
 let BM_DEM=null;
 async function kiemBanMoi(){if(xnDoc())return;try{const r=await fetch('phien-ban.txt?kt='+Date.now(),{cache:'no-store'});if(!r.ok)return;
-  const v=String(await r.text()).trim();if(soBan(v)<=soBan(APP_SO))return;hienBanMoi(v)}catch(e){}}
+  const v=String(await r.text()).trim();if(soBan(v)<=soBan(APP_SO))return;
+  // 23/10 sự cố: GitHub Pages giữ index.html cũ tới 10 phút → tải lại vẫn bản cũ → app tự tải lại liên tục. Mỗi bản chỉ tải lại 1 lần;
+  // đã tải lại mà vẫn bản cũ thì im, phút sau kiểm lại (không đếm, không tự tải nữa)
+  let da='';try{da=sessionStorage.getItem('kt_ban_thu')||''}catch(e){}if(da===v)return;hienBanMoi(v)}catch(e){}}
+// 23/10 anh: "làm xong hết hãy tải lại chứ" → KHÔNG tự đếm / tự tải lại; chỉ hiện nút, người dùng bấm khi xong việc
+function taiBanMoi(v){try{sessionStorage.setItem('kt_ban_thu',v)}catch(e){}location.replace(location.pathname+'?v='+encodeURIComponent(v)+location.hash)}
 function hienBanMoi(v){let d=document.getElementById('ban-moi');
   if(!d){d=document.createElement('div');d.id='ban-moi';d.className='ban-moi';document.body.appendChild(d)}
-  const ve=n=>{d.innerHTML=`<span>Đã có bản cập nhật mới (v${esc(v)})${n!=null?` — tự tải lại sau ${n} giây`:''}</span><button onclick="location.reload()">Tải lại</button>`};
-  if($('#modal')){clearInterval(BM_DEM);BM_DEM=null;ve(null);return}
-  if(BM_DEM)return;let n=10;ve(n);BM_DEM=setInterval(()=>{if($('#modal')){clearInterval(BM_DEM);BM_DEM=null;ve(null);return}n--;if(n<=0){clearInterval(BM_DEM);location.reload()}else ve(n)},1000)}
+  d.innerHTML=`<span>Đã có bản cập nhật mới (v${esc(v)})</span><button onclick="taiBanMoi('${esc(v)}')">Tải lại</button>`}
 setTimeout(kiemBanMoi,4000);setInterval(()=>{if(document.visibilityState==='visible')kiemBanMoi()},60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')kiemBanMoi()});
 // 19/10 anh: "thêm được sound thì càng tốt" — chuông có thông báo mới thì kêu 2 tiếng ngắn (trình duyệt chỉ cho phát sau khi người dùng đã bấm vào trang 1 lần)
 let AC=null;document.addEventListener('pointerdown',()=>{try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}},{passive:true});
@@ -4650,6 +4662,7 @@ const LOGIC2=[
  ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 hằng đêm), HĐ mua từ MISA Xử lý hoá đơn (00:35).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
  ['thue','Ghép HĐ mua','Mọi phiếu chi đã trả từ 01/01 (trừ chi cá nhân) ↔ HĐ đầu vào MISA: số tiền lệch ≤ 1.000đ, ngày HĐ từ 30 ngày trước → 15 ngày sau ngày trả. Tự gắn khi 1 phiếu ↔ 1 HĐ duy nhất VÀ khớp STK người nhận (học từ lần gắn trước) / tên người nhận ≥ 50% / tên trong nội dung ≥ 80%. 1 lần trả nhiều HĐ cùng người bán: tổng HĐ = số tiền → gắn cả nhóm.','Chỉ khớp số tiền, không khớp tên / STK → không gợi ý. Không thấy → ô "Tìm HĐ MISA" (số HĐ / MST / tên) trong khung Hoá đơn đỏ.','23/10'],
  ['thue','Ghép HĐ bán ra','Phiếu thu ↔ HĐ bán ra meInvoice: số tiền lệch ≤ 1.000đ, ngày HĐ từ 15 ngày trước → 30 ngày sau ngày thu. Tự gắn khi 1 ↔ 1 VÀ nội dung phiếu ghi số HĐ ("HD 75") hoặc tên khách ≥ 80% (tên ≥ 2 chữ sau khi bỏ anh / chị / cô).','Tên ngắn kiểu "Anh Hải" → chỉ gợi ý. Xem ở khung Hoá đơn bán ra trong popup phiếu thu.','23/10'],
+ ['thue','Số hoá đơn khai tay','Ô "Số hoá đơn" trong khung Hoá đơn đỏ: điền sẵn số đã gắn / số gợi ý (phiếu cần HĐ). Bấm Lưu → lưu số + đánh dấu đã nhận HĐ; thấy đúng 1 HĐ MISA cùng số chưa gắn phiếu khác (ưu tiên lệch tiền ≤ 1.000đ) thì gắn luôn, thay HĐ cũ.','Không thấy trên MISA → giữ số khai tay. Xoá trống = bỏ số khai tay.','23/10'],
  ['thue','PDF hoá đơn MISA','HĐ đầu vào đã gắn phiếu chi → hệ thống tải PDF từ MISA vào chứng từ phiếu ("HĐ … (MISA).pdf"), nút Xem trong ô Số hoá đơn.','Chạy kèm job kéo HĐ 00:35; HĐ gắn tay trong ngày có PDF sau đêm.','23/10'],
  ['bao_cao','P&L — bấm ô xem phiếu','Từ T9: bấm ô số 1 tháng của dòng chi phí → danh sách phiếu chi tạo nên số đó (cùng nguồn kt_v_chi_ht nên tổng = ô), bấm phiếu mở popup.','T1–T8 số lấy theo 4 file P&L → không có phiếu để xem.','23/10'],
  ['thue','Kho sổ thuế','Kỳ theo quý. Tồn dự kiến = tồn đầu + nhập theo HĐ vào − xuất theo HĐ ra + điều chỉnh.','Lệch = tồn file 3TShop − dự kiến.','14/10'],
