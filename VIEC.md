@@ -5,24 +5,6 @@
 
 ---
 
-## ★ MAI LÀM TIẾP (ghi tối 16/10/2026 — anh về, sáng 17/10 làm nốt)
-
-**Việc chính đang dở: KHỚP SỔ QUỸ + SỐ DƯ TÀI KHOẢN theo file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" từ T5 → T10/2026** (anh: "khớp hết số theo file", "bắt đầu từ T5, trước đó bỏ").
-- Nguồn: thư mục Drive anh gửi (id 1_fhF9Mx9nygJVgn36IuX1_6Qxn1wdRHj, có file T4–T10 + sao kê BIDV 1/9–16/10). Tải: rclone copy ktdrive2: <thư mục> --drive-root-folder-id <id> --include "THT BẢNG KIỂM SOÁT DÒNG TIỀN THÁNG *.2026.xlsx".
-- Cấu trúc file: tab 3.CASHFLOW TỔNG — dòng 2 tên 9 TK (VCB CTY ×2, VIB CTY, BIDV HKD HT, BIDV HKD CT, VCB CN, BIDV CN, BIDV CN NGUYỆT, KÉT TIỀN MẶT), dòng 3 tồn đầu kì, từ dòng 5 mỗi ngày; mỗi TK 5 cột Thu / Chi / Tồn sổ sách / Tồn thực tế / Lệch. Chi tiết: 6.DATA THU, 7.DATA CHI (= sheet đề nghị, lọc Đã thanh toán + ngày TT trong tháng), 8.DATA ĐIỀU CHUYỂN.
-- Tối 16/10: 6 agent đối chiếu (chỉ đọc) mỗi tháng → báo cáo JSON. **Nếu máy đã tắt thì báo cáo có thể chưa xong → chạy lại** (prompt: so CASHFLOW TỔNG + DATA THU/CHI/ĐC với kt_v_bien_dong theo TK × ngày; liệt kê thiếu / thừa / lệch). Báo cáo có số thật → lưu thư mục local `doi-chieu-dong-tien.local/` (gitignore), KHÔNG lên GitHub.
-- Nguyên nhân đã thấy: (1) phiếu chi app chỉ còn luồng đề nghị → thiếu khoản đi ra không qua đề nghị (chi két quầy CTM, ngân hàng tự trích THU NO / phí, trả khách TTTH…); (2) app có TK không có trong file (TECH NH / TECH CN / TECH CN HXT / MSB CN / BIDV BUI THI HIEN / VCB …) vẫn mang tồn đầu → tổng số dư âm sai; (3) mốc tồn đầu app đang 01/09 — cần lùi về 01/05 theo file T5.
-- **Các bước mai:** (a) đọc 6 báo cáo, chốt quy tắc (điều chuyển tính vào thu/chi thế nào; thu Kiot từng phiếu vs file gộp theo ngày); (b) mốc tồn đầu 01/05/2026 = tồn đầu kì file T5 cho 9 TK, TK không có trong file → tồn 0 / ngừng dùng (hỏi anh nếu có số dư thật); (c) bổ sung khoản thiếu, xử lý khoản thừa (đánh dấu, không xoá cứng), ghi nhật ký; (d) kiểm tồn sổ sách từng ngày app = file T5→T10, lệch 0 mới xong; (e) trang Sổ quỹ hiện Tồn thực tế + Lệch theo file. Dữ liệu ghi hàng loạt → chạy thử, báo số trước.
-- **19/10:** phiên cloud 17/10 đã làm xong phần chính (khớp T9 + T10, anh chốt chỉ T9–T10 — nhật ký 17/10 (27)); 6 agent T5–T10 tối 16/10 dừng giữa chừng (hết lượt) → bỏ, không cần. Đã trả chế độ ngủ máy anh về 15 phút. Git trên máy anh hỏng 17–19/10 (bad object refs/heads/main — máy tắt lúc git dọn dẹp) → đã thay .git bằng bản clone sạch, bản hỏng cất ở Desktop/ke-toan-git-hong-1910 (xoá được). Số phiên bản: phiên cloud đánh lại thành v1.49 (bản trước trên máy là v1.98) — nội dung đủ, chỉ khác số.
-
-**Xong hôm 16/10 (chi tiết ở Nhật ký 16/10 (1)→(22)):** doanh thu như Kiot + tách DT / DT thuần · kênh bán · luồng chi có THỦ QUỸ (GĐ / KT xác nhận + chọn TK đi tiền → thủ quỹ / GĐ chi + ảnh giao dịch; tài khoản thuquy) · người nhận tiền mặt · hoạt động + bình luận phiếu · Xem như (icon, admin + GĐ, chỉ xem) · tự kiểm Supabase ngày 15 + cuối tháng · đồng bộ sheet đề nghị 15 phút (lịch Windows) · cửa sổ phiếu lớn · xuất phiếu Word · tìm kiếm · menu tự ẩn · Kiot sang Đối soát lỗi · số phiếu khớp sheet theo ngày sử dụng.
-
-**Góp ý kế toán 16/10 18:03: xong 1, 2, 3, 5, 6 (nhật ký 16/10 (23)); việc 4 = chính là việc khớp dòng tiền T5–T10 ở trên.** Kế toán cần: soát loại nợ tự đoán, chọn TK ngừng dùng, gán loại chi cho phiếu đã xác nhận chưa có loại.
-
-**Còn treo, chờ kế toán / anh:** giải ngân 7 khoản vay; tách lãi trong THU NO TKV; 12 phiếu chỉ có link Drive (Google Sheet/Docs); bug: tài khoản hạn chế có Tổng quan nhưng thiếu quyền bán hàng / vay → Tổng quan lỗi tải (sửa trước khi cấp tài khoản hạn chế).
-
----
-
 ## 0. KHỞI TẠO — XONG 05/10/2026
 
 Repo + Pages · khoá (`kt-keys.local.txt`, anh nhờ phiên MKT chép sang 05/10) · `supabase-schema-kt.sql` đã chạy (14 bảng, 24 hàm,
@@ -39,7 +21,6 @@ Chi tiết số liệu đối chiếu T9: `doi-chieu-T9.local.md` (máy anh, KH�
 
 Nhóm câu hỏi: Số dư đầu kỳ · Tiền mặt & Kiot · Chi · Cách tính · Vận hành · Luồng mới (08/10) · Kéo bù từ sheet (08/10) · Phân quyền (08/10) · Kiot.
 
-**20/10 — CHỜ ANH TICK QUYỀN (Claude bị chặn tự đổi quyền TK thật):** Phân quyền → thuquy tick xem Thu, Điều chuyển, Dòng tiền & Sổ quỹ · admin.ketoan tick "Chi — tự chi không cần duyệt".
 
 ## 1B. LUỒNG MỚI (anh gửi 08/10/2026 — sơ đồ GPT + ghi chú tay; KHÔNG dựa Google Sheet)
 
@@ -91,43 +72,29 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 **13/10 — XEM NHANH (anh: nối các chỗ hay cần check, kiểu app MKT/Sale)**: hàm `kt_drill` (`supabase-schema-kt-drill.sql`, quyền theo trang tương ứng) + khung trượt bên phải có Quay lại / Xuất Excel. Nối: Tổng quan (thẻ KQKD → Bán hàng / Lãi lỗ / chi phí; dòng cơ sở = lọc cả trang; ô chi phí HĐ → phiếu chi phí; nhóm hàng → mặt hàng; khách → hoá đơn → mặt hàng; mặt hàng → tồn từng cơ sở + hoá đơn; tồn kho → hàng tồn > 6 tháng; số dư → Sổ quỹ; thu / chi → Phiếu thu / chi; công nợ đến hạn / quá hạn → Công nợ đã lọc; vay → Vay) · Công nợ (hoá đơn đang nợ → chi tiết HĐ) · Phiếu chi (tên NCC / cơ sở = lọc) · Hoá đơn & Thuế (thẻ → trang; đơn vị → kho sổ thuế; dòng HĐ → dòng hàng; mã sổ thuế → phát sinh; thẻ âm sổ → tab). Kiểm: mã sổ thuế HT Q3 khớp hoá đơn 274/274.
 
-## 2. ĐANG NỢ
-- **Chứng từ phiếu cũ sheet đề nghị:** đã kéo xong (VIEC 105) — còn kế toán up tay #649 (link drive/home), #1384, #1463.
-- **Chưa thử trên trình duyệt (v1.168–169):** dán Ctrl+V / kéo thả ảnh vào "Ảnh giao dịch" ↔ "Chứng từ đính kèm", xoá ảnh, ô chọn 3 loại hạch toán ở form + khung chi tiết, trang Cài đặt loại dạng cây — phiên Mac không có tài khoản đăng nhập app; đã kiểm máy chủ (khối tự huỷ) + hàm giao diện bằng node.
-- **[ĐỂ SAU — anh 22/10: "phần pnl để sau"] Đối chiếu chi phí T1–T8: đề nghị thanh toán ↔ file CHI PHÍ CÔNG TY tháng ↔ 4 P&L** — đặc tả + dữ liệu sẵn có ở nhật ký 21/10 (99).
-- **★ CHUYỂN CHO PHIÊN CLOUD (anh 21/10 tối, chuyển từ luồng máy) — ĐỐI CHIẾU ĐỀ NGHỊ ↔ CHI PHÍ CÔNG TY ↔ 4 P&L, LÀM LẠI CHO ĐÚNG Ý ANH.**
-  Tab "P&L T1–T8" trong Nhật ký so khớp (commit addb3b5, nhật ký 98) anh chê: "mô tả rõ ra t chả hiểu m nói gì cả, dòng chi phí công ty là gì", "vs m so cái này làm cái gì", "t cần cập nhật thì lệch lòi ra còn gì — bỏ đi k cần thiết".
-  **Anh cần đúng 2 bước:**
-  1. Đối chiếu TẤT CẢ đề nghị thanh toán (kt_chi kéo từ sheet đề nghị T1–T8) với TOÀN BỘ chi phí trong file "CHI PHÍ CÔNG TY THÁNG n" (chi phí tổng quan từng tháng, thư mục Drive) → xem có SÓT khoản nào không (có ở bên này, thiếu ở bên kia — liệt kê cụ thể từng khoản).
-  2. Sau đó so 2 nguồn đó với 4 P&L (HT / CT / Shidai T1–8, Thị trường T1–6, chỉ tab BÁO CÁO P&L) → xem kế toán nhặt chi phí sang P&L có CHUẨN không (theo tháng × mục P&L: tổng từ chứng từ vs số P&L ghi, lệch ở đâu, do khoản nào).
-  **Yêu cầu trình bày:** bỏ phần so "cập nhật thì lệch" vô nghĩa; mỗi bảng / thẻ ghi rõ bằng lời đời thường số đó LẤY Ở ĐÂU (tên file / sheet / tháng, cột nào) — anh dặn "ghi rõ số liệu các thứ lấy ở đâu ra, ghi ở dưới dashboard"; không dùng từ nội bộ ("dòng chi phí công ty", mã bảng). Anh không có nghiệp vụ kế toán: chỗ nào lạ thì đặt câu hỏi, giải thích đời thường (memory hỏi khi nối).
-  **Đã có sẵn:** scripts/doi-chieu-pnl.js (rclone, chạy lại được) → kt_pnl_cu (ô TARGET / THỰC HIỆN theo mã mục), kt_dcp_dong (1.537 dòng CPCT T1–T8; đã bỏ sheet lương tổng + giao vận vì là bảng phân bổ — xem lại có đúng không khi đối chiếu sót), supabase-schema-kt-dcp-pnl.sql; giao diện tab trong index.html (tìm "P&L T1–T8").
-  **Việc dở cùng luồng (21/10, máy anh):** bỏ ẩn 10 phiếu (508,598,649,708,709,791,990,1013,1040,1047) ĐÃ CHẠY; thêm ~21 dòng sheet đề nghị T1–T8 chưa từng lên app (tháo dỡ 148tr, BHXH T5/T6, sửa chữa a Minh 29,5tr…, giữ đúng trạng thái sheet) bằng `KT_THEM_DONG="<số dòng>" scripts/dong-bo-sheet-dn.js <file> ghi` — **CHƯA CHẮC đã chạy, kiểm trước khi chạy để khỏi thêm trùng**; phiếu thiếu TK / loại chi rơi vào Đối soát lỗi nhóm "Sheet ghi đã thanh toán nhưng thiếu tài khoản / loại chi" (hàm kt_doi_soat trong supabase-schema-kt-doi-soat-thieu-tt.sql — **kiểm đã áp lên CSDL chưa**).
-- **31/10/2026 — BÁO ANH**: từ 21/10 đến cuối tháng có ai điền nhầm sheet T10 / sheet đề nghị không (anh 21/10: "dữ liệu sheet T10 và đề nghị tiếp tục theo dõi tới hết tháng, cuối tháng báo cáo"). Nguồn: dong-bo-sheet.local.log (đồng bộ 15 phút/lần, task kt-dong-bo-sheet-dn hết hạn 31/10 23:59) + keo-file-dong-tien.local.log + trang Đối chiếu file dòng tiền (ngày lệch, ghi chú). Báo xong hỏi anh tắt task.
+## 2. ĐANG NỢ (soát lại 23/10/2026 — Monsieur Claude)
 
-| # | Việc | Ghi chú |
-|---|---|---|
-| 0b | **Theo dõi Supabase** — job kt-kiem-he-thong ngày 15 + cuối tháng báo chuông | Phiên Claude giữa / cuối tháng: đọc `select du_lieu from kt_nhat_ky where hanh_dong='kiem_he_thong' order by id desc limit 2`, có cảnh báo thì báo anh. Băng thông xem Dashboard Supabase → Usage. 16/10 |
-| 0a | **(T9+T10 XONG 17/10 — nhật ký 17/10 (27); còn T5–T8 nếu anh cần; lịch kt-keo-file-dong-tien ĐÃ đăng ký 19/10) khớp Sổ quỹ + số dư tài khoản theo file "THT BẢNG KIỂM SOÁT DÒNG TIỀN" T5→T10/2026** (thư mục Drive anh gửi, bỏ trước T5) | Anh: "sổ quỹ và TK xử lý lại ngay, khớp hết số theo 2 file", "khớp luôn từ T5". 6 agent đối chiếu (chỉ đọc) mỗi tháng → báo cáo scratchpad/ag-T5..T10/doi-chieu-T*.json; sau đó sửa dữ liệu 1 lần. Nguyên nhân đã thấy: phiếu chi app chỉ còn luồng đề nghị nên thiếu các khoản không qua đề nghị (chi két quầy, ngân hàng tự trích, phí…); app còn TK không có trong file (TECH, MSB, BIDV BUI THI HIEN…) với tồn đầu. **Máy anh: đã tắt ngủ khi cắm sạc (cũ 15 phút) — xong việc trả lại: powercfg /change standby-timeout-ac 15** |
-| 0 | ~~Đồng bộ sheet đề nghị thanh toán 15 phút / lần~~ **XONG 19/10** — anh chốt luồng đề nghị trên app chạy từ 19/10, lịch `kt-dong-bo-sheet-dn` chạy dự phòng tới HẾT 20/10 rồi tự dừng, có gộp trùng app ↔ sheet (nhật ký 19/10 (51), (52)) — 21/10 xoá hẳn task: schtasks /Delete /TN kt-dong-bo-sheet-dn /F | Phiếu ai còn gửi trên sheet cũ sau 11:22 19/10 sẽ KHÔNG vào app — kế toán để ý. 16/10 → 19/10 |
-| 1 | (B) 2 phiếu chi sheet ghi đã trả nhưng không có TK chi → đang "Chờ thanh toán" | kế toán bổ sung trên app |
-| 2 | ~~Nhập bù phát sinh trên sheet từ 05/10~~ | **XONG 08/10** — 52 phiếu chi (tab 7.DATA CHI; Thu / Điều chuyển / công nợ không có dòng mới), nhãn "Kéo từ sheet cũ — cần bổ sung", kế toán sửa dần. Phiếu #370 (trả T8, lọt vì ngày dùng DV gõ 08/12/2026) đã ẩn. Số T9 tiền ra THAY ĐỔI vì có thêm phiếu đã trả trong T9 (số trong `doi-chieu-T9.local.md` cần đối chiếu lại) |
-| 2b | ~~Quyền "chỉ được tạo đề nghị chi"~~ | **XONG 08/10** — quyền `chi_de_nghi` + `chi_duyet`; kiểm thử 16/16 (`scripts/kiem-thu-quyen-chi.js`). Chưa có tài khoản nhân viên thật nào (câu hỏi trên app) |
-| 3 | Theo dõi job `kt-kiot` (nhật ký hanh_dong keo_kiot / keo_kiot_loi) | Lần tự động đầu 05/10 10:47 chạy OK |
-| 4 | ~~Tải ảnh chứng từ thẳng lên app~~ | **XONG 08/10**, làm lại 17:32 cho gọn: kéo thả / Ctrl+V / chọn ngay lúc tạo phiếu, nén + tải ngầm có %, ghim giấy trên danh sách. Chưa thử chọn file thật trên trình duyệt bằng tay — anh thử giúp 1 phiếu |
-| 5 | Kế toán bổ sung 50 phiếu kéo bù (người đề nghị, chứng từ) — 09/10 ẩn 2 phiếu trùng #376 #377 | trang Chi → lọc nguồn "Kéo từ sheet cũ — cần bổ sung" |
-| 8 | Kéo chứng từ cũ từ Google Drive lên app (`scripts/keo-chung-tu-drive.js [T9|tat_ca] [ghi]`, chạy lại không trùng) | **XONG 12/10** (2 tài khoản Drive): 1.884 file / 839 phiếu (~1,1 GB, ảnh gốc chưa nén; gói Supabase Pro). Còn 22 file cả 2 tài khoản không mở được · 80 file không phải ảnh/PDF hoặc > 15 MB · 2 lỗi — chạy lại không trùng |
-| 9 | Tồn kho: lịch `kt-kiot-hang-dem` 23:20 kéo đầy đủ hàng hoá + `kt-ton-kho` 23:40 chụp (`scripts/trien-khai-ton-kho.js`) | theo dõi nhật ký `chup_ton_kho`; làm màn hình xem tồn theo ngày khi cần |
-| 6 | Theo dõi đề xuất chi kéo từ Kiot (kết quả trong `kt_dong_bo_kiot` → khoá `chi`: them / ghep_4a / huy / sua) | bắt đầu 08/10; 3 câu hỏi mới trên app (TT luôn, phiếu Kiot tự sinh, nghi trùng) |
-| 12 | **Góp ý kế toán 14/10 còn lại** (ảnh chị Jaycie): (a) Sổ quỹ — tải sao kê ngân hàng hằng tuần để app tự khớp + cảnh báo lệch (CHỜ file sao kê mẫu từng ngân hàng); (b) két tiền mặt — kiểm quỹ cuối ngày nhập số đếm + ảnh sổ, so sổ sách; (c) Phải thu — tách "COD đang chờ thu" / "chưa lấy hàng" từ ô COD + ghi chú đơn (đã kéo cột `cod`, `ghi_chu` về `kt_kiot_hoa_don` / `kt_kiot_dat_hang`), cần quy định sales ghi chú; (d) kiểm cột "Người phụ trách" công nợ đang lấy NV nào; (e) NCC: chi phí vận chuyển / hải quan vào giá vốn, NCC nước ngoài — CHỜ chị mô tả quy trình | xem nhật ký 14/10 (5) |
-| 13 | ~~8 nhóm báo cáo quản trị~~ | **XONG 15/10** — đủ 8 trang trong menu Báo cáo quản trị (P&L, Dòng tiền, Hiệu suất KD & đơn hàng, Dòng tiền dự kiến, Chi phí & ngân sách, Hàng tồn, Vay, Theo cơ sở / kênh). 19/10 em báo nhầm là còn 5 — dòng này bị cũ. |
-| 10 | Theo dõi trang **Cài đặt → Nhật ký kéo & so khớp Kiot** (14/10): lịch `kt-kiot-doi-chieu` 23:50 so tháng này + trước; lần kéo đầy đủ 23:20 tự so tồn; lần kéo 3 tiếng lấy lại tồn mặt hàng vừa phát sinh (`ton_cap_nhat` trong nhật ký) | lần kéo đầy đủ hàng ~90 giây (giới hạn Edge Function 150 giây ở gói thường / 400 giây gói Pro) — nếu lỗi hết giờ thì tách so tồn ra lần riêng |
-| 11 | Khoá `KT_CRON_KEY` bị in ra kết quả lệnh trong phiên cloud 14/10 (xem nhật ký) | chờ anh quyết có đổi khoá không (đổi xong phải chép khoá mới vào `kt-keys.local.txt` trên máy anh) |
-| 14 | Theo dõi lịch `kt-meinvoice-bot` 00:35 (nhật ký `keo_misabot` / `keo_misabot_loi`, `ghep_hd_vao`) + kế toán xem phiếu "Có HĐ gợi ý" ở Phiếu chi → Chưa nhận HĐ | 14/10: 22 phiếu tự ghép; còn ~80 phiếu (cả năm) có HĐ gợi ý chờ kế toán bấm. Luật ghép có thể cần chỉnh theo phản hồi kế toán |
-| 15 | **Chi tự động ngân hàng / thẻ Visa + khớp sao kê** (kế toán 14/10). Anh chốt hướng: vài ngày tải sao kê 1 lần → app tự gắn từng dòng sao kê với phiếu thu / chi đã khai;
-dòng chưa khai báo đẩy ra 1 màn riêng để kế toán bổ sung | CHỜ mỗi ngân hàng 1 file sao kê mẫu. Bản nháp phần chi tự động / tách phiếu trả thẻ theo loại chi thật: `nhap/nhap-chi-tu-dong.sql` (CHƯA chạy) |
-| 7 | Mật khẩu `giamdoc` trong `kt-keys.local.txt` KHÔNG còn đúng (giám đốc có thể đã đổi) — test dùng tài khoản GĐ tạm | không đặt lại mật khẩu giám đốc |
-| 16 | **HĐ mua vào 2 hộ (Chánh Tâm, Hiền Thủy)** — anh 14/10: thông tin "lấy từ file 3TShop như trước" đang SAI, xử lý sau. Đã bỏ dòng đó khỏi `tra-loi-ke-toan-14-10.txt`; chưa sửa chữ trên app (trang HĐ đầu vào, Logic) | chờ anh nói nguồn đúng |
+**Chờ kế toán / anh (Claude không tự làm được):**
+- Chứng từ 3 phiếu cũ **#649, #1384, #1463** — kế toán up tay (link Drive hỏng / không có quyền / là thư mục).
+- **15 phiếu chi sheet cũ** ghi đã trả nhưng không ghi chi từ tài khoản nào → đang "Chờ thanh toán", hiện ở Đối soát lỗi — kế toán bổ sung tài khoản (câu hỏi #59).
+- **6 câu hỏi chưa trả lời** trên app (Cài đặt → Cần giải đáp): #41 tồn kho sổ thuế THT, #44 HĐ bán ra Chánh Tâm lệch Kiot, #49 công nợ âm Kiot, #51 mã "CK" sổ thuế HT, #59 phiếu #75 / #90 thiếu TK, #60 giải ngân 7 khoản vay.
+- **Quyền thủ quỹ**: anh tick Phân quyền → thuquy thêm "Sổ quỹ theo ngày" + "Quỹ tiền mặt cửa hàng" (Claude bị chặn tự đổi quyền tài khoản thật). admin.ketoan là Admin = toàn quyền, không cần tick nữa.
+- **Khoá KT_CRON_KEY** bị in ra màn hình 14/10 (phiên cloud) và 22/10 (một phần, phiên máy) — anh quyết có đổi khoá không (đổi xong chép vào `kt-keys.local.txt`).
+- **So khớp P&L T1–T8** (Cài đặt → Log so khớp → P&L T1–T8): làm cùng anh cho sạch rồi mới đẩy dữ liệu tháng cũ vào luồng chính (nhật ký 113–115, 122). Lệch thật còn: P&L Shidai không theo file chi phí, P&L Hiền Thuỷ T4 ghi 0, thuê cửa hàng, MKT Chánh Tâm.
+- **5 phiếu nghi đồ thờ** trong đợt dọn nhà hàng 2 (PC001094, 1106, 1135, 1175, 1196) — anh xem, cái nào không phải nhà hàng thì trả lại (bỏ da_xoa).
+- **HĐ mua vào 2 hộ** (Chánh Tâm, Hiền Thủy) — chờ anh nói nguồn đúng (thông tin "lấy từ 3TShop" đang sai).
+- **Khớp sao kê tự động / chi tự động ngân hàng, thẻ** — chờ mỗi ngân hàng 1 file sao kê mẫu (bản nháp `nhap/nhap-chi-tu-dong.sql`, CHƯA chạy).
+- Kế toán: soát 257 phiếu "Loại chi KXĐ" (giám đốc chọn mục con), ~80 phiếu "Có HĐ gợi ý" ở Phiếu chi → Chưa nhận HĐ.
+
+**Hẹn:**
+- **31/10/2026** — báo anh có ai điền nhầm sheet T10 / sheet đề nghị từ 21/10 (`dong-bo-sheet.local.log`, `keo-file-dong-tien.local.log`, trang Đối chiếu file dòng tiền), rồi hỏi anh tắt task kt-keo-file-dong-tien.
+- **Theo dõi Supabase**: Cài đặt → Log hệ thống → Lưu lượng (chụp 23:55 hằng ngày, tự báo chuông khi vượt ngưỡng) + kt-kiem-he-thong ngày 15 / cuối tháng.
+
+**Theo dõi định kỳ (23/10 ổn — 0 lần lịch kt- lỗi trong 7 ngày; Kiot 6 lỗi mạng / 289 lần trong 3 ngày, lần sau tự kéo lại):** kéo Kiot 15 phút, đối chiếu Kiot 23:50, tồn kho 23:20 / 23:40, meInvoice 00:25, MISA HĐ đầu vào 00:35, phân loại mục con 4 giờ / lần, lưu lượng 23:55 — xem Cài đặt → Log hệ thống → Lịch chạy.
+
+**Ghi nhớ:** mật khẩu `giamdoc` trong `kt-keys.local.txt` không còn đúng — test dùng tài khoản GĐ tạm (`scripts/tk-tam.js`), không đặt lại mật khẩu giám đốc.
+
+**Đã gạch 23/10:** lỗi tài khoản hạn chế mở Tổng quan (test lại không lỗi) · thử trên trình duyệt Cài đặt loại dạng cây + ảnh giao dịch (đạt) · đối chiếu P&L "để sau" / "chuyển cloud" (đã làm, nhật ký 113–115) · thêm 21 dòng sheet đề nghị (đã chạy, nhật ký 99A) · đồng bộ sheet 15 phút (xong 19/10) · kiểm két cuối ngày (đã có) · 8 nhóm báo cáo (xong 15/10).
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 - **Phiếu / form gọn: chỉ đầu mục + tên ô**, không dòng chú thích, không placeholder "vd: …", không hướng dẫn (anh 21/10: "gọn gàng dễ nhìn nhất").
