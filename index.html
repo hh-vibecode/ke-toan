@@ -961,8 +961,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.200';
-const APP_VERSION='23/10/2026 13:51';
+const APP_SO='1.201';
+const APP_VERSION='23/10/2026 13:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1964,7 +1964,7 @@ async function pageThu(){
         ${sel('thu_loai',S.dm.loai.filter(x=>x.nhom==='thu'),'Tất cả loại thu')}${sel('thu_tk',S.dm.tai_khoan,'Tất cả tài khoản')}${f.thu_tk?`<span class="badge" style="font-size:12px">${esc((tk(+f.thu_tk)||{}).ten||'')}: đã thu <b>${fmt(sumBy(l.filter(dt),x=>x.so_tien))}</b> · ${l.length} phiếu</span>`:''}${f.thu_tt.startsWith('l_')?`<span class="badge">Đang xem: ${{l_ban:'Thu bán hàng',l_no:'Thu công nợ',l_coc:'Thu đặt cọc',l_khac:'Thu khác'}[f.thu_tt]} <span class="xn" onclick="S.f.thu_tt='tat_ca';render()">✕</span></span>`:''}
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.thu_xuat()">${IC_XLS} Xuất Excel</button>${coGhi('thu')?`<button class="m-btn pri" onclick="formThu()">+ Tạo phiếu thu</button>`:''}</div>
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Cơ sở</th><th>Tài khoản nhận</th><th>Loại thu</th><th class="num">Số tiền</th><th class="c">Trạng thái</th><th class="c">Nguồn</th></tr>
-        ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="formThu(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw m-link">${esc(soPT(x))}</td>
+        ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemThu(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw m-link">${esc(soPT(x))}</td>
           <td class="ten">${esc(ndGon(x))}${+x.nhac_mo?' '+pill('Cần bổ sung','warn'):''}${x.khong_hach_toan?' '+pill('Không hạch toán',''):''}${ghim('thu',x)}</td><td class="nw">${esc(csTen(x))}</td><td class="nw">${esc((tk(x.tai_khoan_id)||{}).ten||'')}</td><td class="nw">${esc((lo(x.loai_id)||{}).ten||'')}</td>
           <td class="num"><b class="pos-t">+${fmt(x.so_tien)}</b></td><td class="c">${ttP(x)}${dt(x)&&canTQ(x.tai_khoan_id,x.ngay)?'<div style="margin-top:3px">'+tqO('thu',x)+'</div>':''}</td><td class="c">${pill(NGUON[x.nguon]||x.nguon,x.nguon==='kiot'?'info':'')}</td></tr>`).join('')||'<tr><td colspan="9" class="m-empty">Chưa có khoản thu trong kỳ</td></tr>'}</table></div>
         ${thanhTrang('thu',l.length,moi,tr,'phiếu')}</div></div>
@@ -2010,6 +2010,38 @@ function formThu(id){
   if(ro)box.querySelectorAll('#f input,#f select').forEach(e=>e.disabled=true);else htKhoa(['don_vi_id','loai_id']);
   setTimeout(ganCT,0);if(id)setTimeout(()=>hdTai('thu',id),0);
 }
+// 23/10 anh: "đồng bộ giao diện ở các bên có thông tin với phiếu, cho form nó giống nhau dễ nhìn" — cửa sổ XEM phiếu thu / điều chuyển dựng
+// đúng khung cửa sổ phiếu chi: thanh đầu (số phiếu · nhãn · số tiền), cột bước bên trái, mỗi bước 1 khung, cột Hoạt động bên phải, nút ở chân. Sửa → form cũ.
+const pcO=(a,b,full)=>`<div class="pc-o${full?' full':''}"><span>${a}</span><div>${b||'<span class="muted">—</span>'}</div></div>`;
+const pcThe=(tieu,noi,phai)=>`<section class="pc-c">${tieu?`<h4><span>${tieu}</span>${phai?`<span class="r">${phai}</span>`:''}</h4>`:''}${noi}</section>`;
+function pcRail(ds){return ds.map((b,i)=>{const k=b.tt||'chua',tt=k==='dang'?`<span class="m-pill" style="background:#fef08a;color:#713f12">${esc(b.nhan||'Đang chờ')}</span>`:k==='loi'?pill(b.nhan||'Từ chối','bad'):k==='xong'?pill(b.nhan||'Xong','ok'):pill(b.nhan||'Chưa tới','');
+  const ai=[b.ai,b.luc?(String(b.luc).length>10?fmtDT(b.luc):fmtD(b.luc)):'',b.ghi].filter(Boolean).map(esc).join(' · ');
+  return `<div class="pc-buoc ${k}"><div class="pc-moc"><i>${k==='xong'?'✓':k==='loi'?'✕':i+1}</i><b class="bs">BƯỚC ${i+1}</b><span class="bt">${esc(b.ten)}</span><div class="bx"><span>${tt}</span>${ai?`<span class="ba">${ai}</span>`:''}</div></div><div class="pc-kh">${b.noi}</div></div>`}).join('')}
+function pcMo(so,nhan,tien,trai,bang,id,nut,ic){const m=modal(`<div class="pc"><div class="pc-h"><span class="m-loai">${ic||'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm3 8h8v2H9zm0 4h8v2H9z"/></svg>'}</span>
+    <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${nhan}</div></div><div class="pc-tien"><span>Số tiền</span><b>${fmt(tien)}</b></div><button class="x" title="Đóng" onclick="closeModal()">✕</button></div>
+    <div class="pc-b"><div class="pc-cot2"><div class="pc-bs">${trai}</div><div>${hdKhung(bang,id)}</div></div></div><div class="pc-f">${nut}</div></div>`);
+  m.classList.add('pc-m');setTimeout(ganCT,0);setTimeout(()=>hdTai(bang,id),0)}
+function xemThu(id){const x=(S.cache.thu||[]).find(t=>t.id===id);if(!x)return formThu(id);
+  const kiot=x.nguon==='kiot',ro=!coGhi('thu')||kiot,so=(String(x.noi_dung||'').match(/Kiot (\S+)$/)||[])[1]||'PT'+String(id).padStart(6,'0'),t=tk(x.tai_khoan_id)||{},daThu=x.trang_thai==='da_duyet';
+  const tq=daThu&&canTQ(x.tai_khoan_id,x.ngay),l=lo(x.loai_id)||{};
+  const tt=[{ten:'Lập phiếu',tt:'xong',ai:x.tao_boi||(kiot?'Kiot':''),luc:x.tao_luc,noi:pcThe('Thông tin phiếu thu',`<div class="pc-g">${pcO('Nội dung',esc(String(x.noi_dung||'').replace(/ · Kiot \S+$/,'')),1)}
+        ${pcO('Số tiền','<b>'+fmt(x.so_tien)+'</b>')}${pcO('Ngày thu',fmtD(x.ngay))}${pcO('Loại thu',x.khong_hach_toan?'<span class="muted">Không hạch toán</span>':esc(l.ten||''))}${pcO('Cơ sở',x.khong_hach_toan?'<span class="muted">—</span>':esc((dv(x.don_vi_id)||{}).ten||''))}
+        ${x.ghi_chu?pcO('Ghi chú',esc(x.ghi_chu),1):''}</div>`,!ro?`<button class="m-btn out" style="height:30px" onclick="closeModal();formThu(${id})">${IC_SUA} Chỉnh sửa</button>`:'')+pcThe('Chứng từ đính kèm',ctBox('thu',id,coGhi('thu')).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,''))},
+    {ten:tq?'Nhận tiền':'Thu tiền',tt:!daThu?'dang':tq&&!x.tq_nhan_luc?'dang':'xong',nhan:!daThu?'Chưa thu':tq&&!x.tq_nhan_luc?'Chờ thủ quỹ nhận':'Đã thu',ai:x.tq_nhan_boi||'',luc:x.tq_nhan_luc||'',
+      noi:pcThe('Tiền về',`<div class="pc-g">${pcO('Tài khoản nhận',esc(t.ten||''))}${pcO('Hình thức',t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản')}${tq?pcO('Thủ quỹ',x.tq_nhan_luc?`Đã nhận · ${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}`:'<span class="neg-t">Chưa xác nhận nhận tiền</span>'):''}</div>`)}];
+  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${!ro?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('thu',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span>
+    ${tq&&!x.tq_nhan_luc&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('thu',${id})">✓ Đã nhận tiền</button>`:''}`;
+  pcMo(so,`${pill('Phiếu thu','ok')}${daThu?pill('Đã thu','ok'):pill('Chưa thu','warn')}${kiot?pill('Từ Kiot','info'):''}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'thu',id,nut)}
+function xemDC(id){const x=(S.cache.dc||[]).find(d=>d.id===id);if(!x)return formDC(id);
+  const g=coGhi('dieu_chuyen'),so='DC'+String(id).padStart(6,'0'),ket=vaoKet(x),di=tk(x.tk_di_id)||{},nh=tk(x.tk_nhan_id)||{};
+  const tt=[{ten:'Lập phiếu',tt:'xong',ai:x.tao_boi||'',luc:x.tao_luc,noi:pcThe('Thông tin điều chuyển',`<div class="pc-g">${pcO('Nội dung',esc(x.noi_dung||''),1)}
+        ${pcO('Số tiền','<b>'+fmt(x.so_tien)+'</b>')}${pcO('Ngày',fmtD(x.ngay)+(x.ngay_goc&&x.ngay_goc!==x.ngay?` <span class="muted">· phiếu lập ${fmtD(x.ngay_goc)}</span>`:''))}${pcO('Từ tài khoản',esc(di.ten||''))}${pcO('Sang tài khoản',esc(nh.ten||''))}
+        ${x.khong_hach_toan?pcO('Hạch toán','<span class="muted">Không hạch toán</span>'):''}${x.ghi_chu?pcO('Ghi chú',esc(x.ghi_chu),1):''}</div>`,g?`<button class="m-btn out" style="height:30px" onclick="closeModal();formDC(${id})">${IC_SUA} Chỉnh sửa</button>`:'')+pcThe('Chứng từ đính kèm',ctBox('dieu_chuyen',id,g).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,''))},
+    {ten:ket?'Nhận tiền':'Xác nhận',tt:x.da_xac_nhan?'xong':'dang',nhan:x.da_xac_nhan?(ket?'Đã nhận tiền':'Đã xác nhận'):(ket?'Chờ thủ quỹ nhận':'Chờ xác nhận'),ai:x.xac_nhan_boi||'',luc:x.xac_nhan_luc||'',
+      noi:pcThe(ket?'Tiền vào két':'Xác nhận',`<div class="pc-g">${pcO('Trạng thái',x.da_xac_nhan?`${ket?'Thủ quỹ đã nhận':'Kế toán đã xác nhận'} · ${esc(x.xac_nhan_boi||'')} ${fmtDT(x.xac_nhan_luc)}`:`<span class="neg-t">${ket?'Thủ quỹ chưa bấm Đã nhận tiền':'Kế toán chưa xác nhận'}</span>`,1)}</div>`)}];
+  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordDC(${id})">Xuất phiếu Word</button>${g?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('dieu_chuyen',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span>
+    ${ket&&!x.da_xac_nhan&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('dieu_chuyen',${id})">✓ Đã nhận tiền</button>`:''}${!ket&&!x.da_xac_nhan&&g?`<button class="m-btn duyet" title="Mở form, tick Kế toán đã xác nhận rồi Lưu" onclick="closeModal();formDC(${id})">✓ Xác nhận</button>`:''}`;
+  pcMo(so,`${pill('Điều chuyển','info')}${x.da_xac_nhan?pill(ket?'Thủ quỹ đã nhận':'Đã xác nhận','ok'):pill(ket?'Chờ thủ quỹ nhận':'Chưa xác nhận','warn')}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'dieu_chuyen',id,nut)}
 function dongThuCT(){if($('#modal')){closeModal();return}S.f.thu_chon=null;const p=$('#thu-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
 // Kiểu sổ quỹ: gom theo ngày, mỗi ngày 1 tiêu đề kèm tổng tiền
 function soQuy(list,ngay,row,trong){if(!list.length)return `<div class="card"><div class="empty">${trong}</div></div>`;
@@ -2989,7 +3021,7 @@ async function pageDC(){
         <span class="muted" style="font-size:12px">Tiền mặt liên quan: ${fmt(tien(nen.filter(tm)))}</span>
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.dc_xuat()">${IC_XLS} Xuất Excel</button>${xn?`<button class="m-btn pri" onclick="formDC()">+ Tạo điều chuyển</button>`:''}</div>
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th>Nội dung</th><th>Tài khoản đi → nhận</th><th class="num">Số tiền</th><th class="c">Xác nhận</th></tr>
-        ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="formDC(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw m-link">DC${String(x.id).padStart(6,'0')}</td>
+        ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemDC(${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw m-link">DC${String(x.id).padStart(6,'0')}</td>
           <td class="ten">${esc(x.noi_dung)}${x.khong_hach_toan?' '+pill('Không hạch toán',''):''}${ghim('dieu_chuyen',x)}</td><td><div>${esc((tk(x.tk_di_id)||{}).ten||'')}</div><div class="muted">→ ${esc((tk(x.tk_nhan_id)||{}).ten||'')}</div></td>
           <td class="num"><b>${fmt(x.so_tien)}</b></td>
           <td class="c">${vaoKet(x)&&(x.tq_nhan_luc||!x.da_xac_nhan)?tqO('dieu_chuyen',x):x.da_xac_nhan?pill('Đã xác nhận','ok'):xn?`<button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="event.stopPropagation();xacNhanDC(${x.id})">✓ Xác nhận</button>`:pill('Chưa','warn')}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Chưa có điều chuyển trong kỳ</td></tr>'}</table></div>
@@ -4255,7 +4287,7 @@ async function chatGui(){const o=$('#chat-o');if(!o)return;const v=o.value.trim(
   try{await rpc('kt_chat_gui',{p_kenh:CHAT.kenh,p_noi_dung:v});o.value='';await chatTai(true)}catch(e){alert(e.message)}finally{o.disabled=false;o.focus()}}
 function guiPhieuChat(so,nd,tien){moChat().then(()=>{const o=$('#chat-o');if(o){o.value=so+' · '+nd+' · '+fmt(tien)+' — ';o.focus();o.selectionStart=o.selectionEnd=o.value.length}});toast('Chọn người nhận ở cột trái rồi gõ thêm, bấm Gửi')}
 // mở phiếu từ mã trong chat: đã có trong danh sách đang tải thì mở luôn, chưa có thì tìm mọi kỳ rồi mở
-function moPhieu(loai,id){const m={PC:['chi','chi',()=>xemChi(id)],PT:['thu','thu',()=>formThu(id)],DC:['dieu_chuyen','dc',()=>formDC(id)]}[loai];if(!m)return;
+function moPhieu(loai,id){const m={PC:['chi','chi',()=>xemChi(id)],PT:['thu','thu',()=>xemThu(id)],DC:['dieu_chuyen','dc',()=>xemDC(id)]}[loai];if(!m)return;
   const [trang,kc,mo]=m;const co=()=>(S.cache[kc]||[]).some(x=>x.id===id);
   if(S.page===trang&&co())return mo();
   if(loai!=='DC')S.f[trang+'_q']=loai+String(id).padStart(6,'0');go(trang);let n=0;const t=setInterval(()=>{if(co()){clearInterval(t);mo()}else if(++n>40){clearInterval(t);toast('Không mở được phiếu (có thể không có quyền xem)')}},250)}
