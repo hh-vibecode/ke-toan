@@ -951,6 +951,17 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .chat-xl{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:999px;width:24px;height:24px;font-size:12px;font-weight:800;cursor:pointer;opacity:0;transition:opacity .15s;flex-shrink:0}
 .chat-m:hover .chat-xl{opacity:1}.chat-xl.on{opacity:1;background:var(--ok,#16a34a);border-color:var(--ok,#16a34a);color:#fff}
 .chat-cam{font-size:11px;color:var(--ok,#16a34a);font-weight:700;margin-top:3px}.chat-xem{font-size:10.5px;color:var(--muted);margin-top:2px}
+/* Xuất dữ liệu (Cài đặt · Dữ liệu) — 23/10/2026 */
+.xu-w{max-width:1000px}.xu-c{padding:14px 16px;margin-bottom:12px}
+.xu-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;margin-bottom:10px;flex-wrap:wrap}
+.xu-p{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid var(--border)}.xu-p:first-child{border-top:none}
+.xu-l{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;cursor:pointer}
+.xu-l input{width:16px;height:16px;margin-top:2px;accent-color:var(--accent);flex:none;cursor:pointer}
+.xu-l b{font-size:13px}.xu-l .xu-mo{font-size:12px;color:var(--muted);margin-top:2px}
+.xu-p.tat{opacity:.5}.xu-p.tat .xu-l,.xu-p.tat input{cursor:default}
+.xu-loc{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.xu-loc select{height:30px;font-size:12px;max-width:210px}
+.xu-ft{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;z-index:2;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);box-shadow:0 -2px 8px rgba(16,24,40,.06)}
+@media(max-width:700px){.xu-p{flex-direction:column;align-items:stretch}.xu-loc{justify-content:flex-start;padding-left:26px}}
 </style>
 </head>
 <body>
@@ -962,8 +973,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.205';
-const APP_VERSION='23/10/2026 14:24';
+const APP_SO='1.206';
+const APP_VERSION='23/10/2026 14:39';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1404,6 +1415,8 @@ const PAGES={
   cd_nhat_ky:{ten:'Log hệ thống',nv:'he_thong',cd:'Log',fn:()=>pageLogHT()},
   // Nhật ký kéo + so khớp Kiot theo tháng (anh 14/10/2026) — quyền theo trang Nhật ký
   cd_kiot:{ten:'Log so khớp',nv:'he_thong',cd:'Log',fn:()=>pageKiotLog()},
+  // 23/10 anh: "thêm nút xuất dữ liệu trong Cài đặt, giống MISA, thích xuất gì thì tích phần ấy" — 1 file Excel, mỗi phần 1 sheet
+  cd_xuat:{ten:'Xuất dữ liệu',nv:'he_thong',cd:'Dữ liệu',fn:()=>pageXuat()},
   cd_doi_mk:{ten:'Đổi mật khẩu',nv:null,cd:'Tài khoản',   /* 22/10 anh: đổi mật khẩu ở menu tài khoản rồi, bỏ khỏi Cài đặt */fn:()=>pageCaiDat('doi_ma')},
 };
 function go(p){S.page=p;location.hash=p;shell();dxBao()}
@@ -1411,7 +1424,7 @@ function go(p){S.page=p;location.hash=p;shell();dxBao()}
 function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0}
 const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Hệ thống & Cài đặt chia nhóm, có tiêu đề nhỏ
-const CD_NHOM=['Danh mục','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
+const CD_NHOM=['Danh mục','Dữ liệu','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_xuat','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
 // Log hệ thống: 1 trang, 3 tab — mỗi tab dùng lại hàm trang cũ, chèn thanh tab ngay dưới tiêu đề
 const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy']];
 async function pageLogHT(){const t=S.f.log_tab||'sua';
@@ -4535,6 +4548,7 @@ const LOGIC2=[
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
  ['bao_cao','P&L T1–T8 = 4 file P&L kế toán','Tháng 1–8/2026: doanh thu ròng, giá vốn (= doanh thu ròng − lợi nhuận gộp), chi phí từng mục lấy y nguyên 4 file BÁO CÁO P&L (Hiền Thuỷ, Chánh Tâm, Shidai, Thị trường). Ghép mục theo tên (mỗi file đánh mã khác; mã Excel tự đổi thành ngày như 46027 được đổi lại 5.1); mỗi dòng lấy phần riêng = số dòng − tổng con. Thị trường thêm thành cơ sở "Thị trường (P&L T1–T8)". Từ T9: doanh thu Kiot + chi phí phiếu chi app.','Anh 23/10. Kiểm: 24 tháng × cơ sở tổng chi phí = tổng nhóm 1–9 của file, 0 lệch.','23/10'],
  ['bao_cao','P&L dựng theo form sheet','Dòng doanh thu: bán buôn (khách KB / NPP / ĐL / CTV) · bán lẻ offline · bán lẻ online (Facebook, Tiktok, Website, Shopee) · nến bơ TTV (kênh Nến Bơ) · thu nhập khác · trả hàng · giảm trừ · điểm · trừ VAT TK 599 → TỔNG DOANH THU RÒNG (mở ra từng cơ sở) → giá vốn → LỢI NHUẬN GỘP → 9 nhóm chi phí → TỔNG CHI PHÍ → LỢI NHUẬN TRƯỚC THUẾ → thuế → LỢI NHUẬN RÒNG. Mỗi số kèm % doanh thu ròng; cột Tổng + TB / tháng.','Anh 23/10: "form trên sheet dễ nhìn, tham khảo rồi nâng cấp".','23/10'],
+ ['chung','Cài đặt → Xuất dữ liệu','Chọn kỳ (nút nhanh tháng này / tháng trước / quý / năm), tick phần cần xuất → 1 file Excel, mỗi phần 1 sheet + sheet Tóm tắt: phiếu chi (lọc đã TT, tài khoản công ty / từng TK; kèm sheet theo tài khoản), phiếu thu, điều chuyển, số dư + sổ quỹ theo ngày, tạm ứng / hoàn ứng, vay, công nợ KH / NCC, hoá đơn vào / ra, P&L theo tháng (đúng số trang P&L). Định dạng: tiêu đề, khung, số #,##0, ngày dd/mm/yyyy, cố định tiêu đề, bộ lọc, dòng tổng SUBTOTAL.','Anh 23/10 ("giống MISA, thích xuất gì tích phần ấy"). Phần "sắp có": nhật ký chung, nhập xuất tồn, tài sản, lưu chuyển tiền tệ. Quyền theo quyền xem từng trang.','23/10'],
  ['bao_cao','Trừ VAT tiền về TK công ty 599','Mọi khoản Kiot ghi "Tiền khách trả" vào TK VCB CTY …599 (từ T9): trừ 8% (bán 100 tính 92); hàng đèn điện thờ / chuông mõ trừ 10% — khách trả công nợ không gắn hoá đơn nên tỷ lệ 10% theo phần hàng 2 nhóm này trong hoá đơn của khách 90 ngày trước. Không trừ: chuyển rút nội bộ, nộp tiền vào TK, lãi ngân hàng, BHXH hoàn.','Anh 23/10. Dòng riêng trong P&L, giảm doanh thu ròng của cơ sở bán.','23/10'],
  ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
  ['chung','Log hệ thống → tab Lưu lượng','Cài đặt → Log hệ thống có 3 tab: Chỉnh sửa · Lưu lượng · Lịch chạy. 23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
@@ -4864,6 +4878,198 @@ async function dcpHtml(){const f=S.f,d=await rpc('kt_ds_dcp_pnl'),t=['cp','gop',
       ${['phieu','cp'].includes(t)?`<span class="m-link" onclick="S.f.dcp_tab='tq';render()">← Tổng quan</span><b>${t==='phieu'?'ĐNTT không có trong file chi phí':'File chi phí có, thiếu ĐNTT'}</b>`:''}
       <select class="m-in" style="margin-left:auto" onchange="S.f.dcp_th=this.value;render()">${t==='pl'?'':'<option value="">Tất cả T1–T8</option>'}${ms.map(m=>`<option value="${m}" ${(th||(t==='pl'?'2026-08':''))===m?'selected':''}>${tg(m)}/2026</option>`).join('')}</select>
       <span class="badge">Chạy ${d.chay_luc?fmtDT(d.chay_luc):'—'}</span></div>${body}`}
+// ── XUẤT DỮ LIỆU (Cài đặt · Dữ liệu) — anh 23/10/2026: "giống bọn MISA, thích xuất gì thì tích phần ấy, xây form trước cho từng phần,
+// trình bày trên Excel đẹp đẹp". 1 file .xlsx, mỗi phần đã tick = 1 (hoặc vài) sheet + sheet Tóm tắt đầu file.
+// Dữ liệu lấy bằng ĐÚNG các hàm RPC các trang đang dùng (không thêm hàm SQL) → quyền theo từng trang như cũ. Monsieur Claude
+let EXCELJS_LIB=null;
+async function napExcelJS(){if(EXCELJS_LIB)return EXCELJS_LIB;
+  await new Promise((ok,loi)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';sc.onload=ok;sc.onerror=()=>loi(new Error('Không tải được thư viện Excel'));document.head.appendChild(sc)});
+  EXCELJS_LIB=window.ExcelJS;if(!EXCELJS_LIB)throw new Error('Không tải được thư viện Excel');return EXCELJS_LIB}
+const XU_PHAN=[
+  {k:'chi',ten:'Phiếu chi',mo:'Phiếu chi trong kỳ (đã TT theo ngày thanh toán, chưa TT theo ngày đề nghị) + sheet tóm tắt theo tài khoản chi',quyen:()=>coXem('chi')},
+  {k:'thu',ten:'Phiếu thu',mo:'Ngày, loại thu, cơ sở, tài khoản nhận, số tiền, trạng thái, nguồn',quyen:()=>coXem('thu')},
+  {k:'dc',ten:'Điều chuyển tiền',mo:'Phiếu chuyển tiền giữa các tài khoản trong kỳ',quyen:()=>coXem('dieu_chuyen')},
+  {k:'so_quy',ten:'Sổ quỹ & số dư tài khoản',mo:'Số dư đầu / cuối kỳ từng tài khoản + sổ quỹ theo ngày (thu, chi, điều chuyển, tồn)',quyen:()=>can('so_du')||can('so_quy')},
+  {k:'tam_ung',ten:'Tạm ứng & hoàn ứng',mo:'Khoản ứng phát sinh / còn nợ trong kỳ + các lần hoàn ứng',quyen:()=>coXem('tam_ung')},
+  {k:'vay',ten:'Khoản vay',mo:'Danh sách khoản vay, dư nợ + các lần nhận tiền / trả gốc, lãi trong kỳ',quyen:()=>coXem('vay')},
+  {k:'no_kh',ten:'Công nợ khách hàng',mo:'Số còn phải thu từng khách (số dư hiện tại, không theo kỳ)',quyen:()=>coXem('no_kh')},
+  {k:'no_ncc',ten:'Công nợ nhà cung cấp',mo:'Số còn phải trả từng nhà cung cấp (số dư hiện tại, không theo kỳ)',quyen:()=>coXem('no_ncc')},
+  {k:'hd',ten:'Hoá đơn đầu vào / đầu ra',mo:'Ký hiệu, số HĐ, đối tác, MST, tiền hàng, thuế, tổng',quyen:()=>can('hoa_don_thue')},
+  {k:'pl',ten:'Báo cáo P&L theo tháng',mo:'Doanh thu, giá vốn, chi phí theo mục, lợi nhuận — từng tháng trong kỳ (giống P&L chi tiết)',quyen:()=>can('pl')},
+  {k:'nkc',ten:'Sổ nhật ký chung (bút toán Nợ / Có)',mo:'Định khoản theo hệ thống tài khoản kế toán',sap:1},
+  {k:'ton',ten:'Tồn kho & nhập xuất tồn',mo:'Theo mã hàng, theo kho',sap:1},
+  {k:'ts',ten:'Tài sản & khấu hao',mo:'Danh sách tài sản, khấu hao luỹ kế',sap:1},
+  {k:'lctt',ten:'Báo cáo lưu chuyển tiền tệ',mo:'Dòng tiền hoạt động / đầu tư / tài chính theo tháng',sap:1}];
+const xuMo=p=>!p.sap&&p.quyen();
+function xuSt(){const x=S.f.xu=S.f.xu||{};if(!x.tu||!x.den){x.tu=S.tu;x.den=S.den}x.chon=x.chon||{};x.chi_tt=x.chi_tt||'tat_ca';x.chi_tk=x.chi_tk||'tat_ca';x.hd=x.hd||'ca_hai';return x}
+function xuKyNhanh(k){const n=homNay(),y=+n.slice(0,4),m=+n.slice(5,7),p=v=>String(v).padStart(2,'0');
+  if(k==='thang')return [n.slice(0,7)+'-01',cuoiThang(n.slice(0,7))];
+  if(k==='truoc'){const t=m===1?(y-1)+'-12':y+'-'+p(m-1);return [t+'-01',cuoiThang(t)]}
+  if(k==='quy'){const q=Math.floor((m-1)/3)*3;return [y+'-'+p(q+1)+'-01',cuoiThang(y+'-'+p(q+3))]}
+  return [y+'-01-01',y+'-12-31']}
+function xuKy(k){const x=xuSt();[x.tu,x.den]=xuKyNhanh(k);render()}
+function xuDem(){const x=xuSt(),n=XU_PHAN.filter(p=>xuMo(p)&&x.chon[p.k]).length,d=$('#xu-dem'),b=$('#xu-nut');
+  if(d)d.textContent=n?'Đã chọn '+n+' phần':'Chưa chọn phần nào';if(b)b.disabled=!n}
+function xuChonHet(on){const x=xuSt();XU_PHAN.forEach(p=>{if(xuMo(p))x.chon[p.k]=!!on});render()}
+function pageXuat(){const el=$('#page'),x=xuSt();
+  const sel=(ds,v,on)=>`<select class="m-in" onchange="${on}">${ds.map(([a,b])=>`<option value="${a}" ${String(a)===String(v)?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
+  const tkChi=S.dm.tai_khoan.filter(t=>t.loai!=='vay'&&(t.hoat_dong||String(t.id)===String(x.chi_tk)));
+  const LOC={chi:()=>sel([['tat_ca','Mọi trạng thái (trừ từ chối)'],['da_tt','Đã thanh toán'],['ca_tu_choi','Kể cả phiếu từ chối']],x.chi_tt,'S.f.xu.chi_tt=this.value')
+      +sel([['tat_ca','Mọi tài khoản chi'],['cong_ty','Tài khoản công ty (thủ quỹ chi)'],...tkChi.map(t=>[t.id,t.ten])],x.chi_tk,'S.f.xu.chi_tk=this.value'),
+    hd:()=>sel([['ca_hai','Đầu vào + đầu ra'],['vao','Chỉ đầu vào'],['ra','Chỉ đầu ra']],x.hd,'S.f.xu.hd=this.value')};
+  const dong=p=>{const mo=xuMo(p),on=mo&&!!x.chon[p.k];
+    return `<div class="xu-p ${mo?'':'tat'}"><label class="xu-l"><input type="checkbox" ${mo?'':'disabled'} ${on?'checked':''} onchange="S.f.xu.chon['${p.k}']=this.checked;xuDem()">
+      <div style="min-width:0"><b>${esc(p.ten)}</b> ${p.sap?'<span class="badge">Sắp có</span>':!mo?'<span class="badge">Chưa có quyền xem</span>':''}<div class="xu-mo">${esc(p.mo)}</div></div></label>
+      ${mo&&LOC[p.k]?`<div class="xu-loc">${LOC[p.k]()}</div>`:''}</div>`};
+  const kyOn=k=>{const [a,b]=xuKyNhanh(k);return a===x.tu&&b===x.den};
+  el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>','<span class="badge">1 file Excel · mỗi phần 1 sheet</span>')
+    +`<div class="xu-w"><div class="m-card xu-c"><div class="xu-h">Kỳ dữ liệu</div>
+      <div class="m-flt" style="margin-bottom:0;align-items:flex-end">
+        <div class="m-f"><span>Từ ngày</span><input type="date" class="m-in" value="${x.tu||''}" onchange="S.f.xu.tu=this.value;render()"></div>
+        <div class="m-f"><span>Đến ngày</span><input type="date" class="m-in" value="${x.den||''}" onchange="S.f.xu.den=this.value;render()"></div>
+        <div class="m-seg">${[['thang','Tháng này'],['truoc','Tháng trước'],['quy','Quý này'],['nam','Năm nay']].map(([k,t])=>`<button class="${kyOn(k)?'on':''}" onclick="xuKy('${k}')">${t}</button>`).join('')}</div>
+        ${x.tu&&x.den&&x.tu>x.den?'<span class="badge" style="color:var(--bad)">Từ ngày đang sau Đến ngày</span>':''}</div></div>
+      <div class="m-card xu-c"><div class="xu-h">Chọn dữ liệu cần xuất<span style="margin-left:auto"></span>
+        <button class="m-btn" style="height:30px" onclick="xuChonHet(1)">Chọn tất cả</button><button class="m-btn" style="height:30px" onclick="xuChonHet(0)">Bỏ chọn</button></div>
+        <div>${XU_PHAN.map(dong).join('')}</div></div>
+      <div class="xu-ft"><span class="badge" id="xu-dem"></span><span class="badge">${fmtD(x.tu)} – ${fmtD(x.den)}</span><span style="margin-left:auto"></span>
+        <button class="m-btn pri" id="xu-nut" onclick="xuatDuLieu(this)">${IC_XLS} Xuất Excel</button></div></div>`;
+  xuDem()}
+// tên danh mục
+const xuTK=id=>(tk(id)||{}).ten||'',xuLo=id=>(lo(id)||{}).ten||'',xuDV=id=>(dv(id)||{}).ten||'';
+const xuSo=(p,id)=>p+String(id).padStart(6,'0');
+// Mỗi hàm trả mảng sheet: {ten, tieuDe, ghi?, cols:[[tiêu đề, hàm lấy giá trị, kiểu 'so'|'ngay'|'chu', {tong:false}]], rows, tong?, loc?, dong?(r)→{b,nen,le}, coDinhCot?}
+const XU_LAY={
+  chi:async(tu,den,x)=>{const ds=await rpc('kt_ds',{p_bang:'chi',p_tu:tu,p_den:den});
+    const ng=c=>c.trang_thai==='da_tt'&&c.ngay_tt?c.ngay_tt:c.ngay_de_nghi,tc=c=>c.trang_thai==='tu_choi'||c.trang_thai==='tu_choi_tt';
+    const l=ds.filter(c=>{const d=ng(c);return !!d&&d>=tu&&d<=den})
+      .filter(c=>x.chi_tt==='da_tt'?c.trang_thai==='da_tt':x.chi_tt==='ca_tu_choi'?true:!tc(c))
+      .filter(c=>x.chi_tk==='tat_ca'||(x.chi_tk==='cong_ty'?!!(tk(c.tai_khoan_id)||{}).thu_quy_chi:String(c.tai_khoan_id)===String(x.chi_tk)))
+      .sort((a,b)=>ng(a)<ng(b)?-1:ng(a)>ng(b)?1:a.id-b.id);
+    const ghi=[x.chi_tt==='da_tt'?'Chỉ phiếu đã thanh toán':x.chi_tt==='ca_tu_choi'?'Kể cả phiếu từ chối':'Không gồm phiếu từ chối',
+      x.chi_tk==='cong_ty'?'Tài khoản công ty':x.chi_tk!=='tat_ca'?'Tài khoản '+xuTK(x.chi_tk):''].filter(Boolean).join(' · ');
+    const g={};l.forEach(c=>{const k=c.tai_khoan_id||0,o=g[k]=g[k]||{k,n:0,t:0,ntt:0,tt:0};o.n++;o.t+=+c.so_tien||0;if(c.trang_thai==='da_tt'){o.ntt++;o.tt+=+c.so_tien||0}});
+    const LTK={tien_mat:'Tiền mặt',ngan_hang:'Ngân hàng'};
+    return [{ten:'Phiếu chi',tieuDe:'PHIẾU CHI',ghi,rows:l,cols:[['Số phiếu',c=>maPC(c.id)],['Ngày',ng,'ngay'],['Ngày đề nghị',c=>c.ngay_de_nghi,'ngay'],['Ngày thanh toán',c=>c.ngay_tt,'ngay'],
+        ['Người đề nghị',c=>c.nguoi_de_nghi],['Bộ phận',c=>xuDV(c.bo_phan_id)],['Nội dung',c=>c.noi_dung],['Loại chi',c=>xuLo(c.loai_id)],['Tài khoản chi',c=>xuTK(c.tai_khoan_id)],
+        ['Số tiền',c=>c.so_tien,'so'],['Trạng thái',c=>(TT_CHI[c.trang_thai]||[c.trang_thai])[0]],['Người thụ hưởng',c=>c.thu_huong_ten],['Số tài khoản nhận',c=>c.thu_huong_stk],['Ngân hàng nhận',c=>c.thu_huong_nh],
+        ['Hoá đơn đỏ',c=>c.co_hd_do?(c.hd_do_nhan?'Đã nhận':'Chưa nhận'):''],['Ghi chú',c=>c.ghi_chu]]},
+      {ten:'PC theo tài khoản',tieuDe:'PHIẾU CHI — TÓM TẮT THEO TÀI KHOẢN CHI',ghi,rows:Object.values(g).sort((a,b)=>b.t-a.t),
+        cols:[['Tài khoản chi',o=>o.k?xuTK(o.k):'(Chưa chọn tài khoản)'],['Loại',o=>o.k?LTK[(tk(o.k)||{}).loai]||'Khác':''],['Số phiếu',o=>o.n,'so'],['Tổng tiền',o=>o.t,'so'],
+          ['Số phiếu đã TT',o=>o.ntt,'so'],['Đã thanh toán',o=>o.tt,'so'],['Tỷ trọng',o=>o.t,'pct']]}]},
+  thu:async(tu,den)=>{const ds=(await rpc('kt_ds',{p_bang:'thu',p_tu:tu,p_den:den})).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
+    const TT={da_duyet:'Đã thu',cho_duyet:'Chưa thu',tu_choi:'Từ chối'},NG={kiot:'KiotViet',tay:'Nhập trên app',sheet_cu:'Sheet cũ'};
+    return [{ten:'Phiếu thu',tieuDe:'PHIẾU THU',rows:ds,cols:[['Số phiếu',t=>xuSo('PT',t.id)],['Ngày',t=>t.ngay,'ngay'],['Nội dung',t=>t.noi_dung],['Loại thu',t=>xuLo(t.loai_id)],
+      ['Cơ sở / bộ phận',t=>xuDV(t.don_vi_id)],['Tài khoản nhận',t=>xuTK(t.tai_khoan_id)],['Số tiền',t=>t.so_tien,'so'],['Trạng thái',t=>TT[t.trang_thai]||t.trang_thai],['Nguồn',t=>NG[t.nguon]||t.nguon],['Ghi chú',t=>t.ghi_chu]]}]},
+  dc:async(tu,den)=>{const ds=(await rpc('kt_ds',{p_bang:'dieu_chuyen',p_tu:tu,p_den:den})).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
+    return [{ten:'Điều chuyển',tieuDe:'ĐIỀU CHUYỂN TIỀN GIỮA CÁC TÀI KHOẢN',rows:ds,cols:[['Số phiếu',d=>xuSo('DC',d.id)],['Ngày',d=>d.ngay,'ngay'],['Từ tài khoản',d=>xuTK(d.tk_di_id)],['Đến tài khoản',d=>xuTK(d.tk_nhan_id)],
+      ['Số tiền',d=>d.so_tien,'so'],['Nội dung',d=>d.noi_dung],['Xác nhận',d=>d.da_xac_nhan?'Đã xác nhận':'Chưa xác nhận'],['Người xác nhận',d=>d.xac_nhan_boi],['Ghi chú',d=>d.ghi_chu]]}]},
+  so_quy:async(tu,den)=>{const [b,r]=await Promise.all([rpc('kt_so_du_tk',{p_tu:tu,p_den:den}),rpc('kt_dong_tien',{p_tu:tu,p_den:den})]);
+    const tks=b.tai_khoan.filter(t=>t.loai!=='vay'&&(t.hoat_dong||+t.cuoi_ky||+t.thu||+t.chi||+t.dc));
+    const ghi=tu<MOC_SODU?'Số dư từng tài khoản tính chuẩn từ 01/09/2026 — phần trước mốc chỉ tham khảo':'',LTK={tien_mat:'Tiền mặt',ngan_hang:'Ngân hàng'};
+    const ps={};for(const p of r.phat_sinh||[]){const k=p.tk+'|'+p.ngay;(ps[k]=ps[k]||[]).push(p)}
+    const tt={};for(const t of r.thuc_te||[])tt[t.tk+'|'+t.ngay]=Number(t.so_tien);
+    const days=[];for(let d=new Date(tu+'T00:00:00Z');d.toISOString().slice(0,10)<=den;d.setUTCDate(d.getUTCDate()+1))days.push(d.toISOString().slice(0,10));
+    const rows=[];for(const t of tks){let ton=Number((r.dau_ky||{})[t.id]||0);rows.push({tk:t.ten,ng:tu,dg:'Số dư đầu kỳ',ton,dau:1});
+      for(const ng of days){const p=ps[t.id+'|'+ng]||[],th=tt[t.id+'|'+ng];
+        const thu=sumBy(p.filter(x=>x.kieu==='thu'||x.kieu==='vay'),x=>x.vao),chi=sumBy(p.filter(x=>x.kieu==='chi'||x.kieu==='vay'),x=>x.ra),dc=sumBy(p.filter(x=>x.kieu==='dc'),x=>x.vao-x.ra);
+        ton+=thu-chi+dc;if(p.length||th!=null)rows.push({tk:t.ten,ng,dg:p.length+' giao dịch',thu,chi,dc,ton,tt:th??null})}}
+    return [{ten:'Số dư tài khoản',tieuDe:'SỐ DƯ TÀI KHOẢN TIỀN',ghi,rows:tks.slice().sort((a,c)=>+c.cuoi_ky-(+a.cuoi_ky)),
+        cols:[['Tài khoản',t=>t.ten],['Loại',t=>LTK[t.loai]||'Khác'],['Đầu kỳ',t=>t.dau_ky,'so'],['Thu',t=>t.thu,'so'],['Chi',t=>t.chi,'so'],['Điều chuyển (ròng)',t=>t.dc,'so'],['Cuối kỳ (sổ sách)',t=>t.cuoi_ky,'so'],['Tình trạng',t=>t.hoat_dong?'Đang dùng':'Ngừng dùng']]},
+      {ten:'Sổ quỹ theo ngày',tieuDe:'SỔ QUỸ THEO NGÀY',ghi,rows,dong:o=>o.dau?{b:1,nen:'FFF2F2F2'}:null,
+        cols:[['Tài khoản',o=>o.tk],['Ngày',o=>o.ng,'ngay'],['Diễn giải',o=>o.dg],['Thu',o=>o.thu,'so'],['Chi',o=>o.chi,'so'],['Điều chuyển',o=>o.dc,'so'],
+          ['Tồn sổ sách',o=>o.ton,'so',{tong:false}],['Tồn thực tế',o=>o.tt,'so',{tong:false}],['Lệch',o=>o.tt!=null?o.ton-o.tt:null,'so',{tong:false}]]}]},
+  tam_ung:async(tu,den)=>{const ds=await rpc('kt_ds_tam_ung'),nay=homNay();ds.forEach(x=>{x.con=Number(x.so_tien)-Number(x.da_hoan||0)});
+    const l=ds.filter(x=>x.ngay<=den&&(x.ngay>=tu||x.con>0)).sort((a,b)=>a.ngay<b.ngay?-1:1);
+    const hu=ds.flatMap(x=>(x.hoan||[]).filter(h=>h.ngay>=tu&&h.ngay<=den).map(h=>({...h,nguoi:x.nguoi_nhan,ly_do:x.ly_do}))).sort((a,b)=>a.ngay<b.ngay?-1:1);
+    return [{ten:'Tạm ứng',tieuDe:'TẠM ỨNG',ghi:'Khoản ứng trong kỳ + khoản cũ còn phải hoàn',rows:l,cols:[['Ngày ứng',x=>x.ngay,'ngay'],['Người nhận',x=>x.nguoi_nhan],['Bộ phận',x=>xuDV(x.bo_phan_id)],['Lý do',x=>x.ly_do],
+        ['Số tiền ứng',x=>x.so_tien,'so'],['Đã hoàn',x=>x.da_hoan,'so'],['Còn phải hoàn',x=>x.con,'so'],['Hạn hoàn',x=>x.han_hoan,'ngay'],
+        ['Tình trạng',x=>x.con<=0?'Đã hoàn đủ':x.han_hoan&&x.han_hoan<nay?'Quá hạn':'Đang ứng'],['Phiếu chi',x=>x.chi_id?maPC(x.chi_id):''],['Ghi chú',x=>x.ghi_chu]]},
+      {ten:'Hoàn ứng',tieuDe:'CÁC LẦN HOÀN ỨNG TRONG KỲ',rows:hu,cols:[['Ngày',h=>h.ngay,'ngay'],['Người ứng',h=>h.nguoi],['Khoản ứng',h=>h.ly_do],['Hình thức',h=>HT_HOAN[h.hinh_thuc]||h.hinh_thuc],['Số tiền',h=>h.so_tien,'so'],['Ghi chú',h=>h.ghi_chu]]}]},
+  vay:async(tu,den)=>{const ds=await rpc('kt_ds_vay');
+    const gd=ds.flatMap(v=>[...(v.nhan||[]).map(n=>({ngay:n.ngay,ten:v.ten,loai:'Nhận tiền vay',tk:n.tai_khoan_id,nhan:n.so_tien,tt:'Đã nhận',gc:n.ghi_chu})),
+      ...(v.lan_tra||[]).map(t=>({ngay:t.ngay,ten:v.ten,loai:'Trả nợ',tk:t.tai_khoan_id,goc:t.goc,lai:t.lai,tt:t.da_tra?'Đã trả':'Dự kiến',pc:t.chi_id,gc:t.ghi_chu}))])
+      .filter(g=>g.ngay>=tu&&g.ngay<=den).sort((a,b)=>a.ngay<b.ngay?-1:1);
+    return [{ten:'Khoản vay',tieuDe:'KHOẢN VAY',ghi:'Số dư tại thời điểm xuất',rows:ds,cols:[['Khoản vay',v=>v.ten],['Bên cho vay',v=>v.ben_cho_vay],['Hạn mức / hợp đồng',v=>+v.so_tien||null,'so'],['Đã nhận (giải ngân)',v=>+v.tong_nhan||0,'so'],
+        ['Gốc đã trả',v=>v.goc_da_tra,'so'],['Dư nợ gốc',duNo,'so'],['Lãi đã trả',v=>v.lai_da_tra,'so'],['Lãi suất (%/năm)',v=>v.lai_suat!=null?String(v.lai_suat):''],['Đáo hạn',v=>v.ngay_dao_han,'ngay'],['Tình trạng',v=>v.da_tat_toan?'Đã tất toán':'Đang vay']]},
+      {ten:'Vay - giao dịch',tieuDe:'VAY — NHẬN TIỀN / TRẢ GỐC, LÃI TRONG KỲ',rows:gd,cols:[['Ngày',g=>g.ngay,'ngay'],['Khoản vay',g=>g.ten],['Loại',g=>g.loai],['Tài khoản',g=>xuTK(g.tk)],
+        ['Nhận tiền',g=>g.nhan,'so'],['Trả gốc',g=>g.goc,'so'],['Trả lãi',g=>g.lai,'so'],['Trạng thái',g=>g.tt],['Phiếu chi',g=>g.pc?maPC(g.pc):''],['Ghi chú',g=>g.gc]]}]},
+  no_kh:()=>xuCongNo('kh'),no_ncc:()=>xuCongNo('ncc'),
+  hd:async(tu,den,x)=>{const ch=x.hd==='ca_hai'?['vao','ra']:[x.hd],out=[];
+    for(const c of ch){const ds=(await rpc('kt_thue_hd_ds',{p_tu:tu,p_den:den,p_chieu:c,p_hkd:null,p_tim:null})).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:0);
+      out.push({ten:c==='vao'?'HĐ đầu vào':'HĐ đầu ra',tieuDe:c==='vao'?'HOÁ ĐƠN ĐẦU VÀO':'HOÁ ĐƠN ĐẦU RA',rows:ds,cols:[['Ngày',h=>h.ngay,'ngay'],['Ký hiệu',h=>h.ky_hieu],['Số HĐ',h=>h.so_hd],
+        [c==='vao'?'Người bán':'Người mua',h=>h.doi_tac],['MST',h=>h.mst],['Chưa thuế',h=>h.thanh_tien,'so'],['Thuế',h=>h.tien_thue,'so'],['Tổng',h=>h.tong,'so'],['Đơn vị',h=>dvThueTen(h.hkd)],['Nguồn',h=>h.nguon],['Ghi chú',h=>h.ghi_chu]]})}
+    return out},
+  // P&L: chạy đúng hàm trang P&L (tab chi tiết, mọi cơ sở) trong khung ẩn rồi lấy bảng nó định xuất → số khớp 100% với trang P&L
+  pl:async(tu,den)=>{const luu={tu:S.tu,den:S.den,ky:S.ky,f:S.f,bc:S.cache.bc_xuat},goc=xuatCSV,that=$('#page'),tam=document.createElement('div');let cap=null;
+    S.f={...S.f,pl_tab:'ct',loc_cs:undefined};S.tu=tu.slice(0,7)+'-01';S.den=cuoiThang(den.slice(0,7));S.ky='tuy';S.cache.bc_xuat=null;
+    if(that)that.id='page-xu-goc';tam.id='page';tam.style.display='none';document.body.appendChild(tam);
+    try{xuatCSV=(t,c,r)=>{cap={c,r}};await pageBCPL();if(S.cache.bc_xuat)S.cache.bc_xuat()}
+    finally{xuatCSV=goc;tam.remove();if(that)that.id='page';S.tu=luu.tu;S.den=luu.den;S.ky=luu.ky;S.f=luu.f;S.cache.bc_xuat=luu.bc}
+    if(!cap)throw new Error('Không lấy được bảng P&L');
+    return [{ten:'P&L',tieuDe:'BÁO CÁO KẾT QUẢ KINH DOANH (P&L) THEO THÁNG',phu:'Kỳ: T'+(+tu.slice(5,7))+'/'+tu.slice(0,4)+' – T'+(+den.slice(5,7))+'/'+den.slice(0,4)+' (trọn tháng)',ghi:'Theo trang P&L chi tiết · mọi cơ sở · chi phí ghi số âm',rows:cap.r.filter(r=>!r.an),tong:false,loc:false,coDinhCot:1,
+      dong:r=>({b:['tong','net','nhom','nhom2'].includes(r.kieu),nen:r.kieu==='tong'?'FFFFF2CC':r.kieu==='net'?'FFE2EFDA':null,le:r.kieu==='con'?1:r.kieu==='con2'?2:0}),
+      cols:cap.c.map((c,j)=>[c[0],j?c[1]:r=>String(c[1](r)).trim(),j?'so':'chu'])}]}};
+async function xuCongNo(loai){const KH=loai==='kh',ds=(await rpc('kt_cong_no_dt',{p_loai:loai})).filter(x=>Math.round(+x.no||0)!==0).sort((a,b)=>b.no-a.no);
+  const nhTen=x=>(NHOM_KH.find(n=>n[0]===nhomKH(x.ten))||[])[1]||'';
+  return [{ten:KH?'Công nợ KH':'Công nợ NCC',tieuDe:KH?'CÔNG NỢ PHẢI THU KHÁCH HÀNG':'CÔNG NỢ PHẢI TRẢ NHÀ CUNG CẤP',ghi:'Số dư tại thời điểm xuất (không theo kỳ) · số âm = '+(KH?'khách trả trước':'đã trả trước'),rows:ds,
+    cols:[['Mã',x=>x.ma],[KH?'Tên khách hàng':'Nhà cung cấp',x=>x.ten],['Cơ sở',x=>x.cn],['Tổng công nợ',x=>x.tong_ct,'so'],['Đã thanh toán',x=>x.tong_ct-x.no,'so'],['Còn phải '+(KH?'thu':'trả'),x=>x.no,'so'],
+      ['Ngày đến hạn',x=>x.den_han,'ngay'],['Số ngày quá hạn',x=>x.qua_han,'so',{tong:false}],['Trạng thái',x=>ttCongNo(x)[0]],...(KH?[['Nhóm',nhTen]]:[]),['Người phụ trách',x=>x.nv],['SĐT',x=>x.sdt]]}]}
+function xuTenSheet(wb,t){let b=String(t).replace(/[\[\]\*\?\/\\:]/g,'-').slice(0,31)||'Sheet',n=b,i=2;while(wb.getWorksheet(n))n=b.slice(0,28)+' '+(i++);return n}
+// vẽ 1 sheet: dòng 1 tiêu đề lớn · dòng 2 kỳ / ghi chú · dòng 3 tiêu đề cột (đậm, nền xanh nhạt, viền, cố định) · dữ liệu · dòng tổng (SUBTOTAL → lọc vẫn đúng)
+function xuSheet(wb,s,tu,den,ws){const n=s.cols.length,DAU=3;
+  ws=ws||wb.addWorksheet(xuTenSheet(wb,s.ten),{views:[{state:'frozen',ySplit:DAU,xSplit:s.coDinhCot||0}]});
+  const V={style:'thin',color:{argb:'FFBFBFBF'}},VIEN={top:V,left:V,bottom:V,right:V},XANH='FF1F3864';
+  const tg=new Date(Date.now()+7*3600e3).toISOString(),luc=tg.slice(11,16)+' '+fmtD(tg.slice(0,10));
+  if(n>1){ws.mergeCells(1,1,1,n);ws.mergeCells(2,1,2,n)}
+  ws.getCell(1,1).value=s.tieuDe;ws.getCell(1,1).font={bold:true,size:14,color:{argb:XANH}};ws.getRow(1).height=24;
+  ws.getCell(2,1).value=(s.phu||('Kỳ: '+fmtD(tu)+' – '+fmtD(den)))+(s.ghi?' · '+s.ghi:'')+' · Xuất lúc '+luc;ws.getCell(2,1).font={italic:true,size:10,color:{argb:'FF595959'}};
+  const can_=k=>k==='so'||k==='pct'?'right':k==='ngay'?'center':'left',w=s.cols.map(c=>String(c[0]).length);
+  const h=ws.getRow(DAU);s.cols.forEach((c,j)=>{const o=h.getCell(j+1);o.value=c[0];o.font={bold:true,color:{argb:XANH}};o.border=VIEN;
+    o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDDEBF7'}};o.alignment={vertical:'middle',horizontal:can_(c[2]),wrapText:true}});h.height=30;
+  const tongPct=s.cols.map(c=>c[2]==='pct'?sumBy(s.rows,r=>+c[1](r)||0):0);
+  s.rows.forEach((r,i)=>{const st=(s.dong&&s.dong(r))||{};
+    const row=ws.addRow(s.cols.map((c,j)=>{let v=c[1](r);const k=c[2];
+      if(k==='so'||k==='pct'){if(v==null||v==='')return null;v=Number(v);if(!isFinite(v))return null;return k==='pct'?(tongPct[j]?v/tongPct[j]:null):v}
+      if(k==='ngay'){const t=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(t))return null;const [y,m,d]=t.split('-').map(Number);return new Date(Date.UTC(y,m-1,d))}
+      if(k==='link')return v?{text:String(v),hyperlink:"#'"+String(v).replace(/'/g,"''")+"'!A1"}:'';
+      return v==null?'':String(v)}));
+    s.cols.forEach((c,j)=>{const o=row.getCell(j+1),k=c[2];o.border=VIEN;
+      if(k==='so')o.numFmt='#,##0;[Red]-#,##0';else if(k==='pct')o.numFmt='0.0%';else if(k==='ngay')o.numFmt='dd/mm/yyyy';
+      o.alignment={vertical:'top',horizontal:can_(k),indent:j===0&&st.le?st.le:0};
+      if(k==='link')o.font={color:{argb:'FF0563C1'},underline:true};else if(st.b)o.font={bold:true};
+      if(st.nen)o.fill={type:'pattern',pattern:'solid',fgColor:{argb:st.nen}};else if(i%2)o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF7FAFD'}};
+      const v=o.value,L=k==='so'?fmt(v).length+1:k==='pct'?6:k==='ngay'?10:String(v&&v.text||v||'').length+(j===0&&st.le?st.le*2:0);if(L>w[j])w[j]=L})});
+  const cuoi=DAU+s.rows.length;
+  if(s.tong!==false&&s.rows.length){const row=ws.addRow(s.cols.map((c,j)=>{if(c[2]==='pct')return 1;
+      if(c[2]!=='so'||(c[3]&&c[3].tong===false))return j===0?'Tổng cộng':'';
+      const col=ws.getColumn(j+1).letter;return {formula:`SUBTOTAL(9,${col}${DAU+1}:${col}${cuoi})`,result:sumBy(s.rows,r=>+c[1](r)||0)}}));
+    if(s.cols[0][2]==='so'||s.cols[0][2]==='pct')ws.getCell(row.number,1).value='Tổng cộng';
+    s.cols.forEach((c,j)=>{const o=row.getCell(j+1);o.font={bold:true};o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE7EEF7'}};
+      o.border={top:{style:'medium',color:{argb:XANH}},bottom:V,left:V,right:V};o.alignment={horizontal:can_(c[2])};
+      if(c[2]==='so')o.numFmt='#,##0;[Red]-#,##0';else if(c[2]==='pct')o.numFmt='0.0%'})}
+  if(!s.rows.length){ws.getCell(DAU+1,1).value='Không có dữ liệu trong kỳ';ws.getCell(DAU+1,1).font={italic:true,color:{argb:'FF808080'}}}
+  s.cols.forEach((c,j)=>{ws.getColumn(j+1).width=Math.min(60,Math.max(9,w[j]+3))});
+  if(s.loc!==false&&s.rows.length)ws.autoFilter={from:{row:DAU,column:1},to:{row:DAU,column:n}};
+  ws.pageSetup={paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:DAU+':'+DAU};
+  return ws}
+async function xuatDuLieu(btn){const x=xuSt(),tu=x.tu,den=x.den;
+  if(!tu||!den||tu>den)return toast('Chọn lại kỳ: Từ ngày phải trước Đến ngày');
+  const ds=XU_PHAN.filter(p=>xuMo(p)&&x.chon[p.k]);if(!ds.length)return toast('Chưa chọn phần dữ liệu nào');
+  const nhan=btn.innerHTML;btn.disabled=true;
+  try{btn.textContent='Đang tải thư viện Excel...';const E=await napExcelJS(),wb=new E.Workbook();wb.creator='App kế toán';wb.created=new Date();wb.calcProperties.fullCalcOnLoad=true;
+    const tt=wb.addWorksheet('Tóm tắt',{views:[{state:'frozen',ySplit:3}]}),muc=[],loi=[];
+    for(const p of ds){btn.textContent='Đang lấy: '+p.ten+'...';
+      try{for(const s of await XU_LAY[p.k](tu,den,x)){const ws=xuSheet(wb,s,tu,den);muc.push({p:p.ten,s:ws.name,n:s.rows.length,g:s.ghi||''})}}
+      catch(e){loi.push(p.ten+': '+e.message);muc.push({p:p.ten,s:'',n:null,g:'Lỗi: '+e.message})}}
+    xuSheet(wb,{ten:'Tóm tắt',tieuDe:'XUẤT DỮ LIỆU KẾ TOÁN',phu:'Kỳ: '+fmtD(tu)+' – '+fmtD(den)+' · Người xuất: '+((S.toi||{}).ho_ten||''),rows:muc.map((m,i)=>({...m,i:i+1})),tong:false,loc:false,
+      cols:[['STT',m=>m.i,'so',{tong:false}],['Phần dữ liệu',m=>m.p],['Sheet (bấm để mở)',m=>m.s,'link'],['Số dòng',m=>m.n,'so'],['Ghi chú',m=>m.g]]},tu,den,tt);
+    btn.textContent='Đang tạo file...';const buf=await wb.xlsx.writeBuffer();
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    a.download='Du-lieu-ke-toan_'+tu+'_'+den+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast(loi.length?'Đã xuất file — '+loi.length+' phần lỗi: '+loi.join(' · '):'Đã xuất '+(muc.length)+' sheet dữ liệu')}
+  catch(e){toast('Không xuất được: '+e.message)}
+  finally{btn.disabled=false;btn.innerHTML=nhan}}
 async function pageKiotLog(){
   const el=$('#page'),sua=heThong();
   // 21/10 anh: trang đổi tên "Nhật ký so khớp" — tab Kiot + tab File dòng tiền (chuyển từ Sổ quỹ)
