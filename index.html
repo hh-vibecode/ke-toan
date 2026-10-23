@@ -961,8 +961,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.201';
-const APP_VERSION='23/10/2026 13:58';
+const APP_SO='1.202';
+const APP_VERSION='23/10/2026 14:04';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3265,12 +3265,35 @@ function bcBang(rows,ky,o={}){
 function bcMo(k){const s=S.f.bc_dong=S.f.bc_dong||{};s[k]=!bcMoOn(k);render()}
 const bcMoOn=k=>{const s=S.f.bc_dong||{};return k in s?s[k]:['dt','cp','hdkd'].includes(k)};
 const bcCS=()=>locCSAll()?null:locCS();
-const csTen3=k=>(CS3.find(x=>x[0]===k)||[])[1]||(k==='chung'?'Chung (văn phòng, kho tổng…)':k);
+const csTen3=k=>(CS3.find(x=>x[0]===k)||[])[1]||(k==='chung'?'Chung (văn phòng, kho tổng…)':k==='TT'?'Thị trường (P&L T1–T8)':k);
 const cong=(o,k,m,v)=>{o[k]=o[k]||{};o[k][m]=(o[k][m]||0)+(+v||0)};
 // ── 1. KẾT QUẢ KINH DOANH (P&L)
+// P&L kế toán T1–T8 → [{thang, cs, id loại chi app, v}] — ghép theo TÊN mục (mỗi file đánh mã khác), chỉ lấy mục lá để không cộng trùng;
+// P&L Thị trường chỉ có nhóm (tên ở cột A) → ghép theo nhóm; bỏ doanh thu / giá vốn / thuế / dòng tổng
+function pl18(rows,loaiDS){const nm=s=>boDau(String(s||'')).toLowerCase().replace(/^chi phi\s+/,'').replace(/[^a-z0-9]/g,'');
+  const LC=(loaiDS||S.dm.loai).filter(l=>l.nhom==='chi'&&l.ma),theoTen={};LC.forEach(l=>{const k=nm(l.ten);if(!theoTen[k]||(theoTen[k].cha_id&&!l.cha_id))theoTen[k]=l});
+  const TT={luongbhxhnhansutructiep:'1.1',quyhoahongbpthitruong:'1.2',vanhanhkhotong:'3',tongcongtyphanbotheobp:'4',thitruong:'9'},maId=m=>(LC.find(l=>l.ma===m)||{}).id;
+  const out=[],thang=new Set(),nhom={};(rows||[]).forEach(r=>{const k=r.nguon+'|'+r.thang;(nhom[k]=nhom[k]||[]).push(r)});
+  for(const k in nhom){const ds=nhom[k],[cs,th]=k.split('|');let trong=false;const cp=[];
+    ds.forEach(r=>{const tb=boDau(String(r.ten||'')).toLowerCase();if(/loi nhuan gop/.test(tb)){trong=true;return}if(/^tong chi phi|loi nhuan truoc thue/.test(tb)){trong=false;return}if(trong&&!/^thue/.test(tb))cp.push(r)});
+    if(cs==='TT'){cp.forEach(r=>{const t=nm(r.ten),id=TT[t]?maId(TT[t]):/^mkt/.test(t)?maId('5'):null;if(id&&+r.th){out.push({thang:th,cs,id,v:+r.th});thang.add(th)}});continue}
+    // mỗi dòng có mã: phần riêng = số dòng − tổng con trực tiếp; ghép theo tên, không được thì lên nhóm cha gần nhất ghép được
+    // Excel tự đổi mã "5.1" thành ngày (số 46027 = 5/1/2026) ở P&L Shidai / Chánh Tâm → đổi lại thành ngày.tháng
+    const maX=m=>{m=String(m||'');if(/^\d{5}(\.0)?$/.test(m)){const d=new Date(Date.UTC(1899,11,30)+parseInt(m)*864e5);return d.getUTCDate()+'.'+(d.getUTCMonth()+1)}return m.replace(/\.0$/,'')};
+    const cm=cp.filter(r=>r.ma).map(r=>({...r,ma:maX(r.ma)})),idCua={};
+    cm.forEach(r=>{const l=theoTen[nm(r.ten)];if(l)idCua[r.ma]=l.id});
+    const idLen=m=>{for(let x=m;x;x=x.includes('.')?x.slice(0,x.lastIndexOf('.')):''){if(idCua[x])return idCua[x]}return null};
+    cm.forEach(r=>{const con=cm.filter(z=>z.ma.startsWith(r.ma+'.')&&!z.ma.slice(r.ma.length+1).includes('.')),rieng=(+r.th||0)-con.reduce((s,z)=>s+(+z.th||0),0);
+      if(Math.abs(rieng)<1)return;const id=idLen(r.ma);if(id){out.push({thang:th,cs,id,v:rieng});thang.add(th)}})}
+  // doanh thu ròng + giá vốn theo file (giá vốn = doanh thu ròng − lợi nhuận gộp, đúng như file tính); trả hàng / giảm trừ / điểm / chiết khấu để hiện dòng "Trả hàng"
+  const dt=[];for(const k in nhom){const ds=nhom[k],[cs,th]=k.split('|'),tim=re=>ds.find(r=>re.test(boDau(String(r.ten||'')).toLowerCase()));
+    const ron=tim(/^tong doanh thu rong/),lg=tim(/^loi nhuan gop/);if(!ron||!lg||!+ron.th)continue;
+    const iR=ds.indexOf(ron),tra=ds.slice(0,iR).filter(r=>/tra hang|giam tru|bang diem|chiet khau/.test(boDau(String(r.ten||'')).toLowerCase())).reduce((s,r)=>s+(+r.th>=1000?+r.th:0),0);
+    dt.push({thang:th,cs,dt:+ron.th,gv:+ron.th-(+lg.th||0),tra});thang.add(th)}
+  return {dong:out,dt,thang:[...thang]}}
 async function pageBCPL(){
   const el=$('#page'),ky=bcKy(),tab=S.f.pl_tab||'tong';el.innerHTML='<div class="m-empty">Đang tính...</div>';
-  const b=await rpc('kt_bc_pl2',{p_tu:ky.tu,p_den:ky.den});S.cache.pl2=b;
+  const [b,p18]=await Promise.all([rpc('kt_bc_pl2',{p_tu:ky.tu,p_den:ky.den}),ky.tu<='2026-08-31'?rpc('kt_pnl_t18').catch(()=>[]):[]]);S.cache.pl2=b;
   const sel=bcCS(),ok=cs=>!sel||sel.includes(cs),loai=Object.fromEntries(b.loai.map(l=>[l.id,l]));
   const dtCS={},gvCS={},cpN={},cpL={},cpCS={};
   for(const x of b.dt){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,x.dt);cong(gvCS,cs,x.thang,x.gv)}
@@ -3280,10 +3303,18 @@ async function pageBCPL(){
   for(const x of b.cp){const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung',n=String(x.loai);cong(cpCS,cs+'|'+n,x.thang,x.tien);if(ok(cs))cong(cpN,n,x.thang,x.tien)}
   if(!sel)for(const x of b.lai_vay)cong(cpN,'lai_vay',x.thang,x.lai);
   for(const x of b.lai_vay)cong(cpCS,'chung|lai_vay',x.thang,x.lai);
+  // 23/10 anh: "kéo P&L 1–8 vào lại P&L chính" — CHI PHÍ T1–T8 lấy theo 4 file P&L kế toán (cột THỰC HIỆN), thay số tính từ phiếu chi app (tháng cũ app chưa đủ phiếu)
+  const T18=pl18(p18,S.dm.loai);   // danh mục app có mã mục (b.loai của báo cáo không kèm mã)
+  if(T18.thang.length){for(const o of [cpN,cpCS])for(const k in o)T18.thang.forEach(m=>{delete o[k][m]});
+    for(const r of T18.dong)if(T18.thang.includes(r.thang)){cong(cpCS,r.cs+'|'+r.id,r.thang,r.v);if(r.cs!=='TT'?ok(r.cs):!sel)cong(cpN,String(r.id),r.thang,r.v)}
+    // anh 23/10: "P&L 1–8 lấy y nguyên 4 file P&L; từ T9 mới chạy app + Kiot" → doanh thu ròng, giá vốn T1–T8 cũng theo file
+    for(const m of T18.thang){for(const o of [dtCS,gvCS])for(const k in o)delete o[k][m];delete DTG[m];delete TRA[m]}
+    for(const r of T18.dt)if(T18.thang.includes(r.thang)){cong(dtCS,r.cs,r.thang,r.dt);cong(gvCS,r.cs,r.thang,r.gv);
+      if(r.cs!=='TT'?ok(r.cs):!sel){DTG[r.thang]=(DTG[r.thang]||0)+r.dt+r.tra;TRA[r.thang]=(TRA[r.thang]||0)-r.tra}}}
   // các dòng chi phí: loại chi nhóm "Chi vận hành & quản lí" (đang dùng hoặc có số) theo thứ tự danh mục + lãi vay (trang Vay) nếu có
   const CPD=[...b.loai.filter(l=>l.nhom_bc==='Chi vận hành & quản lí'&&(l.hoat_dong||cpN[l.id])).map(l=>[String(l.id),tenOpex(l.ten)]),...(b.lai_vay.length?[['lai_vay','Lãi vay & phí tài chính']]:[])];
   S.cache.pl_cpd=CPD;
-  const csDS=CS3.map(c=>c[0]).filter(ok),sumO=(o,ks)=>{const r={};ks.forEach(k=>Object.entries(o[k]||{}).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
+  const csDS=[...CS3.map(c=>c[0]).filter(ok),...(!sel&&T18.dt.some(r=>r.cs==='TT')?['TT']:[])],sumO=(o,ks)=>{const r={};ks.forEach(k=>Object.entries(o[k]||{}).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
   const am=o=>Object.fromEntries(Object.entries(o).map(([m,v])=>[m,-v])),cg=(...os)=>{const r={};os.forEach(o=>Object.entries(o).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
   // 21/10 kế toán: chi phí theo cây danh mục như sheet P&L — 9 nhóm cha (bấm ▸ mở mục con), mục con 5.1 có cấp con
   const LO=b.loai.filter(l=>l.nhom_bc==='Chi vận hành & quản lí'),conCua=id=>LO.filter(l=>l.cha_id===id).sort((x,y)=>(x.thu_tu-y.thu_tu)||(x.id-y.id));
@@ -3325,7 +3356,7 @@ async function pageBCPL(){
   }else if(false){bang=`<div class="m-card m-empty">Chưa có kế hoạch (ngân sách) cho ${esc(ky.ten)}. Khi kế toán nhập kế hoạch theo tháng, cột Kế hoạch / % hoàn thành sẽ tự có số. Phần nhập kế hoạch nằm ở báo cáo 5. Chi phí & Ngân sách (làm sau).</div>`;S.cache.bc_xuat=null}
   else{bang=bcBang(rows,ky,{dt:DT,luyKe:tab==='lk'});
     S.cache.bc_xuat=()=>xuatCSV('pl-'+ky.tu+'_'+ky.den,[['Chỉ tiêu',r=>(r.so||'')+' '+r.ten],...ky.ms.map(m=>['T'+m.slice(5)+'/'+m.slice(0,4),r=>Math.round(r.v[m]||0)]),['Tổng',r=>Math.round(sumBy(ky.ms,m=>r.v[m]||0))]],rows)}
-  el.innerHTML=head('Báo cáo kết quả kinh doanh (P&L) <span class="badge" style="vertical-align:middle">'+esc(ky.ten)+'</span>','<span class="badge">Tổng hợp doanh thu, chi phí, lợi nhuận theo thời gian và theo cơ sở</span>')
+  el.innerHTML=head('Báo cáo kết quả kinh doanh (P&L) <span class="badge" style="vertical-align:middle">'+esc(ky.ten)+'</span>','<span class="badge">Tổng hợp doanh thu, chi phí, lợi nhuận theo thời gian và theo cơ sở</span>'+(T18.thang.length?' <span class="badge" title="Tháng 1–8/2026: doanh thu ròng, giá vốn, chi phí lấy y nguyên 4 file BÁO CÁO P&L của kế toán (Hiền Thuỷ, Chánh Tâm, Shidai, Thị trường). Từ T9: app + Kiot">T1–T8 theo 4 file P&L kế toán</span>':''))
     +bcBar([['tong','P&L tổng hợp'],['ct','P&L chi tiết'],['cs','So sánh cơ sở'],['lk','Luỹ kế năm']],tab)+bang
     +`<div class="muted bc-ghi">Doanh thu thuần = hoá đơn Kiot hoàn thành − trả hàng (theo cơ sở bán) · Giá vốn = giá vốn bình quân Kiot lúc kéo (gần đúng) · Chi phí = chi phí HẠCH TOÁN theo từng loại chi OPEX: phiếu đã xác nhận (chờ chi + đã chi, trừ tạm ứng), ghi vào tháng phân bổ / tháng hạch toán / tháng sử dụng dịch vụ — không theo ngày chi tiền (dòng tiền xem Sổ quỹ) · không gồm nhập hàng (đã nằm trong giá vốn), trả gốc vay, đầu tư · Lãi vay lấy từ trang Vay & lãi vay${sel?' (ẩn khi lọc cơ sở)':''}. <a class="m-link" onclick="go('pl_thuc_thu')">Xem P&L theo thực thu / thực chi (cũ)</a></div>`;
 }
@@ -4475,6 +4506,7 @@ const LOGIC2=[
  ['thu_chi','Kế toán tự chi không cần duyệt','Tài khoản có quyền "Chi — tự chi không cần duyệt" tạo phiếu chi tick "Đã thanh toán luôn" (vd phiếu cân tài khoản cuối ngày).','Mỗi phiếu tự chi có chuông báo giám đốc; vẫn nhắc Thiếu ảnh giao dịch.','20/10'],
  ['thu_chi','Tự chi: phiếu đang chờ + chọn nhiều phiếu','Phiếu mình tạo còn chờ duyệt: nút "✓ Tự chi (đã thanh toán)" trong phiếu. Tick chọn nhiều phiếu trên bảng → "✓ Tự chi n phiếu" (chọn tài khoản, ngày, loại chi 1 lần) hoặc "✓ Đã duyệt lệnh n phiếu" (kế toán).','Tick "Đã thanh toán luôn" thì không cần thông tin người nhận tiền.','21/10'],
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
+ ['bao_cao','P&L T1–T8 = 4 file P&L kế toán','Tháng 1–8/2026: doanh thu ròng, giá vốn (= doanh thu ròng − lợi nhuận gộp), chi phí từng mục lấy y nguyên 4 file BÁO CÁO P&L (Hiền Thuỷ, Chánh Tâm, Shidai, Thị trường). Ghép mục theo tên (mỗi file đánh mã khác; mã Excel tự đổi thành ngày như 46027 được đổi lại 5.1); mỗi dòng lấy phần riêng = số dòng − tổng con. Thị trường thêm thành cơ sở "Thị trường (P&L T1–T8)". Từ T9: doanh thu Kiot + chi phí phiếu chi app.','Anh 23/10. Kiểm: 24 tháng × cơ sở tổng chi phí = tổng nhóm 1–9 của file, 0 lệch.','23/10'],
  ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
  ['chung','Log hệ thống → tab Lưu lượng','Cài đặt → Log hệ thống có 3 tab: Chỉnh sửa · Lưu lượng · Lịch chạy. 23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
  ['chung','Số dư tài khoản không gồm TK vay','Sổ quỹ → Số dư: bỏ tài khoản loại Vay (thuộc mục Khoản vay).','Anh 22/10.','22/10'],
