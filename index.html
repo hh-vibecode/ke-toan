@@ -267,6 +267,7 @@ table.pl tr.tong td{background:transparent;border-top:1.5px solid var(--border)}
 .sb-subs{margin:2px 0 6px 19px;border-left:1px solid rgba(255,255,255,.18);padding-left:8px}
 .sb-sub{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;color:rgba(255,255,255,.7);font-size:12.5px;font-weight:600;cursor:pointer}
 .sb-sub:hover{background:rgba(255,255,255,.08);color:#fff}
+.bc-pct{font-size:10.5px;color:var(--muted);font-weight:400;line-height:1.2}.bc-tong .bc-pct{font-weight:400}
 .sb-cd{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.45);padding:10px 10px 3px}
 .sb-sub.on{color:#fff;background:rgba(76,179,240,.22)}
 .sb .sb-ver{color:rgba(255,255,255,.45);padding:10px 18px 14px}
@@ -961,8 +962,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.202';
-const APP_VERSION='23/10/2026 14:04';
+const APP_SO='1.203';
+const APP_VERSION='23/10/2026 14:15';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3257,8 +3258,12 @@ function bcBang(rows,ky,o={}){
   else if(mot){head=`<th class="num">Thực hiện</th>${o.dt?'<th class="num">% doanh thu</th>':''}`;
     cell=r=>{const v=r.v[tl[0]];return `<td class="num ${(v||0)<0?'neg-t':''}"><b>${v==null&&r.kieu==='so_du'?'<span class="muted">—</span>':bcSo(v)}</b></td>${o.dt?`<td class="num">${r.kieu!=='so_du'?bcPct(['tong','net'].includes(r.kieu)?(v||0):Math.abs(v||0),o.dt[tl[0]]):''}</td>`:''}`}}
   else{head=tl.map(m=>`<th class="num">T${+m.slice(5)}/${m.slice(0,4)}<div class="bc-th2">${m>nay?'':'Thực hiện'}</div></th>`).join('')+(o.khongTong?'':`<th class="num bc-tong">${ky.k==='nam'?'Tổng năm':'Tổng kỳ'}</th>`);
-    cell=r=>{let lk=0;return tl.map(m=>{if(m>nay)return '<td></td>';let v=r.v[m];if(o.luyKe&&r.kieu!=='so_du'){lk+=v||0;v=lk}return `<td class="num ${(v||0)<0?'neg-t':''}">${v==null&&r.kieu==='so_du'?'<span class="muted">—</span>':bcSo(v)}</td>`}).join('')
-      +(o.khongTong?'':`<td class="num bc-tong ${tong(r)<0?'neg-t':''}"><b>${r.kieu==='so_du'?bcSo(r.tongSD):bcSo(tong(r))}</b></td>`)}}
+    // 23/10 anh (P&L theo form sheet): mỗi số kèm % doanh thu ròng ngay dưới + cột trung bình tháng
+    const pc=(v,m,k)=>o.dt&&!o.luyKe&&r0(v)&&r0(o.dt[m])?`<div class="bc-pct">${bcPct(["tong","net"].includes(k)?v:Math.abs(v),o.dt[m])}</div>`:'',r0=v=>Math.round(v||0),dtT=o.dt?sumBy(tl,m=>m>nay?0:(o.dt[m]||0)):0,soTh=o.dt?tl.filter(m=>m<=nay&&r0(o.dt[m])).length||1:1;
+    if(o.dt&&!o.luyKe)head+='<th class="num bc-tong">TB / tháng</th>';
+    cell=r=>{let lk=0;return tl.map(m=>{if(m>nay)return '<td></td>';let v=r.v[m];if(o.luyKe&&r.kieu!=='so_du'){lk+=v||0;v=lk}return `<td class="num ${(v||0)<0?'neg-t':''}">${v==null&&r.kieu==='so_du'?'<span class="muted">—</span>':bcSo(v)}${pc(v,m,r.kieu)}</td>`}).join('')
+      +(o.khongTong?'':`<td class="num bc-tong ${tong(r)<0?'neg-t':''}"><b>${r.kieu==='so_du'?bcSo(r.tongSD):bcSo(tong(r))}</b>${o.dt&&!o.luyKe&&r0(tong(r))&&dtT?`<div class="bc-pct">${bcPct(["tong","net"].includes(r.kieu)?tong(r):Math.abs(tong(r)),dtT)}</div>`:''}</td>`)
+      +(o.dt&&!o.luyKe?`<td class="num bc-tong">${bcSo(tong(r)/soTh)}</td>`:'')}}
   return `<div class="m-card"><div class="scroll"><table class="m-t bc-t"><tr><th>Chỉ tiêu</th>${head}</tr>
     ${rows.filter(r=>!r.an).map(r=>`<tr class="bc-${r.kieu||'con'} ${r.click?'click':''}" ${r.click?`onclick="${r.click}" title="Bấm để xem chi tiết"`:''}>
       <td class="nw">${r.mo!=null?`<span class="bc-mo" onclick="event.stopPropagation();bcMo('${r.key}')">${r.mo?'▾':'▸'}</span>`:'<span class="bc-mo"></span>'}${r.so?`<span class="bc-so">${r.so}</span>`:''}${esc(r.ten)}</td>${cell(r)}</tr>`).join('')}</table></div></div>`}
@@ -3290,10 +3295,21 @@ function pl18(rows,loaiDS){const nm=s=>boDau(String(s||'')).toLowerCase().replac
     const ron=tim(/^tong doanh thu rong/),lg=tim(/^loi nhuan gop/);if(!ron||!lg||!+ron.th)continue;
     const iR=ds.indexOf(ron),tra=ds.slice(0,iR).filter(r=>/tra hang|giam tru|bang diem|chiet khau/.test(boDau(String(r.ten||'')).toLowerCase())).reduce((s,r)=>s+(+r.th>=1000?+r.th:0),0);
     dt.push({thang:th,cs,dt:+ron.th,gv:+ron.th-(+lg.th||0),tra});thang.add(th)}
-  return {dong:out,dt,thang:[...thang]}}
+  // các dòng doanh thu như sheet (bán buôn / lẻ offline / lẻ online / nến bơ / thu nhập khác / trả hàng / giảm trừ / điểm) + thuế sau lợi nhuận trước thuế
+  const dtd=[];for(const k in nhom){const ds=nhom[k],[cs,th]=k.split('|'),b0=r=>boDau(String(r.ten||'')).toLowerCase(),iR=ds.findIndex(r=>/^tong doanh thu rong/.test(b0(r))),iT=ds.findIndex(r=>/^loi nhuan truoc thue/.test(b0(r)));
+    if(iR<0)continue;
+    ds.slice(0,iR).forEach(r=>{const t=b0(r),v=+r.th||0;if(Math.abs(v)<1000)return;const kk=/tra hang/.test(t)?'tra':/giam tru|chiet khau/.test(t)?'giam':/bang diem/.test(t)?'diem':/tu tai vien|nen bo/.test(t)?'ttv':/thu nhap khac/.test(t)?'khac':/ban buon/.test(t)?'buon':/online/.test(t)?'on':/offline|ban le/.test(t)?'off':null;
+      if(kk)dtd.push({thang:th,cs,k:kk,v:['tra','giam','diem'].includes(kk)?-Math.abs(v):v})});
+    // dòng doanh thu đọc lỗi (vd P&L Thị trường ô "Doanh thu SP Tự Tại Viên" ra số rác) → phần chênh với TỔNG DOANH THU RÒNG của file bù vào 1 dòng
+    const chen=(+ds[iR].th||0)-dtd.filter(x=>x.cs===cs&&x.thang===th&&x.k!=='thue').reduce((s,x)=>s+x.v,0);
+    if(Math.abs(chen)>=1000)dtd.push({thang:th,cs,k:cs==='TT'||cs==='SD'?'ttv':'khac',v:chen});
+    if(iT>=0)ds.slice(iT+1).forEach(r=>{if(/^thue/.test(b0(r))&&+r.th)dtd.push({thang:th,cs,k:'thue',v:+r.th})})}
+  return {dong:out,dt,dtd,thang:[...thang]}}
 async function pageBCPL(){
   const el=$('#page'),ky=bcKy(),tab=S.f.pl_tab||'tong';el.innerHTML='<div class="m-empty">Đang tính...</div>';
-  const [b,p18]=await Promise.all([rpc('kt_bc_pl2',{p_tu:ky.tu,p_den:ky.den}),ky.tu<='2026-08-31'?rpc('kt_pnl_t18').catch(()=>[]):[]]);S.cache.pl2=b;
+  const sau9=ky.den>='2026-09-01';
+  const [b,p18,dtn,vat]=await Promise.all([rpc('kt_bc_pl2',{p_tu:ky.tu,p_den:ky.den}),ky.tu<='2026-08-31'?rpc('kt_pnl_t18').catch(()=>[]):[],
+    sau9?rpc('kt_pl_dt_nhom',{p_tu:ky.tu,p_den:ky.den}).catch(()=>[]):[],sau9?rpc('kt_vat_599',{p_tu:ky.tu,p_den:ky.den}).catch(()=>[]):[]]);S.cache.pl2=b;
   const sel=bcCS(),ok=cs=>!sel||sel.includes(cs),loai=Object.fromEntries(b.loai.map(l=>[l.id,l]));
   const dtCS={},gvCS={},cpN={},cpL={},cpCS={};
   for(const x of b.dt){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,x.dt);cong(gvCS,cs,x.thang,x.gv)}
@@ -3311,6 +3327,12 @@ async function pageBCPL(){
     for(const m of T18.thang){for(const o of [dtCS,gvCS])for(const k in o)delete o[k][m];delete DTG[m];delete TRA[m]}
     for(const r of T18.dt)if(T18.thang.includes(r.thang)){cong(dtCS,r.cs,r.thang,r.dt);cong(gvCS,r.cs,r.thang,r.gv);
       if(r.cs!=='TT'?ok(r.cs):!sel){DTG[r.thang]=(DTG[r.thang]||0)+r.dt+r.tra;TRA[r.thang]=(TRA[r.thang]||0)-r.tra}}}
+  // 23/10 anh: form như sheet BÁO CÁO P&L — các dòng doanh thu; T1–T8 theo file, từ T9 theo hoá đơn Kiot + trừ VAT tiền về TK công ty 599
+  const DN={buon:{},off:{},on:{},ttv:{},khac:{},tra:{},giam:{},diem:{},vat:{},thue:{}},okC=cs=>cs!=='TT'?ok(cs):!sel;
+  for(const r of T18.dtd||[])if(T18.thang.includes(r.thang)&&okC(r.cs))cong(DN,r.k,r.thang,r.v);
+  for(const x of dtn){const cs=csCuaCN(x.cn)||'khac';if(!T18.thang.includes(x.thang)&&ok(cs))cong(DN,x.nhom,x.thang,x.dt)}
+  for(const m in TRA)if(!T18.thang.includes(m))cong(DN,'tra',m,TRA[m]);
+  for(const x of vat){const cs=csCuaCN(x.cn)||'khac';if(T18.thang.includes(x.thang))continue;cong(dtCS,cs,x.thang,-x.vat);if(ok(cs))cong(DN,'vat',x.thang,-x.vat)}
   // các dòng chi phí: loại chi nhóm "Chi vận hành & quản lí" (đang dùng hoặc có số) theo thứ tự danh mục + lãi vay (trang Vay) nếu có
   const CPD=[...b.loai.filter(l=>l.nhom_bc==='Chi vận hành & quản lí'&&(l.hoat_dong||cpN[l.id])).map(l=>[String(l.id),tenOpex(l.ten)]),...(b.lai_vay.length?[['lai_vay','Lãi vay & phí tài chính']]:[])];
   S.cache.pl_cpd=CPD;
@@ -3326,19 +3348,24 @@ async function pageBCPL(){
       ...kids.flatMap(c=>dongCP(c,cap+1,mo&&m)),
       // 22/10: phiếu còn nằm thẳng ở nhóm (mục con KXĐ / chưa phân loại) — dòng riêng để mục con cộng lại bằng nhóm
       ...(kids.length&&Object.values(sumO(cpN,[String(l.id)])).some(v=>v)?[{so:'',ten:'Loại chi KXĐ (chờ phân mục con)',v:am(sumO(cpN,[String(l.id)])),kieu:'con2',an:!(mo&&m),click:`plCT('${l.id}','Loại chi KXĐ')`}]:[])]};
-  const DT=sumO(dtCS,csDS),GV=am(sumO(gvCS,csDS)),LG=cg(DT,GV),CP=am(sumO(cpN,CPD.map(n=>n[0]))),LR=cg(LG,CP);
+  const DT=sumO(dtCS,csDS),GV=am(sumO(gvCS,csDS)),LG=cg(DT,GV),CP=am(sumO(cpN,CPD.map(n=>n[0]))),LTT=cg(LG,CP),THUE=am(DN.thue),LR=cg(LTT,THUE);
   S.cache.pl_dt=DT;
-  const ct=tab==='ct';
-  const rows=[{ten:'Doanh thu (hoá đơn hoàn thành + đang giao, như Kiot)',v:DTG,kieu:'con'},{ten:'Trả hàng',v:TRA,kieu:'con'},
-    {so:'1.',ten:'Doanh thu thuần',v:DT,kieu:'nhom',mo:ct||bcMoOn('dt'),key:'dt'},
-    ...csDS.map((cs,i)=>({so:'1.'+(i+1),ten:csTen3(cs),v:dtCS[cs]||{},an:!(ct||bcMoOn('dt'))})),
-    {so:'2.',ten:'Giá vốn hàng bán',v:GV,kieu:'nhom',mo:ct||bcMoOn('gv'),key:'gv'},
-    ...csDS.map((cs,i)=>({so:'2.'+(i+1),ten:csTen3(cs),v:am(gvCS[cs]||{}),an:!(ct||bcMoOn('gv'))})),
-    {so:'3.',ten:'Lợi nhuận gộp',v:LG,kieu:'tong'},
-    {so:'4.',ten:'Chi phí',v:CP,kieu:'nhom',mo:ct||bcMoOn('cp'),key:'cp'},
-    ...GOC.flatMap(l=>dongCP(l,0,ct||bcMoOn('cp'))),
-    ...(b.lai_vay.length?[{so:'',ten:'Lãi vay & phí tài chính (trang Vay)',v:am(cpN.lai_vay||{}),kieu:'nhom2',an:!(ct||bcMoOn('cp'))}]:[]),
-    {so:'5.',ten:'Lợi nhuận ròng',v:LR,kieu:'net'}];
+  const ct=tab==='ct',co=o=>Object.values(o||{}).some(v=>Math.round(v));
+  // form như sheet: dòng doanh thu → TỔNG DOANH THU RÒNG → giá vốn → LỢI NHUẬN GỘP → 9 nhóm chi phí → TỔNG CHI PHÍ → LỢI NHUẬN TRƯỚC THUẾ → thuế → LỢI NHUẬN RÒNG
+  const DTD=[['buon','Doanh thu bán buôn'],['off','Doanh thu bán lẻ offline'],['on','Doanh thu bán lẻ online'],['ttv','Doanh thu nến bơ Tự Tại Viên'],['khac','Thu nhập khác'],
+    ['tra','Trả hàng'],['giam','Giảm trừ hoá đơn / chiết khấu'],['diem','Giá trị thanh toán bằng điểm'],['vat','Trừ VAT tiền về TK công ty 599 (8%, đèn điện / chuông mõ 10%)']].filter(([k])=>co(DN[k]));
+  const rows=[...DTD.map(([k,t])=>({ten:t,v:DN[k],kieu:'con'})),
+    {so:'',ten:'TỔNG DOANH THU RÒNG',v:DT,kieu:'tong',mo:ct||bcMoOn('dt'),key:'dt'},
+    ...csDS.map(cs=>({so:'',ten:'· '+csTen3(cs),v:dtCS[cs]||{},kieu:'con',an:!(ct||bcMoOn('dt'))})),
+    {so:'',ten:'Giá vốn hàng bán',v:GV,kieu:'nhom',mo:ct||bcMoOn('gv'),key:'gv'},
+    ...csDS.map(cs=>({so:'',ten:'· '+csTen3(cs),v:am(gvCS[cs]||{}),kieu:'con',an:!(ct||bcMoOn('gv'))})),
+    {so:'',ten:'LỢI NHUẬN GỘP',v:LG,kieu:'tong'},
+    ...GOC.flatMap(l=>dongCP(l,0,true)),
+    ...(co(cpN.lai_vay)?[{so:'',ten:'Lãi vay & phí tài chính (trang Vay)',v:am(cpN.lai_vay||{}),kieu:'nhom2'}]:[]),
+    {so:'',ten:'TỔNG CHI PHÍ',v:CP,kieu:'tong'},
+    {so:'',ten:'LỢI NHUẬN TRƯỚC THUẾ',v:LTT,kieu:'tong'},
+    ...(co(DN.thue)?[{so:'',ten:'Thuế (GTGT, TNCN, TNDN, đất…)',v:THUE,kieu:'con'}]:[]),
+    {so:'',ten:'LỢI NHUẬN RÒNG',v:LR,kieu:'net'}];
   let bang;
   if(tab==='cs'){const cols=[...csDS,...(sel?[]:['chung'])],tg=v=>sumBy(ky.ms,m=>v[m]||0);
     const r2=[{so:'1.',ten:'Doanh thu thuần',kieu:'nhom',v:Object.fromEntries(cols.map(c=>[c,tg(dtCS[c]||{})]))},
@@ -4507,6 +4534,8 @@ const LOGIC2=[
  ['thu_chi','Tự chi: phiếu đang chờ + chọn nhiều phiếu','Phiếu mình tạo còn chờ duyệt: nút "✓ Tự chi (đã thanh toán)" trong phiếu. Tick chọn nhiều phiếu trên bảng → "✓ Tự chi n phiếu" (chọn tài khoản, ngày, loại chi 1 lần) hoặc "✓ Đã duyệt lệnh n phiếu" (kế toán).','Tick "Đã thanh toán luôn" thì không cần thông tin người nhận tiền.','21/10'],
  ['bao_cao','P&L theo danh mục như sheet','Chi phí chia 9 nhóm cha giống sheet BÁO CÁO P&L (1 Nhân sự · 2 Sales Online phân bổ · 3 Kho tổng phân bổ · 4 Tổng công ty phân bổ · 5 Marketing · 6 Cửa hàng · 7 Đóng gói & vận chuyển · 8 Sửa chữa & khấu hao · 9 Khác) + mục con 1.1 … 9.4 (5.1 có 5.1.1–5.1.5). Bấm ▸ ở nhóm cha để mở mục con; bấm dòng để xem danh sách phiếu.','Loại OPEX cũ đã ẩn; 771 phiếu cũ hệ thống tự gán sang mục con theo nội dung → Phiếu chi: chip Loại tự gán — cần soát, bấm ✓ (hoặc tick nhiều → ✓ Đúng loại n phiếu) hoặc đổi loại là xong. Ô chọn loại chỉ hiện mục con, có mã.','21/10'],
  ['bao_cao','P&L T1–T8 = 4 file P&L kế toán','Tháng 1–8/2026: doanh thu ròng, giá vốn (= doanh thu ròng − lợi nhuận gộp), chi phí từng mục lấy y nguyên 4 file BÁO CÁO P&L (Hiền Thuỷ, Chánh Tâm, Shidai, Thị trường). Ghép mục theo tên (mỗi file đánh mã khác; mã Excel tự đổi thành ngày như 46027 được đổi lại 5.1); mỗi dòng lấy phần riêng = số dòng − tổng con. Thị trường thêm thành cơ sở "Thị trường (P&L T1–T8)". Từ T9: doanh thu Kiot + chi phí phiếu chi app.','Anh 23/10. Kiểm: 24 tháng × cơ sở tổng chi phí = tổng nhóm 1–9 của file, 0 lệch.','23/10'],
+ ['bao_cao','P&L dựng theo form sheet','Dòng doanh thu: bán buôn (khách KB / NPP / ĐL / CTV) · bán lẻ offline · bán lẻ online (Facebook, Tiktok, Website, Shopee) · nến bơ TTV (kênh Nến Bơ) · thu nhập khác · trả hàng · giảm trừ · điểm · trừ VAT TK 599 → TỔNG DOANH THU RÒNG (mở ra từng cơ sở) → giá vốn → LỢI NHUẬN GỘP → 9 nhóm chi phí → TỔNG CHI PHÍ → LỢI NHUẬN TRƯỚC THUẾ → thuế → LỢI NHUẬN RÒNG. Mỗi số kèm % doanh thu ròng; cột Tổng + TB / tháng.','Anh 23/10: "form trên sheet dễ nhìn, tham khảo rồi nâng cấp".','23/10'],
+ ['bao_cao','Trừ VAT tiền về TK công ty 599','Mọi khoản Kiot ghi "Tiền khách trả" vào TK VCB CTY …599 (từ T9): trừ 8% (bán 100 tính 92); hàng đèn điện thờ / chuông mõ trừ 10% — khách trả công nợ không gắn hoá đơn nên tỷ lệ 10% theo phần hàng 2 nhóm này trong hoá đơn của khách 90 ngày trước. Không trừ: chuyển rút nội bộ, nộp tiền vào TK, lãi ngân hàng, BHXH hoàn.','Anh 23/10. Dòng riêng trong P&L, giảm doanh thu ròng của cơ sở bán.','23/10'],
  ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
  ['chung','Log hệ thống → tab Lưu lượng','Cài đặt → Log hệ thống có 3 tab: Chỉnh sửa · Lưu lượng · Lịch chạy. 23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
  ['chung','Số dư tài khoản không gồm TK vay','Sổ quỹ → Số dư: bỏ tài khoản loại Vay (thuộc mục Khoản vay).','Anh 22/10.','22/10'],
