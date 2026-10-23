@@ -825,7 +825,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
    các ô nối nhau bằng đường dọc bên trái (xanh khi bước đã xong); 3 hàng xếp dọc, hết chiều ngang */
 .pc-bs{display:flex;flex-direction:column;gap:12px}
 .pc-buoc{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:start;position:relative}
-.pc-buoc::before{content:'';position:absolute;left:28px;top:28px;bottom:-10px;width:3px;border-radius:2px;background:var(--border);z-index:0}
+.pc-buoc::before{content:'';position:absolute;left:28px;top:28px;bottom:-14px;width:3px;border-radius:2px;background:var(--border);z-index:0}
 .pc-buoc:last-child::before{display:none}
 .pc-buoc.xong::before{background:#16a34a}
 .pc-moc{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 10px;align-items:center;padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:var(--surface);position:sticky;top:0;z-index:1}
@@ -842,39 +842,40 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 @media (max-width:900px){.pc-buoc{grid-template-columns:1fr;gap:8px}.pc-buoc::before{display:none}.pc-moc{position:static}}
 /* 22/10 anh: "mỗi bước 1 khung" + "vừa 1 trang, không muốn cuộn, bình luận bên phải như cũ":
    trái 3 hàng bước · phải Hoạt động; trong mỗi khung các phần xếp NGANG (cách nhau đường kẻ dọc) cho thấp lại */
-.pc-cot2{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.pc-cot2{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
 .pc-cot2>div:last-child{display:flex;flex-direction:column;gap:12px;min-width:0;position:sticky;top:0}
 .pc-buoc>.pc-kh{display:flex;flex-direction:row;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 4px}
 .pc-kh>*{flex:1 1 0;min-width:0}.pc-kh>div:empty{display:none}
-.pc-kh>.pc-c{border:none;border-radius:0;background:none;padding:12px 16px}
+.pc-kh>.pc-c{border:none;border-radius:0;background:none;padding:16px 20px}
 .pc-kh>.pc-c+.pc-c,.pc-kh>.pc-c+div:not(:empty),.pc-kh>div:not(:empty)+.pc-c{border-left:1px solid var(--border)}
 .pc-kh>.pc-c:has(#pbf){flex:2.3}.pc-buoc:first-child .pc-kh>.pc-c:first-child{flex:2.2}
 .pc-kh>.pc-c h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:8px}
-.pc-kh .pc-g{gap:8px 20px}.pc-buoc:first-child .pc-kh .pc-g{grid-template-columns:repeat(4,minmax(0,1fr))}.pc-buoc:first-child .pc-kh .pc-o.full{grid-column:span 2}
+.pc-kh .pc-g{gap:12px 24px}.pc-buoc:first-child .pc-kh .pc-g{grid-template-columns:repeat(4,minmax(0,1fr))}.pc-buoc:first-child .pc-kh .pc-o.full{grid-column:span 2}
 .pc-kh .pc-c>.sec:first-child,.pc-kh .ct-them{margin-top:0}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:84px}
-.pc-kh .pbf{gap:4px}.pc-kh .pbf label{grid-template-columns:110px 1fr 44px;gap:6px}.pc-kh .pbf label input{height:28px}
-.pc-kh .pbf-nut{margin-top:6px}.pc-kh .pbf-nut .m-btn{height:28px;font-size:11.5px;padding:0 9px}
+.pc-kh .pbf{gap:4px}.pc-kh .pbf label{grid-template-columns:110px 1fr 44px;gap:6px}.pc-kh .pbf label input{height:32px}
+.pc-kh .pbf-nut{margin-top:6px}.pc-kh .pbf-nut .m-btn{height:30px;font-size:12px;padding:0 10px}
 .pc-kh .m-seg.ht3{margin-bottom:8px!important}.pc-kh .ht3 button{padding:0 8px;font-size:12px}
 .pc-kh .m-st{margin:6px 0 4px}.pc-kh .m-in{height:32px}
-.pc-kh .pbf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 10px}.pc-kh .pbf label{grid-template-columns:1fr auto;grid-template-areas:'t p' 'i i';gap:2px 4px;font-size:11.5px}.pc-kh .pbf label>span{grid-area:t;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc-kh .pbf label>em{grid-area:p}.pc-kh .pbf label>input{grid-area:i}.pc-kh .pbf>div,.pc-kh .pbf-t{grid-column:1/-1}
+.pc-kh .pbf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 12px}.pc-kh .pbf label{grid-template-columns:1fr auto;grid-template-areas:'t p' 'i i';gap:3px 4px;font-size:12px}.pc-kh .pbf label>span{grid-area:t;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc-kh .pbf label>em{grid-area:p}.pc-kh .pbf label>input{grid-area:i}.pc-kh .pbf>div,.pc-kh .pbf-t{grid-column:1/-1}
 .pc-kh #pc-loai-w{display:flex;align-items:center;gap:10px}.pc-kh #pc-loai-w .m-st{margin:0}.pc-kh #pc-loai-w select{max-width:320px}
-.pc-kh [id^="qr-"]{width:122px!important;height:122px!important}.pc-kh [id^="qr-"] img{width:120px!important;height:120px!important}
-.pc-kh details{margin-top:6px!important}.pc-h{padding:9px 22px}.pc-tien b{font-size:21px}.pc-f{padding:8px 22px}
+.pc-kh [id^="qr-"]{width:152px!important;height:152px!important}.pc-kh [id^="qr-"] img{width:150px!important;height:150px!important}
+.pc-kh details{margin-top:6px!important}.pc-h{padding:12px 22px}.pc-tien b{font-size:22px}.pc-f{padding:10px 22px}
 .pc-kh .pc-c:has(#pbf)>.m-st:first-child{display:none}   /* tiêu đề "Hạch toán + số tiền": số tiền đã ở đầu cửa sổ */
 /* 22/10 anh (ảnh "ô lệch"): form thanh toán dàn hàng linh hoạt — nhãn 1 dòng, ô thẳng đáy, TK tự giãn khi ẩn ô người nhận tiền mặt */
 .pc-kh #ftt:has([name=ngay_tt]){display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px}
 .pc-kh #ftt:has([name=ngay_tt])>label{flex:1 1 200px;min-width:0}.pc-kh #ftt:has([name=ngay_tt])>label:has([name=ngay_tt]){flex:0 0 165px}
-.pc-kh #ftt>label>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pc-kh #ftt:has([name=ngay_tt])>label>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pc-kh #ftt:not(:has([name=ngay_tt])){grid-template-columns:1fr}
 .pc-kh .ct-grid{grid-template-columns:repeat(auto-fill,minmax(122px,1fr))}
-.pc-kh .ct-grid{gap:6px}.pc-kh .ct-thumb{height:62px}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:62px}
+.pc-kh .ct-grid{gap:6px}.pc-kh .ct-thumb{height:80px}.pc-kh .ct-them,.pc-kh .ct-item .ct-thumb{min-height:80px}
 .pc-kh .ct-ten{font-size:10.5px}.pc-kh .pc-c .sec{margin-top:8px!important;font-size:12px}
-.pc-kh>.pc-kc{display:flex;flex-direction:column}.pc-kc>.pc-c{border:none;border-radius:0;background:none;padding:12px 16px}.pc-kc>.pc-c+.pc-c,.pc-kc>*+.pc-c{border-top:1px solid var(--border)}
+.pc-kh>.pc-kc{display:flex;flex-direction:column}.pc-kc>.pc-c{border:none;border-radius:0;background:none;padding:16px 20px}.pc-kc>.pc-c+.pc-c,.pc-kc>*+.pc-c{border-top:1px solid var(--border)}
 .pc-kh>.pc-kc+*,.pc-kh>*+.pc-kc{border-left:1px solid var(--border)}
 @media (max-width:1500px){.pc-cot2{grid-template-columns:minmax(0,1fr) 300px}.pc-buoc{grid-template-columns:150px minmax(0,1fr)}}
-.pc-kh .m-kv>div{padding:4px 10px}.pc-kh .m-kv{grid-template-columns:110px 1fr}
+.pc-kh .m-kv>div{padding:5px 10px}.pc-kh .m-kv{grid-template-columns:110px 1fr}
 .pc-cot2 .hd-tab button{white-space:nowrap;padding:6px 8px}.pc-cot2 .hd-bl{flex-wrap:wrap}.pc-cot2 .hd-bl>.bl-o{flex:1 1 100%}.pc-cot2 .hd-bl textarea{width:100%}
 .pc-buoc.dang>.pc-kh{border-color:#eab308;box-shadow:0 0 0 3px color-mix(in srgb,#eab308 16%,transparent)}
-.pc-b{padding:10px 16px}.pc-bs{gap:10px}.pc-moc{padding:10px 12px}
+.pc-b{padding:16px 20px}.pc-bs{gap:14px}.pc-moc{padding:10px 12px}
 @media (max-width:1100px){.pc-cot2{grid-template-columns:1fr}.pc-cot2>div:last-child{position:static}}
 @media (max-width:900px){.pc-kh{flex-direction:column!important}.pc-kh>.pc-c+.pc-c,.pc-kh>.pc-c+div:not(:empty),.pc-kh>div:not(:empty)+.pc-c{border-left:none;border-top:1px solid var(--border)}.pc-buoc:first-child .pc-kh .pc-g{grid-template-columns:1fr}}
 .pc-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 22px;border-top:1px solid var(--border);background:var(--surface)}
@@ -957,8 +958,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.196';
-const APP_VERSION='23/10/2026 09:26';
+const APP_SO='1.197';
+const APP_VERSION='23/10/2026 10:45';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2207,7 +2208,7 @@ async function chayLoat(ds,lam,ten){let ok=0;const loi=[];for(const x of ds){try
 const conCuaLoai=id=>S.dm.loai.filter(l=>l.hoat_dong&&l.id!==id&&(()=>{let p=l;while(p&&p.cha_id){if(p.cha_id===id)return true;p=lo(p.cha_id)}return false})()).sort((a,b)=>(a.thu_tu-b.thu_tu)||(a.id-b.id));
 const gdSuaCon=()=>chiGD()&&!xnDoc(),xemCon=()=>chiGD();   // 22/10 anh: mục con không hiện public — chỉ giám đốc + Supreme thấy
 function loaiConO(x,bang){const c=lo(x.loai_con_id),con=conCuaLoai(x.loai_id);
-  if(gdSuaCon()&&con.length)return `<select class="m-in${bang?' ld-sel':''}" style="height:${bang?24:28}px;width:auto;max-width:92%;${bang?'font-size:11.5px':''}" title="Mục con — giám đốc sửa nếu cần${c?' · chọn bởi '+esc(x.loai_con_boi||'Hệ thống'):''}" onclick="event.stopPropagation()" onchange="datLoaiCon(${x.id},this.value,${bang?1:0})">${opts(con.map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten})),c?c.id:null,x.loai_con_kxd?'KXĐ — chọn mục con':'Chờ phân loại')}</select>`;
+  if(gdSuaCon()&&con.length)return `<select class="m-in${bang?' ld-sel':''}" style="height:${bang?24:30}px;width:auto;max-width:100%;${bang?'':'min-width:280px;'}${bang?'font-size:11.5px':''}" title="Mục con — giám đốc sửa nếu cần${c?' · chọn bởi '+esc(x.loai_con_boi||'Hệ thống'):''}" onclick="event.stopPropagation()" onchange="datLoaiCon(${x.id},this.value,${bang?1:0})">${opts(con.map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten})),c?c.id:null,x.loai_con_kxd?'KXĐ — chọn mục con':'Chờ phân loại')}</select>`;
   if(c)return `${esc((c.ma?c.ma+' ':'')+c.ten)}${bang?'':` <span class="muted" style="font-size:11px">· ${esc(x.loai_con_boi||'Hệ thống')}</span>`}`;
   if(!x.loai_con_kxd)return '<span class="muted">Chờ phân loại (4 giờ / lần)</span>';
   return pill(bang?'KXĐ':'KXĐ — chờ giám đốc','vio')}
@@ -2344,10 +2345,13 @@ function vietQR(bin,stk,tien,nd){const tlv=(i,v)=>i+String(v.length).padStart(2,
   return p+c.toString(16).toUpperCase().padStart(4,'0')}
 let QR_LIB=null;
 async function napQR(){if(QR_LIB)return QR_LIB;await new Promise((ok,loi)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';sc.onload=ok;sc.onerror=()=>loi(new Error('Không tải được thư viện QR'));document.head.appendChild(sc)});QR_LIB=window.qrcode;return QR_LIB}
-function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');if(!stk||!/^\d{6,20}$/.test(stk))return `<div class="m-st">Mã QR chuyển khoản</div><div class="muted" style="font-size:12px">${stk?'Số tài khoản "'+esc(x.thu_huong_stk)+'" không hợp lệ':'Phiếu chưa có số tài khoản người nhận'} — bấm Chỉnh sửa, điền người thụ hưởng, ngân hàng, số tài khoản để có mã QR quét chuyển khoản.</div>`;
+// 23/10 kế toán: "bước 3 nếu không hiển thị được QR thì cứ hiện thông tin text bình thường" (STK sai / không nhận ra ngân hàng / chưa có STK)
+const qrTxt=(x,nd)=>`<div class="m-st">Thông tin chuyển khoản</div><div class="m-kv"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')||'—'}</div><div>Số tài khoản</div><div><b>${esc(x.thu_huong_stk||'')||'—'}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')||'—'}</div>`
+  +`<div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${esc(nd)}</div></div>`;
+function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');
   const bin=binNH(x.thu_huong_nh),so='PC'+String(x.id).padStart(6,'0');
-  if(!bin)return `<div class="m-st">Mã QR chuyển khoản</div><div class="muted" style="font-size:12px">Không nhận ra ngân hàng "${esc(x.thu_huong_nh||'')}" để tạo QR — sửa tên ngân hàng trên phiếu (vd Vietcombank, MB Bank, Techcombank).</div>`;
   const thm=String(x.noi_dung_ck||'').trim(),nd=boDau(so+' '+(thm&&!thm.toUpperCase().startsWith(so)?thm:thm.slice(so.length)||ndChi(x))).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,25);   // 22/10 anh: số phiếu chi tự có + nội dung người làm phiếu điền thêm; luôn gài vào mã
+  if(!stk||!/^\d{6,20}$/.test(stk)||!bin)return qrTxt(x,nd);
   setTimeout(async()=>{const o=document.getElementById('qr-'+x.id);if(!o)return;try{const Q=await napQR(),q=Q(0,'M');q.addData(vietQR(bin,stk,x.so_tien,nd));q.make();
     o.innerHTML=`<img src="${q.createDataURL(4,8)}" alt="QR" style="width:168px;height:168px;image-rendering:pixelated;border:1px solid var(--border);border-radius:8px">`}catch(e){o.textContent=e.message}},0);
   return `<div class="m-st">Mã QR chuyển khoản</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div id="qr-${x.id}" style="width:170px;height:170px;flex:none;padding:0" class="m-empty">Đang tạo…</div>
@@ -2663,11 +2667,12 @@ function xemChi(id){
   // ── cột trái
   // 22/10 anh: "nhóm phần thông tin cho dễ nhìn" — chia nhóm như form phiếu chi (Đề nghị · Hạch toán & hoá đơn · Ghi chú)
   // 22/10 anh: xếp lại cho dễ nhìn — Đề nghị (gồm ngày SD, nhà cung cấp) · Hoá đơn · Hạch toán (chỉ khi xem; kế toán đang xác nhận thì hạch toán nằm ở khung Hạch toán riêng)
+  // 23/10 kế toán: thông tin đề nghị thêm Số tiền; hạn mong muốn chỉ hiện khi có
   // 22/10 anh "lỗi lặt vặt": bỏ dòng trùng — cơ sở + kỳ hạch toán đã có ở khung Phân bổ, hoá đơn đỏ ở khung Hoá đơn đỏ
   const deNghi=the('Thông tin đề nghị',`<div class="pc-g">
-      ${o('Nội dung',esc(ndChi(x)),1)}
+      ${o('Nội dung',esc(ndChi(x)),1)}${o('Số tiền',`<b>${fmt(x.so_tien)}</b>`)}
       ${o('Người đề nghị',esc(x.nguoi_de_nghi||''))}${o('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}
-      ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${o('Hạn mong muốn',fmtD(x.han_tt))}
+      ${o('Ngày đề nghị',fmtD(x.ngay_de_nghi))}${x.han_tt?o('Hạn mong muốn',fmtD(x.han_tt)):''}
       ${o('Ngày sử dụng dịch vụ',x.ngay_su_dung?fmtD(x.ngay_su_dung):'')}${o('Nhà cung cấp',nccChiO(x))}
       ${x.la_tam_ung?o('Loại đề nghị',pill('Tạm ứng','warn')+''):''}${x.loai_dn==='hoan_ung'?o('Loại đề nghị',pill('Hoàn ứng — trả lại tiền','info')+` <span class="muted">${fmt(x.so_tien)} — không chi tiền, ${x.trang_thai==='quyet_toan'?'kế toán đã xác nhận tiền về':`<span class="m-link" onclick="closeModal();S.f.tu_tab='hoan';go('tam_ung')">xác nhận tiền về ở Tạm ứng & hoàn ứng</span>`}</span>`):''}
       ${x.ghi_chu?`<div class="pc-sub">Ghi chú</div>${o('',esc(x.ghi_chu),1)}`:''}</div>`,sua?`<button class="m-btn out" style="height:30px" onclick="formChi(${id})">${IC_SUA} Chỉnh sửa</button>`:'');
@@ -2675,7 +2680,7 @@ function xemChi(id){
   const htXem=`<div class="pc-g" style="margin-bottom:10px">${o('Loại chi',x.khong_hach_toan?(!x.ca_nhan&&l.ten?`${esc(l.ten)} <span class="muted">· không hạch toán</span>`:`<span class="muted">${x.ca_nhan?'Chi phí cá nhân':'Không hạch toán'} — không cần</span>`):l.ten?`${esc((l.ma?l.ma+' ':'')+l.ten)}${x.loai_con_id===x.loai_id||!xemCon()?'':`<div style="margin-top:3px">› ${loaiConO(x)}</div>`}`:'<span class="muted">Chưa phân loại</span>')}${x.la_tam_ung?o('Kỳ hạch toán chi phí','<span class="muted">Tạm ứng — chưa là chi phí</span>'):''}</div>`;
   const choQR=['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai);   // 22/10: phiếu từ chối / đã chi không hiện QR
   const nhan=choQR&&x.thu_huong_stk?the('',qrChi(x))
-    :the('Người nhận tiền',`<div class="pc-g">${o('Người thụ hưởng',esc(x.thu_huong_ten||''))}${o('Ngân hàng',esc(x.thu_huong_nh||''))}${o('Số tài khoản',esc(x.thu_huong_stk||''))}${o('Phương thức',x.trang_thai==='da_tt'&&t.loai?(t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản'):x.thu_huong_stk?'Chuyển khoản':'Tiền mặt / chưa ghi')}</div>${choQR?qrChi(x):''}`);
+    :the('Người nhận tiền',`<div class="pc-g">${o('Người thụ hưởng',esc(x.thu_huong_ten||''))}${o('Ngân hàng',esc(x.thu_huong_nh||''))}${o('Số tài khoản',esc(x.thu_huong_stk||''))}${o('Phương thức',x.trang_thai==='da_tt'&&t.loai?(t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản'):x.thu_huong_stk?'Chuyển khoản':'Tiền mặt / chưa ghi')}</div>`);
   const pb=dy?the('',pbForm(x)):x.khong_hach_toan?the('Hạch toán',htXem+pbCaNhan):the('Hạch toán & phân bổ chi phí',`${htXem}${kv((x.phan_bo||[]).map(p=>[esc(dvCPTen(p.don_vi_id)),fmt(p.so_tien)+' · '+pct(p.so_tien,x.so_tien)]))}
       <div style="margin-top:8px">${(x.phan_bo_thang||[]).length?kv(x.phan_bo_thang.map(t=>['Tháng '+t.thang.slice(5)+'/'+t.thang.slice(0,4),fmt(t.so_tien)])):kv([['Kỳ hạch toán',thgT(kyHT(x))+(x.thang_ht?' (ghi tay)':' (theo ngày sử dụng DV)')],['Dòng tiền',x.ngay_tt?'chi ngày '+fmtD(x.ngay_tt):'chưa chi']])}</div>`);
   const xacNhan=['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?the('Xác nhận & chọn tài khoản đi tiền',`<div class="form" id="ftt">
