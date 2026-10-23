@@ -14,5 +14,9 @@ s = s.replace(/^const APP_VERSION='[^']*';/m, `const APP_VERSION='${gio}';`).rep
 fs.writeFileSync(f, s);
 // 19/10/2026 anh: "thay đổi bản mới thì các TK tự F5 lại hết" — app mỗi phút đọc phien-ban.txt, số lớn hơn bản đang chạy thì tự tải lại
 fs.writeFileSync(path.join(goc, 'phien-ban.txt'), `1.${n}\n`);
-execSync('git add phien-ban.txt', { cwd: goc });
-console.log(`v1.${n} · ${gio}  (đã ghi + git add phien-ban.txt)`);
+// 23/10/2026 SỰ CỐ: add index.html TRƯỚC rồi mới chạy script → commit mang index.html số cũ + phien-ban.txt số mới → app mọi tài khoản
+// tự tải lại không dừng. Từ nay script add CẢ index.html + phien-ban.txt và kiểm bản đã add khớp số; sau bước này KHÔNG sửa index.html nữa.
+execSync('git add index.html phien-ban.txt', { cwd: goc });
+const daAdd = execSync('git show :index.html', { cwd: goc, maxBuffer: 64e6 }).toString().match(/^const APP_SO='([^']*)';/m);
+if (!daAdd || daAdd[1] !== `1.${n}`) throw new Error('index.html đã add không khớp số phiên bản — KHÔNG commit');
+console.log(`v1.${n} · ${gio}  (đã ghi + git add index.html + phien-ban.txt, đã kiểm khớp)`);
