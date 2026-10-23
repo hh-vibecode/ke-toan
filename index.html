@@ -977,8 +977,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.208';
-const APP_VERSION='23/10/2026 15:32';
+const APP_SO='1.209';
+const APP_VERSION='23/10/2026 15:50';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2141,10 +2141,10 @@ function hdvHtml(x){
   const g=coGhi('chi'),dg=hdvGhep(x.id),gy=dg.length?[]:hdvGoiY(x.id);
   // 23/10 anh: 1 ô khai số hoá đơn — mặc định số đã gắn / số gợi ý (phiếu cần HĐ); đúng thì Lưu dùng luôn, sai thì kế toán gõ lại (gõ → hiện HĐ MISA khớp)
   const goc=x.so_hd_do||(dg[0]?dg[0].so_hd:'')||'',mac=goc||(x.co_hd_do&&gy[0]?gy[0].so_hd||'':'');
-  const o=g?`<div class="hdv-lb">Số hoá đơn</div><div class="hdv-tim"><input class="m-in" id="pc-sohd" data-goc="${esc(goc)}" value="${esc(mac)}" placeholder="Số hoá đơn" oninput="hdTim(this,'vao',${x.id},${+x.so_tien||0})"><div class="hdv-kq"></div></div>${mac&&mac!==goc?'<div class="hdv-n muted">Số gợi ý — đúng thì bấm Lưu</div>':''}`
+  const o=g?`<div class="hdv-lb" id="pc-sohd-w0" style="${x.co_hd_do?'':'display:none'}">Số hoá đơn</div><div class="hdv-tim" id="pc-sohd-w" style="${x.co_hd_do?'':'display:none'}"><input class="m-in" id="pc-sohd" data-goc="${esc(goc)}" value="${esc(mac)}" placeholder="Số hoá đơn" oninput="hdTim(this,'vao',${x.id},${+x.so_tien||0})"><div class="hdv-kq"></div></div>${mac&&mac!==goc?'<div class="hdv-n muted">Số gợi ý — đúng thì bấm Lưu</div>':''}`
     :goc?`<div class="hdv-lb">Số hoá đơn</div><div><b>${esc(goc)}</b></div>`:'';
   if(!o&&!dg.length&&!gy.length)return '';
-  return `<div class="hdv">${o}${dg.map(h=>hdThe(h,h.ncc,
+  return `<div class="hdv">${o}${dg.length?ctHD('chi',x.id):''}${dg.map(h=>hdThe(h,h.ncc,
       hdNut('Xem',`xemHDMisa('chi',${x.id},'${esc(h.hd_ma)}')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
     ${gy.length?`<div class="hdv-lb">Hoá đơn MISA có thể khớp</div>`+gy.slice(0,3).map(h=>hdThe(h,h.ncc,g?hdNut('✓ Đúng',`ghepHD(${x.id},'${esc(h.hd_ma)}')`):'')).join(''):''}
     ${x.so_hd_do&&!dg.length?'<div class="hdv-n muted">Số khai tay — chưa thấy HĐ này trên MISA</div>':''}</div>`;
@@ -2161,7 +2161,7 @@ const hdtGoiY=id=>(((S.cache.hdt||{}).goi_y)||[]).filter(h=>h.thu_id===id);
 function hdtHtml(x){
   const g=coGhi('thu'),dg=hdtGhep(x.id),gy=dg.length?[]:hdtGoiY(x.id);
   if(!dg.length&&!gy.length)return '<div class="muted" style="font-size:12.5px">Chưa thấy hoá đơn bán ra (meInvoice) khớp phiếu này</div>';
-  return `<div class="hdv"><div class="hdv-lb">${dg.length?'Số hoá đơn':'Có thể khớp'}</div>${dg.map(h=>hdThe(h,h.nguoi_mua,g?hdNut('✕',`ghepHDThu(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):'')).join('')}
+  return `<div class="hdv"><div class="hdv-lb">${dg.length?'Số hoá đơn':'Có thể khớp'}</div>${dg.length?ctHD('thu',x.id):''}${dg.map(h=>hdThe(h,h.nguoi_mua,g?hdNut('✕',`ghepHDThu(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):'')).join('')}
     ${gy.slice(0,3).map(h=>hdThe(h,h.nguoi_mua,g?hdNut('✓ Đúng',`ghepHDThu(${x.id},'${esc(h.hd_ma)}')`):'')).join('')}${g&&!dg.length?hdTimO('ra',x.id,x.so_tien):''}</div>`;
 }
 // 23/10 kế toán: "HĐ đã xuất mà chưa nối được với app thì làm gì để nối?" → gõ số HĐ / MST / tên người bán (mua) → bấm ✓ Gắn
@@ -2985,7 +2985,8 @@ async function pbChia(cach,thang){const t=+$('#pbf').dataset.tong;let w;$('#pbf'
   ids.forEach((i,k)=>{const v=k===ids.length-1?con:Math.round(t*w[i]/tw);con-=v;$('[name=pb_'+i+']').value=fmt(v)});pbTong()}
 // 19/10/2026 anh: "thêm nút lưu 1 nút thôi, thêm cho cả phiếu popup", "sửa cả luồng ấn lưu là được" — cửa sổ phiếu chi: đổi ô nào cũng CHƯA lưu,
 // bấm Lưu (hoặc nút chuyển bước Xác nhận / Đã chi tiền / Từ chối…) mới lưu hết: hạch toán, phân bổ, hoàn quỹ, hoá đơn, tài khoản đi tiền, rồi tài khoản / loại / ngày TT.
-function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?'':'none'}
+function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?'':'none';
+  ['#pc-sohd-w','#pc-sohd-w0'].forEach(s=>{const w=$(s);if(w)w.style.display=el.value==='khong'?'none':''});const ve=$('#pc-hdve');if(ve&&ve.closest('label'))ve.closest('label').style.display=el.value==='khong'?'none':''}   // 23/10 anh: cần hoá đơn mới hiện ô Số hoá đơn
 function pcHT(el){pcHT3(el.value)}
 function pcHT3(k){const h=$('#pc-ht');if(h)h.value=k;$$('.ht3 button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
   const sh=(id,on)=>{const e=$('#'+id);if(e)e.style.display=on?'':'none'};sh('pb-wrap',k==='co');sh('pb-wrap2',k==='co');sh('pb-cn',k==='ca_nhan');sh('pc-loai-w',k!=='ca_nhan');sh('pc-hd-w',k!=='ca_nhan');
@@ -4229,13 +4230,19 @@ function ctO(q,i){return `<div class="ct-item dang ${q.tt}" data-q="${q.uid||''}
     ${q.tt==='moi'?`<div class="ct-nut"><button title="Bỏ" onclick="ctBoMoi('${q.bang}',${q.uid})">✕</button></div>`:''}</div>`}
 const laUNC=t=>/^UNC_/i.test(t||'');
 // 22/10: phiếu có ô "Ảnh giao dịch" thì ô "Chứng từ đính kèm" không hiện ảnh UNC_ nữa — mỗi ô chỉ ảnh của mình
-const ctHop=el=>{if(el.dataset.loc==='unc')return laUNC;
-  return document.querySelector(`.ct[data-bang="${el.dataset.bang}"][data-id="${el.dataset.id||''}"][data-loc="unc"]`)?t=>!laUNC(t):()=>true};
+// 23/10 anh: PDF hoá đơn kéo từ MISA ("… (MISA).pdf") hiện nhỏ ngay dưới ô Số hoá đơn (ô loc 'hd'), ghi chú dưới ảnh "Hoá đơn đỏ"; các ô ảnh khác không hiện lại
+const laMISA=t=>/\(MISA\)\.pdf$/i.test(t||'');
+const ctHop=el=>{const q=l=>document.querySelector(`.ct[data-bang="${el.dataset.bang}"][data-id="${el.dataset.id||''}"][data-loc="${l}"]`),coHD=!!q('hd');
+  if(el.dataset.loc==='hd')return laMISA;
+  if(el.dataset.loc==='unc')return t=>laUNC(t)&&!(coHD&&laMISA(t));
+  return q('unc')?t=>!laUNC(t)&&!(coHD&&laMISA(t)):t=>!(coHD&&laMISA(t))};
+// ô ảnh hoá đơn MISA dưới số hoá đơn (không tiêu đề, không nút thêm)
+const ctHD=(bang,id)=>ctBox(bang,id,false,'hd').replace(/<div class="sec"[^>]*>[^<]*<\/div>/,'').replace('Đang tải chứng từ…','');
 function ctLuoi(bang,id,ds,u,sua,loc,hop){
   const dang=(id?CTQ.filter(q=>q.k===bang+':'+id):(CT_MOI[bang]||[])).filter(q=>!hop||hop(q.file.name));
   return `<div class="ct-grid">${ds.map(x=>{const anh=/^image\//.test(x.mime||'');return `<div class="ct-item">
         <div class="ct-thumb" onclick="xemCT('${bang}',${id},${x.id})">${anh&&u[x.id]?`<img src="${esc(u[x.id])}" alt="${esc(x.ten)}" loading="lazy">`:`<span class="ct-pdf">${ctNhanTep(x.mime||'',x.ten||'')}</span>`}</div>
-        <div class="ct-ten" title="${esc(x.ten)} · ${esc(x.tao_boi||'')} ${fmtDT(x.tao_luc)}">${esc(x.ten)}</div>
+        <div class="ct-ten" title="${esc(x.ten)} · ${esc(x.tao_boi||'')} ${fmtDT(x.tao_luc)}">${laMISA(x.ten)?'HĐ đỏ':esc(x.ten)}</div>
         <div class="ct-nut"><button title="Tải về" onclick="taiVeCT([${x.id}])">⬇</button>${sua?`<button title="Xoá" onclick="xoaCT('${bang}',${id},${x.id})">✕</button>`:''}</div></div>`}).join('')}
       ${dang.map(ctO).join('')}
       ${sua?`<label class="ct-them"><input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" hidden onchange="ctThem('${bang}',${id||0},this.files${loc?`,'${loc}'`:''});this.value=''"><b>＋</b><span title="${loc==='unc'?'Thêm ảnh giao dịch':'Thêm ảnh / tệp / PDF — kéo thả hoặc Ctrl+V'}">${loc==='unc'?'Thêm ảnh GD':'Thêm tệp'}</span><small>kéo thả · Ctrl+V</small></label>`:''}</div>
@@ -4663,7 +4670,7 @@ const LOGIC2=[
  ['thue','Ghép HĐ mua','Mọi phiếu chi đã trả từ 01/01 (trừ chi cá nhân) ↔ HĐ đầu vào MISA: số tiền lệch ≤ 1.000đ, ngày HĐ từ 30 ngày trước → 15 ngày sau ngày trả. Tự gắn khi 1 phiếu ↔ 1 HĐ duy nhất VÀ khớp STK người nhận (học từ lần gắn trước) / tên người nhận ≥ 50% / tên trong nội dung ≥ 80%. 1 lần trả nhiều HĐ cùng người bán: tổng HĐ = số tiền → gắn cả nhóm.','Chỉ khớp số tiền, không khớp tên / STK → không gợi ý. Không thấy → ô "Tìm HĐ MISA" (số HĐ / MST / tên) trong khung Hoá đơn đỏ.','23/10'],
  ['thue','Ghép HĐ bán ra','Phiếu thu ↔ HĐ bán ra meInvoice: số tiền lệch ≤ 1.000đ, ngày HĐ từ 15 ngày trước → 30 ngày sau ngày thu. Tự gắn khi 1 ↔ 1 VÀ nội dung phiếu ghi số HĐ ("HD 75") hoặc tên khách ≥ 80% (tên ≥ 2 chữ sau khi bỏ anh / chị / cô).','Tên ngắn kiểu "Anh Hải" → chỉ gợi ý. Xem ở khung Hoá đơn bán ra trong popup phiếu thu.','23/10'],
  ['thue','Số hoá đơn khai tay','Ô "Số hoá đơn" trong khung Hoá đơn đỏ: điền sẵn số đã gắn / số gợi ý (phiếu cần HĐ). Bấm Lưu → lưu số + đánh dấu đã nhận HĐ; thấy đúng 1 HĐ MISA cùng số chưa gắn phiếu khác (ưu tiên lệch tiền ≤ 1.000đ) thì gắn luôn, thay HĐ cũ.','Không thấy trên MISA → giữ số khai tay. Xoá trống = bỏ số khai tay.','23/10'],
- ['thue','PDF hoá đơn MISA','HĐ đầu vào đã gắn phiếu chi → hệ thống tải PDF từ MISA vào chứng từ phiếu ("HĐ … (MISA).pdf"), nút Xem trong ô Số hoá đơn.','Chạy kèm job kéo HĐ 00:35; HĐ gắn tay trong ngày có PDF sau đêm.','23/10'],
+ ['thue','PDF hoá đơn MISA','HĐ đầu vào đã gắn phiếu chi (MISA Xử lý HĐ) + HĐ bán ra đã gắn phiếu thu (meInvoice /invoice/Download theo mã tra cứu) → tải PDF vào chứng từ phiếu, hiện nhỏ ngay dưới ô Số hoá đơn (ghi "HĐ đỏ"), không lặp ở ô ảnh khác. Ô Số hoá đơn chỉ hiện khi chọn Cần hoá đơn.','Chạy kèm job kéo HĐ 00:35; HĐ gắn tay trong ngày có PDF sau đêm.','23/10'],
  ['bao_cao','P&L — bấm ô xem phiếu','Từ T9: bấm ô số 1 tháng của dòng chi phí → danh sách phiếu chi tạo nên số đó (cùng nguồn kt_v_chi_ht nên tổng = ô), bấm phiếu mở popup.','T1–T8 số lấy theo 4 file P&L → không có phiếu để xem.','23/10'],
  ['thue','Kho sổ thuế','Kỳ theo quý. Tồn dự kiến = tồn đầu + nhập theo HĐ vào − xuất theo HĐ ra + điều chỉnh.','Lệch = tồn file 3TShop − dự kiến.','14/10'],
  ['thue','Kho sổ thuế','4 bước: nạp file → so lệch → điều chỉnh (có lý do) → khoá quý.','Khoá xong không nạp lại / sửa điều chỉnh; mở khoá: Supreme / Admin.','14/10'],

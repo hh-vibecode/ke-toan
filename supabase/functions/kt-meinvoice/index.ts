@@ -18,6 +18,33 @@ async function goi(url: string, opt: RequestInit) {
     catch (e) { if (lan >= 5) throw e; await ngu(3000 * lan); }
   }
 }
+// 23/10/2026: tải PDF HĐ bán ra đã gắn phiếu thu (POST /invoice/Download?downloadDataType=Pdf, body = [mã tra cứu], data = PDF base64)
+// vào chứng từ phiếu thu: thu/{thu}/misa_{ký hiệu-số}.pdf. Body {"pdf":true} = chỉ tải PDF, không kéo lại danh sách HĐ.
+async function taiPdfRa(A: any, n: number, batDau: number) {
+  const r = await sb('rpc/kt_hd_ra_can_pdf', { p_n: n }, 'return=representation');
+  const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0 };
+  for (let i = 0; i < ds.length && Date.now() - batDau < 110e3; i += 3) {   // lô 3 file: lô 10 (~7MB base64) vượt bộ nhớ Edge
+    const nhom = ds.slice(i, i + 3);
+    let kq: any[] = [];
+    try { const j = await goi(MI + '/invoice/Download?downloadDataType=Pdf&invoiceWithCode=true', { method: 'POST', headers: A, body: JSON.stringify(nhom.map(x => x.ma_tra_cuu)) }); kq = (doc(j.Data) || []) as any[]; }
+    catch (e) { m.loi += nhom.length; m.loi_cuoi = String(e).slice(0, 160); continue; }
+    for (const x of nhom) {
+      const f = kq.find(k => String(k.TransactionID) === String(x.ma_tra_cuu));
+      const b64 = f ? (f.Data || f.data) : null;   // thực tế MISA trả "Data" (tài liệu ghi "data")
+      if (!f || !b64 || f.ErrorCode) { m.loi++; if (f?.ErrorCode) m.loi_cuoi = f.ErrorCode; continue; }
+      try {
+        const pdf = Uint8Array.from(atob(String(b64)), c => c.charCodeAt(0));
+        const duong = `thu/${x.thu_id}/misa_${x.hd_ma}.pdf`;
+        const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
+        if (!up.ok) { m.loi++; continue; }
+        const ins = await fetch(SB + '/rest/v1/kt_chung_tu?on_conflict=duong_dan', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=ignore-duplicates,return=minimal' },
+          body: JSON.stringify({ bang: 'thu', dong_id: x.thu_id, duong_dan: duong, ten_file: `HĐ ${x.ky_hieu || ''} số ${x.so_hd || ''} (MISA).pdf`, mime: 'application/pdf', kich_thuoc: pdf.length, tao_boi: 'Hệ thống (MISA)' }) });
+        if (ins.ok) m.luu++; else m.loi++;
+      } catch (_) { m.loi++; }
+    }
+  }
+  return m;
+}
 const thangVN = (lech: number) => { const d = new Date(Date.now() + 7 * 3600e3); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + lech); return d.toISOString().slice(0, 7); };
 const cuoiThang = (t: string) => new Date(Date.UTC(+t.slice(0, 4), +t.slice(5, 7), 0)).toISOString().slice(0, 10);
 
@@ -35,6 +62,7 @@ Deno.serve(async req => {
     const ks = mau.map(m => m.InvSeries).filter(s => !BO_QUA.includes(String(s).slice(-3)));
     kq.ky_hieu = ks;
     const ds: string[] = []; for (let th = String(body.tu || thangVN(-1)); th <= String(body.den || thangVN(0)); th = new Date(Date.UTC(+th.slice(0, 4), +th.slice(5, 7), 1)).toISOString().slice(0, 7)) ds.push(th);
+    if (body.pdf) ds.length = 0;
     for (const th of ds) {
       const hd: any[] = [];
       for (let sk = 0; ; sk += 50) {
@@ -46,11 +74,13 @@ Deno.serve(async req => {
         so_hd: x.InvNo == null ? null : String(x.InvNo), mau: x.InvTemplateNo ?? null, ky_hieu: x.InvSeries, ngay: String(x.InvDate).slice(0, 10),
         mst: x.BuyerTaxCode || '', nguoi_mua: x.BuyerLegalName || x.BuyerFullName || 'Khách lẻ', ten: ten[x.InvSeries] || x.InvoiceName || null,
         thanh_tien: +x.TotalAmountWithoutVAT || 0, tien_thue: +x.TotalVATAmount || 0, tong: +x.TotalAmount || 0,
+        ma: x.TransactionID || x.TransactionId || x.transactionID || '',
         ghi_chu: x.OrgInvNo ? `Điều chỉnh / thay thế HĐ ${x.OrgInvSeries || ''} ${x.OrgInvNo}`.replace(/\s+/g, ' ') : '' }));
       const r = await sb('rpc/kt_nap_meinvoice', { p_thang: th, p_ds: dong }, 'return=representation');
       if (!r.ok) throw new Error(`nạp ${th} lỗi ${r.status} ${(await r.text()).slice(0, 200)}`);
       kq.thang[th] = await r.json();
     }
+    kq.pdf = await taiPdfRa(A, +body.n || 15, batDau);
     kq.giay = Math.round((Date.now() - batDau) / 1000);
     await sb('kt_nhat_ky', { nguoi: 'meInvoice (tự kéo)', bang: 'kt_thue_hd', hanh_dong: 'keo_meinvoice', du_lieu: kq });
     return Response.json(kq);
