@@ -1,5 +1,5 @@
 // Triển khai Edge Function kt-meinvoice-bot (HĐ ĐẦU VÀO công ty THT từ MISA Xử lý hóa đơn → kt_thue_hd + tự ghép phiếu chi chưa nhận HĐ).
-// Chạy: node scripts/trien-khai-meinvoice-bot.js [sql] [lich] [thu|nap YYYY-MM [YYYY-MM]]
+// Chạy: node scripts/trien-khai-meinvoice-bot.js [sql] [lich] [thu|nap YYYY-MM [YYYY-MM] | pdf [n]]
 //   sql = chạy supabase-schema-kt-hd-vao.sql · lich = đặt pg_cron 'kt-meinvoice-bot' 00:35 giờ VN · thu = CHỈ ĐẾM · nap = ghi + ghép (thêm khong_ghep = ghi HĐ, chỉ đếm số phiếu sẽ ghép).
 // Khoá cron lấy từ lịch pg_cron 'kt-meinvoice' (phiên cloud không có KT_CRON_KEY trong file khoá), KHÔNG in ra. Monsieur Claude 14/10/2026
 const fs = require('fs'), path = require('path');
@@ -21,9 +21,9 @@ const REF = 'bcrpxfvvjsjpvbksqzls', K = docKhoa(), API = `https://api.supabase.c
       headers := jsonb_build_object('Content-Type', 'application/json', 'x-kt-cron', '${khoa}'), body := '{}'::jsonb, timeout_milliseconds := 150000)$c$)`);
     console.log('lịch:', JSON.stringify(await sql(`select jobname, schedule, active from cron.job where jobname = 'kt-meinvoice-bot'`)));
   }
-  const i = A.findIndex(x => x === 'thu' || x === 'nap');
+  const i = A.findIndex(x => x === 'thu' || x === 'nap' || x === 'pdf');   // pdf [n] = chỉ tải PDF HĐ đã gắn phiếu chi (23/10)
   if (i < 0) return;
   const r = await fetch(`https://${REF}.supabase.co/functions/v1/kt-meinvoice-bot`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-kt-cron': khoa },
-    body: JSON.stringify({ thu: A[i] === 'thu', ghep: !A.includes('khong_ghep'), tu: A[i + 1], den: A[i + 2] || A[i + 1] }) });
-  const t = await r.text(); console.log(A[i] === 'thu' ? 'chạy thử:' : 'nạp:', r.status, t.split(khoa).join('[KHOA]').slice(0, 6000));
+    body: JSON.stringify(A[i] === 'pdf' ? { pdf: true, n: +A[i + 1] || 8 } : { thu: A[i] === 'thu', ghep: !A.includes('khong_ghep'), tu: A[i + 1], den: A[i + 2] || A[i + 1] }) });
+  const t = await r.text(); console.log(A[i] === 'thu' ? 'chạy thử:' : A[i] === 'pdf' ? 'pdf:' : 'nạp:', r.status, t.split(khoa).join('[KHOA]').slice(0, 6000));
 })().catch(e => { console.error('DỪNG:', e.message); process.exit(1); });

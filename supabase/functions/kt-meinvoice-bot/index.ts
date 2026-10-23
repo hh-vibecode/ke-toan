@@ -4,6 +4,9 @@
 // pg_cron 'kt-meinvoice-bot' mỗi đêm: tháng trước + tháng này. Body {"tu":"2026-01","den":"2026-10"} = nạp lại các tháng đó; thêm "thu":true = CHẠY THỬ
 // (chỉ đếm, KHÔNG ghi). Bỏ: HĐ bị xoá trên MISA, HĐ đã bị thay thế (4), đã bị huỷ (6). Gọi bằng header x-kt-cron = secret KT_CRON_KEY.
 // Secrets: KT_MEINVOICE_BOT_CLIENT_ID, KT_MEINVOICE_BOT_CLIENT_SECRET, KT_MEINVOICE_MST / USER / PASS (cùng tài khoản MISA với meInvoice). Monsieur Claude 14/10/2026
+// 23/10/2026: ghép xong → tải PDF HĐ đầu vào đã gắn phiếu chi (download/zip → Key → tải zip, lấy file .pdf) vào chứng từ phiếu chi (kt-chung-tu: chi/{chi}/misa_{ma}.pdf).
+// Body {"pdf":true} = chỉ tải PDF (không kéo danh sách HĐ). Mỗi lần tối đa body.n (mặc định 8) HĐ, dừng sớm khi gần hết giờ.
+import { unzipSync } from 'https://esm.sh/fflate@0.8.2';
 const MI = 'https://developer.misa.vn/apis/meinvoicebot/v1';
 const CID = Deno.env.get('KT_MEINVOICE_BOT_CLIENT_ID')!, CSEC = Deno.env.get('KT_MEINVOICE_BOT_CLIENT_SECRET')!;
 const MST = Deno.env.get('KT_MEINVOICE_BOT_MST') || Deno.env.get('KT_MEINVOICE_MST')!;
@@ -45,6 +48,46 @@ async function dangNhap() {
   }
   throw new Error(loi);
 }
+// tải 1 HĐ: xin Key (thử từng tổ chức), đợi MISA đóng gói (hỏi lại mỗi 3 giây), lấy file .pdf trong zip
+async function pdfMot(A: any, subId: string, orgs: any[], id: string, hetGio: number): Promise<Uint8Array | null> {
+  for (const o of orgs) {
+    const B = `${MI}/${subId}/${o.Id}/download`;
+    let key = '';
+    try { key = (await goi('download/zip', B + '/zip', { method: 'POST', headers: { ...A, 'Content-Type': 'application/json' }, body: JSON.stringify({ FileType: 1, LstInvID: [id] }) }, 2)).Data?.Key || ''; } catch (_) { continue; }
+    if (!key) continue;
+    while (Date.now() < hetGio) {
+      await ngu(3000);
+      const r = await fetch(`${B}/${encodeURIComponent(key)}/download`, { headers: A });
+      if (!/zip|octet/.test(r.headers.get('content-type') || '')) { await r.arrayBuffer(); continue; }
+      const files = unzipSync(new Uint8Array(await r.arrayBuffer()));
+      const ten = Object.keys(files).find(f => /\.pdf$/i.test(f));
+      return ten ? files[ten] : null;
+    }
+    return null;
+  }
+  return null;
+}
+async function taiPdf(A: any, subId: string, orgs: any[], n: number, batDau: number) {
+  const r = await sb('rpc/kt_hd_can_pdf', { p_n: n }, 'return=representation');
+  const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0 };
+  const hetGio = batDau + 120e3;   // Edge tối đa 150 giây — chừa thời gian ghi nhật ký
+  // chạy song song từng nhóm 4 HĐ
+  for (let i = 0; i < ds.length && Date.now() < hetGio; i += 4) {
+    await Promise.all(ds.slice(i, i + 4).map(async (x: any) => {
+      try {
+        const pdf = await pdfMot(A, subId, orgs, x.hd_ma, hetGio);
+        if (!pdf) { m.loi++; return; }
+        const duong = `chi/${x.chi_id}/misa_${x.hd_ma}.pdf`;
+        const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
+        if (!up.ok) { m.loi++; return; }
+        const ins = await fetch(SB + '/rest/v1/kt_chung_tu?on_conflict=duong_dan', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=ignore-duplicates,return=minimal' },
+          body: JSON.stringify({ bang: 'chi', dong_id: x.chi_id, duong_dan: duong, ten_file: `HĐ ${x.ky_hieu || ''} số ${x.so_hd || ''} (MISA).pdf`, mime: 'application/pdf', kich_thuoc: pdf.length, tao_boi: 'Hệ thống (MISA)' }) });
+        if (ins.ok) m.luu++; else m.loi++;
+      } catch (_) { m.loi++; }
+    }));
+  }
+  return m;
+}
 Deno.serve(async req => {
   if (req.headers.get('x-kt-cron') !== Deno.env.get('KT_CRON_KEY')) return new Response('không có quyền', { status: 401 });
   const batDau = Date.now(); let body: any = {}; try { body = await req.json(); } catch (_) { /* cron gửi {} */ }
@@ -60,7 +103,7 @@ Deno.serve(async req => {
     for (const u of ung) { try { og = await goi('organizations', `${MI}/${u}/organizations`, { headers: A }, 3); subId = u; break; } catch (e) { loiOrg.push(String(e)); } }
     if (!og) throw new Error('organizations lỗi: ' + loiOrg.join(' | '));
     const orgs = (Array.isArray(og.Data) ? og.Data : og.Data?.Items || []) as any[];
-    for (let th = String(body.tu || thangVN(-1)); th <= String(body.den || thangVN(0)); th = sauThang(th)) {
+    if (!body.pdf) for (let th = String(body.tu || thangVN(-1)); th <= String(body.den || thangVN(0)); th = sauThang(th)) {
       const gap = new Map<string, any>(); const m: any = { lay: 0, bo_xoa: 0, bo_thay_huy: 0, khac_thang: 0 };
       for (const o of orgs) {
         for (let sk = 0; ; sk += 100) {
@@ -94,8 +137,11 @@ Deno.serve(async req => {
       }
       kq.thang[th] = m;
     }
-    const g = await sb('rpc/kt_ghep_hd_vao', { p_ghi: !thu && body.ghep !== false }, 'return=representation');   // "ghep":false = ghi HĐ nhưng chỉ ĐẾM số phiếu sẽ ghép
-    kq.ghep = g.ok ? await g.json() : 'lỗi ' + g.status;
+    if (!body.pdf) {
+      const g = await sb('rpc/kt_ghep_hd_vao_va_thu', { p_ghi: !thu && body.ghep !== false }, 'return=representation');   // "ghep":false = ghi HĐ nhưng chỉ ĐẾM số phiếu sẽ ghép; kèm phiếu thu ↔ HĐ bán ra
+      kq.ghep = g.ok ? await g.json() : 'lỗi ' + g.status;
+    }
+    if (!thu) kq.pdf = await taiPdf(A, subId, orgs, +body.n || 8, batDau);
     kq.giay = Math.round((Date.now() - batDau) / 1000);
     if (!thu) await sb('kt_nhat_ky', { nguoi: 'MISA Xử lý HĐ (tự kéo)', bang: 'kt_thue_hd', hanh_dong: 'keo_misabot', du_lieu: kq });
     return Response.json(kq);
