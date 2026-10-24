@@ -865,6 +865,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-kh .m-seg.ht3{margin-bottom:8px!important}.pc-kh .ht3 button{padding:0 8px;font-size:12px}
 .pc-kh .m-st{margin:6px 0 4px}.pc-kh .m-in{height:32px}
 .pc-kh .pbf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 12px}.pc-kh .pbf label{grid-template-columns:1fr auto;grid-template-areas:'t p' 'i i';gap:3px 4px;font-size:12px}.pc-kh .pbf label>span{grid-area:t;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc-kh .pbf label>em{grid-area:p}.pc-kh .pbf label>input{grid-area:i}.pc-kh .pbf>div,.pc-kh .pbf-t{grid-column:1/-1}
+.ld-cc{display:flex;align-items:center;gap:4px}.ld-cc .ld-sel{flex:1 1 auto;min-width:0}.ld-them{border:none;background:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;flex:none}.ld-them:hover{color:var(--accent)}
 .pc-kh #pc-loai-w{display:flex;align-items:center;gap:10px}.pc-kh #pc-loai-w .m-st{margin:0;flex:none;overflow:visible}.pc-kh #pc-loai-w select{max-width:320px;flex:1 1 0;min-width:0}.pc-kh #pc-con-w{flex:1 1 0;min-width:0}
 .pc-kh [id^="qr-"]{width:152px!important;height:152px!important}.pc-kh [id^="qr-"] img{width:150px!important;height:150px!important}
 .pc-kh details{margin-top:6px!important}.pc-h{padding:12px 22px}.pc-tien b{font-size:22px}.pc-f{padding:10px 22px}
@@ -977,8 +978,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.211';
-const APP_VERSION='24/10/2026 13:50';
+const APP_SO='1.212';
+const APP_VERSION='24/10/2026 14:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1430,9 +1431,9 @@ const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Hệ thống & Cài đặt chia nhóm, có tiêu đề nhỏ
 const CD_NHOM=['Danh mục','Dữ liệu','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_xuat','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
 // Log hệ thống: 1 trang, 3 tab — mỗi tab dùng lại hàm trang cũ, chèn thanh tab ngay dưới tiêu đề
-const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy']];
+const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy'],['loi','Báo lỗi']];
 async function pageLogHT(){const t=S.f.log_tab||'sua';
-  await (t==='luu_luong'?pageLuuLuong():t==='lich'?pageLich():pageCaiDat('nhat_ky'));
+  await (t==='luu_luong'?pageLuuLuong():t==='lich'?pageLich():t==='loi'?pageBaoLoi():pageCaiDat('nhat_ky'));
   const seg=`<div class="m-seg" style="margin-bottom:12px">${LOG_TAB.map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.log_tab='${k}';render()">${v}</button>`).join('')}</div>`;
   const top=document.querySelector('#page .top');if(top)top.insertAdjacentHTML('afterend',seg);else $('#page').insertAdjacentHTML('afterbegin',seg)}
 const sbMuc=(ks,nb)=>{const mot=k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`;
@@ -1509,7 +1510,7 @@ function shell(){
       <div class="hd-r">${dxHtml()}<select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         ${csHtml()}
         ${xnHtml()}${chatNut()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
-          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div><div class="dd-i" onclick="thuAmBao()">▶ Thử âm báo</div><div class="dd-i sb-khoa-i" onclick="khoaMenu()" title="Khoá: menu trái luôn mở, không tự thu vào. Bấm lần nữa để mở khoá">${sbKhoa()?'✓ Đã khoá menu trái (bấm để mở khoá)':'☰ Khoá menu trái (luôn mở)'}</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
+          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div><div class="dd-i" onclick="thuAmBao()">▶ Thử âm báo</div><div class="dd-i sb-khoa-i" onclick="khoaMenu()" title="Khoá: menu trái luôn mở, không tự thu vào. Bấm lần nữa để mở khoá">${sbKhoa()?'✓ Đã khoá menu trái (bấm để mở khoá)':'☰ Khoá menu trái (luôn mở)'}</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="baoLoi('chung',0,'')">${IC_LOI} Báo lỗi</div><div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');veDX();
   render();
@@ -2020,7 +2021,7 @@ function formThu(id){
     
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
     ${ctBox('thu',id,coGhi('thu'))}${id?hdKhung('thu',id):''}</div>
-    <div class="m-pn-f">${id&&coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('thu',${id}${x.nguon==='kiot'?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}${id?`<button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongThuCT()">Đóng</button>
+    <div class="m-pn-f">${id&&coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('thu',${id}${x.nguon==='kiot'?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}${id?`<button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${nutLoi('thu',id,'PT'+String(id).padStart(6,'0'))}`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongThuCT()">Đóng</button>
       ${ro?'':`<button class="m-btn pri" onclick="luuThu(${id||'null'})">Lưu</button>`}</div>`;
   const p=$('#thu-ct');let box;
   if(p&&KHUNG_PHAI&&innerWidth>=1250&&id){S.f.thu_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');box=p;
@@ -2048,7 +2049,7 @@ function xemThu(id){const x=(S.cache.thu||[]).find(t=>t.id===id);if(!x)return fo
         ${x.ghi_chu?pcO('Ghi chú',esc(x.ghi_chu),1):''}</div>`,!ro?`<button class="m-btn out" style="height:30px" onclick="closeModal();formThu(${id})">${IC_SUA} Chỉnh sửa</button>`:'')+pcThe('Chứng từ đính kèm',ctBox('thu',id,coGhi('thu')).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,''))},
     {ten:tq?'Nhận tiền':'Thu tiền',tt:!daThu?'dang':tq&&!x.tq_nhan_luc?'dang':'xong',nhan:!daThu?'Chưa thu':tq&&!x.tq_nhan_luc?'Chờ thủ quỹ nhận':'Đã thu',ai:x.tq_nhan_boi||'',luc:x.tq_nhan_luc||'',
       noi:pcThe('Tiền về',`<div class="pc-g">${pcO('Tài khoản nhận',esc(t.ten||''))}${pcO('Hình thức',t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản')}${tq?pcO('Thủ quỹ',x.tq_nhan_luc?`Đã nhận · ${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}`:'<span class="neg-t">Chưa xác nhận nhận tiền</span>'):''}</div>`)+pcThe('Hoá đơn bán ra (MISA)',hdtHtml(x))}];
-  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('thu',${id}${kiot?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}<span style="margin-left:auto"></span>
+  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${nutLoi('thu',id,so)}${coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('thu',${id}${kiot?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}<span style="margin-left:auto"></span>
     ${tq&&!x.tq_nhan_luc&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('thu',${id})">✓ Đã nhận tiền</button>`:''}`;
   pcMo(so,`${pill('Phiếu thu','ok')}${daThu?pill('Đã thu','ok'):pill('Chưa thu','warn')}${kiot?pill('Từ Kiot','info'):''}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'thu',id,nut)}
 function xemDC(id){const x=(S.cache.dc||[]).find(d=>d.id===id);if(!x)return formDC(id);
@@ -2058,7 +2059,7 @@ function xemDC(id){const x=(S.cache.dc||[]).find(d=>d.id===id);if(!x)return form
         ${x.khong_hach_toan?pcO('Hạch toán','<span class="muted">Không hạch toán</span>'):''}${x.ghi_chu?pcO('Ghi chú',esc(x.ghi_chu),1):''}</div>`,g?`<button class="m-btn out" style="height:30px" onclick="closeModal();formDC(${id})">${IC_SUA} Chỉnh sửa</button>`:'')+pcThe('Chứng từ đính kèm',ctBox('dieu_chuyen',id,g).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,''))},
     {ten:ket?'Nhận tiền':'Xác nhận',tt:x.da_xac_nhan?'xong':'dang',nhan:x.da_xac_nhan?(ket?'Đã nhận tiền':'Đã xác nhận'):(ket?'Chờ thủ quỹ nhận':'Chờ xác nhận'),ai:x.xac_nhan_boi||'',luc:x.xac_nhan_luc||'',
       noi:pcThe(ket?'Tiền vào két':'Xác nhận',`<div class="pc-g">${pcO('Trạng thái',x.da_xac_nhan?`${ket?'Thủ quỹ đã nhận':'Kế toán đã xác nhận'} · ${esc(x.xac_nhan_boi||'')} ${fmtDT(x.xac_nhan_luc)}`:`<span class="neg-t">${ket?'Thủ quỹ chưa bấm Đã nhận tiền':'Kế toán chưa xác nhận'}</span>`,1)}</div>`)}];
-  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordDC(${id})">Xuất phiếu Word</button>${g?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('dieu_chuyen',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span>
+  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordDC(${id})">Xuất phiếu Word</button>${nutLoi('dieu_chuyen',id,so)}${g?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('dieu_chuyen',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span>
     ${ket&&!x.da_xac_nhan&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('dieu_chuyen',${id})">✓ Đã nhận tiền</button>`:''}${!ket&&!x.da_xac_nhan&&g?`<button class="m-btn duyet" title="Mở form, tick Kế toán đã xác nhận rồi Lưu" onclick="closeModal();formDC(${id})">✓ Xác nhận</button>`:''}`;
   pcMo(so,`${pill('Điều chuyển','info')}${x.da_xac_nhan?pill(ket?'Thủ quỹ đã nhận':'Đã xác nhận','ok'):pill(ket?'Chờ thủ quỹ nhận':'Chưa xác nhận','warn')}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'dieu_chuyen',id,nut)}
 function dongThuCT(){if($('#modal')){closeModal();return}S.f.thu_chon=null;const p=$('#thu-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
@@ -2083,6 +2084,25 @@ async function luuThu(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_ti
   const thieu=[!ht&&'hạch toán',!o.ngay&&'ngày thu',!o.so_tien&&'số tiền',!o.loai_id&&!o.khong_hach_toan&&'loại thu',!o.don_vi_id&&!o.khong_hach_toan&&'cơ sở',!o.tai_khoan_id&&'tài khoản nhận',!o.noi_dung&&'nội dung'].filter(Boolean);
   if(thieu.length)return alert('Còn thiếu ô bắt buộc (*): '+thieu.join(', '));
   const nid=await save('kt_luu_thu',{p_dong:o});if(!id)ctGuiMoi('thu',nid);S.f.thu_chon=null;await render();if(!id&&nid)formThu(nid)}
+// 24/10 anh: "nút báo lỗi ở mỗi phiếu, tất cả các phiếu · để icon, cùng chỗ với in phiếu · cả trong profile để mọi người report lỗi khác ·
+// báo lỗi là text kèm ô ảnh để up, lưu vào 1 log riêng báo lỗi · cho vào chuông thông báo của anh" (kt_bao_loi_gui → chuông Supreme; Log hệ thống → tab Báo lỗi)
+const IC_LOI='<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px"><path d="M1 21h22L12 2zm12-3h-2v-2h2zm0-4h-2v-4h2z"/></svg>';
+const nutLoi=(bang,id,so)=>xnDoc()?'':`<button class="m-btn${bang==='chi'?' sm':''} out nut-loi" title="Báo lỗi phiếu này" onclick="event.stopPropagation();baoLoi('${bang}',${id},'${esc(so||'')}')">${IC_LOI}</button>`;
+function baoLoi(bang,id,so){CT_MOI.bao_loi=[];
+  modal(`<h2>${IC_LOI} Báo lỗi${so?' · '+esc(so):''}</h2><div class="form" id="fbl"><label class="full"><span>Lỗi gặp phải${BB}</span><textarea name="nd" rows="4" maxlength="2000" placeholder="Mô tả lỗi: đang làm gì, thấy gì sai"></textarea></label></div>
+    ${ctBox('bao_loi',0,true).replace('Chứng từ đính kèm','Ảnh chụp lỗi')}
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="guiLoi('${bang}',${id||0},'${esc(so||'')}')">Gửi báo lỗi</button></div>`);setTimeout(ganCT,0)}
+async function guiLoi(bang,id,so){const nd=(($('#fbl [name=nd]')||{}).value||'').trim();if(!nd)return alert('Ghi lỗi gặp phải');
+  try{const v=await rpc('kt_bao_loi_gui',{p_bang:bang,p_id:id||null,p_so:so||null,p_noi_dung:nd});closeModal();ctGuiMoi('bao_loi',v);toast('Đã gửi báo lỗi — cảm ơn')}catch(e){alert(e.message)}}
+async function pageBaoLoi(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const ds=await rpc('kt_ds_bao_loi'),mo=ds.filter(x=>!x.da_xu_ly),f=S.f.bl_loc||'mo',l=f==='mo'?mo:ds;
+  const PH={chi:'PC',thu:'PT',dieu_chuyen:'DC'},phieu=x=>x.bang==='chung'?'<span class="muted">Lỗi chung</span>':PH[x.bang]?`<span class="m-link" onclick="moPhieu('${PH[x.bang]}',${x.dong_id})">${esc(x.so_phieu||PH[x.bang]+String(x.dong_id).padStart(6,'0'))}</span>`:esc(x.so_phieu||'');
+  el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Báo lỗi</span>')+`<div class="m-flt" style="align-items:center"><div class="m-seg">${[['mo','Chưa xử lý',mo.length],['tat','Tất cả',ds.length]].map(([k,t,n])=>`<button class="${f===k?'on':''}" onclick="S.f.bl_loc='${k}';render()">${t}<span class="c">${n}</span></button>`).join('')}</div></div>
+    <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Lúc</th><th>Người báo</th><th>Phiếu</th><th>Lỗi</th><th>Ảnh</th><th>Trạng thái</th><th></th></tr>
+    ${l.map(x=>`<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc(x.nguoi||'')}</td><td class="nw">${phieu(x)}</td><td class="ten" style="white-space:pre-wrap">${esc(x.noi_dung)}${x.xu_ly_ghi?`<div class="muted" style="font-size:11.5px">↳ ${esc(x.xu_ly_ghi)}</div>`:''}</td>
+      <td class="nw"><span class="m-link" onclick="moCT('bao_loi',${x.id})">Xem</span></td><td class="nw">${x.da_xu_ly?pill('Đã xử lý','ok')+`<div class="muted" style="font-size:11px">${esc(x.xu_ly_boi||'')} ${fmtDT(x.xu_ly_luc)}</div>`:pill('Chưa xử lý','bad')}</td>
+      <td class="nw">${x.da_xu_ly?`<button class="m-btn sm" onclick="xuLyLoi(${x.id},false)">Mở lại</button>`:`<button class="m-btn sm duyet" onclick="xuLyLoi(${x.id},true)">✓ Đã xử lý</button>`}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Không có báo lỗi</td></tr>'}</table></div></div>`}
+async function xuLyLoi(id,xong){const g=xong?prompt('Ghi chú xử lý (có thể để trống):',''):'';if(g===null)return;try{await rpc('kt_bao_loi_xu_ly',{p_id:id,p_xong:xong,p_ghi:g||''});toast(xong?'Đã đánh dấu xử lý':'Đã mở lại');render()}catch(e){alert(e.message)}}
 async function xoa(bang,id,hoi){if(!confirm(hoi||'Xoá khoản này? (ẩn khỏi báo cáo, vẫn còn trong nhật ký)'))return;await save('kt_xoa',{p_bang:bang,p_id:id},'Đã xoá');render()}
 
 // ── CHI ────────────────────────────────────────────────────────────────────
@@ -2326,8 +2346,11 @@ async function pageChi(){
     S.f.chi_q?rpc('kt_ds',{p_bang:'chi',p_tu:'2000-01-01',p_den:'2099-12-31'}):null,can('vay')?rpc('kt_ds_vay',{}).catch(()=>[]):[]]);S.cache.chi=dsT||ds;S.cache.hdv=hv;   // đang tìm: lấy mọi kỳ
   const f=S.f;f.chi_tt=f.chi_tt||(ds.some(viecCuaToi)?'cua_toi':'tat_ca');const q=(f.chi_q||'').toLowerCase();   // như Lark: mở ra thấy ngay phiếu chờ mình
   const loc={cua_toi:viecCuaToi,tat_ca:x=>true,thieu_ct:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x),thieu_unc:x=>!!x.thieu_unc,nhac:x=>+x.nhac_mo>0,cho_duyet:x=>x.trang_thai==='cho_duyet',cho_gd:x=>x.trang_thai==='cho_gd',nghi_trung:x=>!!x.nghi_trung&&x.trang_thai!=='tu_choi',nghi_loai:x=>!!x.nghi_loai,cho_tt:x=>x.trang_thai==='cho_tt',da_tt:x=>x.trang_thai==='da_tt',
-    tu_choi:x=>x.trang_thai==='tu_choi'||x.trang_thai==='tu_choi_tt',hd_do:x=>x.trang_thai==='da_tt'&&x.co_hd_do&&!x.ca_nhan&&!x.hd_do_nhan&&x.ngay_tt>=MOC_SODU,lenh:x=>x.trang_thai==='cho_tt'&&!!x.lap_lenh_luc,kxd:x=>!!x.loai_con_kxd&&!x.khong_hach_toan&&!tuChoi(x),chua_kiot:chuaKiot,qua_han:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&x.han_tt&&x.han_tt<homNay()};
-  const nhan={kxd:'Loại chi KXĐ',thieu_ct:'Thiếu chứng từ',thieu_unc:'Thiếu ảnh giao dịch',nhac:'Cần bổ sung',cua_toi:'Chờ tôi xử lý',tat_ca:'Tất cả',cho_duyet:'Chờ xác nhận',cho_gd:'Chờ GĐ duyệt (cũ)',cho_tt:'Chờ chi tiền',da_tt:'Đã thanh toán',hd_do:'Chưa nhận HĐ',chua_kiot:'Chưa cập nhật Kiot',qua_han:'Quá hạn',nghi_trung:'Nghi trùng',nghi_loai:'Nghi sai loại',tu_choi:'Từ chối',lenh:'Chờ duyệt lệnh'};
+    tu_choi:x=>x.trang_thai==='tu_choi'||x.trang_thai==='tu_choi_tt',hd_do:x=>x.trang_thai==='da_tt'&&x.co_hd_do&&!x.ca_nhan&&!x.hd_do_nhan&&x.ngay_tt>=MOC_SODU,lenh:x=>x.trang_thai==='cho_tt'&&!!x.lap_lenh_luc,kxd:x=>!!x.loai_con_kxd&&!x.khong_hach_toan&&!tuChoi(x),
+    // 24/10 kế toán: báo phiếu chưa phân loại nhóm chi phí / chưa phân bổ chi phí (phiếu hạch toán P&L đã xác nhận)
+    chua_loai:x=>['cho_tt','da_tt'].includes(x.trang_thai)&&!x.khong_hach_toan&&!x.la_tam_ung&&x.loai_dn!=='hoan_ung'&&!x.loai_id,
+    chua_pb:x=>['cho_tt','da_tt'].includes(x.trang_thai)&&!x.khong_hach_toan&&!x.la_tam_ung&&x.loai_dn!=='hoan_ung'&&!(x.phan_bo||[]).length,chua_kiot:chuaKiot,qua_han:x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&x.han_tt&&x.han_tt<homNay()};
+  const nhan={kxd:'Loại chi KXĐ',chua_loai:'Chưa phân loại',chua_pb:'Chưa phân bổ',thieu_ct:'Thiếu chứng từ',thieu_unc:'Thiếu ảnh giao dịch',nhac:'Cần bổ sung',cua_toi:'Chờ tôi xử lý',tat_ca:'Tất cả',cho_duyet:'Chờ xác nhận',cho_gd:'Chờ GĐ duyệt (cũ)',cho_tt:'Chờ chi tiền',da_tt:'Đã thanh toán',hd_do:'Chưa nhận HĐ',chua_kiot:'Chưa cập nhật Kiot',qua_han:'Quá hạn',nghi_trung:'Nghi trùng',nghi_loai:'Nghi sai loại',tu_choi:'Từ chối',lenh:'Chờ duyệt lệnh'};
   // bộ lọc nhanh bên trái: cơ sở (theo đơn vị chịu chi phí) · loại tài khoản chi
   const csOK=x=>locCSAll()||(x.phan_bo||[]).some(p=>locCS().includes(csCuaDV(p.don_vi_id))),tkOK=x=>locTK().length===LOC_TK.length||(x.tai_khoan_id&&locTK().includes(tkNhom(x.tai_khoan_id)));
   const ngSD=x=>x.ngay_su_dung||x.ngay_de_nghi,trongKy=(x,a,b)=>{const d=ngSD(x);return !!d&&d>=a&&d<=b};
@@ -2380,7 +2403,7 @@ async function pageChi(){
       </div>
     <div class="m-split rong"><div style="min-width:0">
       <div class="m-seg" style="margin-bottom:8px">${['cua_toi','tat_ca','cho_duyet','cho_gd','cho_tt','da_tt','tu_choi'].filter(k=>!['cua_toi','cho_gd'].includes(k)||nen.some(loc[k])||f.chi_tt===k).map(k=>`<button class="${f.chi_tt===k?'on':''}" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()" style="--c:var(--${MAU_TAB[k]||'accent'})">${nhan[k]}<span class="c">${nen.filter(loc[k]).length}</span></button>`).join('')}</div>
-      ${(()=>{const ck=[['lenh','Chờ duyệt lệnh','info'],['kxd','Loại chi KXĐ','vio'],['nhac','Cần bổ sung','warn'],['thieu_ct','Thiếu chứng từ','bad'],['thieu_unc','Thiếu ảnh giao dịch','bad'],['qua_han','Quá hạn','bad'],['hd_do','Chưa nhận HĐ','vio'],['cu_cho','Tháng trước còn chờ','warn'],['nghi_trung','Nghi trùng','bad'],['nghi_loai','Nghi sai loại','bad']].filter(([k])=>k!=='kxd'||xemCon()).filter(([k])=>(k==='cu_cho'?cuCho.length:nen.some(loc[k]))||f.chi_tt===k);
+      ${(()=>{const ck=[['lenh','Chờ duyệt lệnh','info'],['chua_loai','Chưa phân loại','bad'],['chua_pb','Chưa phân bổ','bad'],['kxd','Loại chi KXĐ','vio'],['nhac','Cần bổ sung','warn'],['thieu_ct','Thiếu chứng từ','bad'],['thieu_unc','Thiếu ảnh giao dịch','bad'],['qua_han','Quá hạn','bad'],['hd_do','Chưa nhận HĐ','vio'],['cu_cho','Tháng trước còn chờ','warn'],['nghi_trung','Nghi trùng','bad'],['nghi_loai','Nghi sai loại','bad']].filter(([k])=>k!=='kxd'||xemCon()).filter(([k])=>(k==='cu_cho'?cuCho.length:nen.some(loc[k]))||f.chi_tt===k);
         return ck.length?`<div class="chi-chu-y"><span class="muted">Cần chú ý:</span>${ck.map(([k,t,c])=>`<button class="${f.chi_tt===k?'on':''}" style="--c:var(--${c})" onclick="S.f.chi_tt='${k}';S.f.chi_tr=1;render()">${t} <b>${k==='cu_cho'?cuCho.length:nen.filter(loc[k]).length}</b></button>`).join('')}</div>`:''})()}
       <div class="m-flt" style="align-items:center">${oTim('chi','Tìm số phiếu hoặc nội dung…')}        
         ${sel('chi_loai',[...loai('chi'),...loaiKhong()],'Tất cả loại chi')}${sel('chi_nguon',[{id:'phieu',ten:'Phiếu đề nghị (link công khai)'},{id:'app',ten:'Tạo trên app'},{id:'sheet_cu',ten:'Chuyển từ sheet cũ'},{id:'bo_sung',ten:'Sheet cũ — cần bổ sung'},{id:'claude_soat',ten:'Tự gán loại — cần soát'},{id:'hoan_quy',ten:'Phiếu hoàn Quỹ ngoài cửa hàng'},{id:'tu_tru',ten:'Tài khoản tự trừ (phí NH / phí VC)'}],'Tất cả nguồn')}
@@ -2391,7 +2414,7 @@ async function pageChi(){
         ${trang.map(x=>`<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemChi(${x.id})"><td class="c"><input type="checkbox" class="cb-chon" ${(S.f.chi_sel||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonChi(${x.id},this.checked)"></td>
           <td class="nw">${fmtD(x.ngay_su_dung||x.ngay_de_nghi)}${x.ngay_tt&&x.trang_thai==='da_tt'?`<div class="muted" style="font-size:11px">TT ${fmtD(x.ngay_tt).slice(0,5)}</div>`:''}</td><td class="nw m-link">${esc(soPhieu(x))}${x.kiot_ma?`<div class="muted" style="font-size:11px" title="Mã phiếu chi trên Kiot (đã khớp)">${esc(x.kiot_ma)}</div>`:''}</td>
           <td class="nw">${(()=>{const k=[...new Set((x.phan_bo||[]).map(p=>csCuaDV(p.don_vi_id)).filter(Boolean))];return k.length===1?`<span class="xn" title="Lọc theo cơ sở này" onclick="event.stopPropagation();S.f.loc_cs=['${k[0]}'];shell()">${esc(csTen(x))}</span>`:esc(csTen(x))})()}</td>
-          <td class="ten" style="font-size:12px">${x.ca_nhan?'<span class="muted">Cá nhân</span>':x.khong_hach_toan?`<span class="muted">${lo(x.loai_id)&&!lo(x.loai_id).ma?esc(lo(x.loai_id).ten):'Không hạch toán'}</span>`:chiDuyet()?selLoaiChi(x):loaiChiO(x)}${xemCon()&&!tuChoi(x)&&!x.khong_hach_toan&&x.loai_id&&x.loai_con_id!==x.loai_id&&(x.loai_con_id||x.loai_con_kxd||gdSuaCon())?`<div style="margin-top:3px;font-size:11.5px">› ${loaiConO(x,1)}</div>`:''}</td>
+          <td class="ten" style="font-size:12px">${x.ca_nhan?'<span class="muted">Cá nhân</span>':x.khong_hach_toan?`<span class="muted">${lo(x.loai_id)&&!lo(x.loai_id).ma?esc(lo(x.loai_id).ten):'Không hạch toán'}</span>`:xemCon()&&!tuChoi(x)&&(chiDuyet()||gdSuaCon())?selLoaiCC(x):chiDuyet()?selLoaiChi(x):loaiChiO(x)}${xemCon()&&!(chiDuyet()||gdSuaCon())&&!tuChoi(x)&&!x.khong_hach_toan&&x.loai_id&&x.loai_con_id&&x.loai_con_id!==x.loai_id?`<div style="margin-top:3px;font-size:11.5px">› ${loaiConO(x,1)}</div>`:''}</td>
           <td class="ten">${esc(ndChi(x))}${+x.nhac_mo?' '+pill('Cần bổ sung'+(x.nhac_mo>1?' ('+x.nhac_mo+')':''),'warn'):''}${x.thieu_unc?' '+pill('Thiếu ảnh giao dịch','bad'):''}${x.tu_tru?' '+pill('Tự trừ','info'):''}${x.ca_nhan?' '+pill('Chi phí cá nhân',''):x.khong_hach_toan?' '+pill('Không hạch toán',''):''}${x.hoan_quy?' '+pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.nghi_trung&&x.trang_thai!=='tu_choi'?' '+pill('Nghi trùng','bad'):''}${x.nghi_loai?' '+pill('Nghi sai loại','bad'):''}${canBS(x)?' '+pill('Cần bổ sung','vio'):''}${['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!coCT(x)?' '+pill('Thiếu chứng từ','bad'):''}</td><td class="ten">${nccChi(x)?`<span class="xn" title="Lọc theo nhà cung cấp này" onclick="event.stopPropagation();S.f.chi_q=${esc(JSON.stringify(nccChi(x)))};S.f.chi_tr=1;render()">${esc(nccChi(x))}</span>`:nccChiO(x)}</td><td class="num"><b>${fmt(x.so_tien)}</b></td>
           <td class="dy-o">${luongDong(x)}</td><td class="c">${hdPill(x)}${x.co_hd_do?`<div class="muted" style="font-size:11px;margin-top:3px">${x.hd_ve?esc(hdVeT(x.hd_ve)):'chưa ghi xuất về'}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có phiếu</td></tr>'}</table></div>
         ${thanhTrang('chi',l.length,moi,tr,'phiếu')}</div></div>
@@ -2409,12 +2432,33 @@ function nccChi(x){const h=hdvGhep(x.id)[0];if(h&&h.ncc)return h.ncc;
   const t=(x.thu_huong_ten||'').trim();return t&&t.toLowerCase()!==String(x.nguoi_de_nghi||'').trim().toLowerCase()?t:''}
 const nccChiO=x=>{const n=nccChi(x);return n?esc(n):x.thu_huong_ten?'<span class="muted" title="Người thụ hưởng = người đề nghị (nhân viên ứng trước, được hoàn)">Hoàn cho NV</span>':'<span class="muted">—</span>'};
 // 16/10 anh: đổi Loại chi ngay trên danh sách (kế toán) — không cần mở phiếu
+// 24/10 kế toán: "đổi lại giao diện chi phí cha / con" — bảng: 1 ô chọn (mục cha + mục con thụt lề) thay 2 ô xếp chồng; ✏ thêm mục con khi thiếu.
+// Chỉ người thấy mục con (giám đốc); kế toán vẫn ô mục cha như cũ.
+const loaiCC=()=>{const ds=[],them=(cha,cap)=>S.dm.loai.filter(l=>l.hoat_dong&&l.cha_id===cha.id).sort((a,b)=>(a.thu_tu-b.thu_tu)||(a.id-b.id)).forEach(c=>{ds.push({...c,ten:'\u3000'.repeat(cap)+(c.ma?c.ma+' ':'')+c.ten});them(c,cap+1)});
+  loai('chi').forEach(c=>{ds.push(c);them(c,1)});return ds};
+const loaiV=x=>x.loai_con_id&&x.loai_con_id!==x.loai_id?x.loai_con_id:x.loai_id,loaiGoc=id=>{let l=lo(id);while(l&&l.cha_id)l=lo(l.cha_id);return l?l.id:id};
+const selLoaiCC=x=>`<span class="ld-cc"><select class="m-in ld-sel ${x.loai_id?'':'trong'}" title="Loại chi · mục con" onclick="event.stopPropagation()" onchange="doiLoaiCC(${x.id},this)">${opts(loaiCC(),loaiV(x),'Chưa phân loại')}</select>${x.loai_id&&!x.loai_con_id&&conCuaLoai(x.loai_id).length?pill('KXĐ','vio'):''}<button class="ld-them" title="Thêm mục con mới" onclick="event.stopPropagation();themMucCon(${x.loai_id||0},v=>doiLoaiCC(${x.id},{value:v}))">✏</button></span>`;
+async function doiLoaiCC(id,el){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;const v=+el.value;if(!v)return;
+  if(loaiGoc(v)===x.loai_id&&v!==x.loai_id&&gdSuaCon())return datLoaiCon(id,v,1);   // cùng nhóm cha → chỉ đặt mục con
+  if(chiDuyet())return doiLoaiChi(id,el);   // đổi nhóm cha: kt_luu_chi (trigger tách cha + con)
+  alert('Đổi nhóm cha cần quyền kế toán');if(el.tagName)el.value=loaiV(x)||''}
+// ✏ thêm mục con vào nhóm cha (Cài đặt → Loại thu / chi cũng sửa được); xong gọi xong(id mới)
+function themMucCon(chaId,xong){const cha=lo(chaId);if(!cha)return alert('Chọn nhóm cha trước');
+  const anh=S.dm.loai.filter(l=>l.cha_id===cha.id),so=anh.map(l=>+(String(l.ma||'').split('.').pop())||0),ma=cha.ma?cha.ma+'.'+(Math.max(0,...so)+1):'';
+  S.f.mc_xong=xong;modal(`<h2>Thêm mục con · ${esc((cha.ma?cha.ma+' ':'')+cha.ten)}</h2><div class="form" id="fmc"><label class="full"><span>Tên mục con${BB}</span><input name="ten" maxlength="120" autofocus></label>
+    <label><span>Mã</span><input name="ma" value="${esc(ma)}" maxlength="12"></label></div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuMucCon(${cha.id})">Thêm</button></div>`)}
+async function luuMucCon(chaId){const cha=lo(chaId),o=formData($('#fmc'));if(!(o.ten||'').trim())return alert('Ghi tên mục con');
+  const anh=S.dm.loai.filter(l=>l.cha_id===chaId);
+  try{const id=await rpc('kt_luu_danh_muc',{p_bang:'loai',p_dong:{ten:o.ten.trim(),ma:o.ma,nhom:'chi',cha_id:chaId,la_nhom:false,hoat_dong:true,nhom_bc:cha.nhom_bc,cach_chia:cha.cach_chia,
+      thu_tu:Math.max(+cha.thu_tu||0,...anh.map(l=>+l.thu_tu||0))+1}});
+    closeModal();await reloadDm();toast('Đã thêm mục con');const f=S.f.mc_xong;S.f.mc_xong=null;if(f)f(id)}catch(e){alert(e.message)}}
 const selLoaiChi=x=>`<select class="m-in ld-sel ${x.loai_id?'':'trong'}" title="${nhomKiotChi(x)?'Nhóm trên Kiot: '+esc(nhomKiotChi(x)):'Đổi loại chi'}" onclick="event.stopPropagation()" onchange="doiLoaiChi(${x.id},this)">${opts([...loai('chi'),...S.dm.loai.filter(l=>l.id===x.loai_id&&(!l.hoat_dong||l.la_nhom))],x.loai_id,'Chưa phân loại')}</select>`;
 async function doiLoaiChi(id,el){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;
   const o={...x};delete o.tao_luc;delete o.sua_luc;delete o.duyet_luc;delete o.kiem_luc;o.loai_id=el.value?+el.value:null;
   if(!o.loai_id&&x.trang_thai==='da_tt'&&!x.khong_hach_toan){alert('Phiếu đã thanh toán phải có loại chi');el.value=x.loai_id||'';return}
-  el.disabled=true;try{await rpc('kt_luu_chi',{p_dong:o});x.loai_id=o.loai_id;el.classList.toggle('trong',!o.loai_id);toast('Đã đổi loại chi')}
-  catch(e){alert(e.message);el.value=x.loai_id||''}finally{el.disabled=false}}
+  if(el.tagName)el.disabled=true;try{await rpc('kt_luu_chi',{p_dong:o});const g=o.loai_id?loaiGoc(o.loai_id):null;x.loai_con_id=g&&g!==o.loai_id?o.loai_id:g===x.loai_id?x.loai_con_id:null;x.loai_id=g;if(el.classList)el.classList.toggle('trong',!o.loai_id);toast('Đã đổi loại chi');render()}
+  catch(e){alert(e.message);if(el.tagName)el.value=loaiV(x)||''}finally{if(el.tagName)el.disabled=false}}
 const loaiChiO=x=>{const l=lo(x.loai_id);return l?esc(l.ten):nhomKiotChi(x)?`<span class="muted" title="Nhóm trên Kiot — kế toán chọn loại chi">Kiot: ${esc(nhomKiotChi(x))}</span>`:'<span class="muted">Chưa phân loại</span>'};
 
 // Mã QR chuyển khoản (chuẩn VietQR / NAPAS 247) — tạo ngay trên máy, không gửi số tài khoản ra dịch vụ ngoài
@@ -2813,7 +2857,7 @@ function xemChi(id){
     /* 21/10 anh: bỏ nút "Tài khoản tự trừ" ở chân phiếu — dùng ô "Đã thanh toán luôn / Tài khoản tự trừ" trong form */
     ''].join('');
   const html=`<div class="pc-h"><span class="m-loai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v15H6zm3 8h8v2H9zm0 4h8v2H9z"/></svg></span>
-      <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.ca_nhan?pill('Chi phí cá nhân',''):x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.tu_tru?pill('Tài khoản tự trừ','info'):''}<span class="pc-nho"><button class="m-btn sm out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu in</button>${g?`<button class="m-btn sm" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:''}</span></div><div class="pc-nd">${esc(ndChi(x))}</div></div>
+      <div class="pc-h1"><div class="pc-so"><b>${esc(so)}</b>${pill(ttM[0],ttM[1])}${x.ca_nhan?pill('Chi phí cá nhân',''):x.khong_hach_toan?pill('Không hạch toán chi phí',''):''}${x.hoan_quy?pill('Hoàn Quỹ ngoài '+CS_HQ[x.hoan_quy],'info'):''}${x.tu_tru?pill('Tài khoản tự trừ','info'):''}<span class="pc-nho"><button class="m-btn sm out" title="Giấy xác nhận nhận tiền (Word) để người nhận ký" onclick="xuatPhieuChi(${id})">Xuất phiếu in</button>${nutLoi('chi',id,so)}${g?`<button class="m-btn sm" style="color:var(--bad)" onclick="xoa('chi',${id})">Xoá</button>`:''}</span></div><div class="pc-nd">${esc(ndChi(x))}</div></div>
       <div class="pc-tien"><span>Số tiền</span><b>${fmt(x.so_tien)}</b></div><button class="x" title="Đóng" onclick="dongChiCT()">✕</button></div>
     <div class="pc-b">${x.nghi_trung&&x.trang_thai!=='tu_choi'?oTrung(x):''}${x.nghi_loai?oLoai(x):''}
       <div class="pc-cot2"><div class="pc-bs">${pcBuoc(x,[deNghi+ct+((x.la_tam_ung||x.loai_dn==='hoan_ung')&&coXem('tam_ung')?`<div id="pc-tu-${id}"></div>`:''),pb+pcCot(hdW+xacNhan),nhan+pcCot(hqChi(x,dy)+ttoan)])}</div><div>${lsO}</div></div></div>
@@ -2990,7 +3034,7 @@ function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?
 function pcHT(el){pcHT3(el.value)}
 // 24/10 kế toán: "không cần tự nhặt nữa, bổ sung nhóm chi con thuộc nhóm cha lúc duyệt" — ô mục con cùng hàng Loại chi trong khung Hạch toán (chỉ P&L, nhóm cha có mục con)
 const conOpt=id=>conCuaLoai(+id).map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten}));
-function pcConO(x,v){const ds=v==='co'?conOpt(x.loai_id):[];return `<span id="pc-con-w" style="display:${ds.length?'flex':'none'};align-items:center;gap:8px">› <select class="m-in" id="pc-con" data-cu="${x.loai_con_id||''}">${opts(ds,x.loai_con_id,'— mục con —')}</select></span>`}
+function pcConO(x,v){const ds=v==='co'?conOpt(x.loai_id):[];return `<span id="pc-con-w" style="display:${ds.length?'flex':'none'};align-items:center;gap:8px">› <select class="m-in" id="pc-con" data-cu="${x.loai_con_id||''}">${opts(ds,x.loai_con_id,'— mục con —')}</select><button type="button" class="ld-them" title="Thêm mục con mới" onclick="themMucCon(+$('#pc-loai').value,v=>{const c=$('#pc-con');c.dataset.cu=v;pcCon();c.value=v})">✏</button></span>`}
 function pcCon(){const s=$('#pc-loai'),c=$('#pc-con'),w=$('#pc-con-w');if(!s||!c||!w)return;const ds=($('#pc-ht')||{}).value==='co'?conOpt(s.value):[];
   const cu=c.value||c.dataset.cu;c.innerHTML=opts(ds,ds.some(l=>String(l.id)===String(cu))?cu:'','— mục con —');w.style.display=ds.length?'flex':'none'}
 function pcHT3(k){const h=$('#pc-ht');if(h)h.value=k;$$('.ht3 button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
@@ -3116,7 +3160,7 @@ function formDC(id){
     </div>
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
     ${ctBox('dieu_chuyen',id,g)}${id?hdKhung('dieu_chuyen',id):''}</div>
-    <div class="m-pn-f">${id&&g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('dieu_chuyen',${id})">Xoá</button>`:''}${id?`<button class="m-btn out" onclick="xuatWordDC(${id})">Xuất phiếu Word</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongDCCT()">Đóng</button>
+    <div class="m-pn-f">${id&&g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('dieu_chuyen',${id})">Xoá</button>`:''}${id?`<button class="m-btn out" onclick="xuatWordDC(${id})">Xuất phiếu Word</button>${nutLoi('dieu_chuyen',id,'DC'+String(id).padStart(6,'0'))}`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongDCCT()">Đóng</button>
       ${g?`<button class="m-btn pri" onclick="luuDC(${id||'null'})">Lưu</button>`:''}</div>`;
   const p=$('#dc-ct');let box;
   if(p&&KHUNG_PHAI&&innerWidth>=1250&&id){S.f.dc_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');box=p;document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',+r.dataset.id===id))}
@@ -3836,7 +3880,7 @@ function xemTU(id){const x=S.cache.tu.find(t=>t.id===id);if(!x)return;const g=co
       ${(x.hoan||[]).map(h=>`<tr><td class="nw">${fmtD(h.ngay)}</td><td>${esc(HT_HOAN[h.hinh_thuc]||h.hinh_thuc)}${h.ghi_chu?`<div class="muted">${esc(h.ghi_chu)}</div>`:''}</td><td class="num">${fmt(h.so_tien)}</td>
         ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formTUHoan(${x.id},${h.id})">${IC_SUA}</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?4:3}" class="m-empty">Chưa hoàn lần nào</td></tr>`}</table></div>
     ${ctBox('tam_ung',x.id,g)}${hdKhung('tam_ung',x.id)}</div>
-    <div class="m-pn-f">${g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('tam_ung',${x.id})">Xoá</button><button class="m-btn" onclick="formTU(${x.id})">${IC_SUA} Sửa</button>`:''}<button class="m-btn out" onclick="xuatWordTU(${x.id})">Xuất phiếu Word</button><span style="margin-left:auto"></span><button class="m-btn" onclick="dongTUCT()">Đóng</button></div>`;
+    <div class="m-pn-f">${g?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('tam_ung',${x.id})">Xoá</button><button class="m-btn" onclick="formTU(${x.id})">${IC_SUA} Sửa</button>`:''}<button class="m-btn out" onclick="xuatWordTU(${x.id})">Xuất phiếu Word</button>${nutLoi('tam_ung',x.id,'TU'+String(x.id).padStart(6,'0'))}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongTUCT()">Đóng</button></div>`;
   const p=$('#tu-ct');
   if(p&&KHUNG_PHAI&&innerWidth>=1250){S.f.tu_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');document.querySelectorAll('.m-t tr[data-id]').forEach(r=>r.classList.toggle('on',+r.dataset.id===id))}
   else moCuaSoTo(html);
@@ -4444,7 +4488,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang)tiengBao();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -4458,6 +4502,7 @@ async function docChuong(id){try{await rpc('kt_doc_thong_bao',{p_id:id||null});i
 async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)return;
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
+  if(x.bang==='bao_loi'){S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');return}   // 24/10: báo lỗi → Log hệ thống, tab Báo lỗi
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
   if(trang==='cd_kiot'){go('cd_kiot');return}
   // thông báo gộp (vd nhiều đề xuất chi từ Kiot) → mở tab chờ kế toán kiểm, lọc nguồn Kiot
@@ -4634,6 +4679,8 @@ const LOGIC2=[
  ['thu_chi','Kế toán chọn hạch toán khi xác nhận','Cửa sổ phiếu (kế toán, phiếu chờ xác nhận) xếp: Thông tin → Hạch toán → Hoá đơn đỏ → Xác nhận & tài khoản đi tiền → QR. Khung Hạch toán có 3 nút: Hạch toán vào chi phí P&L (phân bổ đơn vị rồi Loại chi 9 mục, chia nhiều tháng nếu cần) · Không hạch toán (Loại chi: 1. Chi thanh toán tiền hàng 2. Chi đặt cọc) · Khoản chi cá nhân (không loại).','Xác nhận bị chặn khi chưa chọn loại chi; hạch toán P&L mà chưa phân bổ đơn vị cũng chặn. Không hạch toán vẫn theo dõi hoá đơn đỏ.','22/10'],
  ['thu_chi','Ô phụ thuộc nhau (phiếu chi)','Không có hoá đơn đỏ → không hỏi xuất về đâu · Khoản chi cá nhân → không hỏi hoá đơn đỏ, không loại chi (form + khung kế toán) · Không hạch toán → loại chi chỉ Tiền hàng / Đặt cọc · Tiền mặt (nhận tiền) → ẩn ngân hàng, số TK, nội dung CK · Đã thanh toán luôn bằng két / quỹ tiền mặt → bắt ghi người đến nhận tiền · Mong muốn TT trước ≥ ngày đề nghị · Loại chi chọn 1 chỗ (khung Hạch toán), bước chi tiền không lặp.','Anh 22/10: "để ý mấy mục liên quan tới nhau".','22/10'],
  ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
+ ['chung','Báo lỗi','Mọi phiếu (chi, thu, điều chuyển, tạm ứng) có biểu tượng ⚠ cạnh nút in phiếu; menu tài khoản có "Báo lỗi" cho lỗi chung. Báo lỗi = mô tả + ảnh chụp (kéo thả / Ctrl+V).','Anh 24/10. Lưu ở Log hệ thống → tab Báo lỗi (Chưa xử lý / Tất cả, nút Đã xử lý + ghi chú); mỗi báo lỗi vào chuông của Supreme. Ảnh: người báo + quyền Log mới xem.','24/10'],
+ ['thu_chi','Cảnh báo chưa phân loại / chưa phân bổ','Dải Cần chú ý (Phiếu chi) có chip "Chưa phân loại" (phiếu P&L đã xác nhận chưa có loại chi) và "Chưa phân bổ" (chưa chia đơn vị chịu chi phí).','Kế toán 24/10.','24/10'],
  ['thu_chi','Mục con loại chi — chọn lúc duyệt','Khung Hạch toán (kế toán duyệt / xác nhận): Loại chi [nhóm cha] › [mục con] cùng một hàng; đổi nhóm cha thì danh sách mục con đổi theo; xác nhận phiếu P&L mà nhóm cha có mục con thì bắt buộc chọn.','Kế toán + anh 24/10 ("không cần tự nhặt nữa, bổ sung nhóm chi con lúc duyệt"). Bảng / phần xem khác giữ như cũ (mục con chỉ giám đốc thấy).','24/10'],
  ['thu_chi','Loại chi: chọn mục cha, mục con tự động','Ô Loại chi trên phiếu / form / bộ lọc chỉ có 9 mục cha (1 Nhân sự … 9 Khác). 4 giờ / lần (3h, 7h, 11h, 15h, 19h, 23h) hệ thống đọc mục cha + nội dung + người nhận, gán mục con theo bảng từ khoá; mục cha không có con thì mục con = chính nó.','Mục con CHỈ giám đốc + Supreme thấy (anh 22/10: "không hiện public"): hiện ngay dưới loại chi (bảng Phiếu chi + chi tiết phiếu), chip "Loại chi KXĐ" cũng chỉ họ thấy; giám đốc sửa được bằng ô chọn (anh 22/10: "tự chấm, để ra ngoài cho giám đốc sửa nếu cần"), lần tự phân loại sau không ghi đè. Không đoán được → "Loại chi KXĐ" (dải Cần chú ý) chờ giám đốc chọn. Đổi mục cha → mục con xoá, đêm đó phân loại lại. P&L tính theo mục con.','22/10'],
  ['thu_chi','Xoá phiếu','Mọi phiếu (thu, chi, điều chuyển, tạm ứng, vay, công nợ, tài sản) có nút Xoá cho người có quyền sửa — kể cả phiếu thu kéo từ Kiot.','Kế toán + anh 24/10. Xoá = ẩn, vẫn còn nhật ký. Phiếu thu Kiot đã xoá: lần kéo Kiot sau không thêm lại (cờ xoa_tay).','24/10'],
