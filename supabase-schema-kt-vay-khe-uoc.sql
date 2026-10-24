@@ -54,3 +54,16 @@ end $d$;
 -- (b) phân loại tay 102 phiếu còn trống mục con (97 theo nội dung + 5 phiếu YEP 1095/1165/1166/1185/1199 → 4.8 Truyền thông nội bộ), loai_con_boi 'Hệ thống';
 --     69 phiếu khó / không phải chi phí để lại KXĐ — xem kt_nhat_ky hanh_dong = 'phan_loai_con_tay'.
 -- (c) CHƯA tắt lịch kt-phan-loai-con (lệnh cron.unschedule bị chặn quyền ở phiên Mac) — lịch chỉ chấm phiếu còn trống, không ghi đè mục con kế toán chọn.
+
+-- 24/10/2026 (2) anh gửi ảnh app VCB "BỔ SUNG THÊM 1 KHOẢN VAY CÁ NHÂN": APPL00181769.HDCTD.KHCN · TK vay 001048351314 · giải ngân 2.000.000.000 ngày 27/06/2024 ·
+-- đáo hạn 29/06/2054 · 360 tháng · 11,9% · hạn mức 3.700.000.000 · CN Đông Hà Nội · dư nợ 1.844.460.000. = khoản #11 "VCB — vay dài hạn (HN)" (1 lần trả 06/01 "khoản dài hạn VCB HN")
+-- → cập nhật #11 thay vì tạo trùng; lần nhận tiền chưa gắn tài khoản. ĐÃ CHẠY.
+update kt_vay set ten = 'VCB cá nhân — vay dài hạn HN 001048351314', ben_cho_vay = 'Vietcombank', so_tien = 2000000000, ngay_vay = '2024-06-27', ngay_dao_han = '2054-06-29',
+  lai_suat = 11.9, hinh_thuc = 'goc_deu', ma_vay = '001048351314',
+  ghi_chu = 'HĐ APPL00181769.HDCTD.KHCN · 360 tháng · hạn mức 3.700.000.000 · CN Đông Hà Nội · dư nợ ngân hàng 24/10/2026: 1.844.460.000 · các lần trả đang gộp gốc + lãi (chưa có lịch trả nợ để tách)',
+  sua_boi = 'Hệ thống', sua_luc = now() where id = 11 and coalesce(ma_vay, '') <> '001048351314';
+insert into kt_vay_nhan (vay_id, ngay, so_tien, tai_khoan_id, ghi_chu, tao_boi)
+select 11, '2024-06-27', 2000000000, null, 'Giải ngân 2.000.000.000 — chưa gắn tài khoản (theo app ngân hàng anh gửi 24/10)', 'Hệ thống'
+where not exists (select 1 from kt_vay_nhan where vay_id = 11 and not da_xoa);
+insert into kt_nhat_ky (nguoi, bang, dong_id, hanh_dong, du_lieu)
+values ('Hệ thống', 'kt_vay', 11, 'cap_nhat_khoan_vay', '{"tk_vay":"001048351314","giai_ngan":2000000000,"ngay":"2024-06-27","du_no_ngan_hang":1844460000}');
