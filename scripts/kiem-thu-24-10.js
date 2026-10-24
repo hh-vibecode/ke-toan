@@ -29,9 +29,9 @@ async function trinhDuyet(phien, ten) {
   const goi = (method, params = {}) => new Promise(r => { const id = ++n; cho[id] = r; sock.send(JSON.stringify({ id, method, params })); });
   const ev = async x => { const r = await goi('Runtime.evaluate', { expression: x, awaitPromise: true, returnByValue: true }); if (r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || 'eval'); return r.result.result.value; };
   await goi('Runtime.enable'); await goi('Page.enable');
-  await goi('Page.navigate', { url: 'file://' + REPO + '/index.html' }); await ngu(1500);
+  await goi('Page.navigate', { url: require('url').pathToFileURL(REPO + '/index.html').href }); await ngu(1500);
   await ev(`sessionStorage.setItem('kt_phien',${JSON.stringify(phien)});1`);
-  await goi('Page.navigate', { url: 'file://' + REPO + '/index.html' });
+  await goi('Page.navigate', { url: require('url').pathToFileURL(REPO + '/index.html').href });
   for (let i = 0; i < 60; i++) { await ngu(500); try { if (await ev('!!(window.S&&S.toi&&S.dm)')) break; } catch (e) {} }
   await ev(`window.confirm=()=>true;window.alert=m=>{window.__alert=(window.__alert||[]).concat(String(m))};window.prompt=()=>'ghi chú thử';1`);
   const chup = async f => { const s = await goi('Page.captureScreenshot', { format: 'png' }); fs.writeFileSync(path.join(OUT, ten + '-' + f + '.png'), Buffer.from(s.result.data, 'base64')); };
@@ -120,16 +120,10 @@ const doi = async (b, expr, ms = 15000) => { for (let t = 0; t < ms; t += 300) {
     await G.ev(`S.f.chi_q='${TAG}';setKy('nam',true);go('chi');1`);
     kq(await doi(G, `(S.cache.chi||[]).some(x=>x.id===${c})`), 'GĐ: trang Phiếu chi tải phiếu thử');
     await ngu(800);
-    const o = await G.ev(`(()=>{const tr=[...document.querySelectorAll('#chi-bang tr')].find(r=>r.textContent.includes('PC${String(c).padStart(6, '0')}'));if(!tr)return null;const s=tr.querySelector('.ld-cc select');return s?{chon:s.selectedOptions[0].text.trim(),but:!!tr.querySelector('.ld-them')}:'khong co o gop'})()`);
-    kq(o && o.chon && /1\.2/.test(o.chon) && o.but, 'GĐ: bảng hiện 1 ô cha/con, đang chọn 1.2 + nút ✏', JSON.stringify(o));
+    const o = await G.ev(`(()=>{const tr=[...document.querySelectorAll('#chi-bang tr')].find(r=>r.textContent.includes('PC${String(c).padStart(6, '0')}'));if(!tr)return null;const s=tr.querySelector('.ld-cc select');return s?{chon:s.selectedOptions[0].text.trim()}:'khong co o gop'})()`);
+    kq(o && o.chon && /1\.2/.test(o.chon), 'GĐ: bảng hiện 1 ô cha/con, đang chọn 1.2', JSON.stringify(o));
     await G.chup('bang');
-    // ✏ thêm mục con vào nhóm 1
-    await G.ev(`themMucCon(64,v=>{window.__moi=v});1`); await ngu(300);
-    await G.ev(`(()=>{document.querySelector('#fmc [name=ten]').value='${TAG} mục con';return 1})()`);
-    await G.ev(`luuMucCon(64)`); await ngu(2000);
-    const lm = (await sql(`select id, ma, cha_id, nhom_bc from kt_loai where ten like '${TAG}%'`))[0];
-    if (lm) ids.loai.push(lm.id);
-    kq(lm && lm.cha_id === 64 && /^1\.\d+$/.test(lm.ma || ''), '✏ thêm mục con vào nhóm 1 (mã tự gợi ý)', lm ? JSON.stringify(lm) : '');
+    // (thêm / sửa mục con: xem scripts/kiem-thu-dropdown.js — bảng chọn danh mục)
     // tab Báo lỗi + đánh dấu đã xử lý
     await G.ev(`S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');1`); await ngu(2500);
     kq(await G.ev(`document.body.innerText.includes('${TAG} báo lỗi kèm ảnh')`), 'Log hệ thống → tab Báo lỗi hiện báo lỗi');
