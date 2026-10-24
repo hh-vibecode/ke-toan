@@ -977,8 +977,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.209';
-const APP_VERSION='23/10/2026 15:50';
+const APP_SO='1.210';
+const APP_VERSION='24/10/2026 13:18';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2020,7 +2020,7 @@ function formThu(id){
     
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
     ${ctBox('thu',id,coGhi('thu'))}${id?hdKhung('thu',id):''}</div>
-    <div class="m-pn-f">${id&&!ro?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('thu',${id})">Xoá</button>`:''}${id?`<button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongThuCT()">Đóng</button>
+    <div class="m-pn-f">${id&&coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="xoa('thu',${id}${x.nguon==='kiot'?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}${id?`<button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongThuCT()">Đóng</button>
       ${ro?'':`<button class="m-btn pri" onclick="luuThu(${id||'null'})">Lưu</button>`}</div>`;
   const p=$('#thu-ct');let box;
   if(p&&KHUNG_PHAI&&innerWidth>=1250&&id){S.f.thu_chon=id;p.innerHTML=html;p.closest('.m-split').classList.add('co');box=p;
@@ -2048,7 +2048,7 @@ function xemThu(id){const x=(S.cache.thu||[]).find(t=>t.id===id);if(!x)return fo
         ${x.ghi_chu?pcO('Ghi chú',esc(x.ghi_chu),1):''}</div>`,!ro?`<button class="m-btn out" style="height:30px" onclick="closeModal();formThu(${id})">${IC_SUA} Chỉnh sửa</button>`:'')+pcThe('Chứng từ đính kèm',ctBox('thu',id,coGhi('thu')).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,''))},
     {ten:tq?'Nhận tiền':'Thu tiền',tt:!daThu?'dang':tq&&!x.tq_nhan_luc?'dang':'xong',nhan:!daThu?'Chưa thu':tq&&!x.tq_nhan_luc?'Chờ thủ quỹ nhận':'Đã thu',ai:x.tq_nhan_boi||'',luc:x.tq_nhan_luc||'',
       noi:pcThe('Tiền về',`<div class="pc-g">${pcO('Tài khoản nhận',esc(t.ten||''))}${pcO('Hình thức',t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản')}${tq?pcO('Thủ quỹ',x.tq_nhan_luc?`Đã nhận · ${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}`:'<span class="neg-t">Chưa xác nhận nhận tiền</span>'):''}</div>`)+pcThe('Hoá đơn bán ra (MISA)',hdtHtml(x))}];
-  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${!ro?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('thu',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span>
+  const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('thu',${id}${kiot?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}<span style="margin-left:auto"></span>
     ${tq&&!x.tq_nhan_luc&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('thu',${id})">✓ Đã nhận tiền</button>`:''}`;
   pcMo(so,`${pill('Phiếu thu','ok')}${daThu?pill('Đã thu','ok'):pill('Chưa thu','warn')}${kiot?pill('Từ Kiot','info'):''}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'thu',id,nut)}
 function xemDC(id){const x=(S.cache.dc||[]).find(d=>d.id===id);if(!x)return formDC(id);
@@ -2083,7 +2083,7 @@ async function luuThu(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_ti
   const thieu=[!ht&&'hạch toán',!o.ngay&&'ngày thu',!o.so_tien&&'số tiền',!o.loai_id&&!o.khong_hach_toan&&'loại thu',!o.don_vi_id&&!o.khong_hach_toan&&'cơ sở',!o.tai_khoan_id&&'tài khoản nhận',!o.noi_dung&&'nội dung'].filter(Boolean);
   if(thieu.length)return alert('Còn thiếu ô bắt buộc (*): '+thieu.join(', '));
   const nid=await save('kt_luu_thu',{p_dong:o});if(!id)ctGuiMoi('thu',nid);S.f.thu_chon=null;await render();if(!id&&nid)formThu(nid)}
-async function xoa(bang,id){if(!confirm('Xoá khoản này? (ẩn khỏi báo cáo, vẫn còn trong nhật ký)'))return;await save('kt_xoa',{p_bang:bang,p_id:id},'Đã xoá');render()}
+async function xoa(bang,id,hoi){if(!confirm(hoi||'Xoá khoản này? (ẩn khỏi báo cáo, vẫn còn trong nhật ký)'))return;await save('kt_xoa',{p_bang:bang,p_id:id},'Đã xoá');render()}
 
 // ── CHI ────────────────────────────────────────────────────────────────────
 // Phiếu chi "Chưa cập nhật KiotViet" (13/10/2026): đã trả từ tài khoản có quỹ Kiot, không phải đề xuất từ Kiot, chưa khớp phiếu chi Kiot
@@ -4629,6 +4629,7 @@ const LOGIC2=[
  ['thu_chi','Ô phụ thuộc nhau (phiếu chi)','Không có hoá đơn đỏ → không hỏi xuất về đâu · Khoản chi cá nhân → không hỏi hoá đơn đỏ, không loại chi (form + khung kế toán) · Không hạch toán → loại chi chỉ Tiền hàng / Đặt cọc · Tiền mặt (nhận tiền) → ẩn ngân hàng, số TK, nội dung CK · Đã thanh toán luôn bằng két / quỹ tiền mặt → bắt ghi người đến nhận tiền · Mong muốn TT trước ≥ ngày đề nghị · Loại chi chọn 1 chỗ (khung Hạch toán), bước chi tiền không lặp.','Anh 22/10: "để ý mấy mục liên quan tới nhau".','22/10'],
  ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
  ['thu_chi','Loại chi: chọn mục cha, mục con tự động','Ô Loại chi trên phiếu / form / bộ lọc chỉ có 9 mục cha (1 Nhân sự … 9 Khác). 4 giờ / lần (3h, 7h, 11h, 15h, 19h, 23h) hệ thống đọc mục cha + nội dung + người nhận, gán mục con theo bảng từ khoá; mục cha không có con thì mục con = chính nó.','Mục con CHỈ giám đốc + Supreme thấy (anh 22/10: "không hiện public"): hiện ngay dưới loại chi (bảng Phiếu chi + chi tiết phiếu), chip "Loại chi KXĐ" cũng chỉ họ thấy; giám đốc sửa được bằng ô chọn (anh 22/10: "tự chấm, để ra ngoài cho giám đốc sửa nếu cần"), lần tự phân loại sau không ghi đè. Không đoán được → "Loại chi KXĐ" (dải Cần chú ý) chờ giám đốc chọn. Đổi mục cha → mục con xoá, đêm đó phân loại lại. P&L tính theo mục con.','22/10'],
+ ['thu_chi','Xoá phiếu','Mọi phiếu (thu, chi, điều chuyển, tạm ứng, vay, công nợ, tài sản) có nút Xoá cho người có quyền sửa — kể cả phiếu thu kéo từ Kiot.','Kế toán + anh 24/10. Xoá = ẩn, vẫn còn nhật ký. Phiếu thu Kiot đã xoá: lần kéo Kiot sau không thêm lại (cờ xoa_tay).','24/10'],
  ['thu_chi','Phiếu chi — 3 loại hạch toán','Hạch toán (chi phí công ty) · Không hạch toán (khoản công ty không tính chi phí, vd nộp lại BHXH — ở nhóm Giao dịch công ty) · Chi phí cá nhân (tự là không hạch toán, sang nhóm Giao dịch cá nhân). Chọn ở form tạo phiếu và ô Hạch toán trong mục Phân bổ của cửa sổ phiếu.','Anh + kế toán 22/10. Hai loại không hạch toán đều không vào chi phí / P&L, vẫn trừ tiền tài khoản. Báo cáo dòng tiền: chỉ chi phí cá nhân vào mục IV. Giao dịch cá nhân. Phiếu thu / điều chuyển giữ 2 lựa chọn.','22/10'],
  ['thu_chi','Giao dịch cá nhân','Phiếu chi / thu / điều chuyển chọn Hạch toán: Không — giao dịch cá nhân → không hỏi đơn vị chịu chi phí, hoá đơn đỏ, hoá đơn xuất về, loại chi / loại thu. Mỗi trang có nút Giao dịch công ty / Giao dịch cá nhân để xem riêng, không lẫn.','Không vào báo cáo kết quả kinh doanh; vẫn tính vào số dư tài khoản (tiền thật đi qua tài khoản).','20/10'],
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
