@@ -857,7 +857,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 /* 23/10 anh: "mấy cái tiêu đề cố gắng trong 1 dòng" — nhãn ô, tiêu đề khung, tên bước không xuống dòng (dài quá thì …) */
 .pc-o>span,.pc-kh h4>span:first-child,.pc-kh .m-st,.pc-moc .bt,.pc-kh label>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-kh h4>span:first-child{min-width:0}
-.pc-kh>.pc-c h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:8px}
+.pc-kh>.pc-c h4,.pc-kc>.pc-c h4{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
 .pc-kh .pc-g{gap:12px 24px}.pc-buoc:first-child .pc-kh .pc-g{grid-template-columns:repeat(4,minmax(0,1fr))}.pc-buoc:first-child .pc-kh .pc-o.full{grid-column:span 2}
 .pc-kh .pc-c>.sec:first-child,.pc-kh .ct-them{margin-top:0}.pc-kh .ct-them{min-height:62px}.pc-kh .ct-item .ct-thumb{min-height:46px}
 .pc-kh .pbf{gap:4px}.pc-kh .pbf label{grid-template-columns:110px 1fr 44px;gap:6px}.pc-kh .pbf label input{height:32px}
@@ -873,10 +873,16 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 @media (hover:none){.dd-sua{visibility:visible}}.dd-ft{padding:2px 12px 6px;font-weight:700;font-size:13px}.dd-form{padding:0 12px;gap:8px 10px!important}.dd-act{display:flex;justify-content:flex-end;gap:6px;padding:10px 12px}
 .dd-them{color:var(--accent);font-weight:600}.dd-sua-dong{gap:4px;cursor:default}.dd-sua-dong input{flex:1;height:30px;min-width:0}.dd-ok{border:1px solid var(--border);background:var(--surface);border-radius:6px;cursor:pointer;height:30px;width:30px;flex:none}
 .ld-cc{display:flex;align-items:center;gap:4px}.ld-cc .ld-sel{flex:1 1 auto;min-width:0}.ld-them{border:none;background:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;flex:none}.ld-them:hover{color:var(--accent)}
-.pc-kh #pc-loai-w{display:flex;align-items:center;gap:10px}.pc-kh #pc-loai-w .m-st{margin:0;flex:none;overflow:visible}.pc-kh #pc-loai-w select{max-width:320px;flex:1 1 0;min-width:0}.pc-kh #pc-con-w{flex:1 1 0;min-width:0}
+.ht-lbl,.pc-kh .pc-c>.m-st:first-child,.pc-kh .pc-c>.sec:first-child,.pc-kh .ct-sec{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px!important}
+.ht-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.ht-chia{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text2);font-size:12.5px;white-space:nowrap}
+.ht-loai{display:flex;gap:14px;margin:16px 0 4px}.ht-loai>label{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px}
+.ht-loai>label>span{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.pc-kh .ht-loai select{width:100%;height:36px}
+.ht-pb{margin-top:16px;padding-top:14px;border-top:1px dashed var(--border)}
+.ht-nhanh{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.ht-lk{border:none;background:none;padding:0;color:var(--accent);font-weight:600;font-size:12.5px;cursor:pointer}.ht-lk:hover{text-decoration:underline}
+.pc-kh .pc-c:has(#pbf) details{margin-top:12px!important}.pc-kh .pc-c:has(#pbf) details summary{font-size:12.5px;color:var(--text2)}
 .pc-kh [id^="qr-"]{width:152px!important;height:152px!important}.pc-kh [id^="qr-"] img{width:150px!important;height:150px!important}
 .pc-kh details{margin-top:6px!important}.pc-h{padding:12px 22px}.pc-tien b{font-size:22px}.pc-f{padding:10px 22px}
-.pc-kh .pc-c:has(#pbf)>.m-st:first-child{display:none}   /* tiêu đề "Hạch toán + số tiền": số tiền đã ở đầu cửa sổ */
 /* 22/10 anh (ảnh "ô lệch"): form thanh toán dàn hàng linh hoạt — nhãn 1 dòng, ô thẳng đáy, TK tự giãn khi ẩn ô người nhận tiền mặt */
 .pc-kh #ftt:has([name=ngay_tt]){display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px}
 .pc-kh #ftt:has([name=ngay_tt])>label{flex:1 1 200px;min-width:0}.pc-kh #ftt:has([name=ngay_tt])>label:has([name=ngay_tt]){flex:0 0 165px}
@@ -985,8 +991,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.214';
-const APP_VERSION='24/10/2026 16:44';
+const APP_SO='1.215';
+const APP_VERSION='24/10/2026 17:01';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3079,16 +3085,17 @@ function pbForm(x){
   // 22/10 kế toán: kế toán chọn ở bước xác nhận — 3 nút Hạch toán vào chi phí P&L / Không hạch toán / Khoản chi cá nhân;
   // P&L → phân bổ đơn vị rồi Loại chi (9 mục) ngay dưới; Không hạch toán → Loại chi: Chi thanh toán tiền hàng / Chi đặt cọc; Cá nhân → không loại
   const v=kieuHT(x);
-  return `<div class="m-st">Hạch toán <span class="r">${fmt(x.so_tien)}</span></div>
-  <div class="m-seg ht3" style="margin:2px 0 10px">${[['co','Hạch toán vào chi phí P&L'],['khong','Không hạch toán'],['ca_nhan','Khoản chi cá nhân']].map(([k,t])=>`<button type="button" class="${v===k?'on':''}" data-k="${k}" onclick="pcHT3('${k}')">${t}</button>`).join('')}</div>
+  // 24/10 anh: "trông chật chội và rối" — xếp thành khối: HẠCH TOÁN · LOẠI CHI | MỤC CON · PHÂN BỔ (đã chia bên phải, chia nhanh dạng chữ) · nhiều tháng
+  return `<div class="ht-lbl">Hạch toán</div>
+  <div class="m-seg ht3" style="margin:0">${[['co','Hạch toán vào chi phí P&L'],['khong','Không hạch toán'],['ca_nhan','Khoản chi cá nhân']].map(([k,t])=>`<button type="button" class="${v===k?'on':''}" data-k="${k}" onclick="pcHT3('${k}')">${t}</button>`).join('')}</div>
   <input type="hidden" id="pc-ht" value="${v}"><div id="pb-cn" style="${v==='ca_nhan'?'':'display:none'}">${pbCaNhan}</div>
-  <div id="pc-loai-w" style="${v==='ca_nhan'?'display:none':''};margin-bottom:10px"><div class="m-st">Loại chi</div><select class="m-in" id="pc-loai" data-cu="${x.loai_id||''}" onchange="pcCon()">${opts(v==='khong'?loaiKhong():loai('chi'),x.loai_id,'— chọn —')}</select>${pcConO(x,v)}</div>
-  <div id="pb-wrap" style="${v==='co'?'':'display:none'}"><div class="m-st">Phân bổ chi phí cho đơn vị</div>
+  <div id="pc-loai-w" class="ht-loai" style="${v==='ca_nhan'?'display:none':''}"><label><span>Loại chi</span><select class="m-in" id="pc-loai" data-cu="${x.loai_id||''}" onchange="pcCon()">${opts(v==='khong'?loaiKhong():loai('chi'),x.loai_id,'— chọn —')}</select></label>${pcConO(x,v)}</div>
+  <div id="pb-wrap" class="ht-pb" style="${v==='co'?'':'display:none'}"><div class="ht-lbl ht-row">Phân bổ cho đơn vị<span class="ht-chia">Đã chia <b id="pbt"></b></span></div>
   ${(x.phan_bo||[])[0]&&x.phan_bo[0].ds?`<div class="m-st" style="color:var(--info)">Đang chia theo % doanh số thực đạt tháng ${+x.phan_bo[0].ds.slice(5)}/${x.phan_bo[0].ds.slice(0,4)} — hệ thống tự chia lại mỗi đêm theo doanh số mới nhất đến hết tháng sau</div>`:''}
   <div class="pbf" id="pbf" data-tong="${x.so_tien}" data-ds="${((x.phan_bo||[])[0]||{}).ds||''}">${DV_CP.map(([i,t])=>`<label><span>${t}</span>${moneyIn('pb_'+i,pb[i]||'','oninput="fmtMoney(this);$(\'#pbf\').dataset.ds=\'\';pbTong()"')}<em id="pbp_${i}"></em></label>`).join('')}
     ${(x.phan_bo||[]).filter(p=>!DV_CP.some(d=>d[0]===+p.don_vi_id)).map(p=>`<div class="muted">Đơn vị cũ: ${esc(dvCPTen(p.don_vi_id))} ${fmt(p.so_tien)} — lưu lại sẽ chuyển sang 4 đơn vị trên</div>`).join('')}
-    <div class="pbf-t">Đã chia: <b id="pbt"></b></div></div>
-  <div class="pbf-nut"><button class="m-btn" onclick="pbChia('deu3')">Chia đều HT / CT / SD</button><button class="m-btn" title="Chia theo % doanh số thực đạt tháng ${+th0.slice(5)}/${th0.slice(0,4)}" onclick="pbChia('ds','${th0}')">Theo % doanh số T${+th0.slice(5)}/${th0.slice(0,4)}</button><button class="m-btn" onclick="pbChia('cty')">Cả về Tổng công ty</button></div></div>
+</div>
+  <div class="ht-nhanh"><span>Chia nhanh:</span><button type="button" class="ht-lk" onclick="pbChia('deu3')">Đều HT / CT / SD</button><button type="button" class="ht-lk" title="Chia theo % doanh số thực đạt tháng ${+th0.slice(5)}/${th0.slice(0,4)}" onclick="pbChia('ds','${th0}')">Theo % doanh số T${+th0.slice(5)}/${th0.slice(0,4)}</button><button type="button" class="ht-lk" onclick="pbChia('cty')">Cả về Tổng công ty</button></div></div>
   <div id="pb-wrap2" style="${v==='co'?'':'display:none'}">
   <details style="margin-top:10px" ${thg.length>1?'open':''}><summary class="m-st" style="cursor:pointer;display:list-item">Chia chi phí ra nhiều tháng <span class="muted" style="font-weight:400">· mặc định ghi cả vào tháng ${thgT(kyHT(x))}</span></summary>
   <div class="pbf-nut"><label class="m-f"><span>Từ tháng</span><input type="month" id="pbm_tu" class="m-in" value="${(thg[0]||{}).thang||kyHT(x)||th0}"></label>
@@ -3113,9 +3120,9 @@ function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?
 function pcHT(el){pcHT3(el.value)}
 // 24/10 kế toán: "không cần tự nhặt nữa, bổ sung nhóm chi con thuộc nhóm cha lúc duyệt" — ô mục con cùng hàng Loại chi trong khung Hạch toán (chỉ P&L, nhóm cha có mục con)
 const conOpt=id=>conCuaLoai(+id).map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten}));
-function pcConO(x,v){const ds=v==='co'?conOpt(x.loai_id):[];return `<span id="pc-con-w" style="display:${ds.length?'flex':'none'};align-items:center;gap:8px">› <select class="m-in" id="pc-con" data-cu="${x.loai_con_id||''}">${opts(ds,x.loai_con_id,'— mục con —')}</select></span>`}
+function pcConO(x,v){const ds=v==='co'?conOpt(x.loai_id):[];return `<label id="pc-con-w" style="display:${ds.length?'':'none'}"><span>Mục con</span><select class="m-in" id="pc-con" data-cu="${x.loai_con_id||''}">${opts(ds,x.loai_con_id,'— chọn mục con —')}</select></label>`}
 function pcCon(){const s=$('#pc-loai'),c=$('#pc-con'),w=$('#pc-con-w');if(!s||!c||!w)return;const ds=($('#pc-ht')||{}).value==='co'?conOpt(s.value):[];
-  const cu=c.value||c.dataset.cu;c.innerHTML=opts(ds,ds.some(l=>String(l.id)===String(cu))?cu:'','— mục con —');w.style.display=ds.length?'flex':'none'}
+  const cu=c.value||c.dataset.cu;c.innerHTML=opts(ds,ds.some(l=>String(l.id)===String(cu))?cu:'','— chọn mục con —');w.style.display=ds.length?'':'none'}
 function pcHT3(k){const h=$('#pc-ht');if(h)h.value=k;$$('.ht3 button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
   const sh=(id,on)=>{const e=$('#'+id);if(e)e.style.display=on?'':'none'};sh('pb-wrap',k==='co');sh('pb-wrap2',k==='co');sh('pb-cn',k==='ca_nhan');sh('pc-loai-w',k!=='ca_nhan');sh('pc-hd-w',k!=='ca_nhan');
   const s=$('#pc-loai');if(s){const cu=s.value||s.dataset.cu;s.innerHTML=opts(k==='khong'?loaiKhong():loai('chi'),cu,'— chọn —')}pcCon()}

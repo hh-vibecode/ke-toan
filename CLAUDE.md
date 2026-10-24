@@ -44,6 +44,9 @@ Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phi�
 - Không icon emoji trang trí (chỉ icon SVG + ký hiệu nút ✏ ✓ ✕ ▶ ☰). Không đoạn chú thích dài dưới tiêu đề thẻ — dùng badge gọn.
 - Bảng: số căn phải thẳng cột, tiêu đề cùng phía dữ liệu. Thẻ chỉ số: 3 thẻ / hàng, hàng 1 tiền, hàng 2 số lượng.
 - Thêm trạng thái / lựa chọn mới thì bộ lọc, thẻ, màu phải nhận ngay.
+- **Anh rất kỹ tính về giao diện (anh: "t bị OCD") — mọi thứ phải GỌN GÀNG, THẲNG HÀNG, DỄ NHÌN** (anh 24/10/2026). Trước khi đẩy bản có giao diện:
+  chụp ảnh (Chrome headless) soát bằng mắt — ô thẳng hàng, nhãn 1 dòng (không gãy / cắt chữ), tiêu đề cùng một kiểu, khoảng cách đều, không chen chúc,
+  không chú thích thừa, không lặp thông tin; nhóm thành khối rõ (mỗi bước / nhóm 1 khung). Thoáng nhưng không dài: cuộn ngắn được, không ép chật cho vừa 1 màn.
 
 ## Máy anh (Windows)
 - Không có `node` / `gh`: chạy script bằng `ELECTRON_RUN_AS_NODE=1 "D:/Microsoft VS Code/Code.exe" file.js`.
