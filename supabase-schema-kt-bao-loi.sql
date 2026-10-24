@@ -97,3 +97,6 @@ $s$);
   if length(d) = n then raise exception 'Vá kt_chan_dong không khớp mẫu'; end if;
   execute d;
 end $d$;
+-- (e) kt_chung_tu.bang có ràng buộc danh sách → thêm 'bao_loi' (E2E 24/10 bắt lỗi: ảnh tải lên kho xong nhưng ghi chứng từ bị chặn)
+alter table public.kt_chung_tu drop constraint if exists kt_chung_tu_bang_check;
+alter table public.kt_chung_tu add constraint kt_chung_tu_bang_check check (bang = any (array['thu','chi','dieu_chuyen','vay','tai_san','kiem_quy','tam_ung','bao_loi']));
