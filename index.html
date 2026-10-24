@@ -865,7 +865,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .pc-kh .m-seg.ht3{margin-bottom:8px!important}.pc-kh .ht3 button{padding:0 8px;font-size:12px}
 .pc-kh .m-st{margin:6px 0 4px}.pc-kh .m-in{height:32px}
 .pc-kh .pbf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 12px}.pc-kh .pbf label{grid-template-columns:1fr auto;grid-template-areas:'t p' 'i i';gap:3px 4px;font-size:12px}.pc-kh .pbf label>span{grid-area:t;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pc-kh .pbf label>em{grid-area:p}.pc-kh .pbf label>input{grid-area:i}.pc-kh .pbf>div,.pc-kh .pbf-t{grid-column:1/-1}
-.pc-kh #pc-loai-w{display:flex;align-items:center;gap:10px}.pc-kh #pc-loai-w .m-st{margin:0}.pc-kh #pc-loai-w select{max-width:320px}
+.pc-kh #pc-loai-w{display:flex;align-items:center;gap:10px}.pc-kh #pc-loai-w .m-st{margin:0;flex:none;overflow:visible}.pc-kh #pc-loai-w select{max-width:320px;flex:1 1 0;min-width:0}.pc-kh #pc-con-w{flex:1 1 0;min-width:0}
 .pc-kh [id^="qr-"]{width:152px!important;height:152px!important}.pc-kh [id^="qr-"] img{width:150px!important;height:150px!important}
 .pc-kh details{margin-top:6px!important}.pc-h{padding:12px 22px}.pc-tien b{font-size:22px}.pc-f{padding:10px 22px}
 .pc-kh .pc-c:has(#pbf)>.m-st:first-child{display:none}   /* tiêu đề "Hạch toán + số tiền": số tiền đã ở đầu cửa sổ */
@@ -977,8 +977,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.210';
-const APP_VERSION='24/10/2026 13:18';
+const APP_SO='1.211';
+const APP_VERSION='24/10/2026 13:50';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2959,7 +2959,7 @@ function pbForm(x){
   return `<div class="m-st">Hạch toán <span class="r">${fmt(x.so_tien)}</span></div>
   <div class="m-seg ht3" style="margin:2px 0 10px">${[['co','Hạch toán vào chi phí P&L'],['khong','Không hạch toán'],['ca_nhan','Khoản chi cá nhân']].map(([k,t])=>`<button type="button" class="${v===k?'on':''}" data-k="${k}" onclick="pcHT3('${k}')">${t}</button>`).join('')}</div>
   <input type="hidden" id="pc-ht" value="${v}"><div id="pb-cn" style="${v==='ca_nhan'?'':'display:none'}">${pbCaNhan}</div>
-  <div id="pc-loai-w" style="${v==='ca_nhan'?'display:none':''};margin-bottom:10px"><div class="m-st">Loại chi</div><select class="m-in" id="pc-loai" data-cu="${x.loai_id||''}">${opts(v==='khong'?loaiKhong():loai('chi'),x.loai_id,'— chọn —')}</select></div>
+  <div id="pc-loai-w" style="${v==='ca_nhan'?'display:none':''};margin-bottom:10px"><div class="m-st">Loại chi</div><select class="m-in" id="pc-loai" data-cu="${x.loai_id||''}" onchange="pcCon()">${opts(v==='khong'?loaiKhong():loai('chi'),x.loai_id,'— chọn —')}</select>${pcConO(x,v)}</div>
   <div id="pb-wrap" style="${v==='co'?'':'display:none'}"><div class="m-st">Phân bổ chi phí cho đơn vị</div>
   ${(x.phan_bo||[])[0]&&x.phan_bo[0].ds?`<div class="m-st" style="color:var(--info)">Đang chia theo % doanh số thực đạt tháng ${+x.phan_bo[0].ds.slice(5)}/${x.phan_bo[0].ds.slice(0,4)} — hệ thống tự chia lại mỗi đêm theo doanh số mới nhất đến hết tháng sau</div>`:''}
   <div class="pbf" id="pbf" data-tong="${x.so_tien}" data-ds="${((x.phan_bo||[])[0]||{}).ds||''}">${DV_CP.map(([i,t])=>`<label><span>${t}</span>${moneyIn('pb_'+i,pb[i]||'','oninput="fmtMoney(this);$(\'#pbf\').dataset.ds=\'\';pbTong()"')}<em id="pbp_${i}"></em></label>`).join('')}
@@ -2988,9 +2988,14 @@ async function pbChia(cach,thang){const t=+$('#pbf').dataset.tong;let w;$('#pbf'
 function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?'':'none';
   ['#pc-sohd-w','#pc-sohd-w0'].forEach(s=>{const w=$(s);if(w)w.style.display=el.value==='khong'?'none':''});const ve=$('#pc-hdve');if(ve&&ve.closest('label'))ve.closest('label').style.display=el.value==='khong'?'none':''}   // 23/10 anh: cần hoá đơn mới hiện ô Số hoá đơn
 function pcHT(el){pcHT3(el.value)}
+// 24/10 kế toán: "không cần tự nhặt nữa, bổ sung nhóm chi con thuộc nhóm cha lúc duyệt" — ô mục con cùng hàng Loại chi trong khung Hạch toán (chỉ P&L, nhóm cha có mục con)
+const conOpt=id=>conCuaLoai(+id).map(l=>({...l,ten:(l.ma?l.ma+' ':'')+l.ten}));
+function pcConO(x,v){const ds=v==='co'?conOpt(x.loai_id):[];return `<span id="pc-con-w" style="display:${ds.length?'flex':'none'};align-items:center;gap:8px">› <select class="m-in" id="pc-con" data-cu="${x.loai_con_id||''}">${opts(ds,x.loai_con_id,'— mục con —')}</select></span>`}
+function pcCon(){const s=$('#pc-loai'),c=$('#pc-con'),w=$('#pc-con-w');if(!s||!c||!w)return;const ds=($('#pc-ht')||{}).value==='co'?conOpt(s.value):[];
+  const cu=c.value||c.dataset.cu;c.innerHTML=opts(ds,ds.some(l=>String(l.id)===String(cu))?cu:'','— mục con —');w.style.display=ds.length?'flex':'none'}
 function pcHT3(k){const h=$('#pc-ht');if(h)h.value=k;$$('.ht3 button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
   const sh=(id,on)=>{const e=$('#'+id);if(e)e.style.display=on?'':'none'};sh('pb-wrap',k==='co');sh('pb-wrap2',k==='co');sh('pb-cn',k==='ca_nhan');sh('pc-loai-w',k!=='ca_nhan');sh('pc-hd-w',k!=='ca_nhan');
-  const s=$('#pc-loai');if(s){const cu=s.value||s.dataset.cu;s.innerHTML=opts(k==='khong'?loaiKhong():loai('chi'),cu,'— chọn —')}}
+  const s=$('#pc-loai');if(s){const cu=s.value||s.dataset.cu;s.innerHTML=opts(k==='khong'?loaiKhong():loai('chi'),cu,'— chọn —')}pcCon()}
 ['input','change'].forEach(ev=>document.addEventListener(ev,e=>{const t=e.target;if(t&&t.closest&&(t.closest('#pbf')||t.id==='pbm_tu'||t.id==='pbm_n')){const b=$('#pbf');if(b)b.dataset.doi='1'}},true));
 function pbDoc(x){const t=x.so_tien,ds=($('#pbf')||{dataset:{}}).dataset.ds;
   const pb=DV_CP.map(([i])=>({don_vi_id:i,so_tien:so(($('[name=pb_'+i+']')||{}).value)||0,...(ds?{ds}:{})})).filter(p=>p.so_tien);
@@ -3004,6 +3009,7 @@ async function luuPhieu(id,tt){const x=S.cache.chi.find(c=>c.id===id);if(!x)retu
   // 22/10 kế toán: xác nhận chuyển bước thì phải chọn xong hạch toán — P&L: phân bổ đơn vị + loại chi; không hạch toán: loại chi
   {const h=$('#pc-ht'),pl=$('#pc-loai');if(h&&['cho_gd','cho_tt'].includes(tt)&&x.trang_thai==='cho_duyet'){
     if(h.value!=='ca_nhan'&&pl&&!pl.value)return alert('Chọn loại chi');
+    {const c=$('#pc-con'),w=$('#pc-con-w');if(h.value==='co'&&c&&w&&w.style.display!=='none'&&!c.value)return alert('Chọn mục con')}
     if(h.value==='co'){const pbf=$('#pbf'),r=pbf&&pbf.dataset.doi?pbDoc(x):null;if(r&&r.loi)return alert(r.loi);if(!(r?r.pb:x.phan_bo||[]).length)return alert('Phân bổ chi phí cho đơn vị')}}}
   try{
     const ht=$('#pc-ht');if(ht&&!ht.disabled&&ht.value!==kieuHT(x)){await rpc('kt_dat_kieu_ht',{p_id:id,p_kieu:ht.value});x.khong_hach_toan=ht.value!=='co';x.ca_nhan=ht.value==='ca_nhan';viec.push('hạch toán')}
@@ -3024,7 +3030,7 @@ async function luuPhieu(id,tt){const x=S.cache.chi.find(c=>c.id===id);if(!x)retu
     const tkSel=$('#doi-tk')||(x.trang_thai==='cho_tt'?$('#ftt select[name=tai_khoan_id]'):null);
     if(x.trang_thai==='cho_tt'&&tkSel&&(chiDuyet()||chiGD())&&+tkSel.value&&+tkSel.value!==+x.tai_khoan_id){await rpc('kt_doi_tk_chi',{p_id:id,p_tk:+tkSel.value});x.tai_khoan_id=+tkSel.value;viec.push('tài khoản đi tiền')}
   }catch(e){alert(e.message);S.cache={};await render();return}
-  const pl=$('#pc-loai'),loaiDoi=!!pl&&$('#pc-ht').value!=='ca_nhan'&&!!pl.value&&+pl.value!==+(x.loai_id||0);
+  const pl=$('#pc-loai'),pcc=$('#pc-con'),lcon=pcc&&pcc.value?+pcc.value:0,loaiDoi=!!pl&&$('#pc-ht').value!=='ca_nhan'&&!!pl.value&&(+pl.value!==+(x.loai_id||0)||(!!lcon&&lcon!==+(x.loai_con_id||0)));
   if(tt||$('#ftt')||loaiDoi)return doiTTChi(id,tt);   // tài khoản / loại chi / ngày TT / người nhận + chuyển bước (lưu, đóng cửa sổ)
   closeModal();S.cache={};toast(viec.length?'Đã lưu: '+viec.join(', '):'Không có thay đổi');await render()}
 async function luuPhanBo(id){const x=S.cache.chi.find(c=>c.id===id),t=x.so_tien;
@@ -3046,7 +3052,7 @@ async function doiTTChi(id,tt){
   const o={...x};delete o.tao_luc;delete o.sua_luc;delete o.duyet_luc;
   const ftt=$('#ftt');if(ftt)Object.assign(o,formData(ftt));
   const fhd=$('#fhd');if(fhd)Object.assign(o,formData(fhd));
-  {const pl=$('#pc-loai'),h=$('#pc-ht');if(pl&&h&&h.value!=='ca_nhan'&&pl.value)o.loai_id=+pl.value}   // 22/10: loại chi nằm trong khung Hạch toán
+  {const pl=$('#pc-loai'),h=$('#pc-ht'),c=$('#pc-con');if(pl&&h&&h.value!=='ca_nhan'&&pl.value)o.loai_id=h.value==='co'&&c&&c.value?+c.value:+pl.value}   // mục con → trigger kt_chi_loai_cha tách cha + con   // 22/10: loại chi nằm trong khung Hạch toán
   if(tt)o.trang_thai=tt;else delete o.trang_thai;
   if(tt==='cho_tt'&&!o.tai_khoan_id)return alert('Chọn tài khoản đi tiền');
   if(tt==='da_tt'){const thieu=[!o.ngay_tt&&'ngày thanh toán',!o.tai_khoan_id&&'tài khoản chi',!o.loai_id&&!o.khong_hach_toan&&'loại chi'].filter(Boolean);   // 20/10 rà soát: chỉ báo đúng ô còn thiếu
@@ -4628,6 +4634,7 @@ const LOGIC2=[
  ['thu_chi','Kế toán chọn hạch toán khi xác nhận','Cửa sổ phiếu (kế toán, phiếu chờ xác nhận) xếp: Thông tin → Hạch toán → Hoá đơn đỏ → Xác nhận & tài khoản đi tiền → QR. Khung Hạch toán có 3 nút: Hạch toán vào chi phí P&L (phân bổ đơn vị rồi Loại chi 9 mục, chia nhiều tháng nếu cần) · Không hạch toán (Loại chi: 1. Chi thanh toán tiền hàng 2. Chi đặt cọc) · Khoản chi cá nhân (không loại).','Xác nhận bị chặn khi chưa chọn loại chi; hạch toán P&L mà chưa phân bổ đơn vị cũng chặn. Không hạch toán vẫn theo dõi hoá đơn đỏ.','22/10'],
  ['thu_chi','Ô phụ thuộc nhau (phiếu chi)','Không có hoá đơn đỏ → không hỏi xuất về đâu · Khoản chi cá nhân → không hỏi hoá đơn đỏ, không loại chi (form + khung kế toán) · Không hạch toán → loại chi chỉ Tiền hàng / Đặt cọc · Tiền mặt (nhận tiền) → ẩn ngân hàng, số TK, nội dung CK · Đã thanh toán luôn bằng két / quỹ tiền mặt → bắt ghi người đến nhận tiền · Mong muốn TT trước ≥ ngày đề nghị · Loại chi chọn 1 chỗ (khung Hạch toán), bước chi tiền không lặp.','Anh 22/10: "để ý mấy mục liên quan tới nhau".','22/10'],
  ['chung','Loại thu / chi — nhóm cha, mục con','Cài đặt → Loại thu / chi xếp cây: nhóm cha (in đậm, ▶ đóng / mở) → mục con → mục cháu. Sửa loại có ô Mã, Nhóm cha, tick "Là nhóm" (nhóm chỉ để gom, không chọn trên phiếu). Nút "+ mục con" trên dòng nhóm.','Kế toán 22/10. Mục con mới lấy sẵn nhóm báo cáo + cách chia của nhóm cha. P&L / báo cáo đọc cùng cây này.','22/10'],
+ ['thu_chi','Mục con loại chi — chọn lúc duyệt','Khung Hạch toán (kế toán duyệt / xác nhận): Loại chi [nhóm cha] › [mục con] cùng một hàng; đổi nhóm cha thì danh sách mục con đổi theo; xác nhận phiếu P&L mà nhóm cha có mục con thì bắt buộc chọn.','Kế toán + anh 24/10 ("không cần tự nhặt nữa, bổ sung nhóm chi con lúc duyệt"). Bảng / phần xem khác giữ như cũ (mục con chỉ giám đốc thấy).','24/10'],
  ['thu_chi','Loại chi: chọn mục cha, mục con tự động','Ô Loại chi trên phiếu / form / bộ lọc chỉ có 9 mục cha (1 Nhân sự … 9 Khác). 4 giờ / lần (3h, 7h, 11h, 15h, 19h, 23h) hệ thống đọc mục cha + nội dung + người nhận, gán mục con theo bảng từ khoá; mục cha không có con thì mục con = chính nó.','Mục con CHỈ giám đốc + Supreme thấy (anh 22/10: "không hiện public"): hiện ngay dưới loại chi (bảng Phiếu chi + chi tiết phiếu), chip "Loại chi KXĐ" cũng chỉ họ thấy; giám đốc sửa được bằng ô chọn (anh 22/10: "tự chấm, để ra ngoài cho giám đốc sửa nếu cần"), lần tự phân loại sau không ghi đè. Không đoán được → "Loại chi KXĐ" (dải Cần chú ý) chờ giám đốc chọn. Đổi mục cha → mục con xoá, đêm đó phân loại lại. P&L tính theo mục con.','22/10'],
  ['thu_chi','Xoá phiếu','Mọi phiếu (thu, chi, điều chuyển, tạm ứng, vay, công nợ, tài sản) có nút Xoá cho người có quyền sửa — kể cả phiếu thu kéo từ Kiot.','Kế toán + anh 24/10. Xoá = ẩn, vẫn còn nhật ký. Phiếu thu Kiot đã xoá: lần kéo Kiot sau không thêm lại (cờ xoa_tay).','24/10'],
  ['thu_chi','Phiếu chi — 3 loại hạch toán','Hạch toán (chi phí công ty) · Không hạch toán (khoản công ty không tính chi phí, vd nộp lại BHXH — ở nhóm Giao dịch công ty) · Chi phí cá nhân (tự là không hạch toán, sang nhóm Giao dịch cá nhân). Chọn ở form tạo phiếu và ô Hạch toán trong mục Phân bổ của cửa sổ phiếu.','Anh + kế toán 22/10. Hai loại không hạch toán đều không vào chi phí / P&L, vẫn trừ tiền tài khoản. Báo cáo dòng tiền: chỉ chi phí cá nhân vào mục IV. Giao dịch cá nhân. Phiếu thu / điều chuyển giữ 2 lựa chọn.','22/10'],
