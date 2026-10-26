@@ -823,6 +823,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .hdv-o{border:1px solid var(--border);border-radius:8px;padding:6px 9px;margin-top:6px;background:var(--surface);min-width:0;overflow:hidden}.hdv-h{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center;font-size:12.5px;min-width:0}.hdv-h>b:first-child{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdv-h .hdv-t{font-variant-numeric:tabular-nums}
 .hdv-n{font-size:11.5px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdv-b{display:inline-flex;margin-left:auto}.hdv-n2{border:1px solid var(--border);background:var(--surface);color:var(--accent);border-radius:6px;font-size:11.5px;font-weight:600;padding:1px 8px;cursor:pointer;margin-left:4px}.hdv-n2.bo{color:var(--bad)}.hdv-n2:hover{background:var(--sel-bg)}
 .bc-t td.bc-ck{cursor:pointer}.bc-t td.bc-ck:hover{background:var(--sel-bg);text-decoration:underline}.pl-ph tr[onclick]{cursor:pointer}.pl-ph tr[onclick]:hover td{background:var(--sel-bg)}
+.bl-ls{border-left:2px solid var(--border);padding:2px 0 8px 10px;font-size:12.5px}
 .pc-o>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.pc-o>div{font-size:13px;font-weight:500;word-break:break-word}
 .pc-ls{display:flex;flex-direction:column;gap:8px}.pc-ls>div{display:flex;flex-direction:column;border-left:2px solid var(--border);padding-left:10px}.pc-ls b{font-size:12.5px}.pc-ls span{font-size:11.5px;color:var(--muted)}
 .pc-drive{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12.5px}
@@ -991,8 +992,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.217';
-const APP_VERSION='26/10/2026 12:09';
+const APP_SO='1.218';
+const APP_VERSION='26/10/2026 12:12';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2114,9 +2115,27 @@ async function pageBaoLoi(){const el=$('#page');el.innerHTML='<div class="m-empt
   const PH={chi:'PC',thu:'PT',dieu_chuyen:'DC'},phieu=x=>x.bang==='chung'?'<span class="muted">Lỗi chung</span>':PH[x.bang]?`<span class="m-link" onclick="moPhieu('${PH[x.bang]}',${x.dong_id})">${esc(x.so_phieu||PH[x.bang]+String(x.dong_id).padStart(6,'0'))}</span>`:esc(x.so_phieu||'');
   el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Báo lỗi</span>')+`<div class="m-flt" style="align-items:center"><div class="m-seg">${[['mo','Chưa xử lý',mo.length],['tat','Tất cả',ds.length]].map(([k,t,n])=>`<button class="${f===k?'on':''}" onclick="S.f.bl_loc='${k}';render()">${t}<span class="c">${n}</span></button>`).join('')}</div></div>
     <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Lúc</th><th>Người báo</th><th>Phiếu</th><th>Lỗi</th><th>Ảnh</th><th>Trạng thái</th><th></th></tr>
-    ${l.map(x=>`<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc(x.nguoi||'')}</td><td class="nw">${phieu(x)}</td><td class="ten" style="white-space:pre-wrap">${esc(x.noi_dung)}${x.xu_ly_ghi?`<div class="muted" style="font-size:11.5px">↳ ${esc(x.xu_ly_ghi)}</div>`:''}</td>
-      <td class="nw"><span class="m-link" onclick="moCT('bao_loi',${x.id})">Xem</span></td><td class="nw">${x.da_xu_ly?pill('Đã xử lý','ok')+`<div class="muted" style="font-size:11px">${esc(x.xu_ly_boi||'')} ${fmtDT(x.xu_ly_luc)}</div>`:pill('Chưa xử lý','bad')}</td>
+    ${l.map(x=>`<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc(x.nguoi||'')}</td><td class="nw">${phieu(x)}</td><td class="ten" style="white-space:pre-wrap">${esc(x.noi_dung)}${x.xu_ly_ghi?`<div class="muted" style="font-size:11.5px">↳ ${esc(x.xu_ly_ghi)}</div>`:''}${(x.lich_su||[]).filter(h=>h.loai==='phan_hoi').map(h=>`<div style="font-size:11.5px;color:var(--warn)">↳ Phản hồi ${fmtDT(h.luc)}: ${esc(h.noi_dung||'')}</div>`).join('')}</td>
+      <td class="nw"><span class="m-link" onclick="moCT('bao_loi',${x.id})">Xem</span></td><td class="nw">${x.da_xu_ly?pill('Đã xử lý','ok')+`<div class="muted" style="font-size:11px">${esc(x.xu_ly_boi||'')} ${fmtDT(x.xu_ly_luc)}</div>`:pill('Chưa xử lý','bad')}<div style="margin-top:3px">${blXN(x)}</div></td>
       <td class="nw">${x.da_xu_ly?`<button class="m-btn sm" onclick="xuLyLoi(${x.id},false)">Mở lại</button>`:`<button class="m-btn sm duyet" onclick="xuLyLoi(${x.id},true)">✓ Đã xử lý</button>`}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Không có báo lỗi</td></tr>'}</table></div></div>`}
+// 26/10 anh: "lỗi xử lý xong báo lại người đã làm — click vào ra lỗi đã báo với cách xử lý, cho chọn hoàn thành hoặc feedback lại tiếp"
+const BL_LS={xu_ly:['Đã xử lý','ok'],phan_hoi:['Phản hồi','warn'],hoan_thanh:['Hoàn thành','ok']};
+const blLS=b=>(b.lich_su||[]).map(h=>`<div class="bl-ls"><div>${pill(BL_LS[h.loai][0],BL_LS[h.loai][1])} <span class="muted">${esc(h.ai||'')} · ${fmtDT(h.luc)}</span></div>${h.noi_dung?`<div style="white-space:pre-wrap">${esc(h.noi_dung)}</div>`:''}</div>`).join('');
+const blXN=b=>b.xac_nhan==='hoan_thanh'?pill('Người báo: hoàn thành','ok'):b.xac_nhan==='phan_hoi'?pill('Người báo phản hồi','warn'):b.xac_nhan==='cho'?pill('Chờ người báo xác nhận','info'):'';
+async function moKQLoi(id){modal('<h2>Lỗi đã báo</h2><div class="m-empty">Đang tải...</div>');
+  try{const b=await rpc('kt_bao_loi_xem',{p_id:id}),cho=b.la_nguoi_bao&&b.da_xu_ly&&b.xac_nhan==='cho';
+    $('#modal>div').innerHTML=`<h2>Lỗi đã báo${b.so_phieu?' · '+esc(b.so_phieu):''}</h2>
+      <div class="pc-sub" style="margin-top:0">Lỗi đã báo <span style="text-transform:none;font-weight:500">· ${esc(b.nguoi||'')} ${fmtDT(b.luc)}</span></div>
+      <div style="white-space:pre-wrap;margin:6px 0 12px">${esc(b.noi_dung)}</div>
+      <div class="pc-sub">Cách xử lý</div>
+      <div style="margin:6px 0 12px">${b.da_xu_ly?`<div style="white-space:pre-wrap">${esc(b.xu_ly_ghi||'Đã xử lý')}</div><div class="muted" style="font-size:11.5px;margin-top:2px">${esc(b.xu_ly_boi||'')} · ${fmtDT(b.xu_ly_luc)}</div>`:pill('Đang xử lý lại','warn')} ${blXN(b)}</div>
+      ${(b.lich_su||[]).length>1?`<div class="pc-sub">Lịch sử</div><div style="margin-top:6px">${blLS(b)}</div>`:''}
+      ${cho?`<div class="pc-sub" style="margin-top:12px">Phản hồi tiếp (nếu chưa đúng)</div><textarea class="m-in" id="bl-ph" rows="3" style="width:100%;margin-top:6px;height:auto"></textarea>`:''}
+      <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button>${cho?`<button class="btn" onclick="xacNhanLoi(${id},false)">Phản hồi tiếp</button><button class="btn pri" onclick="xacNhanLoi(${id},true)">✓ Hoàn thành</button>`:''}</div>`}
+  catch(e){$('#modal>div').innerHTML=`<h2>Lỗi đã báo</h2><div class="neg-t">${esc(e.message)}</div><div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`}}
+async function xacNhanLoi(id,xong){const t=(($('#bl-ph')||{}).value||'').trim();
+  if(!xong&&!t){alert('Ghi phản hồi: chỗ nào chưa đúng');$('#bl-ph').focus();return}
+  try{await rpc('kt_bao_loi_xac_nhan',{p_id:id,p_hoan_thanh:xong,p_noi_dung:t});closeModal();toast(xong?'Đã xác nhận hoàn thành':'Đã gửi phản hồi — lỗi mở lại để xử lý tiếp')}catch(e){alert(e.message)}}
 async function xuLyLoi(id,xong){const g=xong?prompt('Ghi chú xử lý (có thể để trống):',''):'';if(g===null)return;try{await rpc('kt_bao_loi_xu_ly',{p_id:id,p_xong:xong,p_ghi:g||''});toast(xong?'Đã đánh dấu xử lý':'Đã mở lại');render()}catch(e){alert(e.message)}}
 // 24/10 kế toán: "tách phiếu thanh toán lương riêng và hoa hồng riêng để hạch toán đúng khoản" — kt_tach_chi: phần tách sang phiếu mới (loại chi riêng),
 // phiếu gốc giữ phần còn lại; phân bổ chia theo tỷ lệ; cùng trạng thái / tài khoản / ngày → số dư không đổi
@@ -4649,7 +4668,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang)tiengBao();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -4663,6 +4682,7 @@ async function docChuong(id){try{await rpc('kt_doc_thong_bao',{p_id:id||null});i
 async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)return;
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
+  if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='bao_loi'){S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');return}   // 24/10: báo lỗi → Log hệ thống, tab Báo lỗi
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
   if(trang==='cd_kiot'){go('cd_kiot');return}
@@ -4853,6 +4873,7 @@ const LOGIC2=[
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
  ['chung','Chat trong app','TẠM TẮT 22/10 (anh: "tạm thời không cần") — ẩn nút chat + nút Gửi vào chat, không gọi máy chủ; bật lại: CHAT_TAT=false. Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
  ['chung','Bình luận: @nhắc tên, Nhắc việc, âm báo','Ô bình luận trong phiếu (chi, thu, điều chuyển, tạm ứng, vay): gõ @ chọn tên người có tài khoản app kế toán → người đó nhận chuông. Tick "Nhắc việc" → bình luận thành việc cần làm: nhãn "Cần bổ sung" trên phiếu + mục lọc ở dải Cần chú ý, tới khi bấm "✓ Đã xong".','Việc nhắc mở quá 2 ngày: 8:00 sáng hằng ngày báo chuông lại người ghi + kế toán (lịch kt-nhac-viec). Có thông báo mới: tiếng "bzzzz" rung + màn hình rung nhẹ như BUZZ Yahoo ngày xưa (tự tổng hợp, sau khi đã bấm vào trang 1 lần). Người gửi phiếu không có tài khoản: không nhắc — giám đốc / kế toán up thay.','19/10'],
+ ['chung','Báo lỗi — kết quả xử lý','Đánh dấu Đã xử lý (Log → Báo lỗi, hoặc Claude xử lý) → chuông của người báo "Lỗi đã báo · …: đã xử lý". Bấm → cửa sổ lỗi đã báo + cách xử lý + lịch sử → ✓ Hoàn thành hoặc Phản hồi tiếp (bắt ghi nội dung → lỗi mở lại, chuông Supreme).','Trang Log hiện trạng thái người báo: chờ xác nhận / hoàn thành / phản hồi.','26/10'],
  ['chung','Báo có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App kiểm ngay 4 giây sau khi mở, rồi mỗi phút và lúc quay lại tab; có bản mới → hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình (như app MKT).','Không đang mở cửa sổ nhập liệu → đếm 10 giây rồi tự tải lại; đang nhập dở → chỉ hiện nút, bấm Tải lại khi xong. Lúc Xem như thì không báo.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
  ['chung','Phân quyền theo menu · Sổ quỹ 4 quyền','Trang Phân quyền xếp nhóm đúng menu trái (Tổng quan · Thu chi & Ngân quỹ · Công nợ · Hoá đơn & Thuế · Báo cáo · Hệ thống). Sổ quỹ chia 4 quyền theo 4 tab: Số dư tài khoản · Sổ quỹ theo ngày · Kiểm két cuối ngày · Quỹ tiền mặt cửa hàng — chỉ thấy tab, thẻ số và dữ liệu được cấp (máy chủ chặn phần còn lại).','Tài khoản có quyền Sổ quỹ cũ = đủ 4 quyền; mở sửa ở Phân quyền rồi Lưu là đổi sang 4 quyền mới. Quyền của trang ẩn (không hiện trên bảng) giữ nguyên khi lưu.','21/10'],
