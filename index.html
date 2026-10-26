@@ -576,6 +576,11 @@ table.m-t input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)
 table.bc-t td{padding-top:7px;padding-bottom:7px}table.bc-t td:first-child{min-width:250px}
 .bc-th2{font-size:10px;color:var(--muted);font-weight:500}.bc-tong{background:var(--sel-bg)}
 tr.bc-nhom td{font-weight:700;background:var(--bg2)}tr.bc-nhom2 td{font-weight:700}tr.bc-tong td{font-weight:700;background:var(--info-bg)}tr.bc-net td{font-weight:800;background:var(--warn-bg)}
+/* 26/10 kế toán (anh chuyển): "P&L đóng băng phần tiêu đề để kéo ngang không bị mất" — cột Chỉ tiêu đứng yên, nền theo loại dòng */
+table.bc-t th:first-child,table.bc-t td:first-child{position:sticky;left:0;z-index:2;background:var(--surface);box-shadow:inset -1px 0 0 var(--border)}
+table.bc-t th:first-child{z-index:3;background:var(--bg2)}
+table.bc-t tr.bc-nhom td:first-child{background:var(--bg2)}table.bc-t tr.bc-tong td:first-child{background:var(--info-bg)}table.bc-t tr.bc-net td:first-child{background:var(--warn-bg)}
+table.bc-t tr.click:hover td:first-child{background:var(--sel-bg)}
 tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{padding-left:30px}tr.bc-con2 td:first-child{padding-left:44px;color:var(--text2)}
 .bc-mo{display:inline-block;width:16px;cursor:pointer;color:var(--muted)}.bc-so{display:inline-block;min-width:30px;color:var(--text2)}
 .bc-ghi{font-size:11.5px;margin-top:10px;line-height:1.6}
@@ -995,8 +1000,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.222';
-const APP_VERSION='26/10/2026 14:00';
+const APP_SO='1.223';
+const APP_VERSION='26/10/2026 15:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
