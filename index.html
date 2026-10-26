@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.227';
-const APP_VERSION='26/10/2026 16:33';
+const APP_SO='1.228';
+const APP_VERSION='26/10/2026 18:15';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2621,16 +2621,31 @@ let QR_LIB=null;
 async function napQR(){if(QR_LIB)return QR_LIB;await new Promise((ok,loi)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';sc.onload=ok;sc.onerror=()=>loi(new Error('Không tải được thư viện QR'));document.head.appendChild(sc)});QR_LIB=window.qrcode;return QR_LIB}
 // 23/10 kế toán: "bước 3 nếu không hiển thị được QR thì cứ hiện thông tin text bình thường" (STK sai / không nhận ra ngân hàng / chưa có STK)
 const qrTxt=(x,nd)=>`<div class="m-st">Thông tin chuyển khoản</div><div class="m-kv"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')||'—'}</div><div>Số tài khoản</div><div><b>${esc(x.thu_huong_stk||'')||'—'}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')||'—'}</div>`
-  +`<div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${esc(nd)}</div></div>`;
+  +`<div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${ndCkO(x,nd)}</div></div>`;
 function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');
   const bin=binNH(x.thu_huong_nh),so='PC'+String(x.id).padStart(6,'0');
   const thm=String(x.noi_dung_ck||'').trim(),nd=boDau(so+' '+(thm&&!thm.toUpperCase().startsWith(so)?thm:thm.slice(so.length)||ndChi(x))).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,25);   // 22/10 anh: số phiếu chi tự có + nội dung người làm phiếu điền thêm; luôn gài vào mã
-  if(!stk||!/^\d{6,20}$/.test(stk)||!bin)return qrTxt(x,nd);
+  if(!stk||!/^\d{6,20}$/.test(stk)||!bin)return `<div id="qrw-${x.id}">${qrTxt(x,nd)}</div>`;
   setTimeout(async()=>{const o=document.getElementById('qr-'+x.id);if(!o)return;try{const Q=await napQR(),q=Q(0,'M');q.addData(vietQR(bin,stk,x.so_tien,nd));q.make();
     o.innerHTML=`<img src="${q.createDataURL(4,8)}" alt="QR" style="width:168px;height:168px;image-rendering:pixelated;border:1px solid var(--border);border-radius:8px">`}catch(e){o.textContent=e.message}},0);
-  return `<div class="m-st">Mã QR chuyển khoản</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div id="qr-${x.id}" style="width:170px;height:170px;flex:none;padding:0" class="m-empty">Đang tạo…</div>
+  return `<div id="qrw-${x.id}"><div class="m-st">Mã QR chuyển khoản</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div id="qr-${x.id}" style="width:170px;height:170px;flex:none;padding:0" class="m-empty">Đang tạo…</div>
     <div class="m-kv" style="flex:1;min-width:200px"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')}</div><div>Số tài khoản</div><div><b>${esc(stk)}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')}</div>
-      <div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${esc(nd)} <button class="m-btn out" style="height:24px;padding:0 8px" onclick="navigator.clipboard.writeText(${esc(JSON.stringify(nd))}).then(()=>toast('Đã chép nội dung — dán vào ô nội dung khi chuyển'),()=>toast('Không chép được — gõ tay'))">Chép</button></div></div></div>`}
+      <div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${ndCkO(x,nd,1)}</div></div></div></div>`}
+// 26/10 anh: "thêm chỉnh sửa cho phần nội dung" — nút Sửa ngay ở khung QR: sửa phần gõ thêm sau số phiếu (số phiếu PCxxxxxx giữ nguyên ở đầu),
+// lưu vào phiếu (kt_sua_nd_ck), chỉ vẽ lại khung QR → mã mới, không mất ô đang điền dở ở phần khác. Monsieur Claude
+const ndCkSua=x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&(coGhi('chi')||can('chi_tt')||chiDuyet()||chiGD()||(x.tao_boi===S.toi.ho_ten&&x.trang_thai==='cho_duyet'));
+function ndCkO(x,nd,chep){const so='PC'+String(x.id).padStart(6,'0'),b='height:24px;padding:0 8px';
+  if(S.f.nd_sua===x.id)return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><b style="margin-right:auto">${so}</b><button class="m-btn" style="${b}" title="Lưu" onclick="luuNdCk(${x.id})">✓</button><button class="m-btn out" style="${b}" title="Huỷ" onclick="suaNdCk(${x.id},0)">✕</button></div>
+    <input id="ndck-${x.id}" class="m-in" style="height:28px;width:100%;min-width:0;margin-top:4px" maxlength="${24-so.length}" value="${esc(nd.slice(so.length+1))}" placeholder="Để trống = nội dung chi"
+      onkeydown="if(event.key==='Enter')luuNdCk(${x.id});else if(event.key==='Escape'){event.stopPropagation();suaNdCk(${x.id},0)}">
+    <div class="muted" style="font-size:11px">Số phiếu tự có ở đầu · gõ thêm tối đa ${24-so.length} ký tự, không dấu · Enter để lưu</div>`;
+  return esc(nd)+(chep?` <button class="m-btn out" style="${b}" onclick="navigator.clipboard.writeText(${esc(JSON.stringify(nd))}).then(()=>toast('Đã chép nội dung — dán vào ô nội dung khi chuyển'),()=>toast('Không chép được — gõ tay'))">Chép</button>`:'')
+    +(ndCkSua(x)?` <button class="m-btn out" style="${b}" title="Sửa nội dung chuyển khoản" onclick="suaNdCk(${x.id},1)">${IC_SUA} Sửa</button>`:'')}
+async function luuNdCk(id){const x=S.cache.chi.find(c=>c.id===id),i=document.getElementById('ndck-'+id);if(!x||!i)return;
+  const v=boDau(i.value).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,i.maxLength);
+  try{x.noi_dung_ck=await rpc('kt_sua_nd_ck',{p_id:id,p_nd:v});toast(v?'Đã lưu nội dung chuyển khoản — mã QR đã cập nhật':'Đã bỏ phần gõ thêm — dùng số phiếu + nội dung chi');suaNdCk(id,0)}catch(e){alert(e.message)}}
+function suaNdCk(id,bat){const x=S.cache.chi.find(c=>c.id===id),w=document.getElementById('qrw-'+id);S.f.nd_sua=bat?id:null;if(!x)return;if(!w)return xemChi(id);
+  w.outerHTML=qrChi(x);if(bat){const i=document.getElementById('ndck-'+id);if(i){i.focus();i.select()}}}
 
 // Phiếu hoàn quỹ ngoài cửa hàng (15/10): kê phiếu Kiot chi từ Quỹ ngoài trong đợt — chi phí ghi 1 lần ở phiếu này
 const CS_HQ={SD:'Shidai',HT:'Hiền Thủy',CT:'Chánh Tâm'};
@@ -3231,7 +3246,7 @@ async function luuPhanBo(id){const x=S.cache.chi.find(c=>c.id===id),t=x.so_tien;
 // 16/10: phiếu chi luôn mở thành cửa sổ lớn (máy tính + điện thoại); đóng cửa sổ là bỏ chọn phiếu
 function hienChiCT(id,html){const m=modal(`<div class="pc">${html}</div>`);m.classList.add('pc-m');m.dataset.chi=id;S.f.chi_chon=id;
   setTimeout(()=>{if(typeof pbTong==='function')pbTong()},0)}
-function dongChiCT(){S.f.chi_chon=null;closeModal()}
+function dongChiCT(){S.f.chi_chon=null;S.f.nd_sua=null;closeModal()}
 async function doiTTChi(id,tt){
   const x=S.cache.chi.find(c=>c.id===id);
   if((tt==='cho_gd'||(tt==='cho_tt'&&x.trang_thai==='cho_duyet'))&&!coCT(x))return alert('Phiếu chưa có chứng từ đi kèm — đính kèm hoá đơn / báo giá / ảnh trước khi duyệt');
@@ -4910,6 +4925,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hiển thị','Nhà cung cấp = người bán trên HĐ đã ghép → thụ hưởng (nếu khác người đề nghị) → đối tác Kiot.','Thụ hưởng = người đề nghị → "Hoàn cho NV".','15/10'],
  ['thu_chi','Phiếu chi — hiển thị','Cột Loại chi tách riêng; phiếu Kiot chưa phân loại hiện nhóm Kiot.','','15/10'],
  ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],
+ ['thu_chi','Phiếu chi — sửa nội dung CK','Khung mã QR có nút Sửa cạnh Chép: sửa phần gõ thêm sau số phiếu (số phiếu PCxxxxxx giữ nguyên, tổng ≤25 ký tự, tự bỏ dấu), lưu vào phiếu, mã tạo lại. Để trống = số phiếu + nội dung chi.','Người đề nghị (khi chờ duyệt), thủ quỹ, kế toán, GĐ. Phiếu đã chi tiền thì khoá. Ghi nhật ký cũ → mới.','26/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: chỉ ở Đối soát lỗi (phiếu đã thanh toán chưa thấy trên Kiot).','16/10'],
  ['chung','Tự kiểm Supabase','Job kt-kiem-he-thong 09:00 ngày 15 + ngày cuối tháng: đo dữ liệu, kho chứng từ, nhật ký, lịch chạy lỗi, kéo Kiot, khoá RLS / quyền anon → chuông cho Supreme (luôn có tóm tắt, có vấn đề ghi rõ cảnh báo).','Gói Pro: cảnh báo khi dữ liệu > 4 GB, kho > 50 GB, tăng > 5 GB kho / 1 GB dữ liệu giữa 2 lần kiểm, có bảng tắt RLS. Băng thông không đo được từ SQL — xem Dashboard.','16/10'],
