@@ -98,6 +98,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 **Đã gạch 23/10:** lỗi tài khoản hạn chế mở Tổng quan (test lại không lỗi) · thử trên trình duyệt Cài đặt loại dạng cây + ảnh giao dịch (đạt) · đối chiếu P&L "để sau" / "chuyển cloud" (đã làm, nhật ký 113–115) · thêm 21 dòng sheet đề nghị (đã chạy, nhật ký 99A) · đồng bộ sheet 15 phút (xong 19/10) · kiểm két cuối ngày (đã có) · 8 nhóm báo cáo (xong 15/10).
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
+- **Báo lỗi: KHÔNG đặt lịch tự rà** (anh 26/10: "thôi bỏ đi, tự xử lý vậy"). ĐẦU MỖI PHIÊN (mọi phiên — máy, cloud): kiểm `kt_bao_loi` còn mở (not da_xu_ly) hoặc bị phản hồi (xac_nhan = 'phan_hoi'), xử lý hết, ghi xu_ly_ghi, rồi `select kt_bao_loi_bao_kq(id, 'Hệ thống')` để người báo nhận chuông.
 - **Phiếu / form gọn: chỉ đầu mục + tên ô**, không dòng chú thích, không placeholder "vd: …", không hướng dẫn (anh 21/10: "gọn gàng dễ nhìn nhất").
 - **Tạm ứng / hoàn ứng tạo ở trang Tạm ứng & hoàn ứng**, KHÔNG để lựa chọn tạm ứng trong form phiếu chi / thu (anh 21/10). Form công khai giữ tab Tạm ứng & hoàn ứng.
 - **Form đề nghị công khai và form phiếu chi trong app LUÔN đồng bộ** (anh 21/10): cùng 4 nhóm, cùng thứ tự (1. Đề nghị · 2. Hạch toán & hoá đơn · 3. Người nhận tiền · 4. Hồ sơ & ghi chú), thêm / sửa ô bên này thì sửa luôn bên kia trong cùng lần đẩy.
@@ -149,6 +150,8 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **26/10/2026 (155)** — Anh (ảnh lịch sử khế ước VCB = #25): thêm lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9. File LOCAL `supabase-schema-kt-vay-vcb-0634.local.sql`. Số dư không đổi. Dòng gộp T9 khớp 8 / 11 khế ước, còn #26–#28. Monsieur Claude
+- **26/10/2026 (154)** — Báo lỗi #16 (chị Trang: DC000289 nộp két 25/10 đã sửa trên Kiot) → sửa số tiền phiếu theo Kiot, đóng lỗi, gửi chuông kết quả; Log báo lỗi 0 mở. Anh hỏi lịch tự rà lỗi → em đề xuất 12h trưa + 0h đêm (máy anh có sẵn claude.exe trong extension VS Code; cloud không có khoá CSDL) → anh: "thôi bỏ đi, tự xử lý vậy" → ghi quy tắc mục 3: đầu mỗi phiên tự kiểm + xử lý báo lỗi. Monsieur Claude
 - **26/10/2026 (153)** — Anh (ảnh lịch sử khế ước VCB = #24): thêm lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9. File LOCAL `supabase-schema-kt-vay-vcb-3287.local.sql`. Số dư không đổi. Dòng gộp T9 khớp 7 / 11 khế ước (#17 #19–#24), còn #25–#28. Monsieur Claude
 - **26/10/2026 (152)** — Anh (ảnh lịch sử khế ước VCB = #23): thêm lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9. File LOCAL `supabase-schema-kt-vay-vcb-8872.local.sql`. Số dư không đổi. Dòng gộp T9 khớp 6 / 11 khế ước (#17 #19–#23). Monsieur Claude
 - **26/10/2026 (151)** — Anh (ảnh lịch sử khế ước VCB = #22): như #19–#21 — thêm lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9 của #12. File LOCAL `supabase-schema-kt-vay-vcb-1735.local.sql`. Số dư không đổi. Dòng gộp T9 đã khớp được 5 khế ước (#17 #19 #20 #21 #22), phần còn lại chờ ảnh #23–#28. Monsieur Claude
