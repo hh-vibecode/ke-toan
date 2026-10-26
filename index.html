@@ -991,8 +991,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.215';
-const APP_VERSION='24/10/2026 17:01';
+const APP_SO='1.216';
+const APP_VERSION='26/10/2026 11:41';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3112,7 +3112,9 @@ async function pbChia(cach,thang){const t=+$('#pbf').dataset.tong;let w;$('#pbf'
     if(!Object.values(w).some(v=>v))return toast('Tháng này chưa có doanh số Kiot')}
   const tw=Object.values(w).reduce((a,c)=>a+c,0),ids=Object.keys(w).filter(i=>w[i]);let con=t;
   DV_CP.forEach(([i])=>{const e=$('[name=pb_'+i+']');if(e)e.value=''});
-  ids.forEach((i,k)=>{const v=k===ids.length-1?con:Math.round(t*w[i]/tw);con-=v;$('[name=pb_'+i+']').value=fmt(v)});pbTong()}
+  ids.forEach((i,k)=>{const v=k===ids.length-1?con:Math.round(t*w[i]/tw);con-=v;$('[name=pb_'+i+']').value=fmt(v)});
+  // 26/10 (báo lỗi #14 kế toán): nút chia nhanh điền số bằng code, không có sự kiện input → cờ "đã đổi" không bật → bấm Lưu bỏ qua phân bổ
+  $('#pbf').dataset.doi='1';pbTong()}
 // 19/10/2026 anh: "thêm nút lưu 1 nút thôi, thêm cho cả phiếu popup", "sửa cả luồng ấn lưu là được" — cửa sổ phiếu chi: đổi ô nào cũng CHƯA lưu,
 // bấm Lưu (hoặc nút chuyển bước Xác nhận / Đã chi tiền / Từ chối…) mới lưu hết: hạch toán, phân bổ, hoàn quỹ, hoá đơn, tài khoản đi tiền, rồi tài khoản / loại / ngày TT.
 function pcHD(el){const n=$('#pc-hd-ngay');if(n)n.style.display=el.value==='da'?'':'none';
