@@ -3,6 +3,7 @@
 // Body: {phien, viec:'tai_len', bang, dong_id, ten}  → {duong_dan, url}   (trình duyệt PUT file vào url)
 //       {viec:'tai_len_phieu', ma, ten} → {duong_dan, url}   (phiếu đề nghị công khai — kiểm bằng mã phiếu, không cần phiên)
 //       {phien, viec:'xem', ids:[...], tai_ve?:bool} → {ds:[{id, url}]}
+//       {viec:'bill_phieu', ma} → {ds:[{ten, mime, url}]}   (26/10: người gửi phiếu công khai xem bill chuyển khoản khi phiếu Đã thanh toán — kt_bill_phieu)
 // Monsieur Claude
 const SB = Deno.env.get('SUPABASE_URL')!, SK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const BUCKET = 'kt-chung-tu', HAN = 300;
@@ -39,6 +40,16 @@ Deno.serve(async req => {
       if (!r.ok) throw new Error('Ký link tải lên lỗi ' + r.status);
       const j = await r.json();
       return tra({ duong_dan: duong, url: `${SB}/storage/v1${j.url}` });
+    }
+    if (b.viec === 'bill_phieu') {
+      const q = await fetch(`${SB}/rest/v1/rpc/kt_bill_phieu`, { method: 'POST', headers: H, body: JSON.stringify({ p_ma: String(b.ma || '') }) });
+      if (!q.ok) { const j = await q.json().catch(() => ({})); throw new Error(j.message || 'Mã phiếu không đúng'); }
+      const rows: any[] = await q.json();
+      if (!rows.length) return tra({ ds: [] });
+      const s = await fetch(`${SB}/storage/v1/object/sign/${BUCKET}`, { method: 'POST', headers: H, body: JSON.stringify({ expiresIn: HAN, paths: rows.map(x => x.duong_dan) }) });
+      if (!s.ok) throw new Error('Ký link xem lỗi ' + s.status);
+      const sj: any[] = await s.json();
+      return tra({ ds: rows.map(x => { const k = sj.find(y => y.path === x.duong_dan); return { ten: x.ten, mime: x.mime, url: k && k.signedURL ? `${SB}/storage/v1${k.signedURL}` : null }; }) });
     }
     if (b.viec === 'xem') {
       const ids = (b.ids || []).map(Number).filter(Boolean).slice(0, 500);
