@@ -1000,8 +1000,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.223';
-const APP_VERSION='26/10/2026 15:09';
+const APP_SO='1.224';
+const APP_VERSION='26/10/2026 15:14';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3337,15 +3337,56 @@ async function luuThuHoi(id){const o=formData($('#f'));if(!so(o.so_tien))return 
   await save('kt_thu_hoi_no',{p_cong_no_id:id,p_ngay:o.ngay,p_so_tien:so(o.so_tien),p_ghi_chu:o.ghi_chu});render()}
 
 // ── SẮP PHẢI TRẢ ───────────────────────────────────────────────────────────
+// 26/10/2026 anh (file LỊCH THANH TOÁN CÁC KHOẢN CỐ ĐỊNH THT): "bổ sung nhắc lịch thanh toán tự động — xem chỗ nào cho hợp lý" → phần THANH TOÁN ĐỊNH KỲ
+// đầu trang Lịch đến hạn trả: khung hạn kỳ tới, chuông nhắc 08:00 (sắp đến hạn / quá hạn), Tạo phiếu đề nghị điền sẵn, ✓ Đã thanh toán → sang kỳ sau.
+const CHU_KY={1:'Hằng tháng',2:'2 tháng',3:'Hằng quý',6:'6 tháng',12:'Hằng năm'};
+const ltTT=x=>{const h=homNay(),t=new Date(new Date(x.han_tu+'T00:00:00').getTime()-(x.nhac_truoc||3)*864e5),tu=ymd(t);
+  return h>x.han_den?['Quá hạn','bad']:h>=tu?['Đến hạn','warn']:['Chưa tới hạn','']};
 async function pageSapTra(){
-  const el=$('#page');const ds=await rpc('kt_ds',{p_bang:'sap_tra',p_tu:MOC,p_den:homNay()});S.cache.st=ds;
-  const chua=ds.filter(x=>!x.da_tra);
-  el.innerHTML=head('Sắp phải trả',coGhi()?'<button class="btn pri" onclick="formST()">+ Thêm khoản</button>':'')+
+  const el=$('#page');const [ds,lt]=await Promise.all([rpc('kt_ds',{p_bang:'sap_tra',p_tu:MOC,p_den:homNay()}),rpc('kt_lich_tt_ds').catch(()=>[])]);S.cache.st=ds;S.cache.lt=lt;
+  const chua=ds.filter(x=>!x.da_tra),g=coGhi('sap_tra'),han=x=>fmtD(x.han_tu).slice(0,5)+(x.han_den!==x.han_tu?'–'+fmtD(x.han_den).slice(0,5):'')+'/'+x.han_den.slice(0,4);
+  const lthtml=`<div class="m-flt" style="align-items:center;margin-top:4px"><b style="font-size:14px">Thanh toán định kỳ</b><span class="badge">nhắc chuông 08:00 · trước hạn ${(lt[0]||{}).nhac_truoc||3} ngày và khi quá hạn</span><span style="margin-left:auto"></span>${g?`<button class="m-btn pri" onclick="formLT()">+ Thêm khoản định kỳ</button>`:''}</div>
+    <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Khoản</th><th>Người nhận · thanh toán</th><th>Chu kỳ</th><th>Hạn kỳ tới</th><th class="num">Dự kiến</th><th>Trạng thái</th>${g?'<th></th>':''}</tr>
+      ${lt.map(x=>{const t=ltTT(x);return `<tr><td class="ten"><b>${esc(x.khoan)}</b>${x.co_so?`<div class="muted">${esc(x.co_so)}</div>`:''}</td>
+        <td class="ten" style="font-size:12px">${esc(x.nguoi_nhan||'')}${x.thu_huong_stk?`<div>${esc(x.thu_huong_ten||'')} · ${esc(x.thu_huong_stk)} · ${esc(x.thu_huong_nh||'')}</div>`:''}${x.thong_tin?`<div class="muted">${linkHoa(x.thong_tin)}</div>`:''}</td>
+        <td class="nw">${CHU_KY[x.chu_ky]||x.chu_ky+' tháng'}</td><td class="nw"><b>${han(x)}</b>${x.han_mo_ta?`<div class="muted" style="font-size:11px">${esc(x.han_mo_ta)}</div>`:''}</td>
+        <td class="num">${x.so_tien?`<b>${fmt(x.so_tien)}</b>`:`<span class="muted" style="font-size:11.5px">${esc(x.so_tien_ghi||'—')}</span>`}</td>
+        <td class="nw">${t[1]?pill(t[0],t[1]):`<span class="muted">${t[0]}</span>`}${x.lan_cuoi?`<div class="muted" style="font-size:11px">Trả gần nhất ${fmtD(x.lan_cuoi.ngay)}${x.lan_cuoi.so_tien?' · '+fmt(x.lan_cuoi.so_tien):''}</div>`:''}</td>
+        ${g?`<td class="nw c"><button class="m-btn out" style="height:28px;font-size:11.5px" title="Mở phiếu đề nghị điền sẵn người nhận / STK / số tiền" onclick="ltPhieu(${x.id})">Tạo phiếu</button> <button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="ltDaTra(${x.id})">✓ Đã thanh toán</button> <button class="m-btn out" style="height:28px" title="Sửa" onclick="formLT(${x.id})">✏</button></td>`:''}</tr>`}).join('')
+        ||`<tr><td colspan="7" class="m-empty">Chưa có khoản định kỳ</td></tr>`}</table></div></div>
+    <div class="m-flt" style="align-items:center;margin-top:16px"><b style="font-size:14px">Khoản trả 1 lần</b></div>`;
+  el.innerHTML=head('Lịch đến hạn trả',g?'<button class="btn pri" onclick="formST()">+ Thêm khoản 1 lần</button>':'')+lthtml+
     `<div class="bar"><span class="badge">${chua.length} khoản chưa trả · ${fmt(sumBy(chua,x=>x.so_tien))}</span><span class="badge">lương, vay, BHXH, nợ nhà cung cấp...</span></div>
     <div class="card scroll"><table><tr><th>Khoản</th><th>Hạn</th><th>Ghi chú</th><th>Trạng thái</th><th class="num">Số tiền</th></tr>
     ${ds.map(x=>`<tr class="click" onclick="formST(${x.id})"><td>${esc(x.noi_dung)}</td><td class="nw ${!x.da_tra&&x.han&&x.han<homNay()?'neg':''}">${fmtD(x.han)}</td><td>${esc(x.ghi_chu||'')}</td>
       <td>${x.da_tra?vb('Đã trả','ok'):vb('Chưa trả','warn')}</td><td class="num"><b>${fmt(x.so_tien)}</b></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Chưa có</td></tr>'}</table></div>`;
 }
+const linkHoa=t=>esc(t).replace(/(https?:\/\/[^\s·]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+function formLT(id){const x=(S.cache.lt||[]).find(t=>t.id===id)||{chu_ky:1,nhac_truoc:3};
+  modal(`<h2>${id?'Sửa':'Thêm'} khoản thanh toán định kỳ</h2><div class="form" id="f">
+    <label><span>Khoản${BB}</span><input name="khoan" value="${esc(x.khoan||'')}"></label><label><span>Cơ sở / bộ phận</span><input name="co_so" value="${esc(x.co_so||'')}"></label>
+    <label><span>Người nhận</span><input name="nguoi_nhan" value="${esc(x.nguoi_nhan||'')}"></label><label><span>Chủ tài khoản</span><input name="thu_huong_ten" value="${esc(x.thu_huong_ten||'')}"></label>
+    <label><span>Số tài khoản</span><input name="thu_huong_stk" value="${esc(x.thu_huong_stk||'')}"></label><label><span>Ngân hàng</span><input name="thu_huong_nh" value="${esc(x.thu_huong_nh||'')}"></label>
+    <label class="full"><span>Thông tin thanh toán (link, mã KH — không ghi mật khẩu)</span><input name="thong_tin" value="${esc(x.thong_tin||'')}"></label>
+    <label><span>Chu kỳ${BB}</span><select name="chu_ky">${optsObj(CHU_KY,String(x.chu_ky))}</select></label><label><span>Nhắc trước (ngày)</span><input type="number" name="nhac_truoc" min="0" max="30" value="${x.nhac_truoc??3}"></label>
+    <label><span>Hạn kỳ tới — từ ngày${BB}</span><input type="date" name="han_tu" value="${x.han_tu||''}"></label><label><span>đến ngày</span><input type="date" name="han_den" value="${x.han_den||''}"></label>
+    <label class="full"><span>Mô tả hạn</span><input name="han_mo_ta" value="${esc(x.han_mo_ta||'')}"></label>
+    <label><span>Số tiền dự kiến</span>${moneyIn('so_tien',x.so_tien||'')}</label><label><span>Hoặc ghi chú số tiền</span><input name="so_tien_ghi" value="${esc(x.so_tien_ghi||'')}"></label>
+    <label class="full"><span>Ghi chú</span><input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label></div>
+    <div class="acts">${id?`<button class="btn bad left" onclick="xoaLT(${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuLT(${id||'null'})">Lưu</button></div>`)}
+async function luuLT(id){const o=formData($('#f'));o.id=id;o.so_tien=so(o.so_tien);o.chu_ky=+o.chu_ky;o.nhac_truoc=+o.nhac_truoc;
+  if(!o.khoan||!o.han_tu)return alert('Cần tên khoản + hạn kỳ tới');await save('kt_lich_tt_luu',{p:o},'Đã lưu');render()}
+async function xoaLT(id){if(!confirm('Xoá khoản định kỳ này? Sẽ không nhắc nữa.'))return;await save('kt_lich_tt_xoa',{p_id:id},'Đã xoá');render()}
+function ltDaTra(id){const x=S.cache.lt.find(t=>t.id===id);
+  modal(`<h2>Đã thanh toán · ${esc(x.khoan)}${x.co_so?' · '+esc(x.co_so):''}</h2><div class="form" id="f">
+    <label><span>Số tiền đã trả</span>${moneyIn('so_tien',x.so_tien||'')}</label><label><span>Số phiếu chi (nếu có)</span><input name="pc" placeholder="PC001234"></label></div>
+    <div class="muted" style="font-size:12px">Kỳ ${fmtD(x.han_tu)}${x.han_den!==x.han_tu?' – '+fmtD(x.han_den):''} → chuyển sang kỳ sau (+${x.chu_ky} tháng)</div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuDaTraLT(${id})">✓ Đã thanh toán</button></div>`)}
+async function luuDaTraLT(id){const o=formData($('#f'));await save('kt_lich_tt_da_tra',{p_id:id,p_so_tien:so(o.so_tien),p_chi:+String(o.pc||'').replace(/\D/g,'')||null},'Đã ghi — chuyển sang kỳ sau');render()}
+// mở phiếu đề nghị điền sẵn người nhận / STK / ngân hàng / số tiền / nội dung
+function ltPhieu(id){const x=S.cache.lt.find(t=>t.id===id);formChi(null);
+  setTimeout(()=>{const f=document.querySelector('#modal');if(!f)return;const dat=(n,v)=>{const e=f.querySelector('[name='+n+']');if(e&&v!=null&&v!==''){e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}};
+    dat('noi_dung',x.khoan+(x.co_so?' '+x.co_so:'')+' kỳ '+fmtD(x.han_tu).slice(3));dat('thu_huong_ten',x.thu_huong_ten||x.nguoi_nhan||'');dat('thu_huong_stk',x.thu_huong_stk||'');dat('thu_huong_nh',x.thu_huong_nh||'');if(x.so_tien)dat('so_tien',fmt(x.so_tien))},400)}
 function formST(id){const x=id?S.cache.st.find(s=>s.id===id):{};
   modal(`<h2>${id?'Sửa khoản':'Thêm khoản sắp phải trả'}</h2><div class="form" id="f">
     <label class="full">Nội dung<input name="noi_dung" value="${esc(x.noi_dung||'')}"></label>
@@ -4673,7 +4714,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -4687,6 +4728,7 @@ async function docChuong(id){try{await rpc('kt_doc_thong_bao',{p_id:id||null});i
 async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)return;
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
+  if(x.bang==='lich_tt'){if(coXem('sap_tra'))go('sap_tra');return}   // 26/10: nhắc lịch thanh toán định kỳ
   if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='bao_loi'){S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');return}   // 24/10: báo lỗi → Log hệ thống, tab Báo lỗi
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
@@ -4801,6 +4843,7 @@ const LOGIC2=[
  ['chung','Nhập liệu','Tài khoản, cơ sở, bộ phận, loại thu / chi, ngân hàng chỉ chọn từ danh sách.','Danh mục sửa ở Cài đặt.','05/10'],
  ['chung','Xuất Excel','Mọi nút Xuất Excel ra file .xlsx: cột tiền là số (#,##0), cột ngày là ngày, có lọc cột.','Cột mã phiếu / số tài khoản giữ dạng chữ.','15/10'],
  // ── THU CHI & NGÂN QUỸ
+ ['cong_no','Lịch thanh toán định kỳ','Công nợ & Thanh toán → Lịch đến hạn trả → Thanh toán định kỳ: mỗi khoản có chu kỳ (tháng / quý / 6 tháng / năm), khung hạn kỳ tới, người nhận + STK, số dự kiến. 08:00 mỗi ngày (lịch kt-nhac-lich-tt) chuông cho Supreme + kế toán: trước hạn N ngày (mặc định 3) và khi quá hạn — mỗi mốc 1 lần / kỳ. ✓ Đã thanh toán → ghi lần trả, dời sang kỳ sau. Tạo phiếu → form đề nghị điền sẵn.','Không lưu mật khẩu đăng nhập (EVN…). Nạp 9 khoản từ file LỊCH THANH TOÁN CÁC KHOẢN CỐ ĐỊNH THT 26/10.','26/10'],
  ['thu_chi','Người gửi phiếu theo dõi (không tài khoản)','Gửi xong có link riêng #phieu=<mã bí mật>; máy đã gửi nhớ 20 phiếu gần nhất ("Phiếu đã gửi từ máy này"). Trang theo dõi: 4 bước Kế toán kiểm → Giám đốc xác nhận → Chờ thanh toán → Đã thanh toán. Đã thanh toán → hiện "Bill chuyển khoản" (chi tiền mặt: "Phiếu chi ký nhận") = ảnh kế toán đính ở ô Ảnh giao dịch của Bước 3 – Chi tiền.','Link xem ảnh sống 5 phút, cấp qua mã phiếu (kt_bill_phieu + Edge kt-chung-tu bill_phieu) — không xem được hồ sơ khác.','26/10'],
  ['thu_chi','Phiếu đề nghị','Mọi phiếu (trừ tạm ứng) bắt buộc chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm — ô riêng, không liên quan ô Hoá đơn đỏ (hoá đơn trắng cũng chọn).','Kế toán + anh 16/10.','16/10'],
  ['thu_chi','Tạm ứng','Phiếu đề nghị tick TẠM ỨNG → tự tạo dòng ở Tạm ứng & hoàn ứng; từ chối / xoá / bỏ tick → tự gỡ (nếu chưa hoàn). Tạm ứng không tính chi phí.','Không bắt chọn đơn vị chịu chi phí / hoá đơn — quyết toán khi hoàn ứng. Vẫn là tiền ra ở Dòng tiền.','16/10'],
