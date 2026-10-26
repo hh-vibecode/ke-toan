@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.226';
-const APP_VERSION='26/10/2026 15:58';
+const APP_SO='1.227';
+const APP_VERSION='26/10/2026 16:33';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3993,7 +3993,7 @@ async function pageVay(){
   const the=(c,ic,l1,v,s1)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
   const cols=[['Khoản vay',v=>v.ten],['Bên cho vay',v=>v.ben_cho_vay||''],['Đã nhận (giải ngân)',v=>+v.tong_nhan||0],['Gốc đã trả',v=>+v.goc_da_tra],['Dư nợ',duNo],['Lãi đã trả',v=>+v.lai_da_tra],['Lãi suất %/năm',v=>v.lai_suat??''],['Đáo hạn',v=>v.ngay_dao_han||''],['Tình trạng',v=>v.da_tat_toan?'Đã tất toán':'Đang vay']];
   S.cache.vay_xuat=()=>xuatCSV('vay',cols,l);const g=coGhi();
-  el.innerHTML=`<div class="m-kpis m-k3">${the('bad','no','Tổng dư nợ gốc',thieu.length?'<span title="Còn khoản chưa nhập số giải ngân">—</span>':fmt(sumBy(con,duNo)),thieu.length?thieu.length+' khoản chưa nhập lần nhận tiền':con.length+' khoản vay đang có')}
+  el.innerHTML=`<div class="m-kpis m-k3">${the('bad','no','Tổng dư nợ gốc',fmt(sumBy(con.filter(v=>+v.tong_nhan),duNo)),con.length+' khoản vay đang có'+(thieu.length?` · <span style="color:var(--warn)">chưa tính ${thieu.length} khoản thiếu giải ngân</span>`:''))}
       ${the('warn','lai','Gốc / lãi đã trả năm '+nay.slice(0,4),fmt(gocNam),'lãi ở trang này: '+fmt(laiNam)+' · lãi trả qua phiếu chi xem P&L')}
       ${the(sapTra.some(t=>t.ngay<nay)?'bad':'info','lich','Phải trả 30 ngày tới',fmt(sumBy(sapTra,t=>Number(t.goc)+Number(t.lai))),sapTra.length+' kỳ theo lịch')}</div>
     ${thieu.length?`<div class="m-st" style="color:var(--warn);font-size:12.5px">${thieu.length} khoản vay mới có lần trả, chưa có lần NHẬN TIỀN (giải ngân) → dư nợ chưa đúng. Mở từng khoản, bấm "+ Nhận tiền vay" (ngày, số tiền, tài khoản nhận — xem sao kê).</div>`:''}
