@@ -49,7 +49,7 @@ Deno.serve(async req => {
       const s = await fetch(`${SB}/storage/v1/object/sign/${BUCKET}`, { method: 'POST', headers: H, body: JSON.stringify({ expiresIn: HAN, paths: rows.map(x => x.duong_dan) }) });
       if (!s.ok) throw new Error('Ký link xem lỗi ' + s.status);
       const sj: any[] = await s.json();
-      return tra({ ds: rows.map(x => { const k = sj.find(y => y.path === x.duong_dan); return { ten: x.ten, mime: x.mime, url: k && k.signedURL ? `${SB}/storage/v1${k.signedURL}` : null }; }) });
+      return tra({ ds: rows.map(x => { const k = sj.find(y => y.path === x.duong_dan); return { ten: x.ten, mime: x.mime, tm: !!x.tm, url: k && k.signedURL ? `${SB}/storage/v1${k.signedURL}` : null }; }) });
     }
     if (b.viec === 'xem') {
       const ids = (b.ids || []).map(Number).filter(Boolean).slice(0, 500);

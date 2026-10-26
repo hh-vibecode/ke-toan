@@ -995,8 +995,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.221';
-const APP_VERSION='26/10/2026 13:53';
+const APP_SO='1.222';
+const APP_VERSION='26/10/2026 14:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1291,7 +1291,7 @@ async function dnXem(ma){
     <div class="gt-buoc">${[['cho_duyet','Kế toán kiểm'],['cho_gd','Giám đốc xác nhận'],['cho_tt','Chờ thanh toán'],['da_tt','Đã thanh toán']].map(([k,t],i,a)=>{const cur=a.findIndex(z=>z[0]===x.trang_thai);
       return `<div class="${/tu_choi/.test(x.trang_thai)?'':i<cur||x.trang_thai==='da_tt'?'xong':i===cur?'dang':''}">${i+1}. ${t}</div>`}).join('')}</div>
     <div class="gt-kv"><div>Nội dung</div><div>${esc(x.noi_dung)}</div><div>Số tiền</div><div><b>${fmt(x.so_tien)} đ</b></div><div>Thụ hưởng</div><div>${esc(x.thu_huong_ten||'')}</div><div>Hồ sơ đính kèm</div><div>${x.so_file} file</div></div>
-    ${x.trang_thai==='da_tt'?`<div class="dn-l" style="margin-top:14px">Chứng từ thanh toán</div><div id="dn-bill" class="dn-bill"><span class="muted">Đang tải...</span></div>`:''}
+    ${x.trang_thai==='da_tt'?`<div class="dn-l" style="margin-top:14px" id="dn-bill-l">Bill chuyển khoản</div><div id="dn-bill" class="dn-bill"><span class="muted">Đang tải...</span></div>`:''}
     ${x.con_tai_len?`<div class="dn-l" style="margin-top:12px">Tải thêm hồ sơ <span class="muted">(trong 3 giờ sau khi gửi)</span></div>
       <label class="dn-drop">+ Chọn ảnh / PDF / Excel / Word<input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="dnBoSung('${ma}',this.files)"></label><div id="dn-files"></div>`:''}
     <div class="acts" style="justify-content:center"><button class="btn" onclick="dnXem('${ma}')">Tải lại</button><button class="btn pri" onclick="history.replaceState(null,'',location.pathname+'#de-nghi');dnForm()">Gửi phiếu mới</button></div>`;
@@ -1299,7 +1299,8 @@ async function dnXem(ma){
 // 26/10 anh: "khi xử lý xong họ thấy được bill chuyển khoản bước cuối cùng" — phiếu Đã thanh toán: ảnh giao dịch (UNC / phiếu chi ký nhận) qua mã bí mật, link 5 phút
 async function dnBill(ma){const el=$('#dn-bill');if(!el)return;
   try{const r=await fetch(FN_CT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({viec:'bill_phieu',ma})}),j=await r.json();if(!r.ok)throw new Error(j.loi||'Lỗi '+r.status);
-    el.innerHTML=(j.ds||[]).filter(f=>f.url).map(f=>/^image\//.test(f.mime||'')?`<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" alt="Bill chuyển khoản"></a>`
+    const ds=(j.ds||[]).filter(f=>f.url),l=$('#dn-bill-l');if(l&&ds.length&&ds.every(f=>f.tm))l.textContent='Phiếu chi ký nhận';
+    el.innerHTML=ds.map(f=>/^image\//.test(f.mime||'')?`<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" alt="Bill chuyển khoản"></a>`
       :`<a class="dn-bill-f" href="${esc(f.url)}" target="_blank" rel="noopener">Xem bill (PDF)</a>`).join('')||'<span class="muted">Kế toán chưa đính kèm bill chuyển khoản</span>'}
   catch(e){el.innerHTML=`<span class="neg-t">${esc(e.message)}</span>`}}
 async function dnBoSung(ma,list){DN.files=[];dnThemFile(list);DN.gui=true;dnVeFile();const loi=await dnTaiFile(ma,DN.files,i=>'dn-tt-'+i);DN.gui=false;
@@ -4795,7 +4796,7 @@ const LOGIC2=[
  ['chung','Nhập liệu','Tài khoản, cơ sở, bộ phận, loại thu / chi, ngân hàng chỉ chọn từ danh sách.','Danh mục sửa ở Cài đặt.','05/10'],
  ['chung','Xuất Excel','Mọi nút Xuất Excel ra file .xlsx: cột tiền là số (#,##0), cột ngày là ngày, có lọc cột.','Cột mã phiếu / số tài khoản giữ dạng chữ.','15/10'],
  // ── THU CHI & NGÂN QUỸ
- ['thu_chi','Người gửi phiếu theo dõi (không tài khoản)','Gửi xong có link riêng #phieu=<mã bí mật>; máy đã gửi nhớ 20 phiếu gần nhất ("Phiếu đã gửi từ máy này"). Trang theo dõi: 4 bước Kế toán kiểm → Giám đốc xác nhận → Chờ thanh toán → Đã thanh toán. Đã thanh toán → hiện "Chứng từ thanh toán" = ảnh giao dịch (UNC / phiếu chi ký nhận) kế toán đính ở bước chi tiền.','Link xem ảnh sống 5 phút, cấp qua mã phiếu (kt_bill_phieu + Edge kt-chung-tu bill_phieu) — không xem được hồ sơ khác.','26/10'],
+ ['thu_chi','Người gửi phiếu theo dõi (không tài khoản)','Gửi xong có link riêng #phieu=<mã bí mật>; máy đã gửi nhớ 20 phiếu gần nhất ("Phiếu đã gửi từ máy này"). Trang theo dõi: 4 bước Kế toán kiểm → Giám đốc xác nhận → Chờ thanh toán → Đã thanh toán. Đã thanh toán → hiện "Bill chuyển khoản" (chi tiền mặt: "Phiếu chi ký nhận") = ảnh kế toán đính ở ô Ảnh giao dịch của Bước 3 – Chi tiền.','Link xem ảnh sống 5 phút, cấp qua mã phiếu (kt_bill_phieu + Edge kt-chung-tu bill_phieu) — không xem được hồ sơ khác.','26/10'],
  ['thu_chi','Phiếu đề nghị','Mọi phiếu (trừ tạm ứng) bắt buộc chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm — ô riêng, không liên quan ô Hoá đơn đỏ (hoá đơn trắng cũng chọn).','Kế toán + anh 16/10.','16/10'],
  ['thu_chi','Tạm ứng','Phiếu đề nghị tick TẠM ỨNG → tự tạo dòng ở Tạm ứng & hoàn ứng; từ chối / xoá / bỏ tick → tự gỡ (nếu chưa hoàn). Tạm ứng không tính chi phí.','Không bắt chọn đơn vị chịu chi phí / hoá đơn — quyết toán khi hoàn ứng. Vẫn là tiền ra ở Dòng tiền.','16/10'],
  ['thu_chi','Phiếu trang chủ','2 lựa chọn: Đề nghị thanh toán | Tạm ứng & hoàn ứng (bên trong: Xin tạm ứng / Hoàn ứng = trả lại tiền đã ứng).','Hoàn ứng không chi tiền, không là chi phí.','16/10'],

@@ -8,7 +8,9 @@ declare p kt_chi_phieu := kt_phieu_theo_ma(p_ma, false); c kt_chi;
 begin
   select * into c from kt_chi where id = p.chi_id and not da_xoa;
   if c.id is null or c.trang_thai <> 'da_tt' then return '[]'; end if;
-  return (select coalesce(jsonb_agg(jsonb_build_object('duong_dan', k.duong_dan, 'ten', k.ten_file, 'mime', k.mime) order by k.id), '[]')
+  -- 26/10 anh "cần bill chuyển khoản": kèm tm = chi tiền mặt (nhãn "Phiếu chi ký nhận"), còn lại nhãn "Bill chuyển khoản"
+  return (select coalesce(jsonb_agg(jsonb_build_object('duong_dan', k.duong_dan, 'ten', k.ten_file, 'mime', k.mime,
+            'tm', coalesce((select t.loai = 'tien_mat' from kt_tai_khoan t where t.id = c.tai_khoan_id), false)) order by k.id), '[]')
             from kt_chung_tu k where k.bang = 'chi' and k.dong_id = c.id and not k.da_xoa and k.ten_file ~* '^UNC_');
 end $f$;
 revoke all on function public.kt_bill_phieu(text) from anon, authenticated, public;
