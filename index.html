@@ -810,7 +810,10 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
   body.sb-an:not(.sb-rong) .sb-nv{justify-content:center;padding:10px 0;position:relative}
   body.sb-an:not(.sb-rong) .sb-nv .nav-badge{position:absolute;top:2px;right:6px;font-size:9px;min-width:16px;padding:0 4px}
 }
-@media (max-width:900px){.sb-an-n,.sb-khoa-i{display:none}}
+@media (max-width:900px){.sb-an-n,.sb-khoa-i,.sb-tg{display:none}}
+.sb-tg{display:flex;align-items:center;gap:8px;margin:6px 10px 4px;padding:7px 10px;border:1px solid rgba(255,255,255,.16);border-radius:8px;background:none;color:rgba(255,255,255,.75);font-size:12px;font-weight:600;cursor:pointer;flex:none}
+.sb-tg:hover{background:rgba(255,255,255,.08);color:#fff}.sb-tg .i{font-size:15px;line-height:1;width:16px;text-align:center}
+@media (min-width:901px){body.sb-an:not(.sb-rong) .sb-tg{justify-content:center;margin:auto 8px 10px;padding:7px 0}body.sb-an:not(.sb-rong) .sb-tg .t{display:none}}
 /* Phiếu chi — cửa sổ lớn (16/10) */
 .modal.pc-m>div{max-width:1480px;width:96vw;padding:0;max-height:96vh;display:flex;flex-direction:column;overflow:hidden}
 .pc{display:flex;flex-direction:column;min-height:0;flex:1}
@@ -831,6 +834,10 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .dk-dot{color:var(--warn);font-size:9px;margin-left:3px;vertical-align:super;cursor:help}
 .dn-bill{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.dn-bill img{max-width:220px;max-height:300px;border:1px solid var(--border);border-radius:8px;display:block}
 .dn-bill-f{display:inline-block;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-weight:600}
+.lsb{padding:6px 16px 12px}.lsb-d{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 4px}
+.lsb-i{display:flex;gap:14px;padding:8px 0;border-top:1px solid var(--border)}.lsb-i.on .lsb-v{color:var(--accent)}
+.lsb-v{flex:none;width:74px;font-weight:800;font-size:13px}.lsb-v span{display:block;font-size:11px;font-weight:500;color:var(--muted)}
+.lsb-n{min-width:0;font-size:13px}.lsb-n ul{margin:4px 0 0;padding-left:18px;color:var(--text2);font-size:12.5px}.lsb-n li{margin:1px 0}
 .bl-ls{border-left:2px solid var(--border);padding:2px 0 8px 10px;font-size:12.5px}
 .pc-o>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.pc-o>div{font-size:13px;font-weight:500;word-break:break-word}
 .pc-ls{display:flex;flex-direction:column;gap:8px}.pc-ls>div{display:flex;flex-direction:column;border-left:2px solid var(--border);padding-left:10px}.pc-ls b{font-size:12.5px}.pc-ls span{font-size:11.5px;color:var(--muted)}
@@ -1000,8 +1007,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.224';
-const APP_VERSION='26/10/2026 15:14';
+const APP_SO='1.225';
+const APP_VERSION='26/10/2026 15:19';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1462,11 +1469,20 @@ const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Hệ thống & Cài đặt chia nhóm, có tiêu đề nhỏ
 const CD_NHOM=['Danh mục','Dữ liệu','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_xuat','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
 // Log hệ thống: 1 trang, 3 tab — mỗi tab dùng lại hàm trang cũ, chèn thanh tab ngay dưới tiêu đề
-const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy'],['loi','Báo lỗi']];
+const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy'],['loi','Báo lỗi'],['ban','Lịch sử cập nhật']];
 async function pageLogHT(){const t=S.f.log_tab||'sua';
-  await (t==='luu_luong'?pageLuuLuong():t==='lich'?pageLich():t==='loi'?pageBaoLoi():pageCaiDat('nhat_ky'));
+  await (t==='luu_luong'?pageLuuLuong():t==='lich'?pageLich():t==='loi'?pageBaoLoi():t==='ban'?pageLichSuBan():pageCaiDat('nhat_ky'));
   const seg=`<div class="m-seg" style="margin-bottom:12px">${LOG_TAB.map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.log_tab='${k}';render()">${v}</button>`).join('')}</div>`;
   const top=document.querySelector('#page .top');if(top)top.insertAdjacentHTML('afterend',seg);else $('#page').insertAdjacentHTML('afterbegin',seg)}
+// 26/10 anh: "log hệ thống thêm lịch sử update các phiên bản, bản nào thay đổi gì nhét hết vào đây" — file lich-su-ban.json (scripts/lich-su-ban.js, dong-dau tự dựng)
+async function pageLichSuBan(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';let ds=[];
+  try{ds=await (await fetch('lich-su-ban.json?v='+APP_SO,{cache:'no-store'})).json()}catch(e){el.innerHTML=head('Log hệ thống')+'<div class="m-empty neg-t">Chưa đọc được lịch sử cập nhật</div>';return}
+  const q=(S.f.lsb_q||'').toLowerCase(),l=ds.filter(x=>!q||[x.v,x.nd,...(x.ct||[])].join(' ').toLowerCase().includes(q));
+  const ngay={};l.forEach(x=>{const d=(x.luc||'').slice(0,10);(ngay[d]=ngay[d]||[]).push(x)});
+  el.innerHTML=head('Log hệ thống <span class="badge" style="vertical-align:middle">Lịch sử cập nhật</span>',`<span class="badge">${ds.length} lần cập nhật · đang chạy v${APP_SO}</span>`)
+    +`<div class="m-flt"><input class="m-in" style="max-width:320px" placeholder="Tìm theo nội dung / số bản" value="${esc(S.f.lsb_q||'')}" onchange="S.f.lsb_q=this.value;render()"></div>
+    <div class="m-card lsb">${Object.entries(ngay).map(([d,xs])=>`<div class="lsb-d">${esc(d)}</div>${xs.map(x=>`<div class="lsb-i ${x.v===APP_SO?'on':''}"><div class="lsb-v">${x.v?'v'+esc(x.v):'<span class="muted">—</span>'}<span>${esc((x.luc||'').slice(11))}</span></div>
+      <div class="lsb-n"><b>${esc(String(x.nd).replace(/s*(VIEC [0-9]+)s*$/,''))}</b>${(x.ct||[]).length?`<ul>${x.ct.map(c=>`<li>${esc(c.replace(/^[-•·]\s*/,''))}</li>`).join('')}</ul>`:''}</div></div>`).join('')}`).join('')||'<div class="m-empty">Không có</div>'}</div>`}
 const sbMuc=(ks,nb)=>{const mot=k=>`<div class="sb-sub ${S.page===k?'on':''}" data-p="${k}" onclick="go('${k}')">${IC_SB.so}<span class="sb-t">${PAGES[k].ten}</span>${nb(demMuc(k))}</div>`;
   if(!ks.every(k=>PAGES[k].cd))return ks.map(mot).join('');
   const xs=[...ks].sort((a,b)=>(CD_THU.indexOf(a)+99)%99-(CD_THU.indexOf(b)+99)%99);
@@ -1534,14 +1550,14 @@ function shell(){
   $('#app').innerHTML=`<div class="lay"><aside class="sb" onmouseenter="sbVao()" onmouseleave="sbRa()"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
       <nav class="sb-nav">${nav}</nav>${subs}
       ${ln.b?`<div class="sb-box sb-loc"><div class="sb-bh"><span>${ln.h}</span></div><div class="sb-bb">${ln.b}${ln.reset?`<button class="lc-r" onclick="datLaiLoc()">Đặt lại bộ lọc</button>`:''}</div></div>`:''}
-      <div class="sb-ver" title="Cập nhật lúc ${APP_VERSION} — F5 nếu số khác bản mới nhất">Phiên bản <b>v${APP_SO}</b> · ${APP_VERSION.slice(0,5)} ${APP_VERSION.slice(11)}</div></aside>
+      <div class="sb-ver" title="Cập nhật lúc ${APP_VERSION} — F5 nếu số khác bản mới nhất">Phiên bản <b>v${APP_SO}</b> · ${APP_VERSION.slice(0,5)} ${APP_VERSION.slice(11)}</div>${sbTgHtml()}</aside>
     <div class="sb-nen" onclick="document.body.classList.remove('sb-mo')"></div>
     <main class="main"><header class="hd"><button class="tb-btn sb-mo-btn" onclick="document.body.classList.add('sb-mo')">☰</button>
       <div class="hd-t"><h1>${esc(nvO.ten||'')}${ks.length>1&&PAGES[S.page]&&PAGES[S.page].ten!==nvO.ten?`<span class="hd-t1"> — ${esc(PAGES[S.page].ten)}</span>`:''}</h1><div class="hd-s">${MO_TA_NV[cur]||''}</div></div>
       <div class="hd-r">${dxHtml()}<select class="hd-ky" onchange="chonKy(this.value)">${optKy()}</select>${kyTuy()}
         ${csHtml()}
         ${xnHtml()}${chatNut()}${chuongHtml()}<div class="tb-dd"><div class="hd-u" onclick="event.stopPropagation();const d=this.parentNode,o=d.classList.contains('open');document.querySelectorAll('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')"><span class="av">${esc(av)}</span><div class="nm"><b>${esc(ten)}</b><span>${esc(vt)}</span></div><span class="cv">▾</span></div>
-          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div><div class="dd-i" onclick="thuAmBao()">▶ Thử âm báo</div><div class="dd-i sb-khoa-i" onclick="khoaMenu()" title="Khoá: menu trái luôn mở, không tự thu vào. Bấm lần nữa để mở khoá">${sbKhoa()?'✓ Đã khoá menu trái (bấm để mở khoá)':'☰ Khoá menu trái (luôn mở)'}</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="baoLoi('chung',0,'')">${IC_LOI} Báo lỗi</div><div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
+          <div class="tb-menu-dd"><div class="dd-i" onclick="doiGiaoDien()">◐ Giao diện sáng / tối</div><div class="dd-i" onclick="thuAmBao()">▶ Thử âm báo</div>${coXem('cd_doi_mk')?`<div class="dd-i" onclick="go('cd_doi_mk')">Đổi mật khẩu</div>`:''}<div class="dd-i" onclick="baoLoi('chung',0,'')">${IC_LOI} Báo lỗi</div><div class="dd-i" onclick="lock()">Đăng xuất</div></div></div></div></header>
       <div class="wrap" id="page"></div></main></div>`;
   document.body.classList.remove('sb-mo');veDX();
   render();
@@ -1961,10 +1977,11 @@ function doiTuAn(){const on=!document.body.classList.contains('sb-an');document.
   try{localStorage.setItem('kt_sb_an',on?'1':'')}catch(e){}toast(on?'Đã bật tự ẩn menu — rời chuột 1 giây menu sẽ thu gọn':'Đã tắt tự ẩn menu');if(on)sbRa()}
 // 20/10 anh: "thêm nút khoá menu trái trong tên profile, ai không thích nó thụt vào thì ấn khoá" — lưu theo trình duyệt từng người
 function sbKhoa(){try{return localStorage.getItem('kt_sb_khoa')==='1'}catch(e){return false}}
+// 26/10 anh: "cái khoá menu bên trái đổi vào trong góc dưới của menu, cho expand hoặc thu lại là được" — nút ở chân menu trái (bỏ khỏi menu tài khoản)
+const sbTgHtml=()=>{const k=sbKhoa();return `<button class="sb-tg" onclick="khoaMenu()" title="${k?'Thu gọn menu (chỉ còn icon, trỏ chuột vào thì mở)':'Mở rộng menu (luôn mở)'}"><span class="i">${k?'«':'»'}</span><span class="t">${k?'Thu gọn':'Mở rộng'}</span></button>`};
 function khoaMenu(){const k=!sbKhoa();try{localStorage.setItem('kt_sb_khoa',k?'1':'')}catch(e){}
   document.body.classList.toggle('sb-an',!k);document.body.classList.remove('sb-rong');if(!k)sbRa();
-  const i=document.querySelector('.sb-khoa-i');if(i)i.textContent=k?'✓ Đã khoá menu trái (bấm để mở khoá)':'☰ Khoá menu trái (luôn mở)';
-  toast(k?'Đã khoá menu trái — luôn mở':'Đã mở khoá — menu tự thu vào khi rời chuột')}
+  const b=document.querySelector('.sb-tg');if(b)b.outerHTML=sbTgHtml()}
 if(!sbKhoa())document.body.classList.add('sb-an');   // 16/10 anh: tự ẩn là CHẾ ĐỘ mặc định — máy tính: menu thu về icon, trỏ vào mở, rời 1 giây thu lại
 async function pageThu(){
   // PHIẾU THU — giao diện mẫu (kế toán 14/10/2026: "giao diện hơi kì", trạng thái chỉ Đã thu / Chưa thu): thẻ số · tab · lọc · bảng + khung chi tiết khi bấm
@@ -4923,6 +4940,7 @@ const LOGIC2=[
  ['chung','Chat trong app','TẠM TẮT 22/10 (anh: "tạm thời không cần") — ẩn nút chat + nút Gửi vào chat, không gọi máy chủ; bật lại: CHAT_TAT=false. Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
  ['chung','Bình luận: @nhắc tên, Nhắc việc, âm báo','Ô bình luận trong phiếu (chi, thu, điều chuyển, tạm ứng, vay): gõ @ chọn tên người có tài khoản app kế toán → người đó nhận chuông. Tick "Nhắc việc" → bình luận thành việc cần làm: nhãn "Cần bổ sung" trên phiếu + mục lọc ở dải Cần chú ý, tới khi bấm "✓ Đã xong".','Việc nhắc mở quá 2 ngày: 8:00 sáng hằng ngày báo chuông lại người ghi + kế toán (lịch kt-nhac-viec). Chuông có thông báo mới: KHÔNG kêu (anh 26/10). Tin nhắn chat mới vẫn kêu "bzzzz". Người gửi phiếu không có tài khoản: không nhắc — giám đốc / kế toán up thay.','26/10'],
  ['chung','Báo lỗi — kết quả xử lý','Đánh dấu Đã xử lý (Log → Báo lỗi, hoặc Claude xử lý) → chuông của người báo "Lỗi đã báo · …: đã xử lý". Bấm → cửa sổ lỗi đã báo + cách xử lý + lịch sử → ✓ Hoàn thành hoặc Phản hồi tiếp (bắt ghi nội dung → lỗi mở lại, chuông Supreme).','Trang Log hiện trạng thái người báo: chờ xác nhận / hoàn thành / phản hồi.','26/10'],
+ ['chung','Lịch sử cập nhật','Log hệ thống → Lịch sử cập nhật: mỗi lần đẩy bản (v1.N) — giờ + nội dung thay đổi (tiêu đề + chi tiết commit), gom theo ngày, tìm theo nội dung. Bản trước 15/10 chưa đánh số hiện —.','File lich-su-ban.json do scripts/lich-su-ban.js dựng từ git; dong-dau.js tự dựng lại mỗi lần đóng dấu (tham số 1 = mô tả bản đang đẩy).','26/10'],
  ['chung','Báo có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App kiểm ngay 4 giây sau khi mở, rồi mỗi phút và lúc quay lại tab; có bản mới → hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình (như app MKT).','Không đang mở cửa sổ nhập liệu → đếm 10 giây rồi tự tải lại; đang nhập dở → chỉ hiện nút, bấm Tải lại khi xong. Lúc Xem như thì không báo.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
  ['chung','Phân quyền theo menu · Sổ quỹ 4 quyền','Trang Phân quyền xếp nhóm đúng menu trái (Tổng quan · Thu chi & Ngân quỹ · Công nợ · Hoá đơn & Thuế · Báo cáo · Hệ thống). Sổ quỹ chia 4 quyền theo 4 tab: Số dư tài khoản · Sổ quỹ theo ngày · Kiểm két cuối ngày · Quỹ tiền mặt cửa hàng — chỉ thấy tab, thẻ số và dữ liệu được cấp (máy chủ chặn phần còn lại).','Tài khoản có quyền Sổ quỹ cũ = đủ 4 quyền; mở sửa ở Phân quyền rồi Lưu là đổi sang 4 quyền mới. Quyền của trang ẩn (không hiện trên bảng) giữ nguyên khi lưu.','21/10'],

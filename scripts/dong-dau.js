@@ -16,7 +16,10 @@ fs.writeFileSync(f, s);
 fs.writeFileSync(path.join(goc, 'phien-ban.txt'), `1.${n}\n`);
 // 23/10/2026 SỰ CỐ: add index.html TRƯỚC rồi mới chạy script → commit mang index.html số cũ + phien-ban.txt số mới → app mọi tài khoản
 // tự tải lại không dừng. Từ nay script add CẢ index.html + phien-ban.txt và kiểm bản đã add khớp số; sau bước này KHÔNG sửa index.html nữa.
-execSync('git add index.html phien-ban.txt', { cwd: goc });
+// 26/10/2026 anh: lịch sử cập nhật phiên bản (Log hệ thống → Lịch sử cập nhật) — dựng lại lich-su-ban.json, kèm dòng bản đang đóng dấu
+// (mô tả = tham số 1 nếu có: node scripts/dong-dau.js "mô tả bản này")
+try { execSync(`"${process.execPath}" "${path.join(__dirname, 'lich-su-ban.js')}" 1.${n} "${gio}" ${JSON.stringify(process.argv[2] || '')}`, { cwd: goc, env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, stdio: 'ignore' }); } catch (e) { console.log('(lịch sử bản: lỗi, bỏ qua)'); }
+execSync('git add index.html phien-ban.txt lich-su-ban.json', { cwd: goc });
 const daAdd = execSync('git show :index.html', { cwd: goc, maxBuffer: 64e6 }).toString().match(/^const APP_SO='([^']*)';/m);
 if (!daAdd || daAdd[1] !== `1.${n}`) throw new Error('index.html đã add không khớp số phiên bản — KHÔNG commit');
 console.log(`v1.${n} · ${gio}  (đã ghi + git add index.html + phien-ban.txt, đã kiểm khớp)`);
