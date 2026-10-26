@@ -838,6 +838,7 @@ body.sb-an .sb-an-n{background:var(--accent);border-color:var(--accent);color:#f
 .lsb-i{display:flex;gap:14px;padding:8px 0;border-top:1px solid var(--border)}.lsb-i.on .lsb-v{color:var(--accent)}
 .lsb-v{flex:none;width:74px;font-weight:800;font-size:13px}.lsb-v span{display:block;font-size:11px;font-weight:500;color:var(--muted)}
 .lsb-n{min-width:0;font-size:13px}.lsb-n ul{margin:4px 0 0;padding-left:18px;color:var(--text2);font-size:12.5px}.lsb-n li{margin:1px 0}
+.vay-nh{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}.vay-nh span{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
 .bl-ls{border-left:2px solid var(--border);padding:2px 0 8px 10px;font-size:12.5px}
 .pc-o>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.pc-o>div{font-size:13px;font-weight:500;word-break:break-word}
 .pc-ls{display:flex;flex-direction:column;gap:8px}.pc-ls>div{display:flex;flex-direction:column;border-left:2px solid var(--border);padding-left:10px}.pc-ls b{font-size:12.5px}.pc-ls span{font-size:11.5px;color:var(--muted)}
@@ -1007,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.225';
-const APP_VERSION='26/10/2026 15:19';
+const APP_SO='1.226';
+const APP_VERSION='26/10/2026 15:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3969,7 +3970,18 @@ const HT_VAY={goc_cuoi_ky:'Trả gốc cuối kỳ, lãi hàng tháng',goc_deu:'
 const duNo=v=>(+v.tong_nhan||0)-(+v.goc_da_tra||0);
 async function pageVay(){
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const ds=await rpc('kt_ds_vay');S.cache.vay=ds;const nay=homNay(),sau30=ymd(new Date(Date.now()+30*864e5)),f=S.f,tab=f.vay_tab||'dang';
+  const dsA=await rpc('kt_ds_vay');S.cache.vay=dsA;const nay=homNay(),sau30=ymd(new Date(Date.now()+30*864e5)),f=S.f,tab=f.vay_tab||'dang';
+  // 26/10 anh: lọc theo ngân hàng · cá nhân / công ty · ngắn hạn / trung dài hạn · tài sản đảm bảo — thẻ số + bảng + lịch trả theo bộ lọc
+  const tsK=v=>v.co_tsdb===true?'ts:'+(v.tsdb||'(chưa ghi tài sản)'):v.co_tsdb===false?'tin_chap':'chua';
+  const ds=dsA.filter(v=>(!f.vay_nh||(v.ben_cho_vay||'')===f.vay_nh)&&(!f.vay_cv||(v.chu_vay||'')===f.vay_cv)&&(!f.vay_kh||(v.ky_han||'chua')===f.vay_kh)
+    &&(!f.vay_ts||(f.vay_ts==='co'?v.co_tsdb===true:tsK(v)===f.vay_ts)));
+  const selV=(k,tat,ops)=>`<select class="m-in" style="width:auto" onchange="S.f.${k}=this.value;render()"><option value="">${tat}</option>${ops.map(([v,t])=>`<option value="${esc(v)}" ${f[k]===v?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
+  const tsDS=[...new Set(dsA.filter(v=>v.co_tsdb===true).map(v=>v.tsdb||'(chưa ghi tài sản)'))];
+  const locVay=`<div class="m-flt" style="align-items:center">${selV('vay_nh','Tất cả ngân hàng',[...new Set(dsA.map(v=>v.ben_cho_vay||''))].filter(Boolean).sort().map(x=>[x,x]))}
+    ${selV('vay_cv','Công ty + cá nhân',[['cong_ty','Công ty'],['ca_nhan','Cá nhân']])}${selV('vay_kh','Mọi kỳ hạn',[['ngan','Ngắn hạn'],['trung_dai','Trung dài hạn'],['chua','Chưa phân loại']])}
+    ${selV('vay_ts','Tài sản đảm bảo: tất cả',[['co','Có tài sản đảm bảo'],...tsDS.map(t=>['ts:'+t,'TSĐB: '+t]),['tin_chap','Tín chấp'],['chua','Chưa nhập TSĐB']])}
+    ${f.vay_nh||f.vay_cv||f.vay_kh||f.vay_ts?`<button class="m-btn out" onclick="S.f.vay_nh=S.f.vay_cv=S.f.vay_kh=S.f.vay_ts='';render()">Bỏ lọc</button>`:''}</div>`;
+  const vayNhan=v=>`<div class="vay-nh">${v.chu_vay==='ca_nhan'?'<span>Cá nhân</span>':v.chu_vay==='cong_ty'?'<span>Công ty</span>':''}${v.ky_han==='ngan'?'<span>Ngắn hạn</span>':v.ky_han==='trung_dai'?'<span>Trung dài hạn</span>':''}${v.co_tsdb===true?`<span title="${esc(v.tsdb||'')}">TSĐB${v.tsdb?': '+esc(v.tsdb.length>28?v.tsdb.slice(0,28)+'…':v.tsdb):''}</span>`:v.co_tsdb===false?'<span>Tín chấp</span>':''}</div>`;
   const con=ds.filter(v=>!v.da_tat_toan),thieu=ds.filter(v=>!+v.tong_nhan&&+v.goc_da_tra>0);
   const goc=t=>String(t.ngay).slice(0,4)===nay.slice(0,4),gocNam=sumBy(ds,v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.goc)),laiNam=sumBy(ds,v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.lai));
   const sapTra=ds.flatMap(v=>(v.lan_tra||[]).filter(t=>!t.da_tra&&t.ngay<=sau30).map(t=>({...t,ten:v.ten,vid:v.id}))).sort((a,c)=>a.ngay<c.ngay?-1:1);
@@ -3986,12 +3998,12 @@ async function pageVay(){
       ${the(sapTra.some(t=>t.ngay<nay)?'bad':'info','lich','Phải trả 30 ngày tới',fmt(sumBy(sapTra,t=>Number(t.goc)+Number(t.lai))),sapTra.length+' kỳ theo lịch')}</div>
     ${thieu.length?`<div class="m-st" style="color:var(--warn);font-size:12.5px">${thieu.length} khoản vay mới có lần trả, chưa có lần NHẬN TIỀN (giải ngân) → dư nợ chưa đúng. Mở từng khoản, bấm "+ Nhận tiền vay" (ngày, số tiền, tài khoản nhận — xem sao kê).</div>`:''}
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
-      <div class="m-seg" style="margin-bottom:10px">${[['dang','Đang vay'],['xong','Đã tất toán'],['tat_ca','Tất cả']].map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.vay_tab='${k}';render()">${t}<span class="c">${ds.filter(loc[k]).length}</span></button>`).join('')}</div>
+      ${locVay}<div class="m-seg" style="margin-bottom:10px">${[['dang','Đang vay'],['xong','Đã tất toán'],['tat_ca','Tất cả']].map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.vay_tab='${k}';render()">${t}<span class="c">${ds.filter(loc[k]).length}</span></button>`).join('')}</div>
       <div class="m-flt" style="align-items:center"><span class="badge">Trả gốc vay không phải chi phí · chỉ lãi vay tính vào P&L</span><span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.vay_xuat()">${IC_XLS} Xuất Excel</button>${g?`<button class="m-btn pri" onclick="formVay()">+ Thêm khoản vay</button>`:''}</div>
       ${sapTra.length?`<div class="m-card" style="margin-bottom:12px"><div style="padding:10px 14px;font-weight:700;font-size:13px">Lịch trả 30 ngày tới</div><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Khoản vay</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="c">Trạng thái</th></tr>
         ${sapTra.map(t=>`<tr class="click" onclick="xemVay(${t.vid})"><td class="nw">${fmtD(t.ngay)}</td><td class="ten">${esc(t.ten)}</td><td class="num">${fmt(t.goc)}</td><td class="num">${fmt(t.lai)}</td><td class="c">${t.ngay<nay?pill('Quá hạn','bad'):pill('Sắp đến hạn','warn')}</td></tr>`).join('')}</table></div></div>`:''}
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Khoản vay</th><th>Bên cho vay</th><th class="num">Đã nhận</th><th class="num">Gốc đã trả</th><th class="num">Dư nợ</th><th class="num">Lãi đã trả</th><th class="num">Lãi suất</th><th>Đáo hạn</th><th class="c">Tình trạng</th></tr>
-        ${l.map(v=>`<tr class="click ${v.id===chon?'on':''}" data-id="${v.id}" onclick="xemVay(${v.id})"><td class="ten"><b>${esc(v.ten)}</b></td><td>${esc(v.ben_cho_vay||'')}</td>
+        ${l.map(v=>`<tr class="click ${v.id===chon?'on':''}" data-id="${v.id}" onclick="xemVay(${v.id})"><td class="ten"><b>${esc(v.ten)}</b>${vayNhan(v)}</td><td>${esc(v.ben_cho_vay||'')}</td>
           <td class="num">${+v.tong_nhan?fmt(v.tong_nhan):'<span class="muted">chưa nhập</span>'}</td><td class="num">${fmt(v.goc_da_tra)}</td><td class="num"><b class="${duNo(v)<0?'neg-t':''}">${+v.tong_nhan?fmt(duNo(v)):'—'}</b></td><td class="num">${fmt(v.lai_da_tra)}</td>
           <td class="num">${v.lai_suat!=null?v.lai_suat+'%':''}</td><td class="nw ${v.ngay_dao_han&&v.ngay_dao_han<nay&&!v.da_tat_toan?'neg':''}">${fmtD(v.ngay_dao_han)}</td>
           <td class="c">${v.da_tat_toan?pill('Đã tất toán','ok'):!+v.tong_nhan?pill('Thiếu giải ngân','warn'):pill('Đang vay','info')}</td></tr>`).join('')
@@ -4006,6 +4018,8 @@ function formVay(id){const x=id?S.cache.vay.find(v=>v.id===id):{ngay_vay:homNay(
     <label>Bên cho vay<input name="ben_cho_vay" list="dl-nh" value="${esc(x.ben_cho_vay||'')}"></label><label>Hạn mức / số tiền theo hợp đồng${moneyIn('so_tien',x.so_tien)}</label>
     <label><span>Ngày vay${BB}</span><input type="date" name="ngay_vay" value="${x.ngay_vay||''}"></label><label>Ngày đáo hạn<input type="date" name="ngay_dao_han" value="${x.ngay_dao_han||''}"></label>
     <label>Lãi suất (%/năm)<input name="lai_suat" inputmode="decimal" value="${x.lai_suat??''}"></label><label>Hình thức trả<select name="hinh_thuc">${optsObj(HT_VAY,x.hinh_thuc)}</select></label>
+    <label>Bên vay<select name="chu_vay">${optsObj({'':'— chọn —',cong_ty:'Công ty',ca_nhan:'Cá nhân'},x.chu_vay||'')}</select></label><label>Kỳ hạn<select name="ky_han">${optsObj({'':'— chọn —',ngan:'Ngắn hạn (≤ 12 tháng)',trung_dai:'Trung dài hạn (> 12 tháng)'},x.ky_han||'')}</select></label>
+    <label>Tài sản đảm bảo<select name="co_tsdb">${optsObj({'':'— chưa nhập —',true:'Có tài sản đảm bảo',false:'Tín chấp (không TSĐB)'},x.co_tsdb==null?'':String(x.co_tsdb))}</select></label><label>Tài sản đảm bảo là gì<input name="tsdb" value="${esc(x.tsdb||'')}" placeholder="vd: sổ đỏ nhà …, ô tô …, hàng tồn kho"></label>
     <label>Tài khoản nhận tiền vay<select name="tai_khoan_id">${opts(tkOn(),x.tai_khoan_id,'— chọn —')}</select></label>
     <label class="full">Link hợp đồng (mỗi dòng 1 link — tệp tải lên thì thêm ở khung chi tiết)<textarea name="chung_tu" rows="2">${esc((x.chung_tu||[]).join('\n'))}</textarea></label>
     <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
@@ -4860,6 +4874,7 @@ const LOGIC2=[
  ['chung','Nhập liệu','Tài khoản, cơ sở, bộ phận, loại thu / chi, ngân hàng chỉ chọn từ danh sách.','Danh mục sửa ở Cài đặt.','05/10'],
  ['chung','Xuất Excel','Mọi nút Xuất Excel ra file .xlsx: cột tiền là số (#,##0), cột ngày là ngày, có lọc cột.','Cột mã phiếu / số tài khoản giữ dạng chữ.','15/10'],
  // ── THU CHI & NGÂN QUỸ
+ ['thu_chi','Vay — phân loại & lọc','Mỗi khoản vay: bên vay (công ty / cá nhân), kỳ hạn (ngắn ≤ 12 tháng / trung dài > 12 tháng), tài sản đảm bảo (có — ghi tài sản / tín chấp / chưa nhập). Trang Vay lọc theo ngân hàng · bên vay · kỳ hạn · TSĐB; thẻ số + lịch trả theo bộ lọc.','Phân loại sẵn 26/10: tên có "cá nhân" → cá nhân; đáo hạn > 12 tháng → trung dài; hạn mức / khế ước không ngày đáo hạn → ngắn. TSĐB chưa có dữ liệu — kế toán nhập ở ✏ Sửa khoản vay.','26/10'],
  ['cong_no','Lịch thanh toán định kỳ','Công nợ & Thanh toán → Lịch đến hạn trả → Thanh toán định kỳ: mỗi khoản có chu kỳ (tháng / quý / 6 tháng / năm), khung hạn kỳ tới, người nhận + STK, số dự kiến. 08:00 mỗi ngày (lịch kt-nhac-lich-tt) chuông cho Supreme + kế toán: trước hạn N ngày (mặc định 3) và khi quá hạn — mỗi mốc 1 lần / kỳ. ✓ Đã thanh toán → ghi lần trả, dời sang kỳ sau. Tạo phiếu → form đề nghị điền sẵn.','Không lưu mật khẩu đăng nhập (EVN…). Nạp 9 khoản từ file LỊCH THANH TOÁN CÁC KHOẢN CỐ ĐỊNH THT 26/10.','26/10'],
  ['thu_chi','Người gửi phiếu theo dõi (không tài khoản)','Gửi xong có link riêng #phieu=<mã bí mật>; máy đã gửi nhớ 20 phiếu gần nhất ("Phiếu đã gửi từ máy này"). Trang theo dõi: 4 bước Kế toán kiểm → Giám đốc xác nhận → Chờ thanh toán → Đã thanh toán. Đã thanh toán → hiện "Bill chuyển khoản" (chi tiền mặt: "Phiếu chi ký nhận") = ảnh kế toán đính ở ô Ảnh giao dịch của Bước 3 – Chi tiền.','Link xem ảnh sống 5 phút, cấp qua mã phiếu (kt_bill_phieu + Edge kt-chung-tu bill_phieu) — không xem được hồ sơ khác.','26/10'],
  ['thu_chi','Phiếu đề nghị','Mọi phiếu (trừ tạm ứng) bắt buộc chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm — ô riêng, không liên quan ô Hoá đơn đỏ (hoá đơn trắng cũng chọn).','Kế toán + anh 16/10.','16/10'],
