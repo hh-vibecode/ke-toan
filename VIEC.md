@@ -150,6 +150,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | — | (chưa có — Kiot tự kéo riêng theo anh chốt 05/10) | | |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **26/10/2026 (156)** — Anh (ảnh lịch sử khế ước VCB = #26): app chưa có lần trả nào → thêm 2 lần lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9. File LOCAL `supabase-schema-kt-vay-vcb-4839.local.sql`. Số dư không đổi. Dòng gộp T9 khớp 9 / 11 khế ước, còn #27 #28. Monsieur Claude
 - **26/10/2026 (155)** — Anh (ảnh lịch sử khế ước VCB = #25): thêm lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9. File LOCAL `supabase-schema-kt-vay-vcb-0634.local.sql`. Số dư không đổi. Dòng gộp T9 khớp 8 / 11 khế ước, còn #26–#28. Monsieur Claude
 - **26/10/2026 (154)** — Báo lỗi #16 (chị Trang: DC000289 nộp két 25/10 đã sửa trên Kiot) → sửa số tiền phiếu theo Kiot, đóng lỗi, gửi chuông kết quả; Log báo lỗi 0 mở. Anh hỏi lịch tự rà lỗi → em đề xuất 12h trưa + 0h đêm (máy anh có sẵn claude.exe trong extension VS Code; cloud không có khoá CSDL) → anh: "thôi bỏ đi, tự xử lý vậy" → ghi quy tắc mục 3: đầu mỗi phiên tự kiểm + xử lý báo lỗi. Monsieur Claude
 - **26/10/2026 (153)** — Anh (ảnh lịch sử khế ước VCB = #24): thêm lãi tháng 8 (không gắn TK); lãi tháng 9 trong dòng gộp T9. File LOCAL `supabase-schema-kt-vay-vcb-3287.local.sql`. Số dư không đổi. Dòng gộp T9 khớp 7 / 11 khế ước (#17 #19–#24), còn #25–#28. Monsieur Claude
