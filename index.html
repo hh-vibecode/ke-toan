@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.229';
-const APP_VERSION='26/10/2026 18:49';
+const APP_SO='1.230';
+const APP_VERSION='27/10/2026 09:39';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2149,26 +2149,22 @@ async function pageBaoLoi(){const el=$('#page');el.innerHTML='<div class="m-empt
   el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Báo lỗi</span>')+`<div class="m-flt" style="align-items:center"><div class="m-seg">${[['mo','Chưa xử lý',mo.length],['tat','Tất cả',ds.length]].map(([k,t,n])=>`<button class="${f===k?'on':''}" onclick="S.f.bl_loc='${k}';render()">${t}<span class="c">${n}</span></button>`).join('')}</div></div>
     <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Lúc</th><th>Người báo</th><th>Phiếu</th><th>Lỗi</th><th>Ảnh</th><th>Trạng thái</th><th></th></tr>
     ${l.map(x=>`<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc(x.nguoi||'')}</td><td class="nw">${phieu(x)}</td><td class="ten" style="white-space:pre-wrap">${esc(x.noi_dung)}${x.xu_ly_ghi?`<div class="muted" style="font-size:11.5px">↳ ${esc(x.xu_ly_ghi)}</div>`:''}${(x.lich_su||[]).filter(h=>h.loai==='phan_hoi').map(h=>`<div style="font-size:11.5px;color:var(--warn)">↳ Phản hồi ${fmtDT(h.luc)}: ${esc(h.noi_dung||'')}</div>`).join('')}</td>
-      <td class="nw"><span class="m-link" onclick="moCT('bao_loi',${x.id})">Xem</span></td><td class="nw">${x.da_xu_ly?pill('Đã xử lý','ok')+`<div class="muted" style="font-size:11px">${esc(x.xu_ly_boi||'')} ${fmtDT(x.xu_ly_luc)}</div>`:pill('Chưa xử lý','bad')}<div style="margin-top:3px">${blXN(x)}</div></td>
+      <td class="nw"><span class="m-link" onclick="moCT('bao_loi',${x.id})">Xem</span></td><td class="nw">${x.da_xu_ly?pill('Đã xử lý','ok')+`<div class="muted" style="font-size:11px">${esc(x.xu_ly_boi||'')} ${fmtDT(x.xu_ly_luc)}</div>`:pill('Chưa xử lý','bad')}</td>
       <td class="nw">${x.da_xu_ly?`<button class="m-btn sm" onclick="xuLyLoi(${x.id},false)">Mở lại</button>`:`<button class="m-btn sm duyet" onclick="xuLyLoi(${x.id},true)">✓ Đã xử lý</button>`}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Không có báo lỗi</td></tr>'}</table></div></div>`}
-// 26/10 anh: "lỗi xử lý xong báo lại người đã làm — click vào ra lỗi đã báo với cách xử lý, cho chọn hoàn thành hoặc feedback lại tiếp"
+// 26/10 anh: "lỗi xử lý xong báo lại người đã làm — click vào ra lỗi đã báo với cách xử lý" (27/10 bỏ bước người báo xác nhận)
 const BL_LS={xu_ly:['Đã xử lý','ok'],phan_hoi:['Phản hồi','warn'],hoan_thanh:['Hoàn thành','ok']};
 const blLS=b=>(b.lich_su||[]).map(h=>`<div class="bl-ls"><div>${pill(BL_LS[h.loai][0],BL_LS[h.loai][1])} <span class="muted">${esc(h.ai||'')} · ${fmtDT(h.luc)}</span></div>${h.noi_dung?`<div style="white-space:pre-wrap">${esc(h.noi_dung)}</div>`:''}</div>`).join('');
-const blXN=b=>b.xac_nhan==='hoan_thanh'?pill('Người báo: hoàn thành','ok'):b.xac_nhan==='phan_hoi'?pill('Người báo phản hồi','warn'):b.xac_nhan==='cho'?pill('Chờ người báo xác nhận','info'):'';
+// 27/10 anh: "không cần họ ấn xác nhận nữa, bỏ phần ấy đi" — lỗi xử lý xong là xong, người báo chỉ xem cách xử lý. Monsieur Claude
 async function moKQLoi(id){modal('<h2>Lỗi đã báo</h2><div class="m-empty">Đang tải...</div>');
-  try{const b=await rpc('kt_bao_loi_xem',{p_id:id}),cho=b.la_nguoi_bao&&b.da_xu_ly&&b.xac_nhan==='cho';
+  try{const b=await rpc('kt_bao_loi_xem',{p_id:id});
     $('#modal>div').innerHTML=`<h2>Lỗi đã báo${b.so_phieu?' · '+esc(b.so_phieu):''}</h2>
       <div class="pc-sub" style="margin-top:0">Lỗi đã báo <span style="text-transform:none;font-weight:500">· ${esc(b.nguoi||'')} ${fmtDT(b.luc)}</span></div>
       <div style="white-space:pre-wrap;margin:6px 0 12px">${esc(b.noi_dung)}</div>
       <div class="pc-sub">Cách xử lý</div>
-      <div style="margin:6px 0 12px">${b.da_xu_ly?`<div style="white-space:pre-wrap">${esc(b.xu_ly_ghi||'Đã xử lý')}</div><div class="muted" style="font-size:11.5px;margin-top:2px">${esc(b.xu_ly_boi||'')} · ${fmtDT(b.xu_ly_luc)}</div>`:pill('Đang xử lý lại','warn')} ${blXN(b)}</div>
+      <div style="margin:6px 0 12px">${b.da_xu_ly?`<div style="white-space:pre-wrap">${esc(b.xu_ly_ghi||'Đã xử lý')}</div><div class="muted" style="font-size:11.5px;margin-top:2px">${esc(b.xu_ly_boi||'')} · ${fmtDT(b.xu_ly_luc)}</div>`:pill('Đang xử lý','warn')}</div>
       ${(b.lich_su||[]).length>1?`<div class="pc-sub">Lịch sử</div><div style="margin-top:6px">${blLS(b)}</div>`:''}
-      ${cho?`<div class="pc-sub" style="margin-top:12px">Phản hồi tiếp (nếu chưa đúng)</div><textarea class="m-in" id="bl-ph" rows="3" style="width:100%;margin-top:6px;height:auto"></textarea>`:''}
-      <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button>${cho?`<button class="btn" onclick="xacNhanLoi(${id},false)">Phản hồi tiếp</button><button class="btn pri" onclick="xacNhanLoi(${id},true)">✓ Hoàn thành</button>`:''}</div>`}
+      <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`}
   catch(e){$('#modal>div').innerHTML=`<h2>Lỗi đã báo</h2><div class="neg-t">${esc(e.message)}</div><div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`}}
-async function xacNhanLoi(id,xong){const t=(($('#bl-ph')||{}).value||'').trim();
-  if(!xong&&!t){alert('Ghi phản hồi: chỗ nào chưa đúng');$('#bl-ph').focus();return}
-  try{await rpc('kt_bao_loi_xac_nhan',{p_id:id,p_hoan_thanh:xong,p_noi_dung:t});closeModal();toast(xong?'Đã xác nhận hoàn thành':'Đã gửi phản hồi — lỗi mở lại để xử lý tiếp')}catch(e){alert(e.message)}}
 async function xuLyLoi(id,xong){const g=xong?prompt('Ghi chú xử lý (có thể để trống):',''):'';if(g===null)return;try{await rpc('kt_bao_loi_xu_ly',{p_id:id,p_xong:xong,p_ghi:g||''});toast(xong?'Đã đánh dấu xử lý':'Đã mở lại');render()}catch(e){alert(e.message)}}
 // 24/10 kế toán: "tách phiếu thanh toán lương riêng và hoa hồng riêng để hạch toán đúng khoản" — kt_tach_chi: phần tách sang phiếu mới (loại chi riêng),
 // phiếu gốc giữ phần còn lại; phân bổ chia theo tỷ lệ; cùng trạng thái / tài khoản / ngày → số dư không đổi
@@ -4979,7 +4975,7 @@ const LOGIC2=[
  ['thu_chi','Sổ quỹ theo ngày — chi tiết','Bấm 1 ngày trong Sổ quỹ theo ngày → xổ ra từng khoản thu / chi / điều chuyển / vay của ngày đó; bấm số phiếu để mở.','','20/10'],
  ['chung','Chat trong app','TẠM TẮT 22/10 (anh: "tạm thời không cần") — ẩn nút chat + nút Gửi vào chat, không gọi máy chủ; bật lại: CHAT_TAT=false. Nút chat cạnh chuông: Nhóm chung (mọi tài khoản) + nhắn riêng 1-1. Mã phiếu trong tin (PC… / PT… / DC…) bấm là mở thẳng phiếu; cửa sổ phiếu chi có nút "Gửi vào chat" điền sẵn mã phiếu.','Không realtime (bảng kt_ khoá RLS): mở khung chat hỏi máy chủ 3 giây / lần, đóng 15 giây / lần; có tin mới → số chưa đọc + tiếng bzzz. Tin cuối của mình hiện "Đã xem" (nhóm chung: tên người đã xem). Rê chuột vào tin → nút ✓ đánh dấu "Đã xử lý" (hiện tên người xử lý, bấm lại để bỏ). Lúc Xem như không gửi / đánh dấu được.','19/10'],
  ['chung','Bình luận: @nhắc tên, Nhắc việc, âm báo','Ô bình luận trong phiếu (chi, thu, điều chuyển, tạm ứng, vay): gõ @ chọn tên người có tài khoản app kế toán → người đó nhận chuông. Tick "Nhắc việc" → bình luận thành việc cần làm: nhãn "Cần bổ sung" trên phiếu + mục lọc ở dải Cần chú ý, tới khi bấm "✓ Đã xong".','Việc nhắc mở quá 2 ngày: 8:00 sáng hằng ngày báo chuông lại người ghi + kế toán (lịch kt-nhac-viec). Chuông có thông báo mới: KHÔNG kêu (anh 26/10). Tin nhắn chat mới vẫn kêu "bzzzz". Người gửi phiếu không có tài khoản: không nhắc — giám đốc / kế toán up thay.','26/10'],
- ['chung','Báo lỗi — kết quả xử lý','Đánh dấu Đã xử lý (Log → Báo lỗi, hoặc Claude xử lý) → chuông của người báo "Lỗi đã báo · …: đã xử lý". Bấm → cửa sổ lỗi đã báo + cách xử lý + lịch sử → ✓ Hoàn thành hoặc Phản hồi tiếp (bắt ghi nội dung → lỗi mở lại, chuông Supreme).','Trang Log hiện trạng thái người báo: chờ xác nhận / hoàn thành / phản hồi.','26/10'],
+ ['chung','Báo lỗi — kết quả xử lý','Đánh dấu Đã xử lý (Log → Báo lỗi, hoặc hệ thống xử lý) → lỗi đóng luôn, chuông người báo "Lỗi đã báo · …: đã xử lý" (bấm xem cách xử lý); thông báo lỗi trong chuông quản trị tự xoá.','Không còn bước người báo bấm Hoàn thành / Phản hồi (anh 27/10). Chưa đúng thì báo lỗi mới.','26/10 · 27/10'],
  ['chung','Lịch sử cập nhật','Log hệ thống → Lịch sử cập nhật: mỗi lần đẩy bản (v1.N) — giờ + nội dung thay đổi (tiêu đề + chi tiết commit), gom theo ngày, tìm theo nội dung. Bản trước 15/10 chưa đánh số hiện —.','File lich-su-ban.json do scripts/lich-su-ban.js dựng từ git; dong-dau.js tự dựng lại mỗi lần đóng dấu (tham số 1 = mô tả bản đang đẩy).','26/10'],
  ['chung','Báo có bản mới','Mỗi lần đẩy bản mới, scripts/dong-dau.js ghi số phiên bản vào phien-ban.txt. App kiểm ngay 4 giây sau khi mở, rồi mỗi phút và lúc quay lại tab; có bản mới → hiện nút "Đã có bản cập nhật mới · Tải lại" ở đáy màn hình (như app MKT).','Không đang mở cửa sổ nhập liệu → đếm 10 giây rồi tự tải lại; đang nhập dở → chỉ hiện nút, bấm Tải lại khi xong. Lúc Xem như thì không báo.','19/10'],
  ['chung','Quyền Hệ thống & cài đặt','Cả mục Hệ thống & cài đặt (danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic) là 1 quyền riêng: Supreme, Admin (toàn quyền), giám đốc, hoặc ai được tick "Hệ thống & cài đặt". Đổi mật khẩu mở cho mọi tài khoản.','Đổi quyền / vị trí / tên đăng nhập của 1 tài khoản → app người đó tự tải lại (như F5) trong vòng 1 phút, không phải đăng nhập lại; đang mở cửa sổ nhập liệu thì tải lại khi đóng. Trừ Supreme. Khoá tài khoản / đặt lại mật khẩu vẫn đăng xuất.','19/10'],
