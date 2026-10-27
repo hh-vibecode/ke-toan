@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.234';
-const APP_VERSION='27/10/2026 15:00';
+const APP_SO='1.235';
+const APP_VERSION='27/10/2026 16:33';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4961,7 +4961,7 @@ const LOGIC2=[
  ['thu_chi','Nộp két từ Kiot (quầy → két)','Mỗi lần cửa hàng nộp doanh thu tiền mặt trên Kiot (cặp phiếu Chuyển rút CTM… chi tiền mặt quầy + TTD_CTM… thu vào Két) → app tự tạo điều chuyển "Nộp két" TIỀN MẶT QUẦY → KÉT TIỀN MẶT, 15 phút / lần. Phiếu Kiot bị huỷ → app ẩn theo.','Đã có điều chuyển quầy → két cùng số tiền, lệch ≤ 4 ngày (từ file dòng tiền / nhập tay) thì chỉ gắn mã Kiot, không tạo trùng. Thủ quỹ up ảnh chứng từ nộp tiền vào chính phiếu điều chuyển đó; kế toán xem ảnh rồi bấm Xác nhận.','19/10'],
  ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
  ['thu_chi','Chuyển khoản TK công ty: lập lệnh → duyệt lệnh','Thủ quỹ lập lệnh trên ngân hàng, up ảnh lệnh (UNC), bấm "✓ Đã lập lệnh" → chuông báo kế toán. Kế toán duyệt lệnh trên ngân hàng xong bấm "✓ Đã duyệt lệnh" (ngày thanh toán mặc định hôm duyệt). Tab Cần chú ý: Chờ duyệt lệnh.','Chỉ khi Đã duyệt lệnh phiếu mới thành Đã thanh toán và trừ số dư — hết lệch khi lập lệnh hôm trước, duyệt hôm sau. Két tiền mặt vẫn bấm Đã chi tiền như cũ.','20/10'],
- ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Chưa bấm vẫn tính vào số dư két — kiểm két cuối ngày sẽ lộ nếu chưa nhận thật.','20/10'],
+ ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Kế toán 27/10: điều chuyển vào két CHƯA bấm nhận thì chưa tính vào đâu (không trừ TK đi, không cộng két, không vào sổ quỹ ngày); bấm nhận mới tính cả 2 bên, ngày = ngày nhận. Áp phiếu tạo từ 20/10.','27/10'],
  ['thu_chi','Khoản tài khoản tự trừ','Phí ngân hàng, phí vận chuyển / COD… (tài khoản tự trừ): tạo phiếu chi, tick "Đã thanh toán luôn" (quyền tự chi). Bỏ nút "+ Khoản tự trừ" riêng (21/10).','','21/10'],
  ['thu_chi','Sửa ngày thanh toán phiếu đã chi','Người có quyền sửa Chi mở phiếu đã chi → đổi ô Ngày thanh toán → Lưu (vd ngân hàng trừ tiền khác ngày ghi trên phiếu, lệch quỹ cuối ngày).','Tháng đã khoá sổ không đổi được. Nhật ký ghi ngày cũ → ngày mới.','21/10'],
  ['thu_chi','Kế toán tự chi không cần duyệt','Tài khoản có quyền "Chi — tự chi không cần duyệt" tạo phiếu chi tick "Đã thanh toán luôn" (vd phiếu cân tài khoản cuối ngày).','Mỗi phiếu tự chi có chuông báo giám đốc; vẫn nhắc Thiếu ảnh giao dịch.','20/10'],
