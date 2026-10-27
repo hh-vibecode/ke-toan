@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.236';
-const APP_VERSION='27/10/2026 16:50';
+const APP_SO='1.237';
+const APP_VERSION='27/10/2026 16:54';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1105,11 +1105,15 @@ async function rpc(fn,args={},khongPhien){
   const sach=v=>v===''?null:(v&&typeof v==='object'&&!Array.isArray(v))?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,sach(x)])):v;
   // 27/10: CSDL dùng chung lúc bận → "canceling statement due to statement timeout" (57014, anon giới hạn 3s). Lệnh bị huỷ là đã hoàn tác,
   // chưa lưu gì → tự gọi lại tối đa 2 lần (chờ 0,5s / 1,5s) thay vì hiện lỗi / trang trắng. — Monsieur Claude
+  // 27/10: "Failed to fetch" (mạng chập chờn, yêu cầu không tới máy chủ) → lệnh ĐỌC tự thử lại 2 lần; lệnh GHI không tự gửi lại (tránh lưu trùng) — báo câu dễ hiểu
+  const doc=/^kt_(ds|bc_|bao_cao|cong_no_dt|thue_(hd_ds|xnt|ps|doi)|so_|pl_(dinh_ky_thang|dinh_ky_ds|ct|dt)|hd_(vao_goi_y|thu_ds)|goi_y|dong_tien|doi_soat|dem_|danh_muc|chi_phi_ht|chat_(ds|tong)|tq_(don|bo_sung)|tim_hd|quy_|vat_599|lich_tt_ds|kiot_trang_thai|drill|dt_thang|dm_de_nghi|xem_de_nghi|bao_loi_xem|quyen_doi_luc)/.test(fn);
   let r,t,j=null;
   for(let lan=0;;lan++){
-    r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',
+    try{r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',
       headers:{apikey:SB_ANON,Authorization:'Bearer '+SB_ANON,'Content-Type':'application/json'},
-      body:JSON.stringify(sach(khongPhien?args:{p_phien:S.phien,...args}))});
+      body:JSON.stringify(sach(khongPhien?args:{p_phien:S.phien,...args}))});}
+    catch(e){if(doc&&lan<2){await new Promise(z=>setTimeout(z,lan?2000:700));continue}
+      throw new Error(doc?'Mất kết nối tới máy chủ (mạng chập chờn) — kiểm tra mạng rồi tải lại trang':'Mất kết nối tới máy chủ (mạng chập chờn) — có thể CHƯA lưu. Kiểm tra mạng, tải lại trang xem đã có chưa rồi mới bấm lại')}
     t=await r.text();j=null;try{j=t?JSON.parse(t):null}catch(e){}
     if(r.ok||lan>=2||!((j&&j.code==='57014')||/statement timeout/.test(t)))break;
     await new Promise(z=>setTimeout(z,lan?1500:500));
