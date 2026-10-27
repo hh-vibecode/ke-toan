@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.237';
-const APP_VERSION='27/10/2026 16:54';
+const APP_SO='1.238';
+const APP_VERSION='27/10/2026 17:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4060,18 +4060,19 @@ async function pageVay(){
   const IC={no:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h16v10H4zm8-8 9 6H3zM7 12v6h2v-6zm4 0v6h2v-6zm4 0v6h2v-6z"/></svg>',
     lai:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5 5 19l-1.4-1.4L17.6 3.6zM7 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm10 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>',
     lich:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3zm-1 8v10h12V10z"/></svg>'};
-  const the=(c,ic,l1,v,s1)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
+  const the=(c,ic,l1,v,s1,on)=>`<div class="m-k${on?' click':''}" style="--c:var(--${c})${on?';cursor:pointer':''}" ${on?`onclick="${on}" title="Bấm để xem / ẩn lịch trả"`:''}><div class="m-ic">${IC[ic]}</div><div style="min-width:0;flex:1"><div class="l">${l1}</div><div class="v">${v}</div><div class="s">${s1||''}</div></div></div>`;
   const cols=[['Khoản vay',v=>v.ten],['Bên cho vay',v=>v.ben_cho_vay||''],['Đã nhận (giải ngân)',v=>+v.tong_nhan||0],['Gốc đã trả',v=>+v.goc_da_tra],['Dư nợ',duNo],['Lãi đã trả',v=>+v.lai_da_tra],['Lãi suất %/năm',v=>v.lai_suat??''],['Đáo hạn',v=>v.ngay_dao_han||''],['Tình trạng',v=>v.da_tat_toan?'Đã tất toán':'Đang vay']];
   S.cache.vay_xuat=()=>xuatCSV('vay',cols,l);const g=coGhi();
   el.innerHTML=`<div class="m-kpis m-k3">${the('bad','no','Tổng dư nợ gốc',fmt(sumBy(con.filter(v=>+v.tong_nhan),duNo)),con.length+' khoản vay đang có'+(thieu.length?` · <span style="color:var(--warn)">chưa tính ${thieu.length} khoản thiếu giải ngân</span>`:''))}
       ${the('warn','lai','Lãi đã trả năm '+nay.slice(0,4),fmt(laiNam),laiNgoai?'tính vào P&L: '+fmt(laiNam-laiNgoai)+' · ngoài P&L: '+fmt(laiNgoai):'theo lịch sử trả từng khoản vay')}
       ${the(sapTra.some(t=>!t.uoc&&t.ngay<nay)?'bad':sapTra.some(t=>t.ngay<nay||(t.loai||[]).includes('dao_han'))?'warn':'info','lich','Phải trả 30 ngày tới',fmt(sumBy(sapTra,t=>Number(t.goc)+Number(t.lai))),
-        sapTra.length?'gốc '+fmt(sumBy(sapTra,t=>+t.goc))+' · lãi '+fmt(sumBy(sapTra,t=>+t.lai))+(sapTra.some(t=>t.uoc)?' (ước tính)':''):'không có kỳ trả nào')}</div>
+        sapTra.length?'gốc '+fmt(sumBy(sapTra,t=>+t.goc))+' · lãi '+fmt(sumBy(sapTra,t=>+t.lai))+(sapTra.some(t=>t.uoc)?' (ước tính)':''):'không có kỳ trả nào',
+        sapTra.length?'S.f.vay_lich=!S.f.vay_lich;render()':'')}</div>
     ${thieu.length?`<div class="m-st" style="color:var(--warn);font-size:12.5px">${thieu.length} khoản vay mới có lần trả, chưa có lần NHẬN TIỀN (giải ngân) → dư nợ chưa đúng. Mở từng khoản, bấm "+ Nhận tiền vay" (ngày, số tiền, tài khoản nhận — xem sao kê).</div>`:''}
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
       ${locVay}<div class="m-seg" style="margin-bottom:10px">${[['dang','Đang vay'],['xong','Đã tất toán'],['tat_ca','Tất cả']].map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.vay_tab='${k}';render()">${t}<span class="c">${ds.filter(loc[k]).length}</span></button>`).join('')}</div>
       <div class="m-flt" style="align-items:center"><span class="badge">Trả gốc vay không phải chi phí · chỉ lãi vay tính vào P&L</span><span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache.vay_xuat()">${IC_XLS} Xuất Excel</button>${g?`<button class="m-btn pri" onclick="formVay()">+ Thêm khoản vay</button>`:''}</div>
-      ${sapTra.length?`<div class="m-card" style="margin-bottom:12px"><div style="padding:10px 14px;font-weight:700;font-size:13px">Lịch trả 30 ngày tới${sapTra.some(t=>t.uoc)?' <span class="badge" style="margin-left:6px;font-weight:600">Lãi ước tính = dư nợ × lãi suất × số ngày / 365</span>':''}</div><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Khoản vay</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="num">Tổng</th><th class="c">Trạng thái</th></tr>
+      ${sapTra.length&&f.vay_lich?`<div class="m-card" style="margin-bottom:12px"><div style="padding:10px 14px;font-weight:700;font-size:13px;display:flex;align-items:center">Lịch trả 30 ngày tới${sapTra.some(t=>t.uoc)?' <span class="badge" style="margin-left:6px;font-weight:600">Lãi ước tính = dư nợ × lãi suất × số ngày / 365</span>':''}<span style="margin-left:auto"></span><button class="m-btn out" style="height:28px;font-size:11.5px" onclick="S.f.vay_lich=false;render()">Ẩn</button></div><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Khoản vay</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="num">Tổng</th><th class="c">Trạng thái</th></tr>
         ${sapTra.map(t=>`<tr class="click" onclick="xemVay(${t.vid})"><td class="nw">${fmtD(t.ngay)}</td><td class="ten">${esc(t.ten)}</td><td class="num">${+t.goc?fmt(t.goc):'–'}</td><td class="num">${+t.lai?fmt(t.lai):'–'}</td><td class="num"><b>${fmt(+t.goc + +t.lai)}</b></td><td class="c">${ttTra(t)}</td></tr>`).join('')}
         <tr class="tong"><td colspan="2"><b>Tổng</b></td><td class="num"><b>${fmt(sumBy(sapTra,t=>+t.goc))}</b></td><td class="num"><b>${fmt(sumBy(sapTra,t=>+t.lai))}</b></td><td class="num"><b>${fmt(sumBy(sapTra,t=>+t.goc + +t.lai))}</b></td><td></td></tr></table></div></div>`:''}
       <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Khoản vay</th><th>Bên cho vay</th><th class="num">Đã nhận</th><th class="num">Gốc đã trả</th><th class="num">Dư nợ</th><th class="num">Lãi đã trả</th><th class="num">Lãi suất</th><th>Đáo hạn</th><th class="c">Tình trạng</th></tr>
