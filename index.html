@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.233';
-const APP_VERSION='27/10/2026 14:35';
+const APP_SO='1.234';
+const APP_VERSION='27/10/2026 15:00';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4077,11 +4077,12 @@ function xemVay(id){const v=S.cache.vay.find(x=>x.id===id);if(!v)return;const g=
     <div class="m-card"><table class="m-t"><tr><th>Ngày</th><th>Tài khoản nhận</th><th class="num">Số tiền</th>${g?'<th></th>':''}</tr>
       ${(v.nhan||[]).map(n=>`<tr><td class="nw">${fmtD(n.ngay)}</td><td>${tkT(n.tai_khoan_id)}${n.ghi_chu?`<div class="muted">${esc(n.ghi_chu)}</div>`:''}</td><td class="num pos-t">+${fmt(n.so_tien)}</td>
         ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formVayNhan(${v.id},${n.id})">${IC_SUA}</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?4:3}" class="m-empty">Chưa nhập lần nhận tiền nào</td></tr>`}</table></div>
-    <div style="display:flex;align-items:center;margin:14px 0 6px"><b style="font-size:13px">Các lần trả / lịch trả</b><span style="margin-left:auto"></span>${g?`<button class="m-btn" style="height:28px;font-size:11.5px" onclick="formVayTra(${v.id})">+ Thêm lần trả</button>`:''}</div>
-    <div class="m-card"><div class="scroll" style="max-height:360px"><table class="m-t"><tr><th>Ngày</th><th>Tài khoản</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="c">Trạng thái</th>${g?'<th></th>':''}</tr>
+    <div style="display:flex;align-items:center;margin:14px 0 6px"><b style="font-size:13px">Các lần trả / lịch trả</b>${(v.lan_tra||[]).length?`<span class="badge" style="margin-left:6px">${(v.lan_tra||[]).length} lần</span>`:''}<span style="margin-left:auto"></span>${g?`<button class="m-btn" style="height:28px;font-size:11.5px" onclick="formVayTra(${v.id})">+ Thêm lần trả</button>`:''}</div>
+    <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Tài khoản</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="c">Trạng thái</th>${g?'<th></th>':''}</tr>
       ${(v.lan_tra||[]).map(t=>`<tr><td class="nw">${fmtD(t.ngay)}</td><td>${tkT(t.tai_khoan_id)}${t.chi_id?`<div class="muted" title="${esc(t.ghi_chu||'')}">từ phiếu chi PC${String(t.chi_id).padStart(6,'0')}</div>`:''}</td><td class="num">${fmt(t.goc)}</td><td class="num">${fmt(t.lai)}</td>
         <td class="c">${t.da_tra?pill('Đã trả','ok'):t.ngay<nay?pill('Quá hạn','bad'):pill('Dự kiến','warn')}</td>
-        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formVayTra(${v.id},${t.id})">${IC_SUA}</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?6:5}" class="m-empty">Chưa có — thêm lịch trả dự kiến hoặc lần đã trả</td></tr>`}</table></div></div>
+        ${g?`<td class="c"><button class="m-btn" style="height:26px;padding:0 8px" onclick="formVayTra(${v.id},${t.id})">${IC_SUA}</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?6:5}" class="m-empty">Chưa có — thêm lịch trả dự kiến hoặc lần đã trả</td></tr>`}
+      ${(v.lan_tra||[]).length>1?`<tr class="tong"><td colspan="2"><b>Tổng đã trả</b></td><td class="num"><b>${fmt(sumBy(v.lan_tra.filter(t=>t.da_tra),t=>+t.goc))}</b></td><td class="num"><b>${fmt(sumBy(v.lan_tra.filter(t=>t.da_tra),t=>+t.lai))}</b></td><td colspan="${g?2:1}"></td></tr>`:''}</table></div></div>
     ${ctBox('vay',v.id,g)}${hdKhung('vay',v.id)}</div>
     <div class="m-pn-f">${g?`<button class="m-btn" onclick="formVay(${v.id})">${IC_SUA} Sửa khoản vay</button>`:''}<span style="margin-left:auto"></span><button class="m-btn" onclick="dongVayCT()">Đóng</button></div>`;
   const p=$('#vay-ct');
