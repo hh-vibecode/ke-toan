@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.232';
-const APP_VERSION='27/10/2026 14:23';
+const APP_SO='1.233';
+const APP_VERSION='27/10/2026 14:35';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4018,6 +4018,8 @@ async function pageVay(){
   const vayNhan=v=>`<div class="vay-nh">${v.ngoai_pl?'<span>Lãi ngoài P&L</span>':''}${v.chu_vay==='ca_nhan'?'<span>Cá nhân</span>':v.chu_vay==='cong_ty'?'<span>Công ty</span>':''}${v.ky_han==='ngan'?'<span>Ngắn hạn</span>':v.ky_han==='trung_dai'?'<span>Trung dài hạn</span>':''}${v.co_tsdb===true?`<span title="${esc(v.tsdb||'')}">TSĐB${v.tsdb?': '+esc(v.tsdb.length>28?v.tsdb.slice(0,28)+'…':v.tsdb):''}</span>`:v.co_tsdb===false?'<span>Tín chấp</span>':''}</div>`;
   const con=ds.filter(v=>!v.da_tat_toan),thieu=ds.filter(v=>!+v.tong_nhan&&+v.goc_da_tra>0);
   const goc=t=>String(t.ngay).slice(0,4)===nay.slice(0,4),gocNam=sumBy(ds,v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.goc)),laiNam=sumBy(ds,v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.lai));
+  // 27/10 kế toán: "chỉ tính lãi đã trả, không tính gốc cho dễ nhìn"; tách phần lãi khoản vay mục đích cá nhân (ngoài P&L)
+  const laiNgoai=sumBy(ds.filter(v=>v.ngoai_pl),v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.lai));
   const sapTra=ds.flatMap(v=>(v.lan_tra||[]).filter(t=>!t.da_tra&&t.ngay<=sau30).map(t=>({...t,ten:v.ten,vid:v.id}))).sort((a,c)=>a.ngay<c.ngay?-1:1);
   const loc={dang:v=>!v.da_tat_toan,xong:v=>v.da_tat_toan,tat_ca:v=>true},l=ds.filter(loc[tab]);
   const chon=f.vay_chon&&ds.some(v=>v.id===f.vay_chon)?f.vay_chon:null;
@@ -4028,7 +4030,7 @@ async function pageVay(){
   const cols=[['Khoản vay',v=>v.ten],['Bên cho vay',v=>v.ben_cho_vay||''],['Đã nhận (giải ngân)',v=>+v.tong_nhan||0],['Gốc đã trả',v=>+v.goc_da_tra],['Dư nợ',duNo],['Lãi đã trả',v=>+v.lai_da_tra],['Lãi suất %/năm',v=>v.lai_suat??''],['Đáo hạn',v=>v.ngay_dao_han||''],['Tình trạng',v=>v.da_tat_toan?'Đã tất toán':'Đang vay']];
   S.cache.vay_xuat=()=>xuatCSV('vay',cols,l);const g=coGhi();
   el.innerHTML=`<div class="m-kpis m-k3">${the('bad','no','Tổng dư nợ gốc',fmt(sumBy(con.filter(v=>+v.tong_nhan),duNo)),con.length+' khoản vay đang có'+(thieu.length?` · <span style="color:var(--warn)">chưa tính ${thieu.length} khoản thiếu giải ngân</span>`:''))}
-      ${the('warn','lai','Gốc / lãi đã trả năm '+nay.slice(0,4),fmt(gocNam),'lãi ở trang này: '+fmt(laiNam)+' · lãi trả qua phiếu chi xem P&L')}
+      ${the('warn','lai','Lãi đã trả năm '+nay.slice(0,4),fmt(laiNam),laiNgoai?'tính vào P&L: '+fmt(laiNam-laiNgoai)+' · ngoài P&L: '+fmt(laiNgoai):'theo lịch sử trả từng khoản vay')}
       ${the(sapTra.some(t=>t.ngay<nay)?'bad':'info','lich','Phải trả 30 ngày tới',fmt(sumBy(sapTra,t=>Number(t.goc)+Number(t.lai))),sapTra.length+' kỳ theo lịch')}</div>
     ${thieu.length?`<div class="m-st" style="color:var(--warn);font-size:12.5px">${thieu.length} khoản vay mới có lần trả, chưa có lần NHẬN TIỀN (giải ngân) → dư nợ chưa đúng. Mở từng khoản, bấm "+ Nhận tiền vay" (ngày, số tiền, tài khoản nhận — xem sao kê).</div>`:''}
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
