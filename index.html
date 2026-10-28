@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.242';
-const APP_VERSION='28/10/2026 14:39';
+const APP_SO='1.243';
+const APP_VERSION='28/10/2026 14:47';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1092,7 +1092,7 @@ const can=(p,ghi)=>!!S.toi&&(S.toi.toan_quyen||((S.toi.quyen||[]).includes(p)&&(
 const coGhi=p=>can(p||S.page,true);
 // 19/10 anh: Hệ thống & cài đặt = 1 quyền riêng (Supreme / Admin / giám đốc / tick he_thong); Đổi mật khẩu mở cho mọi tài khoản
 const heThong=()=>can('he_thong')||can('chi_gd');
-const coXem=p=>p==='cd_doi_mk'?!!S.toi:/^cd_/.test(p)?heThong():/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):/^bc_(don|du_kien|ngan_sach|ton|vay|cs)$/.test(p)?can('pl'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'||p==='cd_kiot'?can('nhat_ky'):p==='bc_dong_tien'?can('so_du')||can('pl'):p==='dong_tien'?SQ4.some(k=>can(k)):p==='pl_thuc_thu'?can('pl'):p==='chi'?can('chi')||can('chi_de_nghi')||can('chi_tt'):/^cd_/.test(p)||can(p);
+const coXem=p=>p==='cd_doi_mk'?!!S.toi:/^cd_/.test(p)?heThong():/^(thue_tq|hd_vao|hd_ra|xl_hd|kho_thue)$/.test(p)?can('hoa_don_thue'):/^bc_(don|du_kien|ngan_sach|ton|vay|cs|hoa_hong)$/.test(p)?can('pl'):p==='lich_tt'?can('sap_tra'):p==='no_kh'?can('khach_hang'):p==='no_ncc'?can('ncc'):p==='doi_soat'?can('chi')||can('tong_quan'):p==='cd_phan_quyen'?can('phan_quyen'):p==='cd_nhat_ky'||p==='cd_kiot'?can('nhat_ky'):p==='bc_dong_tien'?can('so_du')||can('pl'):p==='dong_tien'?SQ4.some(k=>can(k)):p==='pl_thuc_thu'?can('pl'):p==='chi'?can('chi')||can('chi_de_nghi')||can('chi_tt'):/^cd_/.test(p)||can(p);
 // Chi: tạo đề nghị (sửa trang Chi hoặc quyền chỉ đề nghị) · sửa phiếu x (phiếu mình còn chờ duyệt) · duyệt / thanh toán (chỉ quyền chi_duyet)
 const chiTao=()=>coGhi('chi')||can('chi_de_nghi'), chiDuyet=()=>can('chi_duyet');
 // Giám đốc xác nhận lượt 2: KHÔNG đi theo Admin — chỉ Supreme hoặc tick riêng (giống hàm SQL kt_co_quyen)
@@ -1434,6 +1434,7 @@ const PAGES={
   no_kh:{ten:'Phải thu khách hàng',nv:'cong_no',fn:()=>pageCongNoDT('kh')},
   no_ncc:{ten:'Phải trả nhà cung cấp',nv:'cong_no',fn:()=>pageCongNoDT('ncc')},
   sap_tra:{ten:'Lịch đến hạn trả',nv:'cong_no',fn:()=>pageSapTra()},
+  lich_tt:{ten:'Lịch thanh toán định kỳ',nv:'cong_no',fn:()=>pageLichTT()},
   // Công nợ nhập tay (chuyển từ sheet): ẨN khỏi menu từ 08/10 — công nợ khách dùng số Kiot. Dữ liệu cũ giữ nguyên.
   cong_no:{ten:'Công nợ (sheet cũ)',nv:null,fn:()=>pageCongNo()},
   ban_hang:{ten:'Bán hàng',nv:null,fn:()=>pageBanHang()},
@@ -3419,18 +3420,23 @@ async function luuThuHoi(id){const o=formData($('#f'));if(!so(o.so_tien))return 
 const CHU_KY={1:'Hằng tháng',2:'2 tháng',3:'Hằng quý',6:'6 tháng',12:'Hằng năm'};
 const ltTT=x=>{const h=homNay(),t=new Date(new Date(x.han_tu+'T00:00:00').getTime()-(x.nhac_truoc||3)*864e5),tu=ymd(t);
   return h>x.han_den?['Quá hạn','bad']:h>=tu?['Đến hạn','warn']:['Chưa tới hạn','']};
-async function pageSapTra(){
-  const el=$('#page');const [ds,lt]=await Promise.all([rpc('kt_ds',{p_bang:'sap_tra',p_tu:MOC,p_den:homNay()}),rpc('kt_lich_tt_ds').catch(()=>[])]);S.cache.st=ds;S.cache.lt=lt;
-  const chua=ds.filter(x=>!x.da_tra),g=coGhi('sap_tra'),han=x=>fmtD(x.han_tu).slice(0,5)+(x.han_den!==x.han_tu?'–'+fmtD(x.han_den).slice(0,5):'')+'/'+x.han_den.slice(0,4);
-  const lthtml=`<div class="m-flt" style="align-items:center;margin-top:4px"><b style="font-size:14px">Thanh toán định kỳ</b><span class="badge">nhắc chuông 08:00 · trước hạn ${(lt[0]||{}).nhac_truoc||3} ngày và khi quá hạn</span><span style="margin-left:auto"></span>${g?`<button class="m-btn pri" onclick="formLT()">+ Thêm khoản định kỳ</button>`:''}</div>
+// 28/10 anh: "trang lịch thanh toán định kỳ ở đâu" → bảng dùng chung cho trang riêng (menu Công nợ & Thanh toán) và trang Lịch đến hạn trả
+const ltHan=x=>fmtD(x.han_tu).slice(0,5)+(x.han_den!==x.han_tu?'–'+fmtD(x.han_den).slice(0,5):'')+'/'+x.han_den.slice(0,4);
+const ltBang=(lt,g)=>{const han=ltHan;return `<div class="m-flt" style="align-items:center;margin-top:4px"><b style="font-size:14px">Thanh toán định kỳ</b><span class="badge">nhắc chuông 08:00 · trước hạn ${(lt[0]||{}).nhac_truoc||3} ngày và khi quá hạn</span><span style="margin-left:auto"></span>${g?`<button class="m-btn pri" onclick="formLT()">+ Thêm khoản định kỳ</button>`:''}</div>
     <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Khoản</th><th>Người nhận · thanh toán</th><th>Chu kỳ</th><th>Hạn kỳ tới</th><th class="num">Dự kiến</th><th>Trạng thái</th>${g?'<th></th>':''}</tr>
       ${lt.map(x=>{const t=ltTT(x);return `<tr><td class="ten"><b>${esc(x.khoan)}</b>${x.co_so?`<div class="muted">${esc(x.co_so)}</div>`:''}</td>
-        <td class="ten" style="font-size:12px">${esc(x.nguoi_nhan||'')}${x.thu_huong_stk?`<div>${esc(x.thu_huong_ten||'')} · ${esc(x.thu_huong_stk)} · ${esc(x.thu_huong_nh||'')}</div>`:''}${x.thong_tin?`<div class="muted">${linkHoa(x.thong_tin)}</div>`:''}</td>
+        <td class="ten" style="font-size:12px;max-width:260px;overflow-wrap:anywhere">${esc(x.nguoi_nhan||'')}${x.thu_huong_stk?`<div>${esc(x.thu_huong_ten||'')} · ${esc(x.thu_huong_stk)} · ${esc(x.thu_huong_nh||'')}</div>`:''}${x.thong_tin?`<div class="muted">${linkHoa(x.thong_tin)}</div>`:''}</td>
         <td class="nw">${CHU_KY[x.chu_ky]||x.chu_ky+' tháng'}</td><td class="nw"><b>${han(x)}</b>${x.han_mo_ta?`<div class="muted" style="font-size:11px">${esc(x.han_mo_ta)}</div>`:''}</td>
         <td class="num">${x.so_tien?`<b>${fmt(x.so_tien)}</b>`:`<span class="muted" style="font-size:11.5px">${esc(x.so_tien_ghi||'—')}</span>`}</td>
         <td class="nw">${t[1]?pill(t[0],t[1]):`<span class="muted">${t[0]}</span>`}${x.lan_cuoi?`<div class="muted" style="font-size:11px">Trả gần nhất ${fmtD(x.lan_cuoi.ngay)}${x.lan_cuoi.so_tien?' · '+fmt(x.lan_cuoi.so_tien):''}</div>`:''}</td>
         ${g?`<td class="nw c"><button class="m-btn out" style="height:28px;font-size:11.5px" title="Mở phiếu đề nghị điền sẵn người nhận / STK / số tiền" onclick="ltPhieu(${x.id})">Tạo phiếu</button> <button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="ltDaTra(${x.id})">✓ Đã thanh toán</button> <button class="m-btn out" style="height:28px" title="Sửa" onclick="formLT(${x.id})">✏</button></td>`:''}</tr>`}).join('')
-        ||`<tr><td colspan="7" class="m-empty">Chưa có khoản định kỳ</td></tr>`}</table></div></div>
+        ||`<tr><td colspan="7" class="m-empty">Chưa có khoản định kỳ</td></tr>`}</table></div></div>`};
+async function pageLichTT(){const el=$('#page');const lt=await rpc('kt_lich_tt_ds').catch(()=>[]);S.cache.lt=lt;const g=coGhi('sap_tra');
+  el.innerHTML=head('Lịch thanh toán định kỳ','<span class="badge">Thuê nhà, kho, điện, nước, internet… — hạn kỳ tới + nhắc chuông</span>')+ltBang(lt,g)}
+async function pageSapTra(){
+  const el=$('#page');const [ds,lt]=await Promise.all([rpc('kt_ds',{p_bang:'sap_tra',p_tu:MOC,p_den:homNay()}),rpc('kt_lich_tt_ds').catch(()=>[])]);S.cache.st=ds;S.cache.lt=lt;
+  const chua=ds.filter(x=>!x.da_tra),g=coGhi('sap_tra'),han=x=>fmtD(x.han_tu).slice(0,5)+(x.han_den!==x.han_tu?'–'+fmtD(x.han_den).slice(0,5):'')+'/'+x.han_den.slice(0,4);
+  const lthtml=ltBang(lt,g)+`
     <div class="m-flt" style="align-items:center;margin-top:16px"><b style="font-size:14px">Khoản trả 1 lần</b></div>`;
   el.innerHTML=head('Lịch đến hạn trả',g?'<button class="btn pri" onclick="formST()">+ Thêm khoản 1 lần</button>':'')+lthtml+
     `<div class="bar"><span class="badge">${chua.length} khoản chưa trả · ${fmt(sumBy(chua,x=>x.so_tien))}</span><span class="badge">lương, vay, BHXH, nợ nhà cung cấp...</span></div>
