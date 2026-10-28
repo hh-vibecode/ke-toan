@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.240';
-const APP_VERSION='27/10/2026 17:16';
+const APP_SO='1.241';
+const APP_VERSION='28/10/2026 09:52';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2723,7 +2723,7 @@ const IC_XLS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // trạng thái 1 khách / NCC theo hạn nợ (số ngày được nợ: cài đặt han_no_*_ngay — giám đốc chốt 19/10: khách sỉ 30, NCC 30)
 // nợ tính hạn = nợ thật (khách đã tách COD / chưa lấy hàng); chưa tách → cả số nợ
 const noHan=x=>x.no_that!=null?Math.max(0,+x.no_that):Math.max(0,+x.no||0);
-function ttCongNo(x){if(!(x.no>0))return x.no<0?['Trả trước','info']:['Đã thanh toán','ok'];if(!(noHan(x)>0))return ['Chờ thu COD / lấy hàng','info'];if(x.qua_han==null)return ['Quá hạn','bad'];
+function ttCongNo(x){if(!(x.no>0))return x.no<0?['Trả trước','info']:['Đã thanh toán','ok'];if(!(noHan(x)>0))return +x.no_tra_hang>0&&!(+x.no_cod)&&!(+x.no_chua_lay)?['Chờ trả hàng','vio']:['Chờ thu COD / lấy hàng','info'];   // 28/10: chỉ còn hàng sẽ trả → không thu được tiềnif(x.qua_han==null)return ['Quá hạn','bad'];
   if(x.qua_han>0)return ['Quá hạn','bad'];const con=x.den_han?Math.round((new Date(x.den_han)-new Date(homNay()))/864e5):99;return con<=7?['Đến hạn','warn']:['Trong hạn','ok']}
 const pill=(t,c)=>`<span class="m-pill ${c||''}">${esc(t)}</span>`;
 function phanTrang(k,n,moi){const tr=Math.min(S.f[k+'_tr']||1,Math.max(1,Math.ceil(n/moi)));S.f[k+'_tr']=tr;return [(tr-1)*moi,tr*moi,tr]}
@@ -2775,8 +2775,28 @@ function veChonNo(k){const el=$('#no-chon');if(!el)return;const s=S.f[k+'_sel']|
   el.style.display='';el.innerHTML=`<b>Đã chọn ${s.length}</b> · Gán người phụ trách <select id="no-gan"><option value="">— theo Kiot (bỏ gán) —</option>${nsOpts(null)}</select>
     <button class="m-btn sm pri" onclick="ganPT('${loai}',S.f['${k}_sel'],$('#no-gan').value)">Gán</button><button class="m-btn sm" onclick="S.f['${k}_sel']=[];render()">Bỏ chọn</button>`}
 // 16/10/2026 (kế toán): tách nợ thật / COD chưa thu hồi / khách chưa lấy hàng — app tự đoán theo ô COD + ghi chú hoá đơn Kiot ("thu cod …", "chưa lấy hàng"…), kế toán sửa từng hoá đơn
-const LOAI_NO={that:['Nợ thật','bad'],cod:['COD chưa thu hồi','warn'],chua_lay:['Chưa lấy hàng','info']},LOAI_NO_K={that:'no_that',cod:'no_cod',chua_lay:'no_chua_lay'};
-async function luuLoaiNo(hd,v,loai,id){try{await rpc('kt_luu_loai_no',{p_hd:hd,p_loai:v});toast('Đã đổi loại nợ');S.cache['no_'+loai]=null;xemCongNo(loai,id)}catch(e){alert(e.message)}}
+const LOAI_NO={that:['Nợ thật','bad'],cod:['COD chưa thu hồi','warn'],chua_lay:['Chưa lấy hàng','info'],tra_hang:['Sẽ trả hàng','vio']},LOAI_NO_K={that:'no_that',cod:'no_cod',chua_lay:'no_chua_lay',tra_hang:'no_tra_hang'};
+// 28/10/2026 PA3 (anh chốt): phần còn nợ của từng hoá đơn chia theo SỐ TIỀN — sẽ trả hàng → COD → chưa lấy hàng → nợ thật. App đọc ghi chú Kiot
+// (mỗi ý 1 dòng: "Thu COD: …", "Cọc: …", "Trả hàng: …", "Chưa lấy hàng: …"; hiểu cả kiểu ghi cũ), kế toán sửa tay từng hoá đơn (trả 1 phần được).
+// Phiếu trả hàng Kiot gắn hoá đơn → tự trừ phần sẽ trả; đánh dấu > 30 ngày chưa có phiếu trả → nhãn Treo. Monsieur Claude
+const NO_TACH=[['tra','Sẽ trả hàng','vio'],['cod','COD','warn'],['cl','Chưa lấy hàng','info'],['that','Nợ thật','bad']];
+function noTachO(r,loai,id){const t=r.tach;if(!t)return '';
+  const dong=NO_TACH.filter(([k])=>+t[k]>0).map(([k,ten,mau])=>`<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;justify-items:start;line-height:24px">${pill(ten,mau)}<span class="num" style="justify-self:end">${fmt(t[k])}</span></div>`).join('');
+  const nhan=[t.tra_lau?pill('Treo > 30 ngày','bad'):'',+t.coc_ngoai>0?`<span title="Ghi chú có cọc nhưng phần này vẫn đang tính là nợ — kiểm tiền cọc đã ghi vào Kiot chưa">${pill('Cọc '+fmtN(t.coc_ngoai)+' chưa ghi Kiot?','warn')}</span>`:'',t.nguon==='tay'?`<span class="muted" style="font-size:11px" title="${esc(((r.tay||{}).ly_do||'')+' · '+((r.tay||{}).sua_boi||''))}">kế toán nhập tay</span>`:''].filter(Boolean).join(' ');
+  const sua=can('khach_hang',true)&&r.id?`<button class="dd-sua" style="visibility:visible" title="Phân loại nợ hoá đơn này" onclick="event.stopPropagation();formNoTach(${r.id},'${loai}',${id})">✏</button>`:'';
+  return `<div style="display:flex;gap:6px;align-items:flex-start"><div style="width:190px">${dong}${nhan?`<div style="margin-top:3px">${nhan}</div>`:''}</div>${sua}</div>`}
+function formNoTach(hd,loai,id){const r=((S.cache.no_ct||{}).dang_no||[]).find(x=>x.id===hd);if(!r)return;const t=r.tach||{},y=r.tay;
+  const v=k=>y?y[{tra:'tra_hang',cod:'cod',cl:'chua_lay'}[k]]:t[k];
+  modal(`<h2>Phân loại nợ ${esc(r.ma)} · còn nợ ${fmt(r.con_no)}</h2>
+    ${r.ghi_chu?`<div class="pc-sub" style="margin-top:0">Ghi chú hoá đơn trên Kiot</div><div class="muted" style="white-space:pre-wrap;font-size:12px;margin:4px 0 10px">${esc(r.ghi_chu)}</div>`:''}
+    <div class="form" id="fnt"><label><span>Sẽ trả hàng</span>${moneyIn('tra',v('tra')||'','onkeyup="noTachTinh('+r.con_no+')"')}</label><label><span>COD chưa thu hồi</span>${moneyIn('cod',v('cod')||'','onkeyup="noTachTinh('+r.con_no+')"')}</label>
+      <label><span>Chưa lấy hàng</span>${moneyIn('cl',v('cl')||'','onkeyup="noTachTinh('+r.con_no+')"')}</label><label><span>Nợ thật (còn lại)</span><b id="nt-that" style="display:flex;align-items:center;justify-content:flex-end;height:40px;padding:0 12px;font-size:14px;border:1px dashed var(--border);border-radius:8px"></b></label>
+      <label class="full"><span>Lý do</span><input name="ly_do" maxlength="300" value="${esc((y||{}).ly_do||'')}"></label></div>
+    <div class="acts">${y?`<button class="btn left" title="Bỏ số nhập tay, quay về đọc ghi chú Kiot" onclick="luuNoTach(${hd},'${loai}',${id},true)">Theo ghi chú Kiot</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuNoTach(${hd},'${loai}',${id})">Lưu</button></div>`);
+  noTachTinh(r.con_no)}
+function noTachTinh(con){const f=$('#fnt');if(!f)return;const n=['tra','cod','cl'].reduce((a,k)=>a+(so(f.querySelector('[name='+k+']').value)||0),0),e=$('#nt-that');if(e){e.textContent=fmt(con-n);e.className=con-n<0?'neg-t':''}}
+async function luuNoTach(hd,loai,id,xoa){const f=formData($('#fnt')||document.createElement('form'));
+  try{await rpc('kt_luu_no_tach',{p_hd:hd,p_tra:so(f.tra)||0,p_cod:so(f.cod)||0,p_cl:so(f.cl)||0,p_ly_do:f.ly_do||'',p_xoa:!!xoa});closeModal();toast(xoa?'Đã quay về đọc ghi chú Kiot':'Đã lưu phân loại nợ');S.cache['no_'+loai]=null;render()}catch(e){alert(e.message)}}
 async function pageCongNoDT(loai){
   const el=$('#page'),KH=loai==='kh',k='no_'+loai,f=S.f,dt=KH?'khách hàng':'nhà cung cấp';
   if(f.no_tab&&f.no_tab_tu!==S.page)f.no_tab=null;
@@ -2794,7 +2814,7 @@ async function pageCongNoDT(loai){
   const moi=f[k+'_moi']||20,[a,b,tr]=phanTrang(k,l.length,moi),trang=l.slice(a,b);
   const chon=f[k+'_chon']&&l.some(x=>x.id===f[k+'_chon'])?f[k+'_chon']:null;   // 14/10: chỉ hiện khi bấm
   const nhTen=x=>(NHOM_KH.find(n=>n[0]===nhomKH(x.ten))||[])[1]||'';
-  const cols=[['Mã',x=>x.ma],[KH?'Tên khách hàng':'Nhà cung cấp',x=>x.ten],['Cơ sở',x=>x.cn||''],['Tổng công nợ',x=>x.tong_ct],['Đã thanh toán',x=>x.tong_ct-x.no],['Còn phải '+(KH?'thu':'trả'),x=>x.no],
+  const cols=[['Mã',x=>x.ma],[KH?'Tên khách hàng':'Nhà cung cấp',x=>x.ten],['Cơ sở',x=>x.cn||''],['Tổng công nợ',x=>x.tong_ct],['Đã thanh toán',x=>x.tong_ct-x.no],['Còn phải '+(KH?'thu':'trả'),x=>x.no],...(KH?[['Nợ thật',x=>x.no_that],['COD chưa thu hồi',x=>x.no_cod],['Chưa lấy hàng',x=>x.no_chua_lay],['Sẽ trả hàng',x=>x.no_tra_hang]]:[]),
     ['Ngày đến hạn',x=>x.den_han||''],['Số ngày quá hạn',x=>x.qua_han??''],['Trạng thái',x=>ttCongNo(x)[0]],['Nhóm',x=>KH?nhTen(x):''],['Người phụ trách',x=>x.nv||''],['SĐT',x=>x.sdt||'']];
   S.cache[k+'_xuat']=()=>xuatCSV((KH?'cong-no-phai-thu-':'cong-no-phai-tra-')+homNay(),cols,l);
   const opt=(key,list,trong)=>`<select onchange="S.f['${key}']=this.value;S.f['${k}_tr']=1;render()"><option value="">${trong}</option>${list.map(([v,t])=>`<option value="${v}" ${f[key]===v?'selected':''}>${t}</option>`).join('')}</select>`;
@@ -2808,11 +2828,11 @@ async function pageCongNoDT(loai){
       <div class="m-f"><span>&nbsp;</span><input class="m-in" type="search" placeholder="Tìm kiếm" value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()"></div></div>
     <div class="m-chon" id="no-chon" style="display:none"></div>
     <div class="m-split ${chon?'co':''}"><div class="m-card"><div class="m-ch">Danh sách công nợ ${dt} <span class="m-cnt">(Tổng ${fmt(l.length)} ${dt})</span>
-        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click" style="cursor:pointer" title="Bấm để lọc" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';render()">${pill(t,c)} ${fmt(sumBy(l,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
+        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click" style="cursor:pointer" title="Bấm để lọc" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';render()">${pill(t,c)} ${fmt(sumBy(l,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}${KH&&sumBy(l,x=>+x.tra_lau||0)?`<span class="m-pill" title="Đơn đánh dấu sẽ trả hàng quá 30 ngày chưa có phiếu trả trên Kiot">${pill('Trả hàng treo > 30 ngày: '+sumBy(l,x=>+x.tra_lau||0)+' HĐ','bad')}</span> `:''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
       <div class="scroll"><table class="m-t"><tr><th class="c"><input type="checkbox"></th><th>Mã ${KH?'KH':'NCC'}</th><th>${KH?'Tên khách hàng':'Nhà cung cấp'}</th><th>Cơ sở</th><th class="num">Tổng công nợ</th><th class="num">Đã thanh toán</th><th class="num">Còn phải ${KH?'thu':'trả'}</th><th>Ngày đến hạn</th><th class="num">Số ngày<br>quá hạn</th><th class="c">Trạng thái</th><th class="m-nguon">Nguồn</th>${KH?'<th>Nhóm KH</th>':''}<th>Người phụ trách</th></tr>
       ${trang.map(x=>{const t=ttCongNo(x),con=Math.abs(x.no);return `<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemCongNo('${loai}',${x.id})"><td class="c">${ganDuoc?`<input type="checkbox" ${(f[k+'_sel']||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonNo('${k}',${x.id},this.checked)">`:''}</td>
         <td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten)}</td><td class="nw">${esc((CS3.find(c=>c[0]===csCuaCN(x.cn))||[])[1]||x.cn||'')}</td><td class="num"><b>${fmt(x.tong_ct||con)}</b></td><td class="num">${fmt(Math.max((x.tong_ct||con)-con,0))}</td>
-        <td class="num ${x.no>0?'neg-t':''}">${fmt(con)}${KH&&x.no>0&&(+x.no_cod||+x.no_chua_lay)?`<div class="muted" style="font-size:10.5px">${+x.no_cod?'COD '+fmtN(x.no_cod):''}${+x.no_cod&&+x.no_chua_lay?' · ':''}${+x.no_chua_lay?'chưa lấy '+fmtN(x.no_chua_lay):''}</div>`:''}</td><td class="nw">${x.den_han?fmtD(x.den_han):'-'}</td><td class="num ${x.qua_han>0?'neg-t':''}">${x.qua_han!=null?x.qua_han:(x.no>0?'> 285':'-')}</td>
+        <td class="num ${x.no>0?'neg-t':''}">${fmt(con)}${KH&&x.no>0&&(+x.no_cod||+x.no_chua_lay||+x.no_tra_hang)?`<div class="muted" style="font-size:10.5px">${[+x.no_cod?'COD '+fmtN(x.no_cod):'',+x.no_chua_lay?'chưa lấy '+fmtN(x.no_chua_lay):'',+x.no_tra_hang?'sẽ trả '+fmtN(x.no_tra_hang):''].filter(Boolean).join(' · ')}</div>`:''}${KH&&+x.tra_lau?pill('Trả hàng treo','bad'):''}</td><td class="nw">${x.den_han?fmtD(x.den_han):'-'}</td><td class="num ${x.qua_han>0?'neg-t':''}">${x.qua_han!=null?x.qua_han:(x.no>0?'> 285':'-')}</td>
         <td class="c">${pill(t[0],t[1])}</td><td class="m-nguon">KiotViet</td>${KH?`<td class="nw">${esc(nhTen(x))}</td>`:''}<td class="nw" onclick="event.stopPropagation()">${ganDuoc?`<select class="no-pt ${x.nv_gan?'':'kiot'}" title="${x.nv_gan?'Đã gán':'Theo NV bán đơn gần nhất trên Kiot'}" onchange="ganPT('${loai}',[${x.id}],this.value)"><option value="">${x.nv_gan?'— bỏ gán (theo Kiot) —':esc(x.nv?x.nv+' · Kiot':'— chưa có —')}</option>${nsOpts(x.nv_gan?x.nv_id:null)}</select>`:esc(x.nv||'-')}</td></tr>`}).join('')||`<tr><td colspan="13" class="m-empty">Không có ${dt} phù hợp bộ lọc</td></tr>`}</table></div>
       ${thanhTrang(k,l.length,moi,tr,dt)}</div>
       <aside class="m-pn" id="no-ct">${chon?'<div class="m-empty">Đang tải...</div>':'<div class="m-empty">Bấm 1 dòng để xem chi tiết</div>'}</aside></div>`;
@@ -2821,7 +2841,7 @@ async function pageCongNoDT(loai){
 async function xemCongNo(loai,id){
   const k='no_'+loai,KH=loai==='kh',p=$('#no-ct'),f=S.f;
   if(p&&KHUNG_PHAI&&innerWidth>=1250){f[k+'_chon']=id;p.closest('.m-split').classList.add('co');document.querySelectorAll('.m-t tr[data-id]').forEach(r=>{const on=+r.dataset.id===id;r.classList.toggle('on',on);const c=r.querySelector('input');if(c)c.checked=on})}
-  const c=await rpc('kt_cong_no_dt_ct',{p_loai:loai,p_id:id});if(!c)return;const d=c.dt,x=(S.cache[k]||[]).find(r=>r.id===id)||{no:d.no},t=ttCongNo(x),han=x.han||30;
+  const c=await rpc('kt_cong_no_dt_ct',{p_loai:loai,p_id:id});if(!c)return;S.cache.no_ct=c;const d=c.dt,x=(S.cache[k]||[]).find(r=>r.id===id)||{no:d.no},t=ttCongNo(x),han=x.han||30;
   const tab=['chung','gd','tt'].includes(f.no_ct_tab)?f.no_ct_tab:'chung',tong=x.tong_ct||Math.abs(d.no),con=Math.abs(d.no);
   const ttCT=r=>{if(!(+r.con_no>0))return ['Đã TT','ok'];const dh=new Date(r.ngay);dh.setDate(dh.getDate()+han);return ymd(dh)<homNay()?['Quá hạn','bad']:['Đến hạn','warn']};
   const kv=rows=>`<div class="m-kv">${rows.map(([a,b])=>`<div>${a}</div><div>${b||'-'}</div>`).join('')}</div>`;
@@ -2833,7 +2853,7 @@ async function xemCongNo(loai,id){
     <div class="m-st">Công nợ hiện tại</div><div class="m-box3"><div><div class="l">Tổng công nợ</div><div class="v">${fmt(tong)}</div></div><div><div class="l">Đã thanh toán</div><div class="v pos-t">${fmt(Math.max(tong-con,0))}</div></div>
       <div><div class="l">Còn phải ${KH?'thu':'trả'}</div><div class="v neg-t">${fmt(con)}</div></div><div><div class="l">Ngày đến hạn</div><div class="v" style="font-size:14px">${x.den_han?fmtD(x.den_han):'-'}</div></div>
       <div><div class="l">Số ngày quá hạn</div><div class="v neg-t" style="font-size:14px">${x.qua_han!=null?x.qua_han+' ngày':'-'}</div></div><div><div class="l">Trạng thái</div><div style="margin-top:4px">${pill(t[0],t[1])}</div></div></div>
-    <div class="m-st">Nợ theo chứng từ (${c.dang_no.length})</div>${bang([[KH?'Số hoá đơn':'Số phiếu nhập',r=>esc(r.ma),'nw'],['Ngày',r=>fmtD(r.ngay),'nw'],['Giá trị',r=>fmt(r.tong),'num'],['Đã TT',r=>fmt(r.tong-r.con_no),'num'],['Còn phải '+(KH?'thu':'trả'),r=>`<span class="neg-t">${fmt(r.con_no)}</span>`,'num'],...(KH&&c.dang_no.some(r=>r.loai_no)?[['Loại nợ',r=>can('khach_hang',true)&&r.id?`<select class="m-in" style="height:26px;font-size:12px" title="${esc(r.ghi_chu||'')}${r.loai_tay?' · kế toán đã chọn tay':' · app tự đoán (COD / ghi chú)'}" onclick="event.stopPropagation()" onchange="luuLoaiNo(${r.id},this.value,'${loai}',${id})">${Object.entries(LOAI_NO).map(([v,[t]])=>`<option value="${v}" ${r.loai_no===v?'selected':''}>${t}${r.loai_no===v&&!r.loai_tay?' (tự)':''}</option>`).join('')}</select>`:pill(...(LOAI_NO[r.loai_no]||['','']))]]:[]),['Trạng thái',r=>pill(...ttCT(r)),'c']],c.dang_no,'Không có chứng từ đang nợ',r=>KH?xnAttr('hd',r.ma,null,''):'')}
+    <div class="m-st">Nợ theo chứng từ (${c.dang_no.length})</div>${bang([[KH?'Số hoá đơn':'Số phiếu nhập',r=>esc(r.ma),'nw'],['Ngày',r=>fmtD(r.ngay),'nw'],['Giá trị',r=>fmt(r.tong),'num'],['Đã TT',r=>fmt(r.tong-r.con_no),'num'],['Còn phải '+(KH?'thu':'trả'),r=>`<span class="neg-t">${fmt(r.con_no)}</span>`,'num'],...(KH?[['Phân loại',r=>noTachO(r,loai,id),'nw']]:[]),['Trạng thái',r=>pill(...ttCT(r)),'c']],c.dang_no,'Không có chứng từ đang nợ',r=>KH?xnAttr('hd',r.ma,null,''):'')}
     <div class="m-st">Lịch sử thanh toán gần nhất</div>${bang([['Ngày',r=>fmtD(r.ngay),'nw'],['Số tiền',r=>fmt(r.so_tien),'num'],['Phiếu',r=>esc(r.ma),'nw'],['Cách trả',r=>esc(r.pt||''),'']],c.tra_tien.slice(0,5),'Chưa thấy phiếu '+(KH?'thu':'chi')+' khớp tên trên sổ quỹ Kiot')}`;
   else if(tab==='gd')body=bang([[KH?'Số hoá đơn':'Số phiếu',r=>esc(r.ma),'nw'],['Ngày',r=>fmtD(r.ngay),'nw'],['Cơ sở',r=>esc((CS3.find(z=>z[0]===csCuaCN(r.cn))||[])[1]||r.cn||''),''],['Giá trị',r=>fmt(r.tong),'num'],['Trả ngay',r=>fmt(r.da_tra),'num']],c.gan_day,'Chưa có giao dịch',r=>KH?xnAttr('hd',r.ma,null,''):'');
   else if(tab==='tt')body=bang([['Ngày',r=>fmtD(r.ngay),'nw'],['Phiếu',r=>esc(r.ma),'nw'],['Số tiền',r=>fmt(r.so_tien),'num'],['Cách trả',r=>esc(r.pt||''),''],['Nội dung',r=>esc(r.nd||''),'']],c.tra_tien,'Chưa thấy phiếu khớp tên trên sổ quỹ Kiot');
@@ -5067,8 +5087,11 @@ const LOGIC2=[
  ['thu_chi','Vay','Chỉ LÃI vay là chi phí. P&L: lãi theo lịch sử trả của từng khoản vay (trang Vay) + phí tài chính ở phiếu chi loại Lãi vay & phí tài chính. Trả gốc không phải chi phí.','Kế toán 27/10: lịch sử khoản vay là nguồn chính — phiếu chi cũ trả lãi / gốc trùng lịch sử thì P&L bỏ qua (phiếu vẫn trừ số dư TK). Khoản vay chọn "Tính chi phí lãi vào P&L: Không" (vay cho mục đích cá nhân) → lãi không vào P&L; vay cá nhân dùng cho kinh doanh vẫn chọn Có. Lãi mỗi tháng chia 3 cơ sở theo tỷ lệ doanh thu thuần tháng đó (tháng chưa có doanh thu → chung).','27/10'],
  ['thu_chi','Vay','Thẻ "Phải trả 30 ngày tới" + bảng Lịch trả: ước tính từ dư nợ, lãi suất, ngày đáo hạn và nhịp trả trong lịch sử từng khoản.','Lãi = dư nợ × lãi suất × số ngày / 365, hằng tháng đúng ngày lần trả lãi gần nhất. Trả gốc cuối kỳ → cả dư nợ ngày đáo hạn; trả gốc đều → bằng gốc kỳ gần nhất. Kỳ đã qua chưa thấy trả → "Chưa ghi nhận". Khoản có lịch nhập tay thì dùng lịch nhập tay.','27/10'],
  // ── CÔNG NỢ
- ['cong_no','Hạn công nợ','Đến hạn / quá hạn chỉ xét NỢ THẬT. COD chưa thu hồi (tiền đơn vị vận chuyển đang giữ) và hàng khách chưa lấy KHÔNG tính là nợ đến hạn.','Khách chỉ còn COD / chưa lấy hàng → trạng thái "Chờ thu COD / lấy hàng". Thẻ Tổng quan "Khách hàng quá hạn" = số khách có nợ thật quá hạn, tiền = nợ thật quá hạn.','19/10'],
+ ['cong_no','Hạn công nợ','Đến hạn / quá hạn chỉ xét NỢ THẬT. COD chưa thu hồi (tiền đơn vị vận chuyển đang giữ) và hàng khách chưa lấy KHÔNG tính là nợ đến hạn.','Khách chỉ còn COD / chưa lấy hàng → trạng thái "Chờ thu COD / lấy hàng"; chỉ còn hàng sẽ trả → "Chờ trả hàng" (28/10). Thẻ Tổng quan "Khách hàng quá hạn" = số khách có nợ thật quá hạn, tiền = nợ thật quá hạn.','19/10'],
  ['cong_no','Công nợ khách','Dùng số công nợ Kiot: dương = khách còn nợ, âm = khách trả trước.','Tự cập nhật 15 phút / lần.','08/10'],
+ ['cong_no','Công nợ khách — 4 phần','Nợ khách chia ngược cho hoá đơn mới nhất; phần còn nợ của MỖI hoá đơn chia theo số tiền: Sẽ trả hàng → COD chưa thu hồi → Chưa lấy hàng → còn lại = Nợ thật. Sẽ trả hàng + Nợ thật… lọc / tổng riêng; sẽ trả hàng = không thu được tiền.','Kế toán 28/10 (PA3). Kế toán sửa tay từng hoá đơn (✏ Phân loại, trả 1 phần được; "Theo ghi chú Kiot" để bỏ số tay).','28/10'],
+ ['cong_no','Ghi chú hoá đơn Kiot — mẫu chuẩn','Mỗi ý 1 dòng "Nhãn: giá trị": Thu COD · Cọc · Chưa lấy hàng · Trả hàng · Đóng hàng · Giao hàng · Vận chuyển · Hoá đơn. Số tiền đọc được 1.050.000 / 3tr4 / 405k / 1 triệu. Không ghi số = cả phần còn nợ.','Vẫn hiểu kiểu cũ ("thu cod 370.000", "Diệp, Tuấn ĐH", "Cọc: không"). "Trả hàng" chỉ đọc khi là dòng có nhãn. Hoa hồng: chờ quy tắc kế toán.','28/10'],
+ ['cong_no','Sẽ trả hàng — tự gỡ / nhắc','Phiếu trả hàng Kiot gắn hoá đơn (từ lúc đánh dấu) tự trừ phần sẽ trả. Quá 30 ngày chưa có phiếu trả → nhãn "Treo > 30 ngày". Ghi chú có cọc mà phần còn lại vẫn là nợ thật → nhãn "Cọc … chưa ghi Kiot?".','','28/10'],
  ['cong_no','Công nợ NCC','Giữ nguyên dấu Kiot: âm = công ty đang nợ NCC.','','14/10'],
  ['cong_no','Công nợ cũ','Trang công nợ nhập tay (sheet cũ) đã ẩn, chỉ để tra lại.','','08/10'],
  // ── HOÁ ĐƠN & THUẾ
@@ -5807,7 +5830,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(PAGE
 // 20/10/2026 rà soát (anh: "rà đủ các case người dùng có thể ấn nhầm"): bấm đúp nút Lưu tạo 2 phiếu → mỗi hàm lưu / duyệt chỉ chạy 1 lượt
 // cho CÙNG 1 phiếu tại 1 thời điểm (khoá theo tham số đầu = id phiếu; phiếu mới = null), lượt bấm thêm khi đang chạy bị bỏ qua.
 (()=>{const khoaLuu=fn=>{const dang=new Set();return async function(...a){const k=String(a[0]);if(dang.has(k))return;dang.add(k);try{return await fn.apply(this,a)}finally{dang.delete(k)}}};
-  ['tuChiLoatLuu','duyetLenhLoat','lapLenh','tqNhan','luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuNS','luuTL','luuTT','luuNganSach','luuLoaiNo','luuDcf','luuNap']
+  ['tuChiLoatLuu','duyetLenhLoat','lapLenh','tqNhan','luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuNS','luuTL','luuTT','luuNganSach','luuNoTach','luuDcf','luuNap']
     .forEach(k=>{if(typeof window[k]==='function')window[k]=khoaLuu(window[k])})})();
 </script>
 </body>
