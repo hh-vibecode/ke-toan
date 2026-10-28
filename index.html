@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.244';
-const APP_VERSION='28/10/2026 15:04';
+const APP_SO='1.245';
+const APP_VERSION='28/10/2026 15:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4045,7 +4045,7 @@ function hhTinh(d,ms){
     const x={m,cs,cao,thap,onT,qCao,qThap,qOn,q,vt:[],wi,on,dkCao,dkThap};
     for(const [k,ten,tl,ds] of [['ql','Quản lý',t.ql,vt.ql||[]],['gs','Giám sát',t.gs,vt.gs||[]],['nv','Nhân viên',t.nv,vt.nv||[]]]){if(!tl)continue;
       const phanQ=Math.round(q*tl),tc=k==='nv'?sumBy(ds,n=>cg(m,n)):ds.length;
-      const ng2=ds.map(n=>{const c=k==='nv'?cg(m,n):1,tien=tc?Math.round(phanQ*c/tc):0,o=ng(n,cs,ten);o.quy+=tien;if(k==='nv')o.cong[m]=c;o.chiaQuy.push({m,cs,vt:ten,tl,q,phan:phanQ,c,tc,k,tien});return {n,c,tien}});
+      const ng2=ds.map(n=>{const c=k==='nv'?cg(m,n):1,tien=tc?Math.round(phanQ*c/tc):0,o=ng(n,cs,ten);o.quy+=tien;if(k==='nv')o.cong[m]=c;o.chiaQuy.push({m,cs,vt:ten,tl,q,phan:phanQ,c,tc,k,tien,dsc:ds.map(z=>[z,k==='nv'?cg(m,z):1])});return {n,c,tien}});
       x.vt.push({k,ten,tl,phan:phanQ,ng:ng2,khongChi:ds.length?0:phanQ})}
     CHs.push(x)}));
   // nhân sự cửa hàng tự bán (người bán trên Kiot) → đơn tham gia (hưởng qua quỹ, không tính riêng từng đơn)
@@ -4137,7 +4137,7 @@ function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)r
   const kq=[['Hoa hồng sales',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
   let dau=`<div class="bc-k" style="grid-template-columns:repeat(${kq.length+1},1fr)"><div><span>Tổng hoa hồng</span><b>${fmt(o.tong)}</b></div>${kq.map(([a,b])=>`<div><span>${a}</span><b>${fmt(b)}</b></div>`).join('')}</div>`;
   const cach=[...o.saleKy.map(x=>`${qtThg(x.m)} · sales: thực thu ${fmt(x.thu)} → ${esc(x.cach)} = <b>${fmt(x.hh)}</b>`),
-    ...o.chiaQuy.map(x=>`${qtThg(x.m)} · quỹ ${esc(csTen3(x.cs))} ${fmt(x.q)} × ${Math.round(x.tl*100)}% ${esc(x.vt.toLowerCase())}${x.k==='nv'?` × ${x.c}/${x.tc} công`:x.tc>1?` ÷ ${x.tc} người`:''} = <b>${fmt(x.tien)}</b>`)];
+    ...o.chiaQuy.map(x=>`${qtThg(x.m)} · quỹ ${esc(csTen3(x.cs))} ${fmt(x.q)} × ${Math.round(x.tl*100)}% ${esc(x.vt.toLowerCase())} = ${fmt(x.phan)}${x.k==='nv'?` → chia theo ngày công: ${x.c} công / tổng ${x.tc} công (${x.dsc.map(([n,c])=>esc(n.split(' ').pop())+' '+c).join(' · ')})`:x.tc>1?` ÷ ${x.tc} người`:''} = <b>${fmt(x.tien)}</b>`)];
   if(cach.length)dau+=`<div style="font-size:12.5px;line-height:1.7;margin:2px 0 10px">${cach.join('<br>')}</div>`;
   S.cache.hh_pop={tieu:`${esc(ten)} <span class="badge" style="vertical-align:middle">${esc(bcKy().ten)} · ${o.ds.length} đơn tham gia</span>`,dau,trang:1,rows:o.ds,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Cơ sở','nw'],['Vai trò','nw'],['Thực thu','num'],['Hoa hồng','num']],
