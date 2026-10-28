@@ -1008,8 +1008,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.245';
-const APP_VERSION='28/10/2026 15:09';
+const APP_SO='1.246';
+const APP_VERSION='28/10/2026 15:12';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4130,15 +4130,17 @@ function hhPopup(){const P=S.cache.hh_pop;if(!P)return;const n=P.rows.length,tr=
   const cols=P.cols;
   modal(`<h2>${P.tieu}</h2>${P.dau||''}<div class="m-card"><div class="scroll"><table class="m-t"><tr>${cols.map(([a,c])=>`<th class="${c||''}">${a}</th>`).join('')}</tr>
     ${pg.map(P.dong).join('')||`<tr><td colspan="${cols.length}" class="m-empty">Không có đơn</td></tr>`}${n?P.tong:''}</table></div></div>${pager}
-    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`)}
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`);const b=$('#modal>div');if(b){b.style.width='min(1040px,96vw)';b.style.maxWidth='1040px'}}
 const hhSp=h=>h.sp?`<div class="muted" style="font-size:11px;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(h.sp)}">${esc(h.sp)}</div>`:'';
 // bấm 1 nhân sự → các đơn tham gia trong kỳ
 function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)return;
   const kq=[['Hoa hồng sales',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
   let dau=`<div class="bc-k" style="grid-template-columns:repeat(${kq.length+1},1fr)"><div><span>Tổng hoa hồng</span><b>${fmt(o.tong)}</b></div>${kq.map(([a,b])=>`<div><span>${a}</span><b>${fmt(b)}</b></div>`).join('')}</div>`;
-  const cach=[...o.saleKy.map(x=>`${qtThg(x.m)} · sales: thực thu ${fmt(x.thu)} → ${esc(x.cach)} = <b>${fmt(x.hh)}</b>`),
-    ...o.chiaQuy.map(x=>`${qtThg(x.m)} · quỹ ${esc(csTen3(x.cs))} ${fmt(x.q)} × ${Math.round(x.tl*100)}% ${esc(x.vt.toLowerCase())} = ${fmt(x.phan)}${x.k==='nv'?` → chia theo ngày công: ${x.c} công / tổng ${x.tc} công (${x.dsc.map(([n,c])=>esc(n.split(' ').pop())+' '+c).join(' · ')})`:x.tc>1?` ÷ ${x.tc} người`:''} = <b>${fmt(x.tien)}</b>`)];
-  if(cach.length)dau+=`<div style="font-size:12.5px;line-height:1.7;margin:2px 0 10px">${cach.join('<br>')}</div>`;
+  // 28/10 anh: "trình bày dài thế, ghi công thức ra là được, không cần số"
+  const cach=[...new Set([...o.saleKy.map(x=>x.p.cs==='si'?'Thực thu (Kiot) × tỷ lệ giật cấp — sales mảng buôn, dưới mốc không tính':'Thực thu (Kiot) × tỷ lệ giật cấp — sales online lẻ'),
+    ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
+    ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
+  if(cach.length)dau+=`<div class="muted" style="font-size:12.5px;line-height:1.7;margin:2px 0 10px">${cach.map(esc).join('<br>')}</div>`;
   S.cache.hh_pop={tieu:`${esc(ten)} <span class="badge" style="vertical-align:middle">${esc(bcKy().ten)} · ${o.ds.length} đơn tham gia</span>`,dau,trang:1,rows:o.ds,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Cơ sở','nw'],['Vai trò','nw'],['Thực thu','num'],['Hoa hồng','num']],
     dong:x=>`<tr><td class="nw">${fmtD(x.h.ngay)}</td><td class="nw">${hhKiot(x.h)}</td><td class="ten">${esc(x.h.khach||'')}${hhSp(x.h)}</td><td class="nw">${esc(csTen3(csCuaCN(x.h.cn))||x.h.cn)}</td>
