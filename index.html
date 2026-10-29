@@ -1019,8 +1019,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.254';
-const APP_VERSION='29/10/2026 15:20';
+const APP_SO='1.255';
+const APP_VERSION='29/10/2026 15:30';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2897,7 +2897,10 @@ const nccGhi=()=>can('ncc',true);
 const NCC_TAB=[['noi','Nội địa',x=>['noi_dia','dich_vu'].includes(x.loai)],['ngoai','Nước ngoài',x=>['nuoc_ngoai','trung_gian'].includes(x.loai)]];
 async function pageHoSoNCC(){const el=$('#page'),f=S.f,tab=['noi','ngoai','cho'].includes(f.hs_tab)?f.hs_tab:'noi';
   if(!S.cache.hs_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const d=await rpc('kt_ds_ncc',{p_tu:S.tu||null,p_den:S.den||null});S.cache.hs_d=d;const L=d.ncc;
+  // 29/10 anh "delay, rất lag": bấm lọc / tab / lật trang / tìm → vẽ lại từ dữ liệu đã tải; chỉ tải lại khi đổi kỳ, sau khi ghi, hoặc quá 2 phút
+  const kk=S.tu+'|'+S.den;let d=S.cache.hs_d;
+  if(!d||S.cache.hs_d_k!==kk||Date.now()-(S.cache.hs_d_luc||0)>120000){d=await rpc('kt_ds_ncc',{p_tu:S.tu||null,p_den:S.den||null});S.cache.hs_d=d;S.cache.hs_d_k=kk;S.cache.hs_d_luc=Date.now()}
+  const L=d.ncc;
   const seg=`<div class="m-seg" style="margin-bottom:12px">${[...NCC_TAB.map(([k,t,fn])=>[k,t,L.filter(fn).length]),['cho','Chờ phân NCC',d.cho]].map(([k,t,n])=>`<button class="${tab===k?'on':''}" onclick="S.f.hs_tab='${k}';S.f.hs_the='';S.f.hs_tr=1;render()">${t}<span class="c">${fmt(n)}</span></button>`).join('')}</div>`;
   if(tab==='cho'){el.innerHTML=seg+await hsChoHtml();return}
   const T=L.filter(NCC_TAB.find(t=>t[0]===tab)[2]),tl=f.hs_the||'';
@@ -2936,12 +2939,12 @@ async function hsGanGoiY(){const ds=S.cache.hs_cho||[],sel=S.f.hs_sel||[],nhom={
   ds.filter(x=>sel.includes(x.id)&&(x.goi_y||[]).length).forEach(x=>{(nhom[x.goi_y[0].ncc_id]=nhom[x.goi_y[0].ncc_id]||[]).push(x.id)});
   const n=Object.values(nhom).reduce((a,v)=>a+v.length,0);if(!n||!confirm(`Gán ${n} phiếu vào NCC gợi ý (${Object.keys(nhom).length} NCC)?`))return;
   try{for(const [ncc,ids] of Object.entries(nhom))await rpc('kt_ncc_gan_phieu',{p_bang:'chi',p_ids:ids,p_kieu:'gan',p_ncc:+ncc,p_ho_so:null,p_nho_stk:false});toast('Đã gán '+n+' phiếu')}catch(e){alert(e.message)}
-  S.cache.hs_cho=null;S.f.hs_sel=[];render()}
+  S.cache.hs_cho=null;S.cache.hs_d=null;S.f.hs_sel=[];render()}
 // gán / gỡ 1 hoặc nhiều phiếu; trongNCC = đang mở cửa sổ NCC → vẽ lại cửa sổ đó
 async function hsGan(bang,ids,ncc,hs,kieu,nho,trongNCC){
   try{await rpc('kt_ncc_gan_phieu',{p_bang:bang,p_ids:ids,p_kieu:kieu||'gan',p_ncc:ncc||null,p_ho_so:hs||null,p_nho_stk:!!nho});
     toast(kieu==='khong'?'Đã đánh dấu không thuộc NCC':kieu==='bo'?'Đã gỡ khỏi NCC':'Đã lưu vào hồ sơ NCC')}catch(e){return alert(e.message)}
-  S.cache.hs_cho=null;S.cache.ncc_chon=null;
+  S.cache.hs_cho=null;S.cache.hs_d=null;S.cache.ncc_chon=null;
   if(trongNCC&&S.cache.ncc_ct)return nccMo(S.cache.ncc_ct.ncc.id);
   if(S.page==='ho_so_ncc')render()}
 // ── cửa sổ 1 NCC: phiếu thu chi theo hồ sơ · hồ sơ · chứng từ · phiếu nhập Kiot · thông tin · gán thêm phiếu
@@ -2956,7 +2959,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,s=c.so,f=S.f,
   let body='';
   if(tab==='phieu'){
     // 29/10 anh: "chứng từ đi theo phiếu rồi, sao lại tách 2 bên, khó hiểu" → 1 tab: lưu trữ chung NCC · từng hồ sơ (số liệu + chứng từ chung + các phiếu, ảnh ngay dưới phiếu) · phiếu chưa vào hồ sơ
-    const luoi=(bang,id,sua)=>ctBox(bang,id,sua).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,'').replace('class="ct"','class="ct" style="margin-top:8px"');
+    const luoi=(bang,id,sua)=>ctBox(bang,id,sua).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,'').replace('class="ct"','class="ct" data-xong="1" style="margin-top:8px"');   // ảnh vẽ 1 lượt bằng nccVeCT
     const hsSel=p=>`<select class="m-in" style="height:30px;width:100%" title="Chuyển phiếu sang hồ sơ khác" onchange="hsGan('${p.bang}',[${p.id}],${n.id},+this.value||null,'gan',false,1)"><option value="">— Chưa vào hồ sơ —</option>${c.ho_so.map(h=>`<option value="${h.id}" ${p.ho_so_id===h.id?'selected':''}>${esc(maHS(h.id)+' · '+h.ten)}</option>`).join('')}</select>`;
     const dong=p=>`<div class="ncc-p"><div class="ncc-pd"><span class="nw"><span class="m-link" onclick="closeModal();moPhieu('${p.bang==='thu'?'PT':'PC'}',${p.id})">${maPh(p.bang,p.id)}</span></span><span class="muted nw">${p.ngay?fmtD(p.ngay):''}</span>
         <span class="ncc-nd" title="${esc(p.noi_dung||'')}">${esc(p.noi_dung||'')}${p.cach==='stk'?' <span class="badge" title="Tự vào NCC vì số tài khoản nhận tiền trùng số TK đã lưu của NCC">theo số TK</span>':''}</span>
@@ -2999,7 +3002,14 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,s=c.so,f=S.f,
     ${tom}<div class="m-tabs">${tabs.map(([kk,t])=>`<button class="m-tab ${tab===kk?'on':''}" onclick="S.f.ncc_tab='${kk}';nccVe()">${t}</button>`).join('')}</div><div class="ncc-b">${body}</div>
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`;
   const m=$('#modal');if(m&&m.dataset.ncc===String(n.id)){m.firstElementChild.innerHTML=html;setTimeout(ganCT,0)}
-  else{const mm=modal(html);mm.dataset.ncc=n.id;const b=mm.firstElementChild;b.style.width='min(1180px,96vw)';b.style.maxWidth='1180px'}}
+  else{const mm=modal(html);mm.dataset.ncc=n.id;const b=mm.firstElementChild;b.style.width='min(1180px,96vw)';b.style.maxWidth='1180px'}
+  setTimeout(nccVeCT,0)}
+// ảnh của mọi phiếu / hồ sơ / NCC trong cửa sổ: xin link xem 1 lần cho cả cửa sổ (trước: mỗi khung 2 lần gọi máy chủ); lỗi quyền → vẽ từng khung như cũ
+async function nccVeCT(){const c=S.cache.ncc_ct;if(!c)return;const els=$$('#modal .ct[data-bang][data-xong]').filter(e=>!e.dataset.ve);if(!els.length)return;els.forEach(e=>e.dataset.ve=1);
+  let u={};try{if(c.ct.length){const r=await ctFn({viec:'xem',ids:c.ct.map(x=>x.id)});u=Object.fromEntries((r.ds||[]).map(x=>[x.id,x.url]))}}
+  catch(e){els.forEach(el=>{delete el.dataset.xong;delete el.dataset.ve});ganCT();return}
+  els.forEach(el=>{if(!el.isConnected)return;const bang=el.dataset.bang,id=+el.dataset.id,sua=el.dataset.sua==='1',hop=ctHop(el),l=c.ct.filter(x=>x.bang===bang&&+x.dong_id===id&&hop(x.ten));
+    S.cache['ct_'+bang+id]=l.map(x=>({...x,url:u[x.id]}));el.innerHTML=ctLuoi(bang,id,l,u,sua,'',hop)})}
 function nccTaiLen(files){const c=S.cache.ncc_ct;if(!c||!files||!files.length)return;const fs=[...files];S.f.ncc_tab='phieu';nccVe();setTimeout(()=>ctThem('ncc',c.ncc.id,fs),300)}
 async function nccTim(q){S.cache.ncc_tim_q=q||'';S.cache.ncc_tim=null;S.cache.ncc_sel=[];S.cache.ncc_tim_dang=1;nccVe();
   try{S.cache.ncc_tim=await rpc('kt_ncc_tim',{p_ncc:S.cache.ncc_ct.ncc.id,p_q:q||null})}catch(e){S.cache.ncc_tim=[];toast(e.message)}S.cache.ncc_tim_dang=0;nccVe()}
@@ -3008,7 +3018,7 @@ async function nccGanChon(){const c=S.cache.ncc_ct,ds=S.cache.ncc_tim||[],sel=(S
   const dang=sel.filter(p=>p.ncc_ten);if(dang.length&&!confirm(dang.length+' phiếu đang ở NCC khác — chuyển sang NCC này?'))return;
   const hs=+($('#ncc-gan-hs')||{}).value||null,nho=!!($('#ncc-gan-stk')||{}).checked;
   try{for(const b of ['chi','thu']){const ids=sel.filter(p=>p.bang===b).map(p=>p.id);if(ids.length)await rpc('kt_ncc_gan_phieu',{p_bang:b,p_ids:ids,p_kieu:'gan',p_ncc:c.ncc.id,p_ho_so:hs,p_nho_stk:nho&&b==='chi'})}toast('Đã gán '+sel.length+' phiếu')}catch(e){return alert(e.message)}
-  S.cache.hs_cho=null;S.cache.ncc_tim=null;S.f.ncc_tab='phieu';nccMo(c.ncc.id)}
+  S.cache.hs_cho=null;S.cache.hs_d=null;S.cache.ncc_tim=null;S.f.ncc_tab='phieu';nccMo(c.ncc.id)}
 async function nccXemCT(ctId){const c=S.cache.ncc_ct,k='ct_ncc'+c.ncc.id;
   if(!(S.cache[k]||[]).some(x=>x.id===ctId&&x.url)){try{const {ds}=await ctFn({viec:'xem',ids:c.ct.map(x=>x.id)});const u=Object.fromEntries(ds.map(x=>[x.id,x.url]));S.cache[k]=c.ct.map(x=>({...x,url:u[x.id]}))}catch(e){return alert(e.message)}}
   xemCT('ncc',c.ncc.id,ctId)}
@@ -3025,7 +3035,7 @@ function formNCC(id,loai){const n=id?(S.cache.ncc_ct||{}).ncc||{}:{loai:loai||'n
     <div class="acts"><button class="btn" onclick="${id?`nccMo(${id})`:'closeModal()'}">Huỷ</button><button class="btn pri" onclick="luuNCC(${id||'null'})">Lưu</button></div>`)}
 async function luuNCC(id){const f=$('#f'),v=k=>f.querySelector(`[name=${k}]`).value;
   const o={id,ten:v('ten'),loai:v('loai'),mst:v('mst'),sdt:v('sdt'),lien_he:v('lien_he'),dia_chi:v('dia_chi'),ghi_chu:v('ghi_chu'),stk:v('stk').split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean)};
-  let nid;try{nid=await rpc('kt_luu_ncc',{p_dong:o})}catch(e){return alert(e.message)}toast('Đã lưu nhà cung cấp');S.cache.ncc_chon=null;
+  let nid;try{nid=await rpc('kt_luu_ncc',{p_dong:o})}catch(e){return alert(e.message)}toast('Đã lưu nhà cung cấp');S.cache.ncc_chon=null;S.cache.hs_d=null;
   if(S.page==='ho_so_ncc')render();nccMo(nid,id?'tt':'phieu')}
 function formHS(ncc,id){const h=id?(S.cache.ncc_ct.ho_so.find(x=>x.id===id)||{}):{loai:'hop_dong',ngay:homNay()};
   modal(`<h2>${id?'Sửa hồ sơ '+maHS(id):'Tạo hồ sơ'}</h2><div class="form" id="f">
@@ -3071,7 +3081,7 @@ async function hs4Gan(bang,id,kieu,ncc){let hs=null;
     const v=($(`#hs4-hs-${bang}${id}`)||{}).value;if(v==='moi'){hs=await hs4Moi(ncc);if(!hs)return}else hs=+v||null}
   const nho=!!($(`#hs4-stk-${bang}${id}`)||{}).checked;
   try{await rpc('kt_ncc_gan_phieu',{p_bang:bang,p_ids:[id],p_kieu:kieu,p_ncc:ncc||null,p_ho_so:hs,p_nho_stk:nho})}catch(e){return alert(e.message)}
-  toast(kieu==='gan'?'Đã lưu vào hồ sơ NCC':kieu==='khong'?'Đã đánh dấu không thuộc NCC':'Đã gỡ khỏi NCC');S.cache.hs_cho=null;S.cache.ncc_chon=null;S.cache['hs4_doi_'+bang+id]=0;veHS4(bang,id)}
+  toast(kieu==='gan'?'Đã lưu vào hồ sơ NCC':kieu==='khong'?'Đã đánh dấu không thuộc NCC':'Đã gỡ khỏi NCC');S.cache.hs_cho=null;S.cache.hs_d=null;S.cache.ncc_chon=null;S.cache['hs4_doi_'+bang+id]=0;veHS4(bang,id)}
 async function hs4Luu(bang,id,ncc,v){let hs=+v||null;if(v==='moi'){hs=await hs4Moi(ncc);if(!hs)return veHS4(bang,id)}
   try{await rpc('kt_ncc_gan_phieu',{p_bang:bang,p_ids:[id],p_kieu:'gan',p_ncc:ncc,p_ho_so:hs,p_nho_stk:false})}catch(e){return alert(e.message)}toast('Đã lưu bộ hồ sơ');S.cache.ncc_chon=null;veHS4(bang,id)}
 async function hs4Moi(ncc){const ten=(prompt('Tên hồ sơ mới (VD: Hợp đồng nhập hàng lô 10/2026):')||'').trim();if(!ten)return null;
