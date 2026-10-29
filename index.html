@@ -1011,8 +1011,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.251';
-const APP_VERSION='29/10/2026 14:47';
+const APP_SO='1.252';
+const APP_VERSION='29/10/2026 15:01';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2963,9 +2963,14 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,s=c.so,f=S.f,
         ${h.so_hd||h.ngay||h.ghi_chu?`<div class="muted" style="font-size:12.5px;margin-bottom:8px">${[h.so_hd?'Số HĐ / đơn: '+esc(h.so_hd):'',h.ngay?'Ngày: '+fmtD(h.ngay):'',h.ghi_chu?esc(h.ghi_chu):''].filter(Boolean).join(' · ')}</div>`:''}
         ${ctBox('ho_so',h.id,g)}</div></div>`}).join('')||'<div class="m-empty">Chưa có hồ sơ — phiếu vẫn nằm chung trong NCC; tạo hồ sơ khi có hợp đồng / đơn hàng / kỳ đối soát</div>');
   }else if(tab==='ct'){
-    const thuoc=x=>x.bang==='ho_so'?esc(maHS(x.dong_id)+' · '+((hsM[x.dong_id]||{}).ten||'')):maPh(x.bang,x.dong_id);
-    body=c.ct.length?`<div class="scroll"><table class="m-t"><tr><th>Tệp</th><th>Thuộc</th><th>Người tải</th><th>Ngày tải</th></tr>${c.ct.map(x=>`<tr class="click" onclick="nccXemCT(${x.id})"><td>${esc(x.ten||'')}</td><td class="nw">${thuoc(x)}</td><td class="nw">${esc(x.tao_boi||'')}</td><td class="nw">${fmtDT(x.tao_luc)}</td></tr>`).join('')}</table></div>`
-      :'<div class="m-empty">Chưa có chứng từ (chứng từ của các phiếu và hồ sơ trong NCC tự gom về đây)</div>';
+    // 29/10 anh "ảnh với phiếu trình bày trong hồ sơ như nào": lưới ảnh theo từng khối — chứng từ chung của từng hồ sơ, rồi từng phiếu (theo hồ sơ), bấm ảnh mở trình xem
+    const khoi=(dau,noi)=>`<div style="border:1px solid var(--border);border-radius:10px;padding:10px 14px 12px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;font-size:13px">${dau}</div>${noi}</div>`;
+    const luoi=(bang,id,sua)=>ctBox(bang,id,sua).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,'').replace('class="ct"','class="ct" style="margin-top:8px"');
+    const coCT=c.phieu.filter(p=>p.so_ct>0),nh=[...c.ho_so.map(h=>({h,ds:coCT.filter(p=>p.ho_so_id===h.id)})),{h:null,ds:coCT.filter(p=>!p.ho_so_id||!hsM[p.ho_so_id])}];
+    body=nh.map(({h,ds})=>(h||ds.length)?`<div class="m-st" style="margin:4px 0 8px">${h?esc(maHS(h.id)+' · '+h.ten):'Chưa vào hồ sơ'}</div>`
+      +(h?khoi(`<b>Chứng từ chung của hồ sơ</b><span class="muted">hợp đồng, đơn hàng, biên bản…</span>`,luoi('ho_so',h.id,g)):'')
+      +ds.map(p=>khoi(`<span class="m-link" onclick="closeModal();moPhieu('${p.bang==='thu'?'PT':'PC'}',${p.id})">${maPh(p.bang,p.id)}</span><span class="muted">${p.ngay?fmtD(p.ngay):''}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.noi_dung||'')}</span><b>${fmt(p.so_tien)}</b>`,luoi(p.bang,p.id,false))).join(''):'').join('')
+      ||'<div class="m-empty">Chưa có chứng từ (chứng từ của các phiếu và hồ sơ trong NCC tự gom về đây)</div>';
   }else if(tab==='nhap'){
     const TTN={1:['Phiếu tạm','warn'],3:['Đã nhập hàng','ok'],4:['Đã huỷ','']};
     body=c.nhap.length?`<div class="scroll"><table class="m-t"><tr><th>Mã phiếu nhập</th><th>Ngày</th><th>Chi nhánh</th><th class="num">Tổng tiền</th><th class="num">Đã trả</th><th class="num">Còn nợ</th><th class="c">Trạng thái</th></tr>${c.nhap.map(x=>`<tr><td class="nw"><a class="m-link" href="${KIOT_MAN}PurchaseOrder?Code=${encodeURIComponent(x.ma)}" target="_blank" rel="noopener">${esc(x.ma)}</a></td><td class="nw">${fmtD(String(x.ngay).slice(0,10))}</td><td class="nw">${esc(x.chi_nhanh||'')}</td>
