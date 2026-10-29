@@ -615,6 +615,11 @@ tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{paddi
 .ncc-d{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:center;padding:7px 0;font-size:13px}.ncc-d>span{color:var(--text2)}.ncc-d>div{font-weight:600}
 .ncc-note{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--info-bg);color:var(--text);font-size:12.5px}
 .ncc-lq{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;font-size:13px}.ncc-lq:hover{background:var(--bg2)}
+.ncc-metas{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}.ncc-meta{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text2)}.ncc-meta svg{width:14px;height:14px}
+.ncc-tt2{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}.ncc-tt2>div+div{border-left:1px solid var(--border);padding-left:28px}.ncc-r{display:grid;grid-template-columns:170px minmax(0,1fr);gap:10px;padding:5px 0;font-size:13px}.ncc-r>span{color:var(--text2)}.ncc-r>div{font-weight:600;overflow-wrap:anywhere}
+.ncc-them{position:relative}.ncc-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:210px;z-index:5;padding:4px}.ncc-them.on .ncc-menu{display:block}
+.ncc-menu>*{display:block;padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap}.ncc-menu>*:hover{background:var(--bg2)}
+@media(max-width:900px){.ncc-tt2{grid-template-columns:1fr}.ncc-tt2>div+div{border-left:0;padding-left:0}}
 .ncc-k{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px}.ncc-kh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13.5px;margin-bottom:4px}
 .ncc-so{margin-left:auto;font-size:12.5px;color:var(--text2)}.ncc-ct{margin:6px 0 4px;font-size:12px}.ncc-p{border-top:1px solid var(--border);padding:10px 0 8px}
 .ncc-pd{display:grid;grid-template-columns:76px 78px minmax(0,1fr) 150px 120px 100px 210px 30px;gap:10px;align-items:center;font-size:12.5px}.ncc-pd .num{text-align:right}
@@ -1030,8 +1035,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.259';
-const APP_VERSION='29/10/2026 16:35';
+const APP_SO='1.260';
+const APP_VERSION='29/10/2026 16:41';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3024,12 +3029,23 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
     body=khung(`<b>Lưu trữ chung của NCC</b><span class="muted">hợp đồng khung, báo giá, giấy tờ NCC — kéo thả / Ctrl+V</span>${g?`<button class="m-btn sm pri" style="margin-left:auto" onclick="formHS(${n.id})">+ Tạo hồ sơ</button>`:''}`,luoi('ncc',n.id,g))
       +nhom+(le.length?khung(`<b>Chưa vào hồ sơ</b><span class="ncc-so">Đã trả <b class="pos-t">${fmt(daTra(le))}</b> · ${le.length} phiếu</span>`,le.map(dong).join('')):'');
   }
-  const tt=nccTT({hoat_dong:true,so_phieu:c.phieu.length,so_nhap:(c.nhap||[]).length}),phu=[NCC_LOAI[n.loai]?NCC_LOAI[n.loai][0]:'',n.sdt,n.ghi_chu].filter(Boolean).map(esc).join(' · ');
-  const ICN={thu:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c4.4 0 8 1.3 8 3v12c0 1.7-3.6 3-8 3s-8-1.3-8-3V6c0-1.7 3.6-3 8-3zm0 2C8.1 5 6 6 6 6s2.1 1 6 1 6-1 6-1-2.1-1-6-1z"/></svg>',tra:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm2 2v2h14V8zm0 5v3h6v-3z"/></svg>',
+  // 29/10 ảnh mẫu "giao diện thông tin NCC thiết kế như này": dòng phụ quốc gia · loại hình · ngành hàng; Thông tin cơ bản 2 cột; thẻ theo tiền tệ NCC (≈ VND theo tỷ giá kế toán nhập)
+  const tt=nccTT({hoat_dong:true,so_phieu:c.phieu.length,so_nhap:(c.nhap||[]).length}),X=n.them||{},ngoai=['nuoc_ngoai','trung_gian'].includes(n.loai);
+  const ICM={qg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>',
+    lh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21V9l6-4v4l6-4v4l6-4v16z"/></svg>',ng:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v13H4zM8 7V4h8v3"/></svg>'};
+  const meta=[[ICM.qg,X.quoc_gia||(ngoai?'':'Việt Nam')],[ICM.lh,X.loai_hinh],[ICM.ng,X.nganh_hang]].filter(z=>z[1]).map(([ic,t])=>`<span class="ncc-meta">${ic}${esc(t)}</span>`).join('');
+  const dong=(l,v)=>`<div class="ncc-r"><span>${l}</span><div>${v?esc(v):'<span class="muted">—</span>'}</div></div>`;
+  const trai=[['Tên giao dịch',X.ten_giao_dich||n.ten],...(ngoai||X.ten_goc?[[/trung/i.test(X.quoc_gia||'')?'Tên tiếng Trung':'Tên tiếng nước ngoài',X.ten_goc]]:[]),['Địa chỉ',n.dia_chi],['Liên hệ chính',n.lien_he],['Chức vụ',X.chuc_vu]];
+  const phai=[...(n.email?[['Email',n.email]]:[]),['Điện thoại',n.sdt],['Mã số thuế'+(ngoai&&X.quoc_gia?' ('+X.quoc_gia+')':''),n.mst],['Điều kiện thanh toán',X.dieu_kien_tt],
+    ['Tiền tệ giao dịch',X.tien_te?(X.tien_te+(X.ty_gia&&X.tien_te!=='VND'?' · tỷ giá '+fmt(X.ty_gia):'')):'VND'],...(ngoai||X.dieu_kien_giao?[['Điều kiện giao hàng',X.dieu_kien_giao]]:[]),['Số TK nhận tiền',(n.stk||[]).join(', ')],...(n.ghi_chu?[['Ghi chú',n.ghi_chu]]:[])];
+  const tTe=X.tien_te&&X.tien_te!=='VND'&&+X.ty_gia>0?X.tien_te:null,soTe=v=>tTe?{v:fmt(Math.round(v/+X.ty_gia*100)/100)+' '+tTe,s:'≈ '+fmt(v)+' đ'}:{v:fmt(v),s:''};
+  const ICN={thu:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h11l3 3v15H5zm3 6h8v2H8zm0 4h8v2H8z"/></svg>',tra:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm2 2v2h14V8zm0 5v3h6v-3z"/></svg>',
     du:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 17l6-6 4 4 6-6v4h2V5h-8v2h4l-4 4-4-4-8 8z"/></svg>',han:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1 5v6l5 3 1-1.7-4-2.3V7z"/></svg>'};
-  const html=`<div class="ncc-h"><div><div style="display:flex;align-items:center;gap:10px"><b class="ncc-h1">${esc(n.ma||'')} – ${esc(n.ten)}</b>${pill(...tt)}</div>${phu?`<div class="muted" style="font-size:13px;margin-top:3px">${phu}</div>`:''}</div><span style="margin-left:auto"></span>
-      ${g?`<label class="m-btn out" title="Tải ảnh / PDF thẳng vào lưu trữ chung của NCC">⬆ Tải chứng từ<input type="file" multiple hidden accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" onchange="nccTaiLen(this.files);this.value=''"></label><button class="m-btn out" onclick="formNCC(${n.id})">${IC_SUA} Chỉnh sửa</button>`:''}<button class="x" title="Đóng" onclick="closeModal()">✕</button></div>
-    <div class="m-kpis ncc-k4">${the('info',ICN.thu,'Phải thu (ứng trước)',fmt(so.phai_thu))}${the('bad',ICN.tra,'Phải trả',fmt(so.phai_tra),so.phai_tra>0?'neg-t':'')}${the('grey',ICN.du,'Số dư',fmt(soDu),soDu<0?'neg-t':'')}${the('info',ICN.han,'Công nợ đến hạn',fmt(denHan.length)+' khoản','',`S.f.ncc_tab='gd';S.f.ncc_gd_han=S.f.ncc_gd_han==='qua'?'':'qua';S.f.ncc_gd_tr=1;nccVe()`)}</div>
+  const theT=(c2,ic,l,v,cls)=>{const z=soTe(v);return `<div class="m-k" style="--c:var(--${c2})"><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v ${cls||''}">${z.v}</div>${z.s?`<div class="s">${z.s}</div>`:''}</div></div>`};
+  const html=`<div class="ncc-h"><div style="min-width:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b class="ncc-h1">${esc(n.ma||'')} - ${esc(n.ten)}</b>${pill(...tt)}${nccPill(n.loai)}</div>${meta?`<div class="ncc-metas">${meta}</div>`:''}</div><span style="margin-left:auto"></span>
+      ${g?`<button class="m-btn out" onclick="formNCC(${n.id})">${IC_SUA} Sửa</button><span class="ncc-them"><button class="m-btn out" title="Thêm thao tác" onclick="this.parentNode.classList.toggle('on')">⋯</button><span class="ncc-menu"><label>⬆ Tải chứng từ lên NCC<input type="file" multiple hidden accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" onchange="nccTaiLen(this.files);this.value=''"></label><span onclick="S.f.ncc_tab='hs';nccVe()">Mở hồ sơ & lưu trữ</span></span></span>`:''}<button class="x" title="Đóng" onclick="closeModal()">✕</button></div>
+    <div class="ncc-tt"><div class="ncc-st" style="margin:0 0 6px">Thông tin cơ bản</div><div class="ncc-tt2"><div>${trai.map(([l,v])=>dong(l,v)).join('')}</div><div>${phai.map(([l,v])=>dong(l,v)).join('')}</div></div></div>
+    <div class="m-kpis ncc-k4">${theT('ok',ICN.thu,'Phải thu (ứng trước)',so.phai_thu)}${theT('bad',ICN.tra,'Phải trả',so.phai_tra,so.phai_tra>0?'neg-t':'')}${theT('grey',ICN.du,'Số dư',soDu,soDu<0?'neg-t':'')}${the('info',ICN.han,'Công nợ đến hạn',fmt(denHan.length)+' khoản','',`S.f.ncc_tab='gd';S.f.ncc_gd_han=S.f.ncc_gd_han==='qua'?'':'qua';S.f.ncc_gd_tr=1;nccVe()`)}</div>
     <div class="m-tabs">${tabs.map(([kk,t])=>`<button class="m-tab ${tab===kk?'on':''}" onclick="S.f.ncc_tab='${kk}';nccVe()">${t}</button>`).join('')}</div><div class="ncc-b">${body}</div>`;
   S.cache.ncc_gd_all=L;
   const m=$('#modal');if(m&&m.dataset.ncc===String(n.id)){m.firstElementChild.innerHTML=html;setTimeout(ganCT,0)}
@@ -3097,19 +3113,28 @@ async function nccGanChon(){const c=S.cache.ncc_ct,ds=S.cache.ncc_tim||[],sel=(S
 async function nccXemCT(ctId){const c=S.cache.ncc_ct,k='ct_ncc'+c.ncc.id;
   if(!(S.cache[k]||[]).some(x=>x.id===ctId&&x.url)){try{const {ds}=await ctFn({viec:'xem',ids:c.ct.map(x=>x.id)});const u=Object.fromEntries(ds.map(x=>[x.id,x.url]));S.cache[k]=c.ct.map(x=>({...x,url:u[x.id]}))}catch(e){return alert(e.message)}}
   xemCT('ncc',c.ncc.id,ctId)}
-function formNCC(id,loai){const n=id?(S.cache.ncc_ct||{}).ncc||{}:{loai:loai||'nuoc_ngoai',stk:[]},kiot=n.nguon==='kiot';
+// 29/10: form chia nhóm theo nội dung; kế toán / giám đốc sửa được mọi ô (kể cả NCC Kiot)
+function formNCC(id,loai){const n=id?(S.cache.ncc_ct||{}).ncc||{}:{loai:loai||'nuoc_ngoai',stk:[],them:{}},X=n.them||{};
+  const SEC=t=>`<div class="sec" style="grid-column:1/-1;margin:12px 0 0">${t}</div>`,o=(k,l,v,cls,ph)=>`<label class="${cls||''}">${l}<input name="${k}" value="${esc(v||'')}"${ph?` placeholder="${esc(ph)}"`:''}></label>`;
   modal(`<h2>${id?'Sửa nhà cung cấp':'Thêm nhà cung cấp'}</h2><div class="form" id="f">
+    ${SEC('1. Thông tin chung')}
     <label class="full"><span>Tên nhà cung cấp${BB}</span><input name="ten" value="${esc(n.ten||'')}"></label>
-    <label><span>Loại${BB}</span><select name="loai">${optsObj(Object.fromEntries(Object.entries(NCC_LOAI).map(([v,[t]])=>[v,t])),n.loai||'nuoc_ngoai')}</select></label>
-    <label>Mã số thuế<input name="mst" value="${esc(n.mst||'')}"></label>
-    <label>Số điện thoại<input name="sdt" value="${esc(n.sdt||'')}"></label>
-    <label>Người liên hệ<input name="lien_he" value="${esc(n.lien_he||'')}"></label>
-    <label class="full">Địa chỉ<input name="dia_chi" value="${esc(n.dia_chi||'')}"></label>
-    <label class="full">Số tài khoản nhận tiền (mỗi số 1 dòng — phiếu chi chuyển vào số này tự vào NCC)<textarea name="stk" rows="3">${esc((n.stk||[]).join('\n'))}</textarea></label>
+    ${o('ten_giao_dich','Tên giao dịch',X.ten_giao_dich)}${o('ten_goc','Tên tiếng nước ngoài',X.ten_goc,'','Tên gốc của NCC')}
+    <label><span>Loại NCC${BB}</span><select name="loai">${optsObj(Object.fromEntries(Object.entries(NCC_LOAI).map(([v,[t]])=>[v,t])),n.loai||'nuoc_ngoai')}</select></label>
+    ${o('quoc_gia','Quốc gia',X.quoc_gia)}${o('loai_hinh','Loại hình',X.loai_hinh,'','Nhà sản xuất / thương mại…')}${o('nganh_hang','Ngành hàng',X.nganh_hang,'','Đồ thờ, tượng, gốm sứ…')}
+    ${SEC('2. Liên hệ')}
+    ${o('lien_he','Liên hệ chính',n.lien_he)}${o('chuc_vu','Chức vụ',X.chuc_vu)}${o('sdt','Điện thoại',n.sdt)}${o('email','Email',n.email)}${o('dia_chi','Địa chỉ',n.dia_chi,'full')}
+    ${SEC('3. Thanh toán & giao hàng')}
+    ${o('mst','Mã số thuế',n.mst)}${o('dieu_kien_tt','Điều kiện thanh toán',X.dieu_kien_tt,'','T/T 30% – 70% trước khi giao hàng')}
+    <label>Tiền tệ giao dịch<select name="tien_te">${['VND','USD','CNY','EUR'].map(t=>`<option ${(X.tien_te||'VND')===t?'selected':''}>${t}</option>`).join('')}</select></label>
+    <label>Tỷ giá quy đổi (đ)${moneyIn('ty_gia',X.ty_gia||'')}</label>${o('dieu_kien_giao','Điều kiện giao hàng',X.dieu_kien_giao,'full','FOB Xiamen Port…')}
+    <label class="full">Số tài khoản nhận tiền<textarea name="stk" rows="2" placeholder="Mỗi số 1 dòng — phiếu chi chuyển vào số này tự vào NCC">${esc((n.stk||[]).join('\n'))}</textarea></label>
+    ${SEC('4. Ghi chú')}
     <label class="full">Ghi chú<input name="ghi_chu" value="${esc(n.ghi_chu||'')}"></label></div>
     <div class="acts"><button class="btn" onclick="${id?`nccMo(${id})`:'closeModal()'}">Huỷ</button><button class="btn pri" onclick="luuNCC(${id||'null'})">Lưu</button></div>`)}
 async function luuNCC(id){const f=$('#f'),v=k=>f.querySelector(`[name=${k}]`).value;
-  const o={id,ten:v('ten'),loai:v('loai'),mst:v('mst'),sdt:v('sdt'),lien_he:v('lien_he'),dia_chi:v('dia_chi'),ghi_chu:v('ghi_chu'),stk:v('stk').split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean)};
+  const them=Object.fromEntries(['ten_giao_dich','ten_goc','quoc_gia','loai_hinh','nganh_hang','chuc_vu','dieu_kien_tt','tien_te','dieu_kien_giao'].map(k=>[k,v(k).trim()]).filter(([,x])=>x));if(v('ty_gia'))them.ty_gia=so(v('ty_gia'));
+  const o={id,ten:v('ten'),loai:v('loai'),mst:v('mst'),sdt:v('sdt'),email:v('email'),lien_he:v('lien_he'),dia_chi:v('dia_chi'),ghi_chu:v('ghi_chu'),them,stk:v('stk').split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean)};
   let nid;try{nid=await rpc('kt_luu_ncc',{p_dong:o})}catch(e){return alert(e.message)}toast('Đã lưu nhà cung cấp');S.cache.ncc_chon=null;S.cache.hs_d=null;
   if(/^ncc_/.test(S.page))render();nccMo(nid,'gd')}
 function formHS(ncc,id){const h=id?(S.cache.ncc_ct.ho_so.find(x=>x.id===id)||{}):{loai:'hop_dong',ngay:homNay()};
