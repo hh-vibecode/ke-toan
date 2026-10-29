@@ -1024,8 +1024,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.257';
-const APP_VERSION='29/10/2026 15:58';
+const APP_SO='1.258';
+const APP_VERSION='29/10/2026 16:04';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2757,8 +2757,9 @@ function thanhTrang(k,n,moi,tr,donVi){const so=Math.max(1,Math.ceil(n/moi));cons
 // CÔNG NỢ & THANH TOÁN — giao diện mẫu kế toán (13/10/2026): tab · bộ lọc có nhãn · bảng + khung chi tiết. Số nợ = số Kiot; tuổi nợ FIFO
 // (supabase-schema-kt-cong-no-kiot.sql). Nhóm KH suy từ tiền tố tên Kiot: NPP → Đại lý · KB → Cửa hàng · KL → Khách lẻ.
 // 14/10/2026 (anh: ảnh mẫu do AI vẽ, lắp theo dữ liệu thật): bỏ 2 tab mẫu không có dữ liệu "Đối chiếu công nợ", "Lịch sử thanh toán" (lịch sử TT xem trong khung chi tiết từng khách / NCC)
-const TAB_NO=[['no_kh','Công nợ phải thu KH'],['no_ncc','Công nợ phải trả NCC']];   // 29/10: Kế hoạch thu - thanh toán (Lịch đến hạn trả) chuyển sang Thu chi & Ngân quỹ
-function tabNo(on){return `<div class="m-tabs" style="align-items:center">${TAB_NO.filter(([k])=>!PAGES[k]||coXem(k)).map(([k,t])=>`<button class="m-tab ${on===k?'on':''}" onclick="${PAGES[k]?`go('${k}')`:`S.f.no_tab='${k}';render()`}">${t}</button>`).join('')}
+// 29/10 anh: "sao lại có công nợ NCC ở đây" → mỗi trang chỉ tab của chính nó (công nợ NCC xem ở NCC nội địa / nước ngoài)
+const TAB_NO=[['no_kh','Công nợ phải thu khách hàng'],['no_ncc','Công nợ phải trả nhà cung cấp']];   // 29/10: Kế hoạch thu - thanh toán (Lịch đến hạn trả) chuyển sang Thu chi & Ngân quỹ
+function tabNo(on){const t=(TAB_NO.find(([k])=>k===on)||TAB_NO.find(([k])=>k===S.page)||TAB_NO[0])[1];return `<div class="m-tabs" style="align-items:center"><b style="font-size:15px;padding:10px 0">${t}</b>
   <span style="margin-left:auto"></span></div>`}
 // ── NHÂN SỰ PHỤ TRÁCH theo bộ phận (14/10/2026, anh: tham khảo bảng Nhân sự Sale ở trang Phân quyền app MKT/Sale)
 // Bảng kt_nhan_su (supabase-schema-kt-nhan-su.sql): tên chuẩn + bộ phận (danh mục Cơ sở / bộ phận, ô "Bộ phận đề nghị") + các tên trên Kiot.
