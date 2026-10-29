@@ -620,6 +620,14 @@ tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{paddi
 .ncc-them{position:relative}.ncc-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:210px;z-index:5;padding:4px}.ncc-them.on .ncc-menu{display:block}
 .ncc-menu>*{display:block;padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap}.ncc-menu>*:hover{background:var(--bg2)}
 @media(max-width:900px){.ncc-tt2{grid-template-columns:1fr}.ncc-tt2>div+div{border-left:0;padding-left:0}}
+.tl{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}.tl-l,.tl-r{border:1px solid var(--border);border-radius:10px;background:var(--surface)}.tl-l{padding:10px}
+.tl-lh{display:flex;align-items:center;gap:8px;margin:2px 2px 8px}.tl-lh b{font-size:14px;margin-right:auto;white-space:nowrap}.tl-m{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px}.tl-m svg{width:16px;height:16px;color:#f5b400;flex:none}.tl-m.con{padding-left:28px}.tl-m.con svg{color:var(--text3,#889)}
+.tl-m span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tl-m b{font-weight:600;color:var(--text2);font-size:12px}.tl-m:hover{background:var(--bg2)}.tl-m.on{background:var(--sel-bg);color:var(--accent);font-weight:700}
+.tl-rh{display:flex;align-items:center;gap:8px;padding:10px 12px;flex-wrap:wrap}.tl-rh>b{font-size:14px;margin-right:6px}.tl-ten{display:flex;align-items:center;gap:8px;min-width:0;max-width:360px}
+.tl-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:20px;border-radius:4px;font-size:9.5px;font-weight:800;color:#fff;background:#94a3b8}.tl-ic.pdf{background:#dc2626}.tl-ic.xls{background:#16a34a}.tl-ic.doc{background:#2563eb}.tl-ic.anh{background:#0891b2}
+.tl-xem{border:1px solid var(--border);border-radius:8px;background:var(--bg2);min-height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden}.tl-xem img{max-width:100%;max-height:440px;cursor:zoom-in}.tl-xem iframe{width:100%;height:440px;border:0;background:#fff}
+.tl-nut{display:flex;gap:10px;margin-top:14px}.tl-nut>*{flex:1}.tl-nut .m-btn{height:36px;width:100%;justify-content:center}
+@media(max-width:900px){.tl{grid-template-columns:1fr}}
 .ncc-k{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px}.ncc-kh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13.5px;margin-bottom:4px}
 .ncc-so{margin-left:auto;font-size:12.5px;color:var(--text2)}.ncc-ct{margin:6px 0 4px;font-size:12px}.ncc-p{border-top:1px solid var(--border);padding:10px 0 8px}
 .ncc-pd{display:grid;grid-template-columns:76px 78px minmax(0,1fr) 150px 120px 100px 210px 30px;gap:10px;align-items:center;font-size:12.5px}.ncc-pd .num{text-align:right}
@@ -1035,8 +1043,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.260';
-const APP_VERSION='29/10/2026 16:41';
+const APP_SO='1.261';
+const APP_VERSION='29/10/2026 16:49';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2991,7 +2999,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
   const L=nccGD(c),denHan=L.filter(x=>x.hanTT==='qua');
   const the=(c2,ic,l,v,cls,on)=>`<div class="m-k${on?' click':''}" style="--c:var(--${c2})" ${on?`onclick="${on}"`:''}><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v ${cls||''}">${v}</div></div>${on?'<span class="muted" style="align-self:center;font-size:18px">›</span>':''}</div>`;
   const luoi=(bang,id,sua)=>ctBox(bang,id,sua).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,'').replace('class="ct"','class="ct" data-xong="1" style="margin-top:8px"');   // ảnh vẽ 1 lượt bằng nccVeCT
-  const hsLink=id=>{const h=hsM[id];return h?`<span class="m-link" title="${esc(h.ten)}" onclick="event.stopPropagation();S.f.ncc_tab='hs';nccVe()">${esc(maHS(h.id))} ↗</span>`:'<span class="muted">—</span>'};
+  const hsLink=id=>{const h=hsM[id];return h?`<span class="m-link" title="${esc(h.ten)}" onclick="event.stopPropagation();S.f.ncc_tab='hs';S.f.tl_muc='';nccVe()">${esc(h.so_hd||maHS(h.id))} ↗</span>`:'<span class="muted">—</span>'};
   let body='';
   if(tab==='gd'){
     const ky=f.ncc_gd_ky||'',lg=f.ncc_gd_loai||'',hn=f.ncc_gd_han||'',q=(f.ncc_gd_q||'').trim();
@@ -3010,24 +3018,29 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
         <td class="num"><b>${fmt(x.tien)}</b></td><td class="c">${pill(...x.tt)}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Không có giao dịch phù hợp</td></tr>'}</table></div>
       <div class="ncc-pg"><span class="muted">Hiển thị ${l.length?(tr-1)*moi+1:0} – ${Math.min(tr*moi,l.length)} / ${l.length} giao dịch</span><span style="margin-left:auto"></span>${trs>1?`<button class="m-btn out" style="height:30px" ${tr<=1?'disabled':''} onclick="S.f.ncc_gd_tr--;nccVe()">‹</button><b style="min-width:52px;text-align:center">${tr} / ${trs}</b><button class="m-btn out" style="height:30px" ${tr>=trs?'disabled':''} onclick="S.f.ncc_gd_tr++;nccVe()">›</button>`:''}</div></div>`;
   }else{
-    // Hồ sơ: lưu trữ chung NCC · từng hồ sơ (số liệu + chứng từ chung + phiếu nhập + phiếu chi kèm ảnh) · phiếu chưa vào hồ sơ
-    const hsSel=p=>`<select class="m-in" style="height:30px;width:100%" title="Chuyển phiếu sang hồ sơ khác" onchange="hsGan('${p.bang}',[${p.id}],${n.id},+this.value||null,'gan',false,1)"><option value="">— Chưa vào hồ sơ —</option>${c.ho_so.map(h=>`<option value="${h.id}" ${p.ho_so_id===h.id?'selected':''}>${esc(maHS(h.id)+' · '+h.ten)}</option>`).join('')}</select>`;
-    const dong=p=>`<div class="ncc-p"><div class="ncc-pd"><span class="nw"><span class="m-link" onclick="closeModal();moPhieu('${p.bang==='thu'?'PT':'PC'}',${p.id})">${maPh(p.bang,p.id)}</span></span><span class="muted nw">${p.ngay?fmtD(p.ngay):''}</span>
-        <span class="ncc-nd" title="${esc(p.noi_dung||'')}">${esc(p.noi_dung||'')}${p.cach==='stk'?' <span class="badge" title="Tự vào NCC vì số tài khoản nhận tiền trùng số TK đã lưu của NCC">theo số TK</span>':''}</span>
-        <span class="ncc-nd muted">${esc(p.nguoi_nhan||'')}</span><span class="c">${ttPh(p)}</span><b class="num ${p.bang==='thu'?'pos-t':''}">${p.bang==='thu'?'+':''}${fmt(p.so_tien)}</b>
-        ${g?`<span>${hsSel(p)}</span><button class="m-btn sm out" title="Gỡ khỏi NCC này" onclick="if(confirm('Gỡ ${maPh(p.bang,p.id)} khỏi NCC này?'))hsGan('${p.bang}',[${p.id}],null,null,'${p.cach==='stk'?'khong':'bo'}',false,1)">✕</button>`:''}</div>
-      ${p.so_ct?luoi(p.bang,p.id,false):'<div class="muted" style="font-size:12px;margin-top:6px">Phiếu chưa có chứng từ</div>'}</div>`;
-    const dongNhap=x=>`<div class="ncc-p"><div class="ncc-pd"><span class="nw"><a class="m-link" href="${KIOT_MAN}PurchaseOrder?Code=${encodeURIComponent(x.ma)}" target="_blank" rel="noopener">${esc(x.ma)}</a></span><span class="muted nw">${fmtD(String(x.ngay).slice(0,10))}</span>
-        <span class="ncc-nd">${pill('Nhập hàng','vio')} ${esc(x.mo_ta||x.chi_nhanh||'')}</span><span></span><span></span><b class="num">${fmt(x.tong)}</b>${g?`<span></span><button class="m-btn sm out" title="Bỏ phiếu nhập khỏi hồ sơ" onclick="hsGan('nhap',[${x.id}],null,null,'bo',false,1)">✕</button>`:''}</div></div>`;
-    const khung=(dau,noi)=>`<div class="ncc-k"><div class="ncc-kh">${dau}</div>${noi}</div>`;
-    const nhom=c.ho_so.map(h=>{const ds=c.phieu.filter(p=>p.ho_so_id===h.id),nh=(c.nhap||[]).filter(x=>x.ho_so_id===h.id),tra=daTra(ds),con=h.gia_tri!=null?+h.gia_tri-tra:null;
-      return khung(`<b>${esc(maHS(h.id))} · ${esc(h.ten)}</b>${pill(HS_LOAI[h.loai]||h.loai,'info')}${h.trang_thai==='xong'?pill('Đã xong','ok'):pill('Đang mở','warn')}
-          <span class="ncc-so">${h.gia_tri!=null?`Giá trị <b>${fmt(h.gia_tri)}</b> · `:''}Đã trả <b class="pos-t">${fmt(tra)}</b>${con!=null?` · Còn lại <b class="${con>0?'neg-t':''}">${fmt(con)}</b>`:''} · ${ds.length} phiếu${nh.length?' · '+nh.length+' phiếu nhập':''}</span>
-          ${g?`<button class="m-btn sm out" onclick="formHS(${n.id},${h.id})">${IC_SUA} Sửa</button>`:''}`,
-        `<div class="ncc-ct"><span class="muted">Chứng từ chung của hồ sơ</span>${luoi('ho_so',h.id,g)}</div>${nh.map(dongNhap).join('')}${ds.map(dong).join('')||(nh.length?'':'<div class="muted" style="font-size:12.5px;padding:8px 0">Chưa có phiếu trong hồ sơ</div>')}`)}).join('');
-    const le=c.phieu.filter(p=>!p.ho_so_id||!hsM[p.ho_so_id]);
-    body=khung(`<b>Lưu trữ chung của NCC</b><span class="muted">hợp đồng khung, báo giá, giấy tờ NCC — kéo thả / Ctrl+V</span>${g?`<button class="m-btn sm pri" style="margin-left:auto" onclick="formHS(${n.id})">+ Tạo hồ sơ</button>`:''}`,luoi('ncc',n.id,g))
-      +nhom+(le.length?khung(`<b>Chưa vào hồ sơ</b><span class="ncc-so">Đã trả <b class="pos-t">${fmt(daTra(le))}</b> · ${le.length} phiếu</span>`,le.map(dong).join('')):'');
+    // 29/10 ảnh mẫu tab Hồ sơ: trái = cây "Danh mục hồ sơ" (số đếm) · phải = bảng tài liệu (tên · loại · số / ký hiệu · ngày ban hành · hiệu lực — bỏ kích thước); bấm tài liệu → popup xem trước / thông tin
+    const {ds,cay}=nccTL(c),mu=f.tl_muc||'',q=(f.tl_q||'').trim(),kieu=f.tl_kieu||'',sx=f.tl_sx||'moi',nay=homNay();
+    const dem=k=>ds.filter(d=>d.muc===k||d.goc===k).length;
+    const muc=(k,t,cap)=>`<div class="tl-m${mu===k?' on':''}${cap?' con':''}" onclick="S.f.tl_muc='${esc(k)}';S.f.tl_tr=1;nccVe()">${cap?IC_TL.tep:IC_TL.muc}<span>${esc(t)}</span><b>${k===''?ds.length:dem(k)}</b></div>`;
+    const trai=`<div class="tl-l"><div class="tl-lh"><b>Danh mục hồ sơ</b>${g?`<button class="m-btn sm out" title="Thêm thư mục (thư mục con nếu đang chọn 1 thư mục)" onclick="nccTMThem()">+ Thư mục</button>`:''}</div>${muc('','Tất cả tài liệu')}${cay.map(n=>muc(n.ten,n.ten)+n.con.map(k=>muc(k,k,1)).join('')).join('')}</div>`;
+    const loaiF=d=>/^image\//.test(d.mime||'')?'anh':/pdf/i.test((d.mime||'')+d.ten)?'pdf':/sheet|excel|csv|\.xlsx?$|\.csv$/i.test((d.mime||'')+' '+d.ten)?'xls':/word|\.docx?$/i.test((d.mime||'')+' '+d.ten)?'doc':'khac';
+    let l=ds.filter(d=>(!mu||d.muc===mu||d.goc===mu)&&(!kieu||loaiF(d)===kieu)&&(!q||khopTim(q,[d.ten,d.so,d.muc,d.m.mo_ta])));
+    l=l.sort(sx==='ten'?(a,b)=>String(a.ten).localeCompare(String(b.ten),'vi'):sx==='cu'?(a,b)=>String(a.tao_luc).localeCompare(String(b.tao_luc)):(a,b)=>String(b.tao_luc).localeCompare(String(a.tao_luc)));
+    S.cache.tl_ds=ds;const moi=50,trs=Math.max(1,Math.ceil(l.length/moi)),tr=Math.min(Math.max(f.tl_tr||1,1),trs);f.tl_tr=tr;const sel=S.cache.tl_sel||(S.cache.tl_sel=[]);
+    const hl=m=>m.hl_den?(m.hl_den>=nay?pill('Hiệu lực','ok'):pill('Hết hiệu lực','bad')):m.hl_tu?pill('Hiệu lực','ok'):'<span class="muted">—</span>';
+    const tieu=mu||'Tất cả tài liệu',caiLen=g&&mu!=='Chứng từ giao dịch';
+    const phai=`<div class="tl-r"><div class="tl-rh"><b>${esc(tieu)} (${l.length})</b>
+        <input class="m-in" type="search" style="width:220px" placeholder="Tìm kiếm tài liệu..." value="${esc(q)}" onchange="S.f.tl_q=this.value;S.f.tl_tr=1;nccVe()">
+        <select class="m-in" style="width:170px" onchange="S.f.tl_kieu=this.value;S.f.tl_tr=1;nccVe()">${[['','Tất cả loại tệp'],['pdf','PDF'],['anh','Ảnh'],['xls','Excel'],['doc','Word'],['khac','Khác']].map(([v,t])=>`<option value="${v}" ${kieu===v?'selected':''}>${t}</option>`).join('')}</select>
+        <select class="m-in" style="width:130px" onchange="S.f.tl_sx=this.value;nccVe()">${[['moi','Mới nhất'],['cu','Cũ nhất'],['ten','Tên A–Z']].map(([v,t])=>`<option value="${v}" ${sx===v?'selected':''}>${t}</option>`).join('')}</select>
+        <span style="margin-left:auto"></span><button class="m-btn out" id="tl-tai" ${sel.length?'':'style="display:none"'} onclick="taiVeCT(S.cache.tl_sel)">⬇ Tải xuống (<span>${sel.length}</span>)</button>
+        ${caiLen?`<label class="m-btn pri" title="Tải tệp vào thư mục ${esc(mu&&mu!=='Chứng từ giao dịch'?mu:'Khác')}">⬆ Tải lên<input type="file" multiple hidden accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" onchange="nccTaiLen(this.files);this.value=''"></label>`:''}</div>
+      <div class="scroll"><table class="m-t"><tr><th class="c" style="width:34px"></th><th>Tên tài liệu</th><th class="c">Loại tài liệu</th><th>Số / Ký hiệu</th><th>Ngày ban hành</th><th class="c">Hiệu lực</th></tr>
+      ${l.slice((tr-1)*moi,tr*moi).map(d=>`<tr class="click" onclick="nccTLMo(${d.id})"><td class="c" onclick="event.stopPropagation()"><input type="checkbox" ${sel.includes(d.id)?'checked':''} onchange="nccTLChon(${d.id},this.checked)"></td>
+        <td><div class="tl-ten"><span class="tl-ic ${loaiF(d)}">${loaiF(d)==='anh'?'ẢNH':ctNhanTep(d.mime||'',d.ten||'')}</span><span class="ncc-nd" title="${esc(d.ten)}">${esc(d.ten)}</span></div></td>
+        <td class="c">${pill(d.muc,TL_MAU[d.goc]??'')}</td><td class="nw">${esc(d.so||'')||'<span class="muted">—</span>'}</td><td class="nw">${d.ngay?fmtD(d.ngay):'<span class="muted">—</span>'}</td><td class="c">${hl(d.m)}</td></tr>`).join('')||`<tr><td colspan="6" class="m-empty">${ds.length?'Không có tài liệu phù hợp':'Chưa có tài liệu — bấm ⬆ Tải lên'}</td></tr>`}</table></div>
+      <div class="ncc-pg"><span class="muted">Hiển thị ${l.length?(tr-1)*moi+1:0} – ${Math.min(tr*moi,l.length)} / ${l.length} tài liệu</span><span style="margin-left:auto"></span>${trs>1?`<button class="m-btn out" style="height:30px" ${tr<=1?'disabled':''} onclick="S.f.tl_tr--;nccVe()">‹</button><b style="min-width:52px;text-align:center">${tr} / ${trs}</b><button class="m-btn out" style="height:30px" ${tr>=trs?'disabled':''} onclick="S.f.tl_tr++;nccVe()">›</button>`:''}</div></div>`;
+    body=`<div class="tl">${trai}${phai}</div>`;
   }
   // 29/10 ảnh mẫu "giao diện thông tin NCC thiết kế như này": dòng phụ quốc gia · loại hình · ngành hàng; Thông tin cơ bản 2 cột; thẻ theo tiền tệ NCC (≈ VND theo tỷ giá kế toán nhập)
   const tt=nccTT({hoat_dong:true,so_phieu:c.phieu.length,so_nhap:(c.nhap||[]).length}),X=n.them||{},ngoai=['nuoc_ngoai','trung_gian'].includes(n.loai);
@@ -3052,13 +3065,67 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
   else{const mm=modal(html);mm.dataset.ncc=n.id;const b=mm.firstElementChild;b.style.width='min(1240px,96vw)';b.style.maxWidth='1240px'}
   if(g&&S.cache.ncc_tim==null&&!S.cache.ncc_tim_dang)setTimeout(()=>nccTim(''),0);   // đếm gợi ý đối soát (chạy nền)
   setTimeout(nccVeCT,0)}
+// ── THƯ VIỆN TÀI LIỆU NCC (29/10/2026 ảnh mẫu tab Hồ sơ) — thư mục mặc định + thư mục thêm tay; ảnh phiếu chi / thu tự vào "Chứng từ giao dịch"
+const TL_MUC=[['Hợp đồng',['Hợp đồng nguyên tắc','Hợp đồng theo đợt']],['Phụ lục, thỏa thuận'],['Báo giá'],['Hồ sơ pháp lý'],['Chứng từ chung'],['Chứng từ giao dịch'],['Khác']];
+const TL_MAU={'Hợp đồng':'info','Phụ lục, thỏa thuận':'vio','Báo giá':'ok','Hồ sơ pháp lý':'','Chứng từ chung':'warn','Chứng từ giao dịch':'teal','Khác':''};
+const IC_TL={muc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h7l2 2h9v12H3z"/></svg>',tep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM9 12h6M9 16h6"/></svg>'};
+function nccTL(c){const tl=c.tl||{},ph=Object.fromEntries(c.phieu.map(p=>[p.bang+p.id,p])),tm=c.thu_muc||[];
+  const cay=TL_MUC.map(([ten,con])=>({ten,con:[...(con||[]),...tm.filter(t=>t.cha===ten).map(t=>t.ten)]}));
+  tm.filter(t=>!t.cha||!TL_MUC.some(([k])=>k===t.cha)).forEach(t=>cay.splice(cay.length-1,0,{ten:t.ten,con:[]}));
+  const goc={};cay.forEach(nd=>{goc[nd.ten]=nd.ten;nd.con.forEach(k=>goc[k]=nd.ten)});
+  const ds=c.ct.map(x=>{const m=tl[x.id]||{},gd=x.bang==='chi'||x.bang==='thu',p=gd?ph[x.bang+x.dong_id]:null,muc=gd?'Chứng từ giao dịch':(m.thu_muc||(x.bang==='ho_so'?'Hợp đồng':'Khác'));
+    return {...x,m,gd,p,muc,goc:goc[muc]||muc,so:m.so_hieu||(gd?maPh(x.bang,x.dong_id):''),ngay:m.ngay_bh||(gd&&p?String(p.ngay||'').slice(0,10):''),hs:m.ho_so_id||(x.bang==='ho_so'?+x.dong_id:null)}});
+  return {ds,cay}}
+function nccTLChon(id,on){const s=S.cache.tl_sel=(S.cache.tl_sel||[]).filter(x=>x!==id);if(on)s.push(id);const b=$('#tl-tai');if(b){b.style.display=s.length?'':'none';b.querySelector('span').textContent=s.length}}
+async function nccTMThem(){const c=S.cache.ncc_ct,mu=S.f.tl_muc||'',cha=TL_MUC.some(([k])=>k===mu)&&mu!=='Chứng từ giao dịch'?mu:'';
+  const ten=(prompt(cha?`Tên thư mục con trong "${cha}":`:'Tên thư mục mới:')||'').trim();if(!ten)return;
+  try{await rpc('kt_luu_thu_muc',{p_ncc:c.ncc.id,p_ten:ten,p_cha:cha||null})}catch(e){return alert(e.message)}toast('Đã thêm thư mục');S.f.tl_muc=ten;nccMo(c.ncc.id,'hs')}
+// tải tệp vào thư mục đang chọn: đẩy vào hàng đợi chứng từ (bang 'ncc'), xong thì gắn thư mục cho tệp mới
+function nccTaiLen(files){const c=S.cache.ncc_ct;if(!c||!files||!files.length)return;const fs=[...files],id=c.ncc.id,mu=S.f.tl_muc&&S.f.tl_muc!=='Chứng từ giao dịch'?S.f.tl_muc:'Khác',truoc=new Set(c.ct.map(x=>x.id));
+  S.f.ncc_tab='hs';nccVe();ctThem('ncc',id,fs);toast('Đang tải '+fs.length+' tệp vào "'+mu+'"…');
+  const t=setInterval(async()=>{if(CTQ.some(q=>q.k==='ncc:'+id&&['cho','nen','tai'].includes(q.tt)))return;clearInterval(t);
+    try{const c2=await rpc('kt_ncc_ct',{p_id:id});const moi=c2.ct.filter(x=>x.bang==='ncc'&&!truoc.has(x.id));
+      if(mu!=='Khác')for(const x of moi)await rpc('kt_luu_tai_lieu',{p_ct:x.id,p_ncc:id,p_dong:{thu_muc:mu}});}catch(e){toast(e.message)}
+    S.f.tl_muc=mu;nccMo(id,'hs')},800)}
+// popup 1 tài liệu: Xem trước · Thông tin (sửa thư mục, số / ký hiệu, ngày ban hành, hiệu lực, mô tả, hợp đồng liên kết); Tải xuống · Xoá
+async function nccTLMo(ctId,tab){const c=S.cache.ncc_ct,d=(S.cache.tl_ds||[]).find(x=>x.id===ctId);if(!d)return;const g=nccGhi(),t=tab||'xem',suaDuoc=g&&!d.gd,m=d.m,nay=homNay();
+  const hsM=Object.fromEntries(c.ho_so.map(h=>[h.id,h])),h=d.hs&&hsM[d.hs],tenHS=z=>(z.so_hd?z.so_hd+' · ':'')+z.ten;
+  const o=(l,v)=>`<div class="ncc-d"><span>${l}</span><div>${v||'<span class="muted">—</span>'}</div></div>`;
+  const hlT=m.hl_tu||m.hl_den?`${m.hl_tu?fmtD(m.hl_tu):'…'} – ${m.hl_den?fmtD(m.hl_den):'…'} ${m.hl_den?(m.hl_den>=nay?pill('Hiệu lực','ok'):pill('Hết hiệu lực','bad')):pill('Hiệu lực','ok')}`:'';
+  const tt=o('Loại tài liệu',pill(d.muc,TL_MAU[d.goc]??''))+o('Số / Ký hiệu',esc(d.so||''))+o('Ngày ban hành',d.ngay?fmtD(d.ngay):'')+o('Hiệu lực',hlT)+o('Hợp đồng liên kết',h?esc(tenHS(h)):'')
+    +(d.gd&&d.p?o('Phiếu',`<span class="m-link" onclick="dong2();closeModal();moPhieu('${d.bang==='thu'?'PT':'PC'}',${d.dong_id})">${maPh(d.bang,d.dong_id)}</span> · ${esc(d.p.noi_dung||'')}`):'')
+    +o('Người tải lên',esc(d.tao_boi||''))+o('Ngày tải lên',d.tao_luc?fmtDT(d.tao_luc):'')+o('Mô tả',esc(m.mo_ta||''));
+  let body='';
+  if(t==='xem')body=`<div class="tl-xem" id="tl-xem"><div class="muted">Đang tải bản xem trước…</div></div><div class="ncc-st" style="margin:14px 0 4px;font-size:13.5px">Thông tin tài liệu</div>${tt}`;
+  else if(suaDuoc){const mucs=nccTL(c).cay.flatMap(nd=>[nd.ten,...nd.con]).filter(k=>k!=='Chứng từ giao dịch');
+    body=`<div class="form" id="ftl"><label class="full"><span>Thư mục</span><select name="thu_muc">${mucs.map(k=>`<option ${d.muc===k?'selected':''}>${esc(k)}</option>`).join('')}</select></label>
+      <label>Số / Ký hiệu<input name="so_hieu" value="${esc(m.so_hieu||'')}" placeholder="HĐNT-001"></label><label>Ngày ban hành<input type="date" name="ngay_bh" value="${m.ngay_bh||''}"></label>
+      <label>Hiệu lực từ<input type="date" name="hl_tu" value="${m.hl_tu||''}"></label><label>Hiệu lực đến<input type="date" name="hl_den" value="${m.hl_den||''}"></label>
+      <label class="full"><span>Hợp đồng liên kết</span><select name="ho_so_id"><option value="">— Không —</option>${c.ho_so.map(z=>`<option value="${z.id}" ${d.hs===z.id?'selected':''}>${esc(tenHS(z))}</option>`).join('')}<option value="moi">+ Tạo hợp đồng từ tài liệu này</option></select></label>
+      <label class="full">Mô tả<input name="mo_ta" value="${esc(m.mo_ta||'')}"></label></div>
+      <div class="acts" style="margin-top:6px">${h?`<button class="btn" onclick="dong2();formHS(${c.ncc.id},${h.id})">Sửa hợp đồng (giá trị…)</button>`:''}<button class="btn pri" onclick="nccTLLuu(${ctId})">Lưu thông tin</button></div>`}
+  else body=tt+(d.gd?'<div class="muted" style="font-size:12px;margin-top:6px">Ảnh / tệp của phiếu tự vào thư mục Chứng từ giao dịch — sửa ở phiếu</div>':'');
+  const html=`<div class="ncc-tab2"><span class="tl-ic ${/^image\//.test(d.mime||'')?'anh':/pdf/i.test((d.mime||'')+d.ten)?'pdf':'khac'}" style="margin-right:8px">${/^image\//.test(d.mime||'')?'ẢNH':ctNhanTep(d.mime||'',d.ten||'')}</span><b class="ncc-nd" style="max-width:520px;font-size:14px" title="${esc(d.ten)}">${esc(d.ten)}</b><button class="x" style="margin-left:auto" title="Đóng" onclick="dong2()">✕</button></div>
+    <div class="m-tabs" style="margin-bottom:10px">${[['xem','Xem trước'],['tt','Thông tin']].map(([k,v])=>`<button class="m-tab ${t===k?'on':''}" onclick="nccTLMo(${ctId},'${k}')">${v}</button>`).join('')}</div>${body}
+    <div class="tl-nut"><button class="m-btn out" onclick="taiVeCT([${ctId}])">⬇ Tải xuống</button>${suaDuoc?`<button class="m-btn out" style="color:var(--bad);border-color:var(--bad)" onclick="nccTLXoa(${ctId})">✕ Xoá tài liệu</button>`:''}</div>`;
+  const mm=$('#modal2');if(mm)mm.firstElementChild.innerHTML=html;else modal2(html,760);
+  if(t==='xem'){const el=()=>$('#tl-xem');let u=(S.cache.tl_url||{})[ctId];
+    if(!u){try{const r=await ctFn({viec:'xem',ids:[ctId]});u=((r.ds||[])[0]||{}).url;(S.cache.tl_url=S.cache.tl_url||{})[ctId]=u}catch(e){if(el())el().innerHTML=`<div class="muted">${esc(e.message)}</div>`;return}}
+    S.cache['ct_tl'+ctId]=[{...d,url:u}];if(!el())return;
+    el().innerHTML=/^image\//.test(d.mime||'')?`<img src="${esc(u)}" onclick="xemCT('tl',${ctId},${ctId})" title="Bấm để xem to">`:/pdf/i.test((d.mime||'')+d.ten)?`<iframe src="${esc(u)}"></iframe>`:`<div class="muted" style="padding:30px;text-align:center">Tệp ${ctNhanTep(d.mime||'',d.ten||'')} không xem trực tiếp được — bấm ⬇ Tải xuống</div>`}}
+async function nccTLLuu(ctId){const c=S.cache.ncc_ct,f=$('#ftl'),v=k=>f.querySelector(`[name=${k}]`).value,d=(S.cache.tl_ds||[]).find(x=>x.id===ctId);let hs=v('ho_so_id');
+  if(hs==='moi'){try{hs=await rpc('kt_luu_ho_so',{p_dong:{ncc_id:c.ncc.id,ten:String(d.ten).replace(/\.[a-z0-9]+$/i,''),loai:'hop_dong',so_hd:v('so_hieu'),ngay:v('ngay_bh')}})}catch(e){return alert(e.message)}}
+  try{await rpc('kt_luu_tai_lieu',{p_ct:ctId,p_ncc:c.ncc.id,p_dong:{thu_muc:v('thu_muc'),so_hieu:v('so_hieu'),ngay_bh:v('ngay_bh'),hl_tu:v('hl_tu'),hl_den:v('hl_den'),mo_ta:v('mo_ta'),ho_so_id:hs||null}})}catch(e){return alert(e.message)}
+  toast('Đã lưu thông tin tài liệu');S.cache.ncc_chon=null;await nccMo(c.ncc.id,'hs');nccTLMo(ctId,'xem')}
+async function nccTLXoa(ctId){if(!confirm('Xoá tài liệu này? (ẩn khỏi hồ sơ, vẫn còn trong nhật ký)'))return;const c=S.cache.ncc_ct;
+  try{await rpc('kt_xoa_chung_tu',{p_id:ctId})}catch(e){return alert(e.message)}toast('Đã xoá tài liệu');dong2();nccMo(c.ncc.id,'hs')}
 // popup chi tiết 1 giao dịch (anh: "phần xổ ra thông tin khi click vào thì làm thành popup") — tab Chi tiết giao dịch · Liên quan
 function modal2(html,w){dong2();const m=document.createElement('div');m.className='modal';m.id='modal2';m.style.zIndex=60;m.innerHTML=`<div style="width:min(${w||600}px,96vw);max-width:${w||600}px">${html}</div>`;m.onclick=e=>{if(e.target===m)dong2()};document.body.appendChild(m);return m}
 function dong2(){const m=$('#modal2');if(m)m.remove()}
 async function nccGDMo(i,tab){const L=S.cache.ncc_gd_all||[],x=L[i];if(!x)return;S.f.ncc_gdt=tab||S.f.ncc_gdt||'ct';const c=S.cache.ncc_ct,n=c.ncc,g=nccGhi(),t=S.f.ncc_gdt==='lq'?'lq':'ct';
   const hsM=Object.fromEntries(c.ho_so.map(h=>[h.id,h])),h=x.hs&&hsM[x.hs],cung=h?L.filter(y=>y.hs===h.id&&y!==x):[];
   const o=(l,v)=>`<div class="ncc-d"><span>${l}</span><div>${v||'<span class="muted">—</span>'}</div></div>`;
-  const hsSel=()=>g?`<select class="m-in" style="height:32px;width:100%" onchange="nccGDHs(${i},this.value)"><option value="">— Chưa gắn hợp đồng / hồ sơ —</option>${c.ho_so.map(z=>`<option value="${z.id}" ${x.hs===z.id?'selected':''}>${esc(maHS(z.id)+' · '+z.ten)}</option>`).join('')}</select>`:(h?esc(maHS(h.id)+' · '+h.ten):'');
+  const hsSel=()=>g?`<select class="m-in" style="height:32px;width:100%" onchange="nccGDHs(${i},this.value)"><option value="">— Chưa gắn hợp đồng / hồ sơ —</option>${c.ho_so.map(z=>`<option value="${z.id}" ${x.hs===z.id?'selected':''}>${esc((z.so_hd||maHS(z.id))+' · '+z.ten)}</option>`).join('')}<option value="moi">+ Tạo hợp đồng mới…</option></select>`:(h?esc(maHS(h.id)+' · '+h.ten):'');
   const lien=(ds,trong)=>ds.length?ds.map(y=>`<div class="ncc-lq" onclick="nccGDMo(${L.indexOf(y)})"><span class="m-ic" style="--c:var(--${NCC_GD[y.loai][1]||'grey'})">${y.kiot?'▤':'₫'}</span><div style="flex:1;min-width:0"><b>${esc(y.so)} – ${y.ngay?fmtD(y.ngay):''}</b><div class="muted" style="font-size:12px">${NCC_GD[y.loai][0]}${y.nd?' · '+esc(y.nd):''}</div></div><b>${fmt(y.tien)}</b><span class="muted">›</span></div>`).join(''):`<div class="muted" style="font-size:12.5px">${trong}</div>`;
   let body='';
   if(t==='ct'){
@@ -3079,7 +3146,7 @@ async function nccGDMo(i,tab){const L=S.cache.ncc_gd_all||[],x=L[i];if(!x)return
   if(t==='ct'&&!x.kiot&&x.p.so_ct){const ds=c.ct.filter(z=>z.bang===x.p.bang&&+z.dong_id===x.p.id);
     try{const r=await ctFn({viec:'xem',ids:ds.map(z=>z.id)});const u=Object.fromEntries((r.ds||[]).map(z=>[z.id,z.url]));S.cache['ct_'+x.p.bang+x.p.id]=ds.map(z=>({...z,url:u[z.id]}));
       const el=$('#gd-ct');if(el)el.innerHTML=ctLuoi(x.p.bang,x.p.id,ds,u,false,'',()=>true)}catch(e){const el=$('#gd-ct');if(el)el.innerHTML=`<div class="muted" style="font-size:12px">${esc(e.message)}</div>`}}}
-async function nccGDHs(i,v){const x=(S.cache.ncc_gd_all||[])[i];if(!x)return;const c=S.cache.ncc_ct,bang=x.kiot?'nhap':x.p.bang,id=x.kiot?x.x.id:x.p.id;
+async function nccGDHs(i,v){const x=(S.cache.ncc_gd_all||[])[i];if(!x)return;const c=S.cache.ncc_ct;if(v==='moi'){v=await hs4Moi(c.ncc.id);if(!v)return nccGDMo(i)}const bang=x.kiot?'nhap':x.p.bang,id=x.kiot?x.x.id:x.p.id;
   try{await rpc('kt_ncc_gan_phieu',{p_bang:bang,p_ids:[id],p_kieu:v?'gan':(x.kiot?'bo':'gan'),p_ncc:c.ncc.id,p_ho_so:+v||null,p_nho_stk:false})}catch(e){return alert(e.message)}
   toast(v?'Đã gắn vào hợp đồng / hồ sơ':'Đã bỏ hợp đồng');S.cache.hs_d=null;const so=x.so;await nccMo(c.ncc.id);const j=(S.cache.ncc_gd_all||[]).findIndex(y=>y.so===so);if(j>=0)nccGDMo(j)}
 // "+ Thêm giao dịch": gắn phiếu có sẵn vào NCC (gợi ý theo tên NCC, hoặc tìm số phiếu / nội dung / số tiền / số TK)
@@ -3101,7 +3168,6 @@ async function nccVeCT(){const c=S.cache.ncc_ct;if(!c)return;const els=$$('#moda
   catch(e){els.forEach(el=>{delete el.dataset.xong;delete el.dataset.ve});ganCT();return}
   els.forEach(el=>{if(!el.isConnected)return;const bang=el.dataset.bang,id=+el.dataset.id,sua=el.dataset.sua==='1',hop=ctHop(el),l=c.ct.filter(x=>x.bang===bang&&+x.dong_id===id&&hop(x.ten));
     S.cache['ct_'+bang+id]=l.map(x=>({...x,url:u[x.id]}));el.innerHTML=ctLuoi(bang,id,l,u,sua,'',hop)})}
-function nccTaiLen(files){const c=S.cache.ncc_ct;if(!c||!files||!files.length)return;const fs=[...files];S.f.ncc_tab='hs';nccVe();setTimeout(()=>ctThem('ncc',c.ncc.id,fs),300)}
 async function nccTim(q){S.cache.ncc_tim_q=q||'';S.cache.ncc_tim=null;S.cache.ncc_sel=[];S.cache.ncc_tim_dang=1;nccVe();
   try{S.cache.ncc_tim=await rpc('kt_ncc_tim',{p_ncc:S.cache.ncc_ct.ncc.id,p_q:q||null})}catch(e){S.cache.ncc_tim=[];toast(e.message)}S.cache.ncc_tim_dang=0;nccVe()}
 function nccChonTim(i,on){const s=S.cache.ncc_sel=(S.cache.ncc_sel||[]).filter(x=>x!==i);if(on)s.push(i);const b=$('#ncc-gan-n');if(b){b.disabled=!s.length;b.textContent=`✓ Gán vào NCC (${s.length})`}}
