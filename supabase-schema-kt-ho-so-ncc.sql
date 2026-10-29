@@ -345,3 +345,7 @@ grant execute on function public.kt_ncc_tim(text, bigint, text) to anon, authent
 grant execute on function public.kt_ds_ncc(text, date, date), public.kt_ncc_ct(text, bigint), public.kt_ncc_cho(text, date, date), public.kt_phieu_ho_so(text, text, bigint),
   public.kt_ncc_chon(text), public.kt_ncc_gan_phieu(text, text, bigint[], text, bigint, bigint, boolean), public.kt_luu_ncc(text, jsonb),
   public.kt_luu_ho_so(text, jsonb), public.kt_xoa_ho_so(text, bigint) to anon, authenticated;
+
+-- 29/10 (sửa lỗi): bảng kt_chung_tu chỉ nhận một số loại → tải chứng từ hồ sơ / NCC báo "Giá trị nhập chưa hợp lệ". Thêm 'ho_so', 'ncc'.
+alter table public.kt_chung_tu drop constraint if exists kt_chung_tu_bang_check;
+alter table public.kt_chung_tu add constraint kt_chung_tu_bang_check check (bang = any (array['thu','chi','dieu_chuyen','vay','tai_san','kiem_quy','tam_ung','bao_loi','ho_so','ncc']));
