@@ -601,7 +601,11 @@ tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{paddi
 .kl-th{background:var(--surface);border:1.5px solid var(--border);border-left:4px solid var(--c);border-radius:11px;padding:11px 14px;display:flex;flex-direction:column;gap:6px}
 .kl-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.kl-v{font-size:11.5px;line-height:1.5}.kl-c{font-size:11.5px}
 @media (max-width:560px){.kl-lich{grid-template-columns:1fr}.kt-bn a{margin-left:0}}
-.m-link{color:var(--accent);font-weight:500}
+.m-link{color:var(--accent);font-weight:500;cursor:pointer}.m-link:hover{text-decoration:underline}
+/* 29/10 anh: "chỉ vào nút ra con trỏ I như ô gõ chữ" — mọi chỗ bấm được hiện bàn tay */
+[onclick]:not(input):not(textarea):not(select){cursor:pointer}
+.hs4-chk{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:12.5px;color:var(--text2);cursor:pointer;white-space:nowrap}.hs4-chk input{margin:0}
+.hs4-nut{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.hs4-nut .m-btn{height:34px;width:100%;justify-content:center}
 .m-pg{display:flex;align-items:center;gap:10px;padding:12px 14px;font-size:12.5px;color:var(--text2);flex-wrap:wrap}
 .m-pg select{height:32px;border:1px solid var(--border);border-radius:6px;padding:0 6px;background:var(--surface)}
 .m-pg .pgs{margin-left:auto;margin-right:auto;display:flex;gap:6px}
@@ -1011,8 +1015,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.252';
-const APP_VERSION='29/10/2026 15:01';
+const APP_SO='1.253';
+const APP_VERSION='29/10/2026 15:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2989,7 +2993,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,s=c.so,f=S.f,
         ${ds.map((p,i)=>`<tr><td class="c"><input type="checkbox" ${sel.includes(i)?'checked':''} onchange="nccChonTim(${i},this.checked)"></td><td class="nw">${maPh(p.bang,p.id)}</td><td class="nw">${p.ngay?fmtD(p.ngay):''}</td><td>${esc(p.noi_dung||'')}</td><td>${esc(p.nguoi_nhan||'')}</td>
           <td class="num"><b>${fmt(p.so_tien)}</b></td><td class="muted" style="font-size:12px">${p.ly_do?esc(p.ly_do):p.ncc_ten?'Đang ở: '+esc(p.ncc_ten):''}</td></tr>`).join('')}</table></div>
         <div class="m-flt" style="align-items:center;margin-top:10px"><select class="m-in" id="ncc-gan-hs" style="width:260px"><option value="">— Không vào hồ sơ nào —</option>${c.ho_so.map(h=>`<option value="${h.id}">${esc(maHS(h.id)+' · '+h.ten)}</option>`).join('')}</select>
-          <label class="chk" style="font-size:12.5px"><input type="checkbox" id="ncc-gan-stk"> Ghi nhớ số TK người nhận cho NCC này</label><span style="margin-left:auto"></span>
+          <label class="hs4-chk" style="margin-top:0" title="Phiếu chi sau chuyển vào số tài khoản này tự vào NCC"><input type="checkbox" id="ncc-gan-stk"><span>Nhớ số TK người nhận cho NCC này</span></label><span style="margin-left:auto"></span>
           <button class="m-btn pri" id="ncc-gan-n" ${sel.length?'':'disabled'} onclick="nccGanChon()">✓ Gán vào NCC (${sel.length})</button></div>`
         :`<div class="m-empty">${q?'Không thấy phiếu khớp':'Không có gợi ý — gõ để tìm phiếu'}</div>`}`;
   }
@@ -3058,8 +3062,8 @@ async function veHS4(bang,id){const el=$(`#hs4-${bang}-${id}`);if(!el)return;
     <div style="display:grid;gap:10px"><div class="pc-o"><span>Nhà cung cấp</span><div><input class="m-in" style="height:32px;width:100%" id="hs4-ncc-${bang}${id}" list="dl-ncc4" placeholder="Gõ tên NCC" onchange="hs4Chon('${bang}',${id})"></div></div>
       <div class="pc-o"><span>Bộ hồ sơ</span><div><select class="m-in" style="height:32px;width:100%" id="hs4-hs-${bang}${id}"><option value="">— Chưa vào hồ sơ —</option></select></div></div></div>
     <datalist id="dl-ncc4">${ds.map(n=>`<option value="${esc(n.ten+(n.ma?' · '+n.ma:''))}">`).join('')}</datalist>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">${coStk?`<label class="chk" style="font-size:12px"><input type="checkbox" id="hs4-stk-${bang}${id}"> Ghi nhớ số TK người nhận cho NCC này</label>`:''}<span style="margin-left:auto"></span>
-      <span class="m-link" style="font-size:12px" onclick="hs4Gan('${bang}',${id},'khong')">Không thuộc NCC</span><button class="m-btn sm pri" onclick="hs4Gan('${bang}',${id},'gan')">✓ Lưu vào hồ sơ</button></div>`}
+    ${coStk?`<label class="hs4-chk" title="Phiếu chi sau chuyển vào số tài khoản này tự vào NCC đã chọn"><input type="checkbox" id="hs4-stk-${bang}${id}"><span>Nhớ số TK người nhận</span></label>`:''}
+    <div class="hs4-nut"><button class="m-btn pri" onclick="hs4Gan('${bang}',${id},'gan')">✓ Lưu</button><button class="m-btn out" onclick="hs4Gan('${bang}',${id},'khong')">Không thuộc NCC</button></div>`}
 function hs4NCC(bang,id){const v=(($(`#hs4-ncc-${bang}${id}`)||{}).value||'').trim(),ds=S.cache.ncc_chon||[];return ds.find(n=>n.ten+(n.ma?' · '+n.ma:'')===v)||ds.find(n=>n.ten===v)}
 function hs4Chon(bang,id){const n=hs4NCC(bang,id),s=$(`#hs4-hs-${bang}${id}`);if(!s)return;
   s.innerHTML=`<option value="">— Chưa vào hồ sơ —</option>${((n||{}).hs||[]).map(h=>`<option value="${h.id}">${esc(maHS(h.id)+' · '+h.ten)}</option>`).join('')}${n?'<option value="moi">+ Tạo hồ sơ mới…</option>':''}`}
