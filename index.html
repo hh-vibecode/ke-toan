@@ -629,7 +629,10 @@ tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{paddi
 /* thẻ số có icon vuông màu (Thu chi, Hoá đơn & Thuế) */
 .m-kpis{display:grid;gap:10px;margin-bottom:14px}
 .m-k{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:10px;min-width:0;cursor:default}
-.m-k.click{cursor:pointer}.m-k.on{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+.m-k.click{cursor:pointer}.m-k.click:hover{border-color:color-mix(in srgb,var(--c,var(--accent)) 55%,var(--border))}
+/* 29/10 (báo lỗi #24): thẻ / mục đang chọn phải nhìn ra ngay — viền màu thẻ + nền nhạt (trước chỉ bóng mờ, thẻ không có màu thì mất hẳn) */
+.m-k.on{border-color:var(--c,var(--accent));box-shadow:0 0 0 1px var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 8%,var(--surface))}
+.m-pill.click{cursor:pointer}.m-pill.click:hover{box-shadow:inset 0 0 0 1px var(--border)}.m-pill.click.on{background:var(--sel-bg);box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--text)}
 .m-ic{width:40px;height:40px;border-radius:9px;background:color-mix(in srgb,var(--c) 14%,var(--surface));color:var(--c);display:flex;align-items:center;justify-content:center;flex:none}
 .m-ic svg{width:22px;height:22px}
 .m-k .l{font-size:12.5px;color:var(--text2)}.m-k .v{font-size:19px;font-weight:800;margin:2px 0;white-space:nowrap}.m-k .s{font-size:11.5px;color:var(--muted)}
@@ -1008,8 +1011,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.247';
-const APP_VERSION='28/10/2026 15:43';
+const APP_SO='1.248';
+const APP_VERSION='29/10/2026 13:54';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2811,8 +2814,10 @@ async function pageCongNoDT(loai){
   const l=ds.filter(x=>(f[k+'_tt']==='tra_truoc'?x.no<0:x.no>0)&&(locCSAll()||cs.includes(csCuaCN(x.cn)))&&(!KH||nh.length===NHOM_KH.length||nh.includes(nhomKH(x.ten)))
     &&(f[k+'_tt']==='tra_truoc'||tt.length===TT_NO.length||tt.includes(ttNo(x)))&&(!f[k+'_tt']||f[k+'_tt']==='tra_truoc'||ttCongNo(x)[0]===f[k+'_tt'])
     &&(!f[k+'_nhom']||nhomKH(x.ten)===f[k+'_nhom'])&&(!f[k+'_tu']||(x.den_han&&x.den_han>=f[k+'_tu']))&&(!f[k+'_den']||(x.den_han&&x.den_han<=f[k+'_den']))
-    &&(!f[k+'_pt']||(f[k+'_pt']==='_chua'?!x.nv:x.nv===f[k+'_pt']))&&(!KH||!f[k+'_ln']||+x[LOAI_NO_K[f[k+'_ln']]]>0)
+    &&(!f[k+'_pt']||(f[k+'_pt']==='_chua'?!x.nv:x.nv===f[k+'_pt']))
     &&(!q||[x.ma,x.ten,x.sdt,x.nv].join(' ').toLowerCase().includes(q)));
+  // 29/10 (báo lỗi #24): số trên 4 mục loại nợ tính TRƯỚC khi lọc loại nợ → bấm mục nào số các mục cũng giữ nguyên
+  const l0=l.splice(0,l.length);l.push(...l0.filter(x=>!KH||!f[k+'_ln']||+x[LOAI_NO_K[f[k+'_ln']]]>0));
   const moi=f[k+'_moi']||20,[a,b,tr]=phanTrang(k,l.length,moi),trang=l.slice(a,b);
   const chon=f[k+'_chon']&&l.some(x=>x.id===f[k+'_chon'])?f[k+'_chon']:null;   // 14/10: chỉ hiện khi bấm
   const nhTen=x=>(NHOM_KH.find(n=>n[0]===nhomKH(x.ten))||[])[1]||'';
@@ -2830,7 +2835,7 @@ async function pageCongNoDT(loai){
       <div class="m-f"><span>&nbsp;</span><input class="m-in" type="search" placeholder="Tìm kiếm" value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()"></div></div>
     <div class="m-chon" id="no-chon" style="display:none"></div>
     <div class="m-split ${chon?'co':''}"><div class="m-card"><div class="m-ch">Danh sách công nợ ${dt} <span class="m-cnt">(Tổng ${fmt(l.length)} ${dt})</span>
-        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click" style="cursor:pointer" title="Bấm để lọc" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';render()">${pill(t,c)} ${fmt(sumBy(l,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}${KH&&sumBy(l,x=>+x.tra_lau||0)?`<span class="m-pill" title="Đơn đánh dấu sẽ trả hàng quá 30 ngày chưa có phiếu trả trên Kiot">${pill('Trả hàng treo > 30 ngày: '+sumBy(l,x=>+x.tra_lau||0)+' HĐ','bad')}</span> `:''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
+        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click ${f[k+'_ln']===v?'on':''}" title="${f[k+'_ln']===v?'Đang lọc — bấm lại để bỏ lọc':'Bấm để lọc'}" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';S.f['${k}_tr']=1;render()">${pill(t,c)} ${fmt(sumBy(l0,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}${KH&&sumBy(l0,x=>+x.tra_lau||0)?`<span class="m-pill" title="Đơn đánh dấu sẽ trả hàng quá 30 ngày chưa có phiếu trả trên Kiot">${pill('Trả hàng treo > 30 ngày: '+sumBy(l0,x=>+x.tra_lau||0)+' HĐ','bad')}</span> `:''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
       <div class="scroll"><table class="m-t"><tr><th class="c"><input type="checkbox"></th><th>Mã ${KH?'KH':'NCC'}</th><th>${KH?'Tên khách hàng':'Nhà cung cấp'}</th><th>Cơ sở</th><th class="num">Tổng công nợ</th><th class="num">Đã thanh toán</th><th class="num">Còn phải ${KH?'thu':'trả'}</th><th>Ngày đến hạn</th><th class="num">Số ngày<br>quá hạn</th><th class="c">Trạng thái</th><th class="m-nguon">Nguồn</th>${KH?'<th>Nhóm KH</th>':''}<th>Người phụ trách</th></tr>
       ${trang.map(x=>{const t=ttCongNo(x),con=Math.abs(x.no);return `<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemCongNo('${loai}',${x.id})"><td class="c">${ganDuoc?`<input type="checkbox" ${(f[k+'_sel']||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonNo('${k}',${x.id},this.checked)">`:''}</td>
         <td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten)}</td><td class="nw">${esc((CS3.find(c=>c[0]===csCuaCN(x.cn))||[])[1]||x.cn||'')}</td><td class="num"><b>${fmt(x.tong_ct||con)}</b></td><td class="num">${fmt(Math.max((x.tong_ct||con)-con,0))}</td>
