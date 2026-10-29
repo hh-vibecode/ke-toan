@@ -1,4 +1,4 @@
--- HỒ SƠ NHÀ CUNG CẤP & CHỨNG TỪ (29/10/2026, anh: "khoản thu chi từ cùng 1 NCC dồn hết về 1 kho, có NCC thanh toán tới 10 lần"). Monsieur Claude
+-- HỒ SƠ NHÀ CUNG CẤP & CHỨNG TỪ (29/10/2026 — anh chốt cùng ngày: 1 NCC = 1 bộ hồ sơ, giao diện không dùng kt_ho_so; chứng từ chung của NCC: kt_chung_tu bang 'ncc'; anh: "khoản thu chi từ cùng 1 NCC dồn hết về 1 kho, có NCC thanh toán tới 10 lần"). Monsieur Claude
 -- Cấu trúc: NCC (mã duy nhất) → nhiều Hồ sơ gốc (hợp đồng / đơn hàng / kỳ đối soát) → nhiều phiếu chi / thu (từng đợt) → chứng từ.
 -- • kt_ncc: NCC Kiot tự đồng bộ (kiot_id) + NCC tạo trên app (nước ngoài, trung gian, dịch vụ). stk = số tài khoản (chỉ số) đã biết của NCC.
 -- • kt_ho_so: hồ sơ gốc của 1 NCC; chứng từ chung của hồ sơ lưu kt_chung_tu bang = 'ho_so'.
@@ -127,7 +127,7 @@ begin
     'nhap', coalesce((select jsonb_agg(jsonb_build_object('ma', h.ma, 'ngay', h.ngay, 'chi_nhanh', h.chi_nhanh, 'tong', h.tong, 'da_tra', h.da_tra, 'trang_thai', h.trang_thai, 'mo_ta', h.mo_ta)
         order by h.ngay desc) from kt_kiot_nhap_hang h where n.kiot_id is not null and h.ncc_id = n.kiot_id), '[]'),
     'ct', coalesce((select jsonb_agg(jsonb_build_object('id', ct.id, 'bang', ct.bang, 'dong_id', ct.dong_id, 'ten', ct.ten_file, 'mime', ct.mime, 'tao_boi', ct.tao_boi, 'tao_luc', ct.tao_luc) order by ct.tao_luc desc)
-        from kt_chung_tu ct where not ct.da_xoa and ((ct.bang = 'chi' and ct.dong_id = any (v_chi)) or (ct.bang = 'ho_so' and ct.dong_id = any (v_hs))
+        from kt_chung_tu ct where not ct.da_xoa and ((ct.bang = 'chi' and ct.dong_id = any (v_chi)) or (ct.bang = 'ho_so' and ct.dong_id = any (v_hs)) or (ct.bang = 'ncc' and ct.dong_id = p_id)
           or (ct.bang = 'thu' and ct.dong_id in (select dong_id from kt_v_ncc_phieu where ncc_id = p_id and bang = 'thu')))), '[]'));
 end $$;
 
@@ -277,7 +277,7 @@ create or replace function public.kt_quyen_chung_tu(p_phien text, p_bang text, p
 returns text language plpgsql security definer set search_path = public as $$
 declare u kt_nguoi_dung;
 begin
-  if p_bang not in ('bao_loi','thu','chi','dieu_chuyen','vay','tai_san','kiem_quy','tam_ung','ho_so') then raise exception 'Bảng chứng từ không hợp lệ'; end if;
+  if p_bang not in ('bao_loi','thu','chi','dieu_chuyen','vay','tai_san','kiem_quy','tam_ung','ho_so','ncc') then raise exception 'Bảng chứng từ không hợp lệ'; end if;
   u := kt_chan_dong(p_phien, p_bang, p_ids, p_ghi);
   return u.ho_ten;
 end $$;
