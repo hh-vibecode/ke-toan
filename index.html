@@ -631,6 +631,7 @@ tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{paddi
 @media(max-width:900px){.tl{grid-template-columns:1fr}}
 .gd-k{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;background:var(--surface)}.gd-kh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}.gd-kh>b{font-size:14.5px}
 .gd-kh.a{background:color-mix(in srgb,var(--info) 7%,var(--surface))}.gd-kh.b{background:color-mix(in srgb,var(--ok) 7%,var(--surface))}.gd-so{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;color:#fff;font-weight:800;font-size:12.5px;background:var(--info)}.gd-kh.b .gd-so{background:var(--ok)}
+.gd-nd{white-space:normal;min-width:220px;line-height:1.4}
 .gd-pcs{display:flex;flex-wrap:wrap;gap:4px;max-width:200px}.gd-pc{display:inline-block;padding:2px 7px;border-radius:5px;background:var(--ok-bg);color:var(--ok);font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}.gd-pc:hover{outline:1px solid var(--ok)}
 .gd-lk{display:inline-block;padding:3px 9px;border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}.gd-lk.mo{border-style:dashed}.gd-lk:hover{background:var(--sel-bg)}
 .gd-ph{display:flex;align-items:center;gap:10px;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--border);font-size:15.5px}.gd-ph .m-ic{font-weight:800}
@@ -1052,8 +1053,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.265';
-const APP_VERSION='29/10/2026 17:35';
+const APP_SO='1.266';
+const APP_VERSION='29/10/2026 17:40';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3026,7 +3027,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
     const kA=`<div class="gd-k">${dau('A','Phát sinh công nợ','(nhập hàng)',N.length,'a',`<a class="m-btn sm out" href="${KIOT_MAN}PurchaseOrder" target="_blank" rel="noopener" title="Phiếu nhập tạo trên Kiot, app tự kéo về">+ Thêm phiếu nhập (Kiot) ↗</a>`)}
       <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số chứng từ</th><th class="c">Loại giao dịch</th><th>Nội dung</th><th>Hợp đồng</th><th class="num">Giá trị (đ)</th><th class="num">Đã thanh toán (đ)</th><th class="num">Còn nợ (đ)</th><th class="c">Trạng thái</th><th>Phiếu chi đã gắn</th>${g?'<th class="c"></th>':''}</tr>
       ${Nt.map(x=>`<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td><td class="c">${pill('Nhập hàng','vio')}</td>
-        <td><div class="ncc-nd" style="max-width:240px" title="${esc(x.nd)}">${esc(x.nd)||'<span class="muted">—</span>'}</div></td><td class="nw">${hsLink(x.hs)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
+        <td class="gd-nd">${esc(x.nd)||'<span class="muted">—</span>'}</td><td class="nw">${hsLink(x.hs)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
         <td class="num" title="${x.nguon==='gan'?'Theo phiếu chi kế toán đã gắn':'Theo công nợ Kiot'}">${fmt(x.da)}</td><td class="num ${x.con>0?'neg-t':''}">${fmt(x.con)}</td><td class="c">${pill(...x.tt)}</td>
         <td onclick="event.stopPropagation()">${(()=>{const gn=pb.filter(b=>b.nhap_id===x.x.id).map(b=>L.find(y=>!y.kiot&&y.p.id===b.chi_id)).filter(Boolean);return gn.length?`<div class="gd-pcs">${gn.map(y=>`<span class="gd-pc" title="${esc(y.nd)} · ${fmt(y.tien)}" onclick="nccGDMo(${L.indexOf(y)})">${esc(y.so)}</span>`).join('')}</div>`:'<span class="muted">—</span>'})()}</td>
         ${g?`<td class="c" onclick="event.stopPropagation()"><button class="m-btn sm out" title="Gắn phiếu chi đã trả cho phiếu nhập này" onclick="nccGanMo('nhap',${L.indexOf(x)})">Gắn thanh toán</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?11:10}" class="m-empty">Không có phiếu nhập phù hợp</td></tr>`}
@@ -3035,7 +3036,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
       <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số chứng từ</th><th class="c">Loại giao dịch</th><th>Nội dung</th><th class="num">Số tiền (đ)</th><th class="c">Phân bổ</th><th class="c">Trạng thái</th><th class="c">Chứng từ</th>${g?'<th class="c"></th>':''}</tr>
       ${Pt.map(x=>{const gp=x.p.bang==='chi'?ganP(x):[],tg2=nccTTGan(x,pb),coGan=x.p.bang==='chi'&&x.p.trang_thai==='da_tt'&&c.ncc.nguon==='kiot';
         return `<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td><td class="c">${pill(...NCC_GD[x.loai])}</td>
-        <td><div class="ncc-nd" style="max-width:280px" title="${esc(x.nd)}">${esc(x.nd)}</div></td><td class="num"><b>${fmt(x.tien)}</b></td>
+        <td class="gd-nd">${esc(x.nd)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
         <td class="c">${['du','mot','chua'].includes(tg2[2])?pill(...tg2):'<span class="muted">—</span>'}</td>
         <td class="c">${pill(...x.tt)}</td><td class="c" onclick="event.stopPropagation()">${x.p.so_ct?`<span class="ghim" title="${x.p.so_ct} ảnh / tệp — bấm để xem" onclick="nccGDAnh('${x.p.bang}',${x.p.id})">${IC.ghim}${x.p.so_ct}</span>`:'<span class="muted">—</span>'}</td>
         ${g?`<td class="c" onclick="event.stopPropagation()">${coGan?`<button class="m-btn sm out" title="Gắn phiếu chi này cho phiếu nhập" onclick="nccGanMo('chi',${L.indexOf(x)})">Gắn phiếu nhập</button>`:''}</td>`:''}</tr>`}).join('')||`<tr><td colspan="${g?9:8}" class="m-empty">${tg?'Không có phiếu thanh toán phù hợp':'Không còn phiếu thanh toán chưa gắn — phiếu đã gắn đủ nằm ở cột "Phiếu chi đã gắn" khối A'}</td></tr>`}</table></div>${Ppg}</div>`;
@@ -3216,12 +3217,12 @@ function nccGanMo(loai,i){const c=S.cache.ncc_ct,L=S.cache.ncc_gd_all||[],x=L[i]
   S.cache.ncc_gan2={loai,i,ds,tong:x.tien};
   const html=`<div class="ncc-tab2"><b style="font-size:15px">${loai==='nhap'?'Gắn thanh toán cho phiếu nhập':'Gắn phiếu chi vào phiếu nhập'} ${esc(x.so)}</b><button class="x" style="margin-left:auto" title="Đóng" onclick="dong2()">✕</button></div>
     <div class="muted" style="font-size:12.5px;margin-bottom:10px">${fmtD(x.ngay)} · ${loai==='nhap'?'giá trị phiếu nhập':'số tiền phiếu chi'} <b style="color:var(--text)">${fmt(x.tien)}</b> · tick ${loai==='nhap'?'các phiếu chi đã trả cho phiếu nhập này':'các phiếu nhập mà phiếu chi này trả'}, sửa số tiền nếu chỉ trả 1 phần</div>
-    <div class="scroll" style="max-height:420px"><table class="m-t"><tr><th class="c"></th><th>${loai==='nhap'?'Phiếu chi':'Phiếu nhập'}</th><th>Ngày</th><th>Nội dung</th><th class="num">Số tiền</th><th class="num">Còn có thể gắn</th><th class="num" style="width:150px">Số tiền gắn</th></tr>
+    <div class="scroll" style="max-height:460px;overflow-x:hidden"><table class="m-t" style="width:100%"><tr><th class="c"></th><th>${loai==='nhap'?'Phiếu chi':'Phiếu nhập'}</th><th>Ngày</th><th>Nội dung</th><th class="num">Số tiền</th><th class="num">Còn có thể gắn</th><th class="num" style="width:140px">Số tiền gắn</th></tr>
     ${ds.map((r,k)=>`<tr><td class="c"><input type="checkbox" class="g2-cb" data-k="${k}" ${r.da?'checked':''} onchange="nccGan2Tick(${k},this.checked)"></td><td class="nw"><b>${esc(r.y.so)}</b>${r.khop?' <span class="badge" style="background:var(--ok-bg);color:var(--ok)">khớp số tiền</span>':''}</td><td class="nw">${fmtD(r.y.ngay)}</td>
-      <td><div class="ncc-nd" style="max-width:260px" title="${esc(r.y.nd)}">${esc(r.y.nd||'')}</div></td><td class="num">${fmt(r.y.tien)}</td><td class="num">${fmt(r.con)}</td>
+      <td class="gd-nd">${esc(r.y.nd||'')}</td><td class="num">${fmt(r.y.tien)}</td><td class="num">${fmt(r.con)}</td>
       <td class="num"><input class="m-in g2-tien" data-k="${k}" inputmode="numeric" style="height:30px;text-align:right" value="${r.da?fmt(r.da.so_tien):''}" oninput="fmtMoney(this);nccGan2Tong()"></td></tr>`).join('')||`<tr><td colspan="7" class="m-empty">Không có ${loai==='nhap'?'phiếu chi đã thanh toán nào của NCC còn chưa gắn hết':'phiếu nhập nào còn chưa gắn hết'}</td></tr>`}</table></div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:12px"><span id="g2-tong" class="muted" style="font-size:13px"></span><span style="margin-left:auto"></span><button class="m-btn out" onclick="dong2()">Huỷ</button><button class="m-btn pri" onclick="nccGan2Luu()">✓ Lưu gắn</button></div>`;
-  const mm=$('#modal2');if(mm)mm.firstElementChild.innerHTML=html;else modal2(html,920);nccGan2Tong()}
+  const mm=$('#modal2');if(mm)mm.firstElementChild.innerHTML=html;else modal2(html,1100);nccGan2Tong()}
 function nccGan2Tong(){const G=S.cache.ncc_gan2;if(!G)return;const t=$$('#modal2 .g2-tien').reduce((a,e)=>a+(($(`#modal2 .g2-cb[data-k="${e.dataset.k}"]`)||{}).checked?so(e.value)||0:0),0),el=$('#g2-tong');
   if(el)el.innerHTML=`Tổng gắn <b style="color:${t>G.tong+1?'var(--bad)':'var(--text)'}">${fmt(t)}</b> / ${fmt(G.tong)}${t>G.tong+1?' — vượt số tiền':''}`}
 function nccGan2Tick(k,on){const G=S.cache.ncc_gan2,r=G.ds[k],e=$(`#modal2 .g2-tien[data-k="${k}"]`);if(!e)return;
@@ -3231,7 +3232,7 @@ async function nccGan2Luu(){const G=S.cache.ncc_gan2,c=S.cache.ncc_ct,L=S.cache.
   const out=G.ds.map((r,k)=>({r,on:($(`#modal2 .g2-cb[data-k="${k}"]`)||{}).checked,t:so(($(`#modal2 .g2-tien[data-k="${k}"]`)||{}).value)||0})).filter(z=>z.on&&z.t>0)
     .map(z=>G.loai==='nhap'?{chi_id:z.r.id,so_tien:z.t}:{nhap_id:z.r.id,so_tien:z.t});
   try{await rpc('kt_ncc_phan_bo_luu',{p_ncc:c.ncc.id,p_loai:G.loai,p_id:G.loai==='nhap'?x.x.id:x.p.id,p_ds:out})}catch(e){return alert(e.message)}
-  toast(out.length?'Đã gắn '+out.length+(G.loai==='nhap'?' phiếu chi':' phiếu nhập'):'Đã bỏ gắn');const soX=x.so;dong2();await nccMo(c.ncc.id,'gd');const j=(S.cache.ncc_gd_all||[]).findIndex(y=>y.so===soX);if(j>=0)nccGDMo(j,'pb')}
+  toast(out.length?'Đã gắn '+out.length+(G.loai==='nhap'?' phiếu chi':' phiếu nhập'):'Đã bỏ gắn');dong2();nccMo(c.ncc.id,'gd')}   // 29/10 anh: gắn xong không mở popup chi tiết, chỉ cập nhật bảng
 async function nccGDAnh(bang,id){const c=S.cache.ncc_ct,ds=c.ct.filter(z=>z.bang===bang&&+z.dong_id===id);if(!ds.length)return moCT(bang,id);
   try{const r=await ctFn({viec:'xem',ids:ds.map(z=>z.id)});const u=Object.fromEntries((r.ds||[]).map(z=>[z.id,z.url]));S.cache['ct_'+bang+id]=ds.map(z=>({...z,url:u[z.id]}));xemCT(bang,id,ds[0].id)}catch(e){alert(e.message)}}
 async function nccGDHs(i,v){const x=(S.cache.ncc_gd_all||[])[i];if(!x)return;const c=S.cache.ncc_ct;if(v==='moi'){v=await hs4Moi(c.ncc.id);if(!v)return nccGDMo(i)}const bang=x.kiot?'nhap':x.p.bang,id=x.kiot?x.x.id:x.p.id;
