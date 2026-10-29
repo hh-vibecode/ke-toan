@@ -1024,8 +1024,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.256';
-const APP_VERSION='29/10/2026 15:48';
+const APP_SO='1.257';
+const APP_VERSION='29/10/2026 15:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1046,8 +1046,8 @@ const QUYEN_1_O=['chi_de_nghi','chi_duyet','chi_thang','chi_gd','chi_tt','he_tho
 // 20/10 anh: "không có sổ quỹ trong này à" — quyền Sổ quỹ (dong_tien) trước tên "Dòng tiền & đối soát" ở nhóm Báo cáo → đổi tên, chuyển vào Nghiệp vụ
 // 21/10 anh: "xếp lại phân quyền 1 lượt" — nhóm theo đúng menu trái; Sổ quỹ chia 4 quyền theo 4 tab
 const NHOM_QUYEN=[['Tổng quan',['tong_quan']],
-  ['Thu chi & Ngân quỹ',['chi','chi_de_nghi','chi_duyet','chi_thang','thu','dieu_chuyen','so_du','so_quy','kiem_ket','quy_ch','tam_ung','vay']],
-  ['Công nợ & Thanh toán',['khach_hang','ncc','sap_tra']],['Hoá đơn & Thuế',['hoa_don_thue']],
+  ['Thu chi & Ngân quỹ',['chi','chi_de_nghi','chi_duyet','chi_thang','thu','dieu_chuyen','so_du','so_quy','kiem_ket','quy_ch','tam_ung','vay','sap_tra']],
+  ['Khách hàng & NCC',['khach_hang','ncc']],['Hoá đơn & Thuế',['hoa_don_thue']],
   ['Báo cáo quản trị & Chốt kỳ',['pl','khoa_ky','ban_hang','hang_hoa']],['Cài đặt & Hệ thống',['he_thong']]];
 const TRANG_QUYEN={he_thong:'Danh mục & hệ thống — danh mục, phân quyền, nhật ký, Kiot, cần giải đáp, logic (đổi mật khẩu luôn mở)',tong_quan:'Tổng quan',dong_tien:'Sổ quỹ & số dư tài khoản (kiểm két, đối chiếu dòng tiền · kèm báo cáo Dòng tiền)',thu:'Thu',chi:'Chi (mọi phiếu)',chi_de_nghi:'Chi — chỉ tạo đề nghị (thấy phiếu của mình)',chi_duyet:'Chi — kế toán xác nhận & chọn tài khoản đi tiền',chi_thang:'Chi — tự chi không cần duyệt (phiếu cân tài khoản, báo giám đốc)',chi_gd:'Chi — giám đốc xác nhận + chi tài khoản cá nhân',chi_tt:'Chi — thủ quỹ chi tiền (két, TK công ty) & up ảnh giao dịch',dieu_chuyen:'Điều chuyển',cong_no:'Công nợ',
   sap_tra:'Sắp phải trả',tam_ung:'Tạm ứng & hoàn ứng',vay:'Vay & lãi vay',tai_san:'Tài sản',pl:'P&L — Lãi / lỗ',khoa_ky:'Khoá kỳ / chốt tháng (mở khoá: chỉ Supreme / Admin)',ban_hang:'Bán hàng',khach_hang:'Khách hàng',ncc:'Nhà cung cấp',hang_hoa:'Hàng hoá & tồn kho',hoa_don_thue:'Hoá đơn & thuế',danh_muc:'Danh mục (tài khoản, cơ sở, loại)',phan_quyen:'Phân quyền (tài khoản người dùng)',nhat_ky:'Nhật ký'};
@@ -1452,8 +1452,9 @@ const PAGES={
   ncc_noi:{ten:'NCC nội địa',nv:'cong_no',fn:()=>pageNccDS('noi')},
   ncc_ngoai:{ten:'NCC nước ngoài',nv:'cong_no',fn:()=>pageNccDS('ngoai')},
   no_ncc:{ten:'Phải trả nhà cung cấp',nv:null,fn:()=>pageCongNoDT('ncc')},
-  sap_tra:{ten:'Lịch đến hạn trả',nv:'cong_no',fn:()=>pageSapTra()},
-  lich_tt:{ten:'Lịch thanh toán định kỳ',nv:'cong_no',fn:()=>pageLichTT()},
+  // 29/10 anh: 2 mục lịch chuyển sang Thu chi & Ngân quỹ (kế hoạch các khoản sắp phải chi — cạnh Phiếu chi / Vay)
+  sap_tra:{ten:'Lịch thanh toán',nv:'thu_chi',fn:()=>pageLichGop()},   // 29/10 anh: "gộp làm 1 mục 2 tab" — Đến hạn trả · Định kỳ
+  lich_tt:{ten:'Lịch thanh toán định kỳ',nv:null,fn:()=>{S.f.ltt_tab='dk';go('sap_tra')}},
   // Công nợ nhập tay (chuyển từ sheet): ẨN khỏi menu từ 08/10 — công nợ khách dùng số Kiot. Dữ liệu cũ giữ nguyên.
   cong_no:{ten:'Công nợ (sheet cũ)',nv:null,fn:()=>pageCongNo()},
   ban_hang:{ten:'Bán hàng',nv:null,fn:()=>pageBanHang()},
@@ -1525,7 +1526,7 @@ const sbMuc=(ks,nb)=>{const mot=k=>`<div class="sb-sub ${S.page===k?'on':''}" da
 // Menu trái: logo · 7 nghiệp vụ · khung mục con (thu gọn được) · khung "Bộ lọc nhanh" theo nghiệp vụ.
 // Đầu trang: tên nghiệp vụ + mô tả · chọn tháng · chọn cơ sở · tìm kiếm · chuông · tài khoản.
 const MO_TA_NV={tong_quan:'Tình hình kinh doanh & tài chính toàn công ty',thu_chi:'Quản lý dòng tiền, chứng từ và thanh toán',
-  cong_no:'Khách hàng, nhà cung cấp, công nợ và kế hoạch thanh toán',kinh_doanh:'Bán hàng, khách hàng, nhà cung cấp và tồn kho nội bộ (KiotViet)',
+  cong_no:'Khách hàng, nhà cung cấp và công nợ',kinh_doanh:'Bán hàng, khách hàng, nhà cung cấp và tồn kho nội bộ (KiotViet)',
   thue:'Quản lý hoá đơn, kho sổ thuế và các công việc liên quan đến thuế',bao_cao:'Lãi lỗ, chi phí, tài sản và chốt kỳ',he_thong:'Danh mục, phân quyền, tích hợp và nhật ký'};
 // 3 cơ sở kinh doanh ↔ chi nhánh Kiot (Shidai = công ty THT — anh chốt 12/10)
 const CS3=[['SD','Kho Shidai','Tổng kho sỉ Shidai'],['CT','Chánh Tâm','Đồ Thờ Chánh Tâm'],['HT','Hiền Thủy','Đồ thờ Hiền Thủy']];
@@ -2756,7 +2757,7 @@ function thanhTrang(k,n,moi,tr,donVi){const so=Math.max(1,Math.ceil(n/moi));cons
 // CÔNG NỢ & THANH TOÁN — giao diện mẫu kế toán (13/10/2026): tab · bộ lọc có nhãn · bảng + khung chi tiết. Số nợ = số Kiot; tuổi nợ FIFO
 // (supabase-schema-kt-cong-no-kiot.sql). Nhóm KH suy từ tiền tố tên Kiot: NPP → Đại lý · KB → Cửa hàng · KL → Khách lẻ.
 // 14/10/2026 (anh: ảnh mẫu do AI vẽ, lắp theo dữ liệu thật): bỏ 2 tab mẫu không có dữ liệu "Đối chiếu công nợ", "Lịch sử thanh toán" (lịch sử TT xem trong khung chi tiết từng khách / NCC)
-const TAB_NO=[['no_kh','Công nợ phải thu KH'],['no_ncc','Công nợ phải trả NCC'],['sap_tra','Kế hoạch thu - thanh toán']];
+const TAB_NO=[['no_kh','Công nợ phải thu KH'],['no_ncc','Công nợ phải trả NCC']];   // 29/10: Kế hoạch thu - thanh toán (Lịch đến hạn trả) chuyển sang Thu chi & Ngân quỹ
 function tabNo(on){return `<div class="m-tabs" style="align-items:center">${TAB_NO.filter(([k])=>!PAGES[k]||coXem(k)).map(([k,t])=>`<button class="m-tab ${on===k?'on':''}" onclick="${PAGES[k]?`go('${k}')`:`S.f.no_tab='${k}';render()`}">${t}</button>`).join('')}
   <span style="margin-left:auto"></span></div>`}
 // ── NHÂN SỰ PHỤ TRÁCH theo bộ phận (14/10/2026, anh: tham khảo bảng Nhân sự Sale ở trang Phân quyền app MKT/Sale)
@@ -3687,7 +3688,7 @@ async function luuThuHoi(id){const o=formData($('#f'));if(!so(o.so_tien))return 
 const CHU_KY={1:'Hằng tháng',2:'2 tháng',3:'Hằng quý',6:'6 tháng',12:'Hằng năm'};
 const ltTT=x=>{const h=homNay(),t=new Date(new Date(x.han_tu+'T00:00:00').getTime()-(x.nhac_truoc||3)*864e5),tu=ymd(t);
   return h>x.han_den?['Quá hạn','bad']:h>=tu?['Đến hạn','warn']:['Chưa tới hạn','']};
-// 28/10 anh: "trang lịch thanh toán định kỳ ở đâu" → bảng dùng chung cho trang riêng (menu Công nợ & Thanh toán) và trang Lịch đến hạn trả
+// 28/10 anh: "trang lịch thanh toán định kỳ ở đâu" → bảng dùng chung cho trang riêng (menu Thu chi & Ngân quỹ, chuyển 29/10) và trang Lịch đến hạn trả
 const ltHan=x=>fmtD(x.han_tu).slice(0,5)+(x.han_den!==x.han_tu?'–'+fmtD(x.han_den).slice(0,5):'')+'/'+x.han_den.slice(0,4);
 const ltBang=(lt,g)=>{const han=ltHan;return `<div class="m-flt" style="align-items:center;margin-top:4px"><b style="font-size:14px">Thanh toán định kỳ</b><span class="badge">nhắc chuông 08:00 · trước hạn ${(lt[0]||{}).nhac_truoc||3} ngày và khi quá hạn</span><span style="margin-left:auto"></span>${g?`<button class="m-btn pri" onclick="formLT()">+ Thêm khoản định kỳ</button>`:''}</div>
     <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Khoản</th><th>Người nhận · thanh toán</th><th>Chu kỳ</th><th>Hạn kỳ tới</th><th class="num">Dự kiến</th><th>Trạng thái</th>${g?'<th></th>':''}</tr>
@@ -3698,14 +3699,39 @@ const ltBang=(lt,g)=>{const han=ltHan;return `<div class="m-flt" style="align-it
         <td class="nw">${t[1]?pill(t[0],t[1]):`<span class="muted">${t[0]}</span>`}${x.lan_cuoi?`<div class="muted" style="font-size:11px">Trả gần nhất ${fmtD(x.lan_cuoi.ngay)}${x.lan_cuoi.so_tien?' · '+fmt(x.lan_cuoi.so_tien):''}</div>`:''}</td>
         ${g?`<td class="nw c"><button class="m-btn out" style="height:28px;font-size:11.5px" title="Mở phiếu đề nghị điền sẵn người nhận / STK / số tiền" onclick="ltPhieu(${x.id})">Tạo phiếu</button> <button class="m-btn pri" style="height:28px;font-size:11.5px" onclick="ltDaTra(${x.id})">✓ Đã thanh toán</button> <button class="m-btn out" style="height:28px" title="Sửa" onclick="formLT(${x.id})">✏</button></td>`:''}</tr>`}).join('')
         ||`<tr><td colspan="7" class="m-empty">Chưa có khoản định kỳ</td></tr>`}</table></div></div>`};
+async function pageLichGop(){const t=S.f.ltt_tab==='dk'?'dk':'han';await (t==='dk'?pageLichTT():pageDenHan());
+  const seg=`<div class="m-seg" style="margin-bottom:12px">${[['han','Đến hạn trả'],['dk','Định kỳ']].map(([k,v])=>`<button class="${t===k?'on':''}" onclick="S.f.ltt_tab='${k}';render()">${v}</button>`).join('')}</div>`;
+  const top=$('#page .top');if(top)top.insertAdjacentHTML('afterend',seg);else $('#page').insertAdjacentHTML('afterbegin',seg)}
 async function pageLichTT(){const el=$('#page');const lt=await rpc('kt_lich_tt_ds').catch(()=>[]);S.cache.lt=lt;const g=coGhi('sap_tra');
-  el.innerHTML=head('Lịch thanh toán định kỳ','<span class="badge">Thuê nhà, kho, điện, nước, internet… — hạn kỳ tới + nhắc chuông</span>')+ltBang(lt,g)}
-async function pageSapTra(){
+  el.innerHTML=head('Lịch thanh toán','<span class="badge">Thuê nhà, kho, điện, nước, internet… — hạn kỳ tới + nhắc chuông</span>')+ltBang(lt,g)}
+// 29/10 anh: tab Đến hạn trả = 3 khối theo nội dung — Khoản vay (kỳ trả 30 ngày tới, ước tính như trang Vay) · Thanh toán định kỳ (hạn trong 30 ngày + quá hạn) · Khoản trả 1 lần;
+// 3 thẻ tiền trên cùng, bấm thẻ = chỉ khối đó, bấm lại = tất cả
+async function pageDenHan(){const el=$('#page'),f=S.f,nay=homNay(),sau30=ymd(new Date(Date.now()+30*864e5)),g=coGhi('sap_tra');
+  const [ds,lt,vay]=await Promise.all([rpc('kt_ds',{p_bang:'sap_tra',p_tu:MOC,p_den:homNay()}),rpc('kt_lich_tt_ds').catch(()=>[]),coXem('vay')?rpc('kt_ds_vay').catch(()=>null):null]);
+  S.cache.st=ds;S.cache.lt=lt;if(vay)S.cache.vay=vay;
+  const vk=(vay||[]).flatMap(v=>{const tay=(v.lan_tra||[]).filter(t=>!t.da_tra&&t.ngay<=sau30).map(t=>({...t,ten:v.ten,vid:v.id}));return tay.length?tay:vayDuKien(v,nay,sau30)})
+    .sort((a,c)=>a.ngay<c.ngay?-1:a.ngay>c.ngay?1:a.vid-c.vid);
+  const dk=lt.filter(x=>x.han_tu&&x.han_tu<=sau30),mot=ds.filter(x=>!x.da_tra),daMot=ds.filter(x=>x.da_tra);
+  const tl=f.dh_the||'',hien=k=>!tl||tl===k;
+  const the=(k,c,ic,l,v,s1)=>`<div class="m-k click${tl===k?' on':''}" style="--c:var(--${c})" title="Bấm để chỉ xem phần này · bấm lại để xem tất cả" onclick="S.f.dh_the=S.f.dh_the==='${k}'?'':'${k}';render()"><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s1}</div></div></div>`;
+  const IC3={vay:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h16v10H4zm8-8 9 6H3zM7 12v6h2v-6zm4 0v6h2v-6zm4 0v6h2v-6z"/></svg>',dk:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3zm-1 8v10h12V10z"/></svg>',mot:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h11l3 3v15H5zm3 6h8v2H8zm0 4h8v2H8z"/></svg>'};
+  const tVay=sumBy(vk,t=>+t.goc + +t.lai),tDk=sumBy(dk,x=>+x.so_tien||0),tMot=sumBy(mot,x=>+x.so_tien);
+  const kp=`<div class="m-kpis m-k3">${the('vay','bad',IC3.vay,'Khoản vay đến hạn (30 ngày)',fmt(tVay),fmt(vk.length)+' kỳ trả'+(vay?'':' · không có quyền xem Vay'))}${the('dk','warn',IC3.dk,'Thanh toán định kỳ (30 ngày)',fmt(tDk),fmt(dk.length)+' khoản'+(dk.some(x=>!+x.so_tien)?' · có khoản chưa có số':''))}${the('mot','info',IC3.mot,'Khoản trả 1 lần chưa trả',fmt(tMot),fmt(mot.length)+' khoản')}</div>`;
+  const dau=(t,badge,nut)=>`<div class="m-flt" style="align-items:center;margin-top:14px"><b style="font-size:14px">${t}</b>${badge?`<span class="badge">${badge}</span>`:''}<span style="margin-left:auto"></span>${nut||''}</div>`;
+  const ttTra=t=>!t.uoc?(t.ngay<nay?pill('Quá hạn','bad'):pill('Sắp đến hạn','warn')):t.ngay<nay?pill('Chưa ghi nhận','warn'):t.loai.includes('dao_han')?pill('Đáo hạn — trả gốc','bad'):pill('Ước tính','info');
+  const kVay=`${dau('Khoản vay đến hạn',vk.some(t=>t.uoc)?'Lãi ước tính = dư nợ × lãi suất × số ngày / 365':'')}<div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Khoản vay</th><th class="num">Gốc</th><th class="num">Lãi</th><th class="num">Tổng</th><th class="c">Trạng thái</th></tr>
+      ${vk.map(t=>`<tr class="click" onclick="xemVay(${t.vid})"><td class="nw">${fmtD(t.ngay)}</td><td class="ten">${esc(t.ten)}</td><td class="num">${+t.goc?fmt(t.goc):'–'}</td><td class="num">${+t.lai?fmt(t.lai):'–'}</td><td class="num"><b>${fmt(+t.goc + +t.lai)}</b></td><td class="c">${ttTra(t)}</td></tr>`).join('')||`<tr><td colspan="6" class="m-empty">${vay?'Không có kỳ trả nào trong 30 ngày tới':'Tài khoản chưa có quyền xem trang Vay'}</td></tr>`}
+      ${vk.length?`<tr class="tong"><td colspan="2">Tổng</td><td class="num">${fmt(sumBy(vk,t=>+t.goc))}</td><td class="num">${fmt(sumBy(vk,t=>+t.lai))}</td><td class="num">${fmt(tVay)}</td><td></td></tr>`:''}</table></div></div>`;
+  const kDk=ltBang(dk,g).replace('<b style="font-size:14px">Thanh toán định kỳ</b>','<b style="font-size:14px">Thanh toán định kỳ đến hạn</b>').replace('margin-top:4px','margin-top:14px');
+  const kMot=`${dau('Khoản trả 1 lần',mot.length+' khoản chưa trả · '+fmt(tMot),g?'<button class="m-btn pri" onclick="formST()">+ Thêm khoản 1 lần</button>':'')}<div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Khoản</th><th>Hạn</th><th>Ghi chú</th><th class="c">Trạng thái</th><th class="num">Số tiền</th></tr>
+      ${[...mot,...daMot].map(x=>`<tr class="click" onclick="formST(${x.id})"><td>${esc(x.noi_dung)}</td><td class="nw ${!x.da_tra&&x.han&&x.han<nay?'neg-t':''}">${fmtD(x.han)}</td><td>${esc(x.ghi_chu||'')}</td><td class="c">${x.da_tra?pill('Đã trả','ok'):pill('Chưa trả','warn')}</td><td class="num"><b>${fmt(x.so_tien)}</b></td></tr>`).join('')||'<tr><td colspan="5" class="m-empty">Chưa có khoản trả 1 lần (lương, BHXH, nợ khác…)</td></tr>'}</table></div></div>`;
+  el.innerHTML=head('Lịch thanh toán','')+kp+(hien('vay')?kVay:'')+(hien('dk')?kDk:'')+(hien('mot')?kMot:'')}
+async function pageSapTra(gop){   // gop: trong trang gộp 2 tab → bỏ khung định kỳ (đã có tab Định kỳ)
   const el=$('#page');const [ds,lt]=await Promise.all([rpc('kt_ds',{p_bang:'sap_tra',p_tu:MOC,p_den:homNay()}),rpc('kt_lich_tt_ds').catch(()=>[])]);S.cache.st=ds;S.cache.lt=lt;
   const chua=ds.filter(x=>!x.da_tra),g=coGhi('sap_tra'),han=x=>fmtD(x.han_tu).slice(0,5)+(x.han_den!==x.han_tu?'–'+fmtD(x.han_den).slice(0,5):'')+'/'+x.han_den.slice(0,4);
-  const lthtml=ltBang(lt,g)+`
+  const lthtml=gop?'':ltBang(lt,g)+`
     <div class="m-flt" style="align-items:center;margin-top:16px"><b style="font-size:14px">Khoản trả 1 lần</b></div>`;
-  el.innerHTML=head('Lịch đến hạn trả',g?'<button class="btn pri" onclick="formST()">+ Thêm khoản 1 lần</button>':'')+lthtml+
+  el.innerHTML=head(gop?'Lịch thanh toán':'Lịch đến hạn trả',g?'<button class="btn pri" onclick="formST()">+ Thêm khoản 1 lần</button>':'')+lthtml+
     `<div class="bar"><span class="badge">${chua.length} khoản chưa trả · ${fmt(sumBy(chua,x=>x.so_tien))}</span><span class="badge">lương, vay, BHXH, nợ nhà cung cấp...</span></div>
     <div class="card scroll"><table><tr><th>Khoản</th><th>Hạn</th><th>Ghi chú</th><th>Trạng thái</th><th class="num">Số tiền</th></tr>
     ${ds.map(x=>`<tr class="click" onclick="formST(${x.id})"><td>${esc(x.noi_dung)}</td><td class="nw ${!x.da_tra&&x.han&&x.han<homNay()?'neg':''}">${fmtD(x.han)}</td><td>${esc(x.ghi_chu||'')}</td>
@@ -5301,7 +5327,7 @@ async function docChuong(id){try{await rpc('kt_doc_thong_bao',{p_id:id||null});i
 async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)return;
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
-  if(x.bang==='lich_tt'){if(coXem('sap_tra'))go('sap_tra');return}   // 26/10: nhắc lịch thanh toán định kỳ
+  if(x.bang==='lich_tt'){if(coXem('sap_tra')){S.f.ltt_tab='dk';go('sap_tra')}return}   // 26/10: nhắc lịch thanh toán định kỳ
   if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='bao_loi'){S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');return}   // 24/10: báo lỗi → Log hệ thống, tab Báo lỗi
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
@@ -5417,7 +5443,7 @@ const LOGIC2=[
  ['chung','Xuất Excel','Mọi nút Xuất Excel ra file .xlsx: cột tiền là số (#,##0), cột ngày là ngày, có lọc cột.','Cột mã phiếu / số tài khoản giữ dạng chữ.','15/10'],
  // ── THU CHI & NGÂN QUỸ
  ['thu_chi','Vay — phân loại & lọc','Mỗi khoản vay: bên vay (công ty / cá nhân), kỳ hạn (ngắn ≤ 12 tháng / trung dài > 12 tháng), tài sản đảm bảo (có — ghi tài sản / tín chấp / chưa nhập). Trang Vay lọc theo ngân hàng · bên vay · kỳ hạn · TSĐB; thẻ số + lịch trả theo bộ lọc.','Phân loại sẵn 26/10: tên có "cá nhân" → cá nhân; đáo hạn > 12 tháng → trung dài; hạn mức / khế ước không ngày đáo hạn → ngắn. TSĐB chưa có dữ liệu — kế toán nhập ở ✏ Sửa khoản vay.','26/10'],
- ['cong_no','Lịch thanh toán định kỳ','Công nợ & Thanh toán → Lịch đến hạn trả → Thanh toán định kỳ: mỗi khoản có chu kỳ (tháng / quý / 6 tháng / năm), khung hạn kỳ tới, người nhận + STK, số dự kiến. 08:00 mỗi ngày (lịch kt-nhac-lich-tt) chuông cho Supreme + kế toán: trước hạn N ngày (mặc định 3) và khi quá hạn — mỗi mốc 1 lần / kỳ. ✓ Đã thanh toán → ghi lần trả, dời sang kỳ sau. Tạo phiếu → form đề nghị điền sẵn.','Không lưu mật khẩu đăng nhập (EVN…). Nạp 9 khoản từ file LỊCH THANH TOÁN CÁC KHOẢN CỐ ĐỊNH THT 26/10.','26/10'],
+ ['cong_no','Lịch thanh toán định kỳ','Thu chi & Ngân quỹ → Lịch thanh toán → tab Định kỳ (tab Đến hạn trả: khoản trả 1 lần): mỗi khoản có chu kỳ (tháng / quý / 6 tháng / năm), khung hạn kỳ tới, người nhận + STK, số dự kiến. 08:00 mỗi ngày (lịch kt-nhac-lich-tt) chuông cho Supreme + kế toán: trước hạn N ngày (mặc định 3) và khi quá hạn — mỗi mốc 1 lần / kỳ. ✓ Đã thanh toán → ghi lần trả, dời sang kỳ sau. Tạo phiếu → form đề nghị điền sẵn.','Không lưu mật khẩu đăng nhập (EVN…). Nạp 9 khoản từ file LỊCH THANH TOÁN CÁC KHOẢN CỐ ĐỊNH THT 26/10.','26/10'],
  ['thu_chi','Người gửi phiếu theo dõi (không tài khoản)','Gửi xong có link riêng #phieu=<mã bí mật>; máy đã gửi nhớ 20 phiếu gần nhất ("Phiếu đã gửi từ máy này"). Trang theo dõi: 4 bước Kế toán kiểm → Giám đốc xác nhận → Chờ thanh toán → Đã thanh toán. Đã thanh toán → hiện "Bill chuyển khoản" (chi tiền mặt: "Phiếu chi ký nhận") = ảnh kế toán đính ở ô Ảnh giao dịch của Bước 3 – Chi tiền.','Link xem ảnh sống 5 phút, cấp qua mã phiếu (kt_bill_phieu + Edge kt-chung-tu bill_phieu) — không xem được hồ sơ khác.','26/10'],
  ['thu_chi','Phiếu đề nghị','Mọi phiếu (trừ tạm ứng) bắt buộc chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm — ô riêng, không liên quan ô Hoá đơn đỏ (hoá đơn trắng cũng chọn).','Kế toán + anh 16/10.','16/10'],
  ['thu_chi','Tạm ứng','Phiếu đề nghị tick TẠM ỨNG → tự tạo dòng ở Tạm ứng & hoàn ứng; từ chối / xoá / bỏ tick → tự gỡ (nếu chưa hoàn). Tạm ứng không tính chi phí.','Không bắt chọn đơn vị chịu chi phí / hoá đơn — quyết toán khi hoàn ứng. Vẫn là tiền ra ở Dòng tiền.','16/10'],
