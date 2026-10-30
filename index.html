@@ -169,6 +169,7 @@ td.num b{font-weight:800}
 :root[data-theme="dark"]{--s1:#3987e5;--s2:#e66767}
 .modal.drawer{justify-content:flex-end;padding:0}
 .modal.drawer>div{max-width:560px;height:100vh;max-height:100vh;border-radius:16px 0 0 16px;padding:20px 22px}
+.modal.drawer>div:has(.xn-rong){max-width:680px}
 .tabs .btn.on .muted{color:inherit;opacity:.8}
 .ct-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,62px));gap:6px}   /* 23/10 anh: ảnh + nút thêm nhỏ còn 1/2 */
 .ct-item{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg2)}
@@ -296,6 +297,7 @@ table.pl tr.tong td{background:transparent;border-top:1.5px solid var(--border)}
 table.tq-t{width:100%;border-collapse:collapse;font-size:12px}
 table.tq-t td:first-child b{white-space:nowrap}
 .tq-ten{max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xn-1{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tq-nh-m{display:inline-block;width:14px;color:var(--muted);font-size:10px}
 table.tq-nh tr.tq-nh-con td{background:var(--bg2,#f8fafc);font-size:12px}table.tq-nh tr.tq-nh-con td:not(.pos-t){color:var(--text2)}table.tq-nh tr.tq-nh-con td:first-child{padding-left:30px}
 table.tq-t th{font-size:10.5px;color:var(--muted);font-weight:700;text-align:left;padding:6px 5px;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -1063,8 +1065,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.269';
-const APP_VERSION='30/10/2026 15:40';
+const APP_SO='1.270';
+const APP_VERSION='30/10/2026 15:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1680,7 +1682,7 @@ function kyTruoc(tu,den){
 // ── XEM NHANH (13/10/2026) — bấm dòng nào mở khung chi tiết trượt bên phải ngay tại chỗ, bấm tiếp được (khách → hoá đơn → mặt hàng), có nút quay lại.
 // Anh: "các phần nhân sự hay cần check / click thì nối luôn, giống app MKT/Sale, nhiều dashboard tương tác thay vì phải chuyển trang".
 // Dữ liệu: hàm kt_drill (supabase-schema-kt-drill.sql) — mỗi loại kiểm đúng quyền trang tương ứng.
-const XN_QUYEN={nhom:'ban_hang',sp:'ban_hang',kh:'khach_hang',hd:'khach_hang',ton_lau:'hang_hoa',cp:'chi',thue_ma:'hoa_don_thue',thue_hd:'hoa_don_thue'};
+const XN_QUYEN={nhom:'ban_hang',sp:'ban_hang',kh:'khach_hang',hd:'khach_hang',ton_lau:'hang_hoa',cp:'chi',thue_ma:'hoa_don_thue',thue_hd:'hoa_don_thue',nhom_hd:'tong_quan'};
 const xnDuoc=l=>coXem(XN_QUYEN[l]||l);
 let XN_STACK=[];
 const xnAttr=(l,k,cn,t)=>xnDuoc(l)?`class="xn" onclick="event.stopPropagation();xemNhanh('${l}',${JSON.stringify(String(k??'')).replace(/"/g,'&quot;')},${cn?JSON.stringify(cn).replace(/"/g,'&quot;'):'null'},${JSON.stringify(t||'').replace(/"/g,'&quot;')})"`:'';
@@ -1702,6 +1704,22 @@ async function xemNhanh(loai,khoa,cn,tieu,giuStack){
         ${loai==='thue_ma'?`<div class="m-st">Phát sinh theo hoá đơn (sổ thuế) <span class="r">${xuat('so-thue-'+khoa,[['Ngày',x=>x.ngay],['Loại',x=>x.loai],['Số HĐ',x=>soHD(x.so_hd)],['SL',x=>x.sl],['Giá trị',x=>x.thanh_tien],['Đối tác',x=>x.doi_tac||'']],ds)}</span></div>
           ${bang([['Ngày',x=>fmtD(x.ngay),'nw'],['Loại',x=>pill(x.loai,x.loai==='Xuất'?'bad':'ok'),'c'],['Số HĐ',x=>esc(soHD(x.so_hd)),'nw'],['SL',x=>`<span class="${x.sl<0?'neg-t':'pos-t'}">${x.sl>0?'+':''}${fmt(x.sl)}</span>`,'num'],['Giá trị',x=>fmt(x.thanh_tien),'num'],['Đối tác',x=>esc(x.doi_tac||''),'']],ds,'Chưa có hoá đơn nào của mã này',x=>`class="click" onclick="xemNhanh('thue_hd','${esc(x.so_hd)}','${cn}','${x.ngay}')"`)}`
         :`<div class="m-st">Dòng hàng trên hoá đơn · ${fmtD(tu)}</div>${bang([['Mã',x=>esc(x.ma),'nw'],['Tên hàng',x=>esc(x.ten||''),''],['SL',x=>fmt(Math.abs(x.sl)),'num'],['Đơn giá',x=>fmt(x.don_gia),'num'],['Thành tiền',x=>fmt(x.thanh_tien),'num']],ds,cn==='CTY'?'Hoá đơn công ty lấy từ MISA chỉ có tổng tiền, chưa có dòng hàng':'Không có dòng hàng',x=>`class="click" onclick="xemNhanh('thue_ma','${esc(x.ma)}','${cn}','')"`)}`}</div>`;
+      return ve(h);
+    }
+    // 30/10/2026 anh: Tổng quan mục 3 — bấm Online / Offline → các hoá đơn cấu thành doanh số nhóm (ngày, khách, cơ sở, nguồn). khoa = "chỉ số nhóm|on/off" (-1 = mọi nhóm)
+    if(loai==='nhom_hd'){
+      const [i,k]=String(khoa).split('|'),x=+i<0?null:(S.cache.tq_nh||[])[+i],nhom=x?x.nhom:null,ck=(nhom||'__tong')+S.tu+S.den,C=S.cache.tq_nh_hd=S.cache.tq_nh_hd||{};
+      if(!C[ck])C[ck]=await rpc('kt_tq_nhom_hd',{p_tu:S.tu,p_den:S.den,p_nhom:nhom});
+      const csSel=locCSAll()?null:locCS(),tat=C[ck].filter(r=>!csSel||csSel.includes(csCuaCN(r.cn))),loc=v=>tat.filter(r=>!v||(v==='on')===!!r.on),ds=loc(k);
+      const tab=(v,t)=>`<button class="${(k||'')===v?'on':''}" onclick="XN_STACK[XN_STACK.length-1][1]='${i}|${v}';xemNhanh('nhom_hd','${i}|${v}',null,'',true)">${t} · ${fmtN(sumBy(loc(v),r=>r.dt))}</button>`;
+      const nguon=r=>r.trong?'Không ghi kênh':r.kenh,tong=sumBy(ds,r=>r.dt),gv=sumBy(ds,r=>r.gv);
+      const ng=Object.values(ds.reduce((o,r)=>{const n=nguon(r),q=o[n]=o[n]||{n,on:r.on,so:0,dt:0};q.so++;q.dt+=+r.dt;return o},{})).sort((a,c)=>c.dt-a.dt);
+      h=dau(esc(nhom||'Mọi nhóm hàng')+(k?' · '+(k==='on'?'Online':'Offline'):''))+`<div class="m-pn-b xn-rong"><div class="m-seg" style="margin-bottom:10px">${tab('','Tất cả')}${tab('on','Online')}${tab('off','Offline')}</div>
+        ${kv([['Kỳ',ky+(csSel?' · '+csSel.map(c=>(CS3.find(z=>z[0]===c)||[])[1]).join(', '):'')],['Doanh thu','<b>'+fmt(tong)+'</b>'],['Số hoá đơn',fmt(ds.length)],['Lợi nhuận gộp',fmt(tong-gv)+' · '+pct(tong-gv,tong)]])}
+        <div class="m-st">Theo nguồn</div>${bang([['Nguồn',r=>esc(r.n)+(k?'':' '+pill(r.on?'Online':'Offline',r.on?'info':'')),''],['Số HĐ',r=>fmt(r.so),'num'],['Doanh thu',r=>fmt(r.dt),'num'],['Tỷ trọng',r=>pct(r.dt,tong),'num']],ng,'Không có')}
+        <div class="m-st">Hoá đơn (${fmt(ds.length)}) <span class="r">${xuat('doanh-thu-'+(nhom||'tat-ca')+(k?'-'+k:''),[['Ngày',r=>r.ngay],['Hoá đơn',r=>r.ma],['Khách',r=>r.khach||''],['Chi nhánh',r=>r.cn||''],['Nguồn',nguon],['Online',r=>r.on?'Online':'Offline'],['Doanh thu',r=>r.dt],['Giá vốn',r=>r.gv]],ds)}</span></div>
+        ${bang([['Ngày',r=>S.tu.slice(0,4)===S.den.slice(0,4)?fmtD(r.ngay).slice(0,5):fmtD(r.ngay),'nw'],['Hoá đơn',r=>`<span class="m-link">${esc(r.ma)}</span>`,'nw'],['Khách hàng',r=>`<span class="xn-1" style="max-width:180px" title="${esc(r.khach||'Khách lẻ')}">${esc(r.khach||'Khách lẻ')}</span>`,''],['Cơ sở',r=>esc(csT(r.cn)),'nw'],['Nguồn',r=>`<span class="xn-1 ${r.trong?'muted':''}" style="max-width:130px" title="${esc(nguon(r))}">${esc(nguon(r))}</span>`,''],[nhom?'DT nhóm':'Doanh thu',r=>'<b>'+fmt(r.dt)+'</b>','num']],ds,'Không có hoá đơn',r=>xnDuoc('hd')?`class="click" onclick="xemNhanh('hd','${esc(r.ma)}',null,'')"`:'')}
+        <div class="tq-note">${nhom?'DT nhóm = phần dòng hàng thuộc nhóm này trong hoá đơn (đã trừ giảm giá hoá đơn). ':''}Nguồn = kênh bán trên hoá đơn Kiot; không ghi kênh tính offline.</div></div>`;
       return ve(h);
     }
     const d=await rpc('kt_drill',{p_loai:loai,p_khoa:String(khoa??''),p_tu:S.tu,p_den:S.den,p_cn:cn||null});
@@ -1745,12 +1763,12 @@ async function xemNhanh(loai,khoa,cn,tieu,giuStack){
 function tqNhBang(){const N=S.cache.tq_nh||[],tong=sumBy(N,x=>x.dt),du=S.f.tq_nh_du||N.length<=7,mo=S.f.tq_nh_mo||{},top=du?N:N.slice(0,6),kh=du?[]:N.slice(6);
   const T={nhom:'__tong',dt:tong,gv:sumBy(N,x=>x.gv),on:{dt:sumBy(N,x=>x.on.dt),gv:sumBy(N,x=>x.on.gv)},off:{dt:sumBy(N,x=>x.off.dt),gv:sumBy(N,x=>x.off.gv)}};
   const o=(dt,gv,tt,b)=>[fmt(dt),tt,fmt(dt-gv),dt?pct(dt-gv,dt):'–'].map((v,j)=>`<td class="num ${j===3&&dt&&(dt-gv)/dt>=.4?'pos-t':''}">${b?'<b>'+v+'</b>':v}</td>`).join('');
-  const mui=m=>`<span class="tq-nh-m">${m?'▾':'▸'}</span>`,con=x=>mo[x.nhom]?[['on','Online'],['off','Offline']].map(([k,t])=>`<tr class="tq-nh-con"><td>${t}</td>${o(x[k].dt,x[k].gv,pct(x[k].dt,x.dt))}</tr>`).join(''):'';
+  const mui=m=>`<span class="tq-nh-m">${m?'▾':'▸'}</span>`,con=(x,i)=>mo[x.nhom]?[['on','Online'],['off','Offline']].map(([k,t])=>`<tr class="tq-nh-con click" onclick="xemNhanh('nhom_hd','${i}|${k}',null,'')" title="Bấm xem các hoá đơn"><td>${t} <span class="m-link">xem đơn</span></td>${o(x[k].dt,x[k].gv,pct(x[k].dt,x.dt))}</tr>`).join(''):'';
   return `<table class="m-t tq2-t tq-nh"><tr><th>Nhóm hàng</th><th class="num">Doanh thu</th><th class="num">Tỷ trọng</th><th class="num">Lợi nhuận gộp</th><th class="num">Biên LN</th></tr>
-    ${top.map((x,i)=>`<tr class="click" onclick="tqNhMo(${i})" title="Bấm xem online / offline"><td class="tq-ten" title="${esc(x.nhom)}">${mui(mo[x.nhom])}${esc(x.nhom)}</td>${o(x.dt,x.gv,pct(x.dt,tong))}</tr>${con(x)}`).join('')||'<tr><td colspan="5" class="m-empty">Chưa có</td></tr>'}
+    ${top.map((x,i)=>`<tr class="click" onclick="tqNhMo(${i})" title="Bấm xem online / offline"><td class="tq-ten" title="${esc(x.nhom)}">${mui(mo[x.nhom])}${esc(x.nhom)}</td>${o(x.dt,x.gv,pct(x.dt,tong))}</tr>${con(x,i)}`).join('')||'<tr><td colspan="5" class="m-empty">Chưa có</td></tr>'}
     ${kh.length?`<tr class="click" onclick="tqNhDu(1)" title="Bấm xem đủ ${N.length} nhóm"><td>${mui(0)}Khác (${kh.length} nhóm) <span class="m-link">xem đủ</span></td>${o(sumBy(kh,x=>x.dt),sumBy(kh,x=>x.gv),pct(sumBy(kh,x=>x.dt),tong))}</tr>`:''}
     ${S.f.tq_nh_du&&N.length>7?`<tr class="click" onclick="tqNhDu(0)"><td colspan="5"><span class="m-link">▴ Thu gọn</span></td></tr>`:''}
-    ${N.length?`<tr class="tong click" onclick="tqNhMo(-1)" title="Bấm xem online / offline"><td>${mui(mo.__tong)}<b>Tổng cộng</b></td>${o(T.dt,T.gv,'100%',1)}</tr>${con(T)}`:''}</table>`}
+    ${N.length?`<tr class="tong click" onclick="tqNhMo(-1)" title="Bấm xem online / offline"><td>${mui(mo.__tong)}<b>Tổng cộng</b></td>${o(T.dt,T.gv,'100%',1)}</tr>${con(T,-1)}`:''}</table>`}
 function tqNhMo(i){const N=S.cache.tq_nh||[],k=i<0?'__tong':(N[i]||{}).nhom;if(!k)return;const m=S.f.tq_nh_mo=S.f.tq_nh_mo||{};m[k]=!m[k];const el=$('#tq-nh');if(el)el.innerHTML=tqNhBang()}
 function tqNhDu(v){S.f.tq_nh_du=!!v;const el=$('#tq-nh');if(el)el.innerHTML=tqNhBang()}
 async function pageTongQuan(){
@@ -5841,7 +5859,7 @@ const LG_NV=[['chi_so','Chỉ số (cách tính)'],['chung','Dữ liệu chung']
 const LOGIC2=[
  ['chung','Cửa sổ chi tiết','Mọi phiếu trong Thu chi & Ngân quỹ (chi, thu, điều chuyển, tạm ứng, vay) + công nợ, khoá kỳ mở CỬA SỔ LỚN giữa màn hình, cùng 1 kiểu.','Có khung Hoạt động (lịch sử + bình luận báo chuông) và nút Xuất phiếu Word (thu: người nộp ký; điều chuyển: người thực hiện; tạm ứng: người nhận ký).','19/10'],
  ['chi_so','Tổng quan · Doanh thu','Tổng tiền hoá đơn Kiot trạng thái Hoàn thành + Đang xử lý (đang giao), theo NGÀY HOÁ ĐƠN trong kỳ, mọi khách, mọi kênh.','Giống màn Tổng quan Kiot. Đơn đặt chưa giao chưa tính. Dòng nhỏ: tiền trả hàng trong kỳ.','19/10'],
- ['chi_so','Tổng quan · Doanh thu theo nhóm hàng','Dòng hàng hoá đơn Kiot (Hoàn thành + Đang xử lý) gom về nhóm cha; doanh thu dòng quy về tổng hoá đơn (đã trừ giảm giá hoá đơn). Mặc định 6 nhóm lớn + Khác; bấm Khác xem đủ. Bấm 1 nhóm hoặc Tổng cộng: tách Online / Offline.','Online / offline theo nguồn đơn Kiot = kênh bán trên hoá đơn (trống thì lấy kênh đơn đặt hàng gắn). Bán trực tiếp / Khác / trống = offline; Facebook, Tiktok, Website, Shopee, Nến Bơ… = online — cùng luật P&L. Tỷ trọng dòng Online / Offline = % trong nhóm đó.','30/10'],
+ ['chi_so','Tổng quan · Doanh thu theo nhóm hàng','Dòng hàng hoá đơn Kiot (Hoàn thành + Đang xử lý) gom về nhóm cha; doanh thu dòng quy về tổng hoá đơn (đã trừ giảm giá hoá đơn). Mặc định 6 nhóm lớn + Khác; bấm Khác xem đủ. Bấm 1 nhóm hoặc Tổng cộng: tách Online / Offline; bấm Online / Offline (xem đơn): popup các hoá đơn cấu thành doanh số — ngày, khách, cơ sở, nguồn, phần doanh thu của nhóm trong hoá đơn; có bảng Theo nguồn, chuyển tab Tất cả / Online / Offline, bấm hoá đơn xem chi tiết, xuất Excel.','Online / offline theo nguồn đơn Kiot = kênh bán trên hoá đơn (trống thì lấy kênh đơn đặt hàng gắn). Bán trực tiếp / Khác / trống = offline; Facebook, Tiktok, Website, Shopee, Nến Bơ… = online — cùng luật P&L. Tỷ trọng dòng Online / Offline = % trong nhóm đó.','30/10'],
  ['chi_so','Tổng quan · Doanh thu thuần','Doanh thu − tiền khách trả hàng trong kỳ (phiếu trả hàng Kiot).','Khớp \"Doanh thu thuần\" Kiot. Tỷ lệ trả hàng = trả hàng ÷ doanh thu.','19/10'],
  ['chi_so','Tổng quan · Giá vốn hàng bán','Giá vốn Kiot của hàng đã bán − giá vốn hàng trả lại (theo tỷ lệ hoá đơn gốc).','Tỷ lệ giá vốn = giá vốn ÷ doanh thu thuần.','19/10'],
  ['chi_so','Tổng quan · Lợi nhuận gộp','Doanh thu thuần − giá vốn.','Biên lợi nhuận gộp = lợi nhuận gộp ÷ doanh thu thuần.','19/10'],
