@@ -297,6 +297,7 @@ table.pl tr.tong td{background:transparent;border-top:1.5px solid var(--border)}
 table.tq-t{width:100%;border-collapse:collapse;font-size:12px}
 table.tq-t td:first-child b{white-space:nowrap}
 .tq-ten{max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gd-pc.tu{outline:1px dashed currentColor;outline-offset:-1px}
 .xn-1{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tq-nh-m{display:inline-block;width:14px;color:var(--muted);font-size:10px}
 table.tq-nh tr.tq-nh-con td{background:var(--bg2,#f8fafc);font-size:12px}table.tq-nh tr.tq-nh-con td:not(.pos-t){color:var(--text2)}table.tq-nh tr.tq-nh-con td:first-child{padding-left:30px}
@@ -1065,8 +1066,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.270';
-const APP_VERSION='30/10/2026 15:58';
+const APP_SO='1.271';
+const APP_VERSION='30/10/2026 17:05';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2293,7 +2294,8 @@ async function luuTach(id){const x=S.cache.chi.find(c=>c.id===id),o=formData($('
 // 24/10 kế toán (ảnh KiotViet "Nhóm hàng"): "cái nút để sửa và thêm tất cả dropdown" — mọi ô chọn danh mục (loại thu / chi + mục con, tài khoản,
 // bộ phận / đơn vị) mở bảng chọn: tìm kiếm · "+ Tạo mới" · ✏ sửa từng dòng tại chỗ (người có quyền Danh mục). Ô <select> gốc giữ nguyên để form đọc giá trị.
 const DD_TEN={loai_id:'loai',loai_tt:'loai',loai:'loai','pc-loai':'loai','pc-con':'loai',tai_khoan_id:'tai_khoan',tk:'tai_khoan',tk_di_id:'tai_khoan',tk_nhan_id:'tai_khoan','doi-tk':'tai_khoan',bo_phan_id:'don_vi',don_vi_id:'don_vi',dv_cp:'don_vi'};
-const ddBang=s=>s.classList.contains('ld-sel')?'loai':DD_TEN[s.id]||DD_TEN[s.name]||null;
+// 30/10 kế toán (ô Loại NCC hiện tiêu đề "Loại chi"): chỉ nhận ô có lựa chọn là mã danh mục thật — ô cùng tên "loai" khác (loại NCC, loại TK, loại hồ sơ, chi phí lô) giữ ô chọn thường
+const ddBang=s=>{const b=s.classList.contains('ld-sel')?'loai':DD_TEN[s.id]||DD_TEN[s.name]||null;return b&&[...s.options].some(o=>/^\d+$/.test(o.value)&&ddDm(b).some(x=>x.id===+o.value))?b:null};
 const ddSua=()=>can('danh_muc',true)&&!xnDoc(),ddDm=b=>({loai:S.dm.loai,tai_khoan:S.dm.tai_khoan,don_vi:S.dm.don_vi}[b]||[]);
 let DD=null;
 document.addEventListener('mousedown',e=>{const s=e.target.closest&&e.target.closest('select');
@@ -2970,19 +2972,20 @@ const ttPh=x=>x.bang==='thu'?(x.trang_thai==='da_duyet'?pill('Đã thu','ok'):pi
 const nccGhi=()=>can('ncc',true);
 // 29/10 anh (ảnh mẫu): "Công nợ & Thanh toán" → "Khách hàng & NCC": Khách hàng · NCC nội địa · NCC nước ngoài. Trang NCC = 1 bảng (mã · tên · loại · SĐT · phải thu (ứng trước) · phải trả · số dư · trạng thái);
 // bấm 1 NCC → popup: thông tin cơ bản · 4 thẻ · tab Giao dịch / Công nợ / Hồ sơ. Lọc / tìm / lật trang vẽ lại từ dữ liệu đã tải (không gọi máy chủ).
-const NCC_KIEU={noi:{ten:'NCC nội địa',mo:'Danh sách nhà cung cấp trong nước',loc:x=>['noi_dia','dich_vu'].includes(x.loai),loai:'noi_dia'},
-  ngoai:{ten:'NCC nước ngoài',mo:'Nhà cung cấp nước ngoài và bên trung gian',loc:x=>['nuoc_ngoai','trung_gian'].includes(x.loai),loai:'nuoc_ngoai'}};
+const NCC_KIEU={noi:{ten:'NCC nội địa',mo:'Danh sách nhà cung cấp trong nước',loc:x=>['noi_dia','dich_vu'].includes(x.loai),loai:'noi_dia',cac:['noi_dia','dich_vu']},
+  ngoai:{ten:'NCC nước ngoài',mo:'Nhà cung cấp nước ngoài và bên trung gian',loc:x=>['nuoc_ngoai','trung_gian'].includes(x.loai),loai:'nuoc_ngoai',cac:['nuoc_ngoai','trung_gian']}};
 const nccTT=x=>x.hoat_dong===false?['Tạm ngưng','warn']:(x.so_phieu>0||x.so_nhap>0)?['Đang giao dịch','ok']:['Chưa giao dịch',''];
 async function nccDS(){const kk=S.tu+'|'+S.den;let d=S.cache.hs_d;
   if(!d||S.cache.hs_d_k!==kk||Date.now()-(S.cache.hs_d_luc||0)>120000){d=await rpc('kt_ds_ncc',{p_tu:S.tu||null,p_den:S.den||null});S.cache.hs_d=d;S.cache.hs_d_k=kk;S.cache.hs_d_luc=Date.now()}
   return d}
 async function pageNccDS(kieu){const K=NCC_KIEU[kieu],el=$('#page'),f=S.f,k='ncc_'+kieu,g=nccGhi();
   if(!S.cache.hs_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const d=await nccDS(),T=d.ncc.filter(K.loc),tt=f[k+'_tt']||'';
-  const l=T.filter(x=>(!tt||nccTT(x)[0]===tt)&&(!f[k+'_q']||khopTim(f[k+'_q'],[x.ma,x.ten,x.sdt])));
+  const d=await nccDS(),T=d.ncc.filter(K.loc),tt=f[k+'_tt']||'',lo=f[k+'_loai']||'';   // 30/10 kế toán: lọc riêng Dịch vụ (trong nội địa) / Trung gian (trong nước ngoài)
+  const l=T.filter(x=>(!tt||nccTT(x)[0]===tt)&&(!lo||x.loai===lo)&&(!f[k+'_q']||khopTim(f[k+'_q'],[x.ma,x.ten,x.sdt])));
   const moi=f[k+'_moi']||50,[a,b,tr]=phanTrang(k,l.length,moi);
   el.innerHTML=`<div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">${K.ten} <span class="badge">${fmt(T.length)}</span></div><div class="muted" style="font-size:13px;margin-top:2px">${K.mo}</div></div>
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:260px" placeholder="Tìm mã, tên nhà cung cấp..." value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()">
+        <select class="m-in" style="width:160px" onchange="S.f['${k}_loai']=this.value;S.f['${k}_tr']=1;render()"><option value="">Tất cả loại NCC</option>${K.cac.map(v=>`<option value="${v}" ${lo===v?'selected':''}>${NCC_LOAI[v][0]} (${fmt(T.filter(x=>x.loai===v).length)})</option>`).join('')}</select>
         <select class="m-in" style="width:170px" onchange="S.f['${k}_tt']=this.value;S.f['${k}_tr']=1;render()">${[['','Tất cả trạng thái'],['Đang giao dịch','Đang giao dịch'],['Chưa giao dịch','Chưa giao dịch'],['Tạm ngưng','Tạm ngưng']].map(([v,t])=>`<option value="${v}" ${tt===v?'selected':''}>${t}</option>`).join('')}</select>
         ${d.cho?`<button class="m-btn out" title="Phiếu chi đã chi trong kỳ, chưa vào NCC nào" onclick="hsChoMo()">Chờ phân NCC <span class="badge">${fmt(d.cho)}</span></button>`:''}
         ${g?`<button class="m-btn pri" onclick="formNCC(null,'${K.loai}')">+ Thêm NCC</button>`:''}</div></div>
@@ -3068,7 +3071,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
       ${Nt.map(x=>`<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td><td class="c">${pill('Nhập hàng','vio')}</td>
         <td class="gd-nd">${esc(x.nd)||'<span class="muted">—</span>'}</td><td class="nw">${hsLink(x.hs)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
         <td class="num" title="${x.nguon==='gan'?'Theo phiếu chi kế toán đã gắn':'Theo công nợ Kiot'}">${fmt(x.da)}</td><td class="num ${x.con>0?'neg-t':''}">${fmt(x.con)}</td><td class="c">${pill(...x.tt)}</td>
-        <td onclick="event.stopPropagation()">${(()=>{const gn=pb.filter(b=>b.nhap_id===x.x.id).map(b=>L.find(y=>!y.kiot&&y.p.id===b.chi_id)).filter(Boolean);return gn.length?`<div class="gd-pcs">${gn.map(y=>`<span class="gd-pc" title="${esc(y.nd)} · ${fmt(y.tien)}" onclick="nccGDMo(${L.indexOf(y)})">${esc(y.so)}</span>`).join('')}</div>`:'<span class="muted">—</span>'})()}</td>
+        <td onclick="event.stopPropagation()">${(()=>{const gn=pb.filter(b=>b.nhap_id===x.x.id).map(b=>[b,L.find(y=>!y.kiot&&y.p.id===b.chi_id)]).filter(z=>z[1]);return gn.length?`<div class="gd-pcs">${gn.map(([b,y])=>`<span class="gd-pc${b.tao_boi===TU_GAN?' tu':''}" title="${esc(y.nd)} · ${fmt(y.tien)}${b.tao_boi===TU_GAN?' — hệ thống tự gắn '+fmt(b.so_tien)+', cần soát':''}" onclick="nccGDMo(${L.indexOf(y)})">${esc(y.so)}</span>`).join('')}</div>`:'<span class="muted">—</span>'})()}</td>
         ${g?`<td class="c" onclick="event.stopPropagation()"><button class="m-btn sm out" title="Gắn phiếu chi đã trả cho phiếu nhập này" onclick="nccGanMo('nhap',${L.indexOf(x)})">Gắn thanh toán</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?11:10}" class="m-empty">Không có phiếu nhập phù hợp</td></tr>`}
       ${N.length?`<tr class="tong"><td colspan="5">Tổng</td><td class="num">${fmt(sumBy(N,x=>x.tien))}</td><td class="num">${fmt(sumBy(N,x=>x.da))}</td><td class="num">${fmt(sumBy(N,x=>x.con))}</td><td colspan="${g?3:2}"></td></tr>`:''}</table></div>${Npg}</div>`;
     const kB=`<div class="gd-k">${dau('B','Thanh toán & Đề nghị thanh toán',tg?'':'(chưa gắn xong)',P.length,'b',g?`<button class="m-btn sm out" title="Tạo đề nghị chi — lưu xong chọn NCC ở bước 2 của phiếu" onclick="closeModal();formChi()">+ Thêm phiếu chi / DNTT</button>`:'')}
@@ -3076,7 +3079,7 @@ function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGh
       ${Pt.map(x=>{const gp=x.p.bang==='chi'?ganP(x):[],tg2=nccTTGan(x,pb),coGan=x.p.bang==='chi'&&x.p.trang_thai==='da_tt'&&c.ncc.nguon==='kiot';
         return `<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td><td class="c">${pill(...NCC_GD[x.loai])}</td>
         <td class="gd-nd">${esc(x.nd)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
-        <td class="c">${['du','mot','chua'].includes(tg2[2])?pill(...tg2):'<span class="muted">—</span>'}</td>
+        <td class="c">${['du','mot','chua'].includes(tg2[2])?pill(...tg2):'<span class="muted">—</span>'}${x.p.tu_gan||gp.some(b=>b.tao_boi===TU_GAN)?`<div class="muted" style="font-size:10.5px;margin-top:2px" title="${x.p.tu_gan?'Hệ thống tự gắn phiếu này vào NCC (theo tên). ':''}${gp.some(b=>b.tao_boi===TU_GAN)?'Hệ thống tự chia cho phiếu nhập cũ trước. ':''}Sai thì bấm Gắn phiếu nhập để sửa.">tự gắn — cần soát</div>`:''}</td>
         <td class="c">${pill(...x.tt)}</td><td class="c" onclick="event.stopPropagation()">${x.p.so_ct?`<span class="ghim" title="${x.p.so_ct} ảnh / tệp — bấm để xem" onclick="nccGDAnh('${x.p.bang}',${x.p.id})">${IC.ghim}${x.p.so_ct}</span>`:'<span class="muted">—</span>'}</td>
         ${g?`<td class="c" onclick="event.stopPropagation()">${coGan?`<button class="m-btn sm out" title="Gắn phiếu chi này cho phiếu nhập" onclick="nccGanMo('chi',${L.indexOf(x)})">Gắn phiếu nhập</button>`:''}</td>`:''}</tr>`}).join('')||`<tr><td colspan="${g?9:8}" class="m-empty">${tg?'Không có phiếu thanh toán phù hợp':'Không còn phiếu thanh toán chưa gắn — phiếu đã gắn đủ nằm ở cột "Phiếu chi đã gắn" khối A'}</td></tr>`}</table></div>${Ppg}</div>`;
     body=`<div class="m-flt" style="align-items:center">${sel('ncc_gd_ky',[['','Tất cả giao dịch'],['ky','Trong kỳ đang chọn']])}${sel('ncc_gd_han',[['','A: mọi trạng thái'],['trong','Trong hạn'],['sap','Sắp đến hạn'],['qua','Quá hạn'],['xong','Đã thanh toán']])}
@@ -3339,11 +3342,13 @@ async function lnkCpLuu(id){const c=S.cache.lnk,f=$('#flnc'),v=k=>f.querySelecto
 async function lnkCpXoa(id){const c=S.cache.lnk;if(!confirm('Xoá khoản chi phí này khỏi hồ sơ?'))return;
   try{await rpc('kt_xoa_lo_nk_cp',{p_id:id})}catch(e){return alert(e.message)}toast('Đã xoá chi phí');lnkSau(c.lo.id,'cp')}
 // ── THƯ VIỆN TÀI LIỆU NCC (29/10/2026 ảnh mẫu tab Hồ sơ) — thư mục mặc định + thư mục thêm tay; ảnh phiếu chi / thu tự vào "Chứng từ giao dịch"
-const TL_MUC=[['Hợp đồng',['Hợp đồng nguyên tắc','Hợp đồng theo đợt']],['Phụ lục, thỏa thuận'],['Báo giá'],['Hồ sơ pháp lý'],['Chứng từ chung'],['Chứng từ giao dịch'],['Khác']];
-const TL_MAU={'Hợp đồng':'info','Phụ lục, thỏa thuận':'vio','Báo giá':'ok','Hồ sơ pháp lý':'','Chứng từ chung':'warn','Chứng từ giao dịch':'teal','Khác':''},TL_CO_DINH=['Chứng từ giao dịch','Khác'];
+// 30/10 kế toán: "cố định lại cho tất cả NCC: 1 Hồ sơ pháp lý (ĐKKD, CMT…) · 2 Hợp đồng · 3 Báo giá · 4 Chứng từ giao dịch · 5 Khác" — 5 thư mục cố định (không sửa / xoá);
+// thư mục thêm tay (+ Thư mục) nằm giữa Báo giá và Chứng từ giao dịch, sửa / xoá được
+const TL_DAU=['Hồ sơ pháp lý','Hợp đồng','Báo giá'],TL_CUOI=['Chứng từ giao dịch','Khác'],TL_CO_DINH=[...TL_DAU,...TL_CUOI];
+const TL_MAU={'Hồ sơ pháp lý':'vio','Hợp đồng':'info','Báo giá':'ok','Chứng từ giao dịch':'teal','Khác':''};
 // 29/10 anh: "danh mục hồ sơ cho tự modified, tự thêm tự xoá tự sửa" — danh mục dùng chung mọi NCC (kt_cai_dat tl_danh_muc); chưa có thì dùng bộ mặc định
-const tlDM=c=>{const ds=(Array.isArray(c.dm)?c.dm:TL_MUC.map(([ten,con])=>({ten,con:con||[]}))).filter(n=>n&&n.ten&&!TL_CO_DINH.includes(n.ten)).map(n=>({ten:n.ten,con:(n.con||[]).filter(Boolean)}));
-  return [...ds,...TL_CO_DINH.map(ten=>({ten,con:[],co_dinh:1}))]};
+const tlDM=c=>{const ds=(Array.isArray(c.dm)?c.dm:[]).filter(n=>n&&n.ten&&!TL_CO_DINH.includes(n.ten)).map(n=>({ten:n.ten,con:(n.con||[]).filter(Boolean)})),cd=ten=>({ten,con:[],co_dinh:1});
+  return [...TL_DAU.map(cd),...ds,...TL_CUOI.map(cd)]};
 const tlMau=(goc,i)=>TL_MAU[goc]??['info','vio','ok','warn','teal',''][i%6];
 const IC_TL={muc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h7l2 2h9v12H3z"/></svg>',tep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM9 12h6M9 16h6"/></svg>'};
 function nccTL(c){const tl=c.tl||{},ph=Object.fromEntries(c.phieu.map(p=>[p.bang+p.id,p])),cay=tlDM(c);
@@ -3358,7 +3363,7 @@ async function nccTMLuu(ds,doi,chon){const c=S.cache.ncc_ct;
 const tlTrung=(ds,ten)=>ds.some(n=>n.ten===ten||n.con.includes(ten));
 async function nccTMThem(cha){const c=S.cache.ncc_ct,ds=tlDM(c);const ten=(prompt(cha?`Tên thư mục con trong "${cha}":`:'Tên thư mục mới (dùng chung mọi NCC):')||'').trim();if(!ten)return;
   if(tlTrung(ds,ten))return alert('Đã có thư mục "'+ten+'"');
-  if(cha){const n=ds.find(z=>z.ten===cha);if(!n)return;n.con.push(ten)}else ds.splice(ds.length-TL_CO_DINH.length,0,{ten,con:[]});
+  if(cha){const n=ds.find(z=>z.ten===cha);if(!n)return;n.con.push(ten)}else ds.splice(ds.length-TL_CUOI.length,0,{ten,con:[]});
   if(await nccTMLuu(ds,[],ten))toast('Đã thêm thư mục "'+ten+'"')}
 async function nccTMSua(cu){const c=S.cache.ncc_ct,ds=tlDM(c);const moi=(prompt('Đổi tên thư mục "'+cu+'" thành:',cu)||'').trim();if(!moi||moi===cu)return;
   if(tlTrung(ds,moi)||TL_CO_DINH.includes(moi))return alert('Đã có thư mục "'+moi+'"');
@@ -3449,6 +3454,8 @@ async function nccGDMo(i,tab){const L=S.cache.ncc_gd_all||[],x=L[i];if(!x)return
   if(t==='kh'&&!x.kiot&&x.p.so_ct){const ds=c.ct.filter(z=>z.bang===x.p.bang&&+z.dong_id===x.p.id);
     try{const r=await ctFn({viec:'xem',ids:ds.map(z=>z.id)});const u=Object.fromEntries((r.ds||[]).map(z=>[z.id,z.url]));S.cache['ct_'+x.p.bang+x.p.id]=ds.map(z=>({...z,url:u[z.id]}));
       const el=$('#gd-ct');if(el)el.innerHTML=ctLuoi(x.p.bang,x.p.id,ds,u,false,'',()=>true)}catch(e){const el=$('#gd-ct');if(el)el.innerHTML=`<div class="muted" style="font-size:12px">${esc(e.message)}</div>`}}}
+// 30/10 kế toán: "cho app tự kết nối thanh toán, sai chị sửa sau" — lịch kt-ncc-tu-gan mỗi giờ (supabase-schema-kt-ncc-tu-gan.sql); dòng hệ thống tự gắn hiện "tự gắn — cần soát"
+const TU_GAN='Hệ thống (tự gắn)';
 function nccTTGan(x,pb){if(x.loai==='dn')return [x.tt[0],'warn','cho'];if(x.p.bang!=='chi'||x.loai==='thu')return [x.tt[0],x.tt[1],'khac'];
   const s=sumBy((pb||[]).filter(b=>b.chi_id===x.p.id),b=>+b.so_tien);return s>=x.tien-1?['Đã phân bổ','ok','du']:s>0?['Đã phân bổ một phần','warn','mot']:['Chưa phân bổ','','chua']}
 // popup gắn: loai 'nhap' = chọn các phiếu chi trả cho phiếu nhập này · 'chi' = chọn các phiếu nhập mà phiếu chi này trả (mỗi dòng 1 số tiền)
@@ -5859,7 +5866,7 @@ const LG_NV=[['chi_so','Chỉ số (cách tính)'],['chung','Dữ liệu chung']
 const LOGIC2=[
  ['chung','Cửa sổ chi tiết','Mọi phiếu trong Thu chi & Ngân quỹ (chi, thu, điều chuyển, tạm ứng, vay) + công nợ, khoá kỳ mở CỬA SỔ LỚN giữa màn hình, cùng 1 kiểu.','Có khung Hoạt động (lịch sử + bình luận báo chuông) và nút Xuất phiếu Word (thu: người nộp ký; điều chuyển: người thực hiện; tạm ứng: người nhận ký).','19/10'],
  ['chi_so','Tổng quan · Doanh thu','Tổng tiền hoá đơn Kiot trạng thái Hoàn thành + Đang xử lý (đang giao), theo NGÀY HOÁ ĐƠN trong kỳ, mọi khách, mọi kênh.','Giống màn Tổng quan Kiot. Đơn đặt chưa giao chưa tính. Dòng nhỏ: tiền trả hàng trong kỳ.','19/10'],
- ['chi_so','Tổng quan · Doanh thu theo nhóm hàng','Dòng hàng hoá đơn Kiot (Hoàn thành + Đang xử lý) gom về nhóm cha; doanh thu dòng quy về tổng hoá đơn (đã trừ giảm giá hoá đơn). Mặc định 6 nhóm lớn + Khác; bấm Khác xem đủ. Bấm 1 nhóm hoặc Tổng cộng: tách Online / Offline; bấm Online / Offline (xem đơn): popup các hoá đơn cấu thành doanh số — ngày, khách, cơ sở, nguồn, phần doanh thu của nhóm trong hoá đơn; có bảng Theo nguồn, chuyển tab Tất cả / Online / Offline, bấm hoá đơn xem chi tiết, xuất Excel.','Online / offline theo nguồn đơn Kiot = kênh bán trên hoá đơn (trống thì lấy kênh đơn đặt hàng gắn). Bán trực tiếp / Khác / trống = offline; Facebook, Tiktok, Website, Shopee, Nến Bơ… = online — cùng luật P&L. Tỷ trọng dòng Online / Offline = % trong nhóm đó.','30/10'],
+ ['chi_so','Tổng quan · Doanh thu theo nhóm hàng','Dòng hàng hoá đơn Kiot (Hoàn thành + Đang xử lý) gom về nhóm cha; doanh thu dòng quy về tổng hoá đơn (đã trừ giảm giá hoá đơn). Mặc định 6 nhóm lớn + Khác; bấm Khác xem đủ. Bấm 1 nhóm hoặc Tổng cộng: tách Online / Offline; bấm Online / Offline (xem đơn): popup các hoá đơn cấu thành doanh số — ngày, khách, cơ sở, nguồn, phần doanh thu của nhóm trong hoá đơn; có bảng Theo nguồn, chuyển tab Tất cả / Online / Offline, bấm hoá đơn xem chi tiết, xuất Excel.','Online / offline theo nguồn đơn Kiot = kênh bán trên hoá đơn (trống thì lấy kênh đơn đặt hàng gắn). Bán trực tiếp / Khác / Chùa Vẻn / trống = offline; Facebook, Tiktok, Website, Shopee, Nến Bơ… = online — cùng luật P&L. Tỷ trọng dòng Online / Offline = % trong nhóm đó.','30/10'],
  ['chi_so','Tổng quan · Doanh thu thuần','Doanh thu − tiền khách trả hàng trong kỳ (phiếu trả hàng Kiot).','Khớp \"Doanh thu thuần\" Kiot. Tỷ lệ trả hàng = trả hàng ÷ doanh thu.','19/10'],
  ['chi_so','Tổng quan · Giá vốn hàng bán','Giá vốn Kiot của hàng đã bán − giá vốn hàng trả lại (theo tỷ lệ hoá đơn gốc).','Tỷ lệ giá vốn = giá vốn ÷ doanh thu thuần.','19/10'],
  ['chi_so','Tổng quan · Lợi nhuận gộp','Doanh thu thuần − giá vốn.','Biên lợi nhuận gộp = lợi nhuận gộp ÷ doanh thu thuần.','19/10'],
@@ -6011,6 +6018,9 @@ const LOGIC2=[
  ['cong_no','Hạn công nợ','Đến hạn / quá hạn chỉ xét NỢ THẬT. COD chưa thu hồi (tiền đơn vị vận chuyển đang giữ) và hàng khách chưa lấy KHÔNG tính là nợ đến hạn.','Khách chỉ còn COD / chưa lấy hàng → trạng thái "Chờ thu COD / lấy hàng"; chỉ còn hàng sẽ trả → "Chờ trả hàng" (28/10). Thẻ Tổng quan "Khách hàng quá hạn" = số khách có nợ thật quá hạn, tiền = nợ thật quá hạn.','19/10'],
  ['cong_no','Công nợ khách','Dùng số công nợ Kiot: dương = khách còn nợ, âm = khách trả trước.','Tự cập nhật 15 phút / lần.','08/10'],
  ['cong_no','Hồ sơ nhà cung cấp','Khách hàng & NCC → NCC nội địa / NCC nước ngoài (bảng: phải thu (ứng trước) · phải trả · số dư · trạng thái); bấm 1 NCC → popup: thông tin cơ bản · 4 thẻ · Giao dịch / Công nợ / Hồ sơ. NCC → nhiều hồ sơ gốc (hợp đồng / đơn mua hàng / kỳ đối soát) → phiếu chi / thu từng đợt. Nội địa = nội địa + dịch vụ; Nước ngoài = nước ngoài + trung gian. Giao dịch = phiếu nhập Kiot + phiếu chi / thu, số dư sau giao dịch tính lùi từ số dư hiện tại. Công nợ = phiếu nhập còn nợ (chia công nợ Kiot cho phiếu mới nhất) + hạn nợ. Hồ sơ = lưu trữ chung + từng hồ sơ, ảnh ngay dưới phiếu.','Anh 29/10. Phải trả / phải thu: NCC Kiot theo công nợ Kiot; NCC tạo trên app theo hồ sơ (giá trị − đã trả; trả vượt = ứng trước). Kế toán / giám đốc sửa được mọi thông tin NCC (sửa tay thì Kiot không ghi đè).','29/10'],
+ ['cong_no','NCC · tự gắn thanh toán','Mỗi giờ (phút 25) hệ thống tự: (1) gắn phiếu chi đã chi loại Chi thanh toán tiền hàng / Chi đặt cọc chưa vào NCC nào, khi gợi ý (tên người nhận / nội dung có tên NCC) chỉ ra đúng 1 NCC; (2) chia phiếu chi của NCC Kiot cho phiếu nhập cũ trước, mỗi phiếu nhập tối đa phần đã trả theo công nợ Kiot (nợ còn lại tính vào phiếu nhập mới nhất), chỉ phiếu nhập có ngày ≤ ngày chi (phiếu cọc: mọi ngày).','Kế toán 30/10: "cho app tự kết nối thanh toán, sai chị sửa sau". Dòng tự gắn hiện "tự gắn — cần soát" (khối B) / mã phiếu viền đứt (khối A). Kế toán gắn / bỏ gắn tay 1 phiếu → hệ thống không đụng lại phiếu đó. Bỏ phiếu khỏi NCC → phần tự chia tự gỡ.','30/10'],
+ ['cong_no','NCC · đồng bộ thông tin từ Kiot','NCC Kiot: mã, tên, số điện thoại, địa chỉ theo Kiot (kéo 15 phút / lần — sửa trên Kiot thì app tự theo). NCC kế toán đã sửa tay trên app thì giữ bản app.','Kế toán 30/10. Trước 30/10 chỉ theo khi đổi mã / tên, chưa kéo địa chỉ.','30/10'],
+ ['cong_no','NCC · thư mục hồ sơ','5 thư mục cố định mọi NCC: Hồ sơ pháp lý (ĐKKD, CMT…) · Hợp đồng · Báo giá · Chứng từ giao dịch (ảnh phiếu chi / thu tự vào) · Khác. + Thư mục thêm được thư mục riêng (nằm giữa Báo giá và Chứng từ giao dịch, sửa / xoá được).','Kế toán 30/10 "cố định lại cho tất cả NCC".','30/10'],
  ['cong_no','Hồ sơ nhập khẩu','Khách hàng & NCC → Hồ sơ nhập khẩu: 1 hồ sơ = 1 lô / container (mã tự đặt NK-năm-số), tiến trình Đặt hàng → Đang sản xuất → Đang vận chuyển → Đang thông quan → Đã về kho → Hoàn tất. Đơn hàng (PO) nhiều NCC trong 1 container: giá trị nguyên tệ × tỷ giá (đơn → hồ sơ), hàng hoá nhập tay / đọc Excel, nối phiếu nhập Kiot khi hàng về. Chi phí (vận chuyển, thuế, hải quan…) nối phiếu chi nếu có; VAT nhập khẩu mặc định không tính giá vốn. Phân bổ giá vốn = chi phí tính giá vốn chia theo giá trị hàng (hoặc số lượng); giá vốn / đv = (giá trị hàng + chi phí phân bổ) / SL. Đơn chưa có danh sách hàng mà đã nối phiếu nhập Kiot: mượn mặt hàng + tỷ lệ của Kiot, có giá trị PO thì chia giá trị PO.','Anh 30/10 (sơ đồ Luồng xử lý tổng quát). Quyền theo trang Nhà cung cấp. Chỉ tính để tra cứu / xuất Excel — app KHÔNG ghi giá vốn vào Kiot; cột Chênh / đv so giá nhập Kiot để soát.','30/10'],
  ['cong_no','Phân phiếu vào NCC (bước 2)','Cửa sổ phiếu chi → Bước 2, cùng cột Đi tiền từ tài khoản: ô Nhà cung cấp + Bộ hồ sơ (phiếu thu tạo trên app: bước 2) — kế toán chọn NCC + hồ sơ (hoặc tạo hồ sơ mới), hoặc đánh dấu Không thuộc NCC. Gợi ý NCC theo tên người nhận / nội dung có tên NCC; trang Hồ sơ NCC có tab Chờ phân hồ sơ (phiếu chi đã chi trong kỳ chưa vào NCC) gán hàng loạt theo gợi ý.','Tick "Ghi nhớ số TK" → phiếu chi sau chuyển vào số TK đó tự vào NCC (nhãn "theo số TK"). Không áp tạm ứng / hoàn ứng / chi cá nhân / phiếu từ chối.','29/10'],
  ['cong_no','Công nợ khách — 4 phần','Nợ khách chia ngược cho hoá đơn mới nhất; phần còn nợ của MỖI hoá đơn chia theo số tiền: Sẽ trả hàng → COD chưa thu hồi → Chưa lấy hàng → còn lại = Nợ thật. Sẽ trả hàng + Nợ thật… lọc / tổng riêng; sẽ trả hàng = không thu được tiền.','Kế toán 28/10 (PA3). Kế toán sửa tay từng hoá đơn (✏ Phân loại, trả 1 phần được; "Theo ghi chú Kiot" để bỏ số tay).','28/10'],
@@ -6032,7 +6042,7 @@ const LOGIC2=[
  ['thue','Ngày hoá đơn','Ngày HĐ ngoài 01/01/2025 → hôm nay coi là gõ sai, liệt kê ở Đối soát lỗi.','','09/10'],
  // ── BÁO CÁO & CHỐT KỲ
  ['bao_cao','P&L','Doanh thu = hoá đơn Kiot Hoàn thành + Đang xử lý (đang giao) — như Kiot. Doanh thu thuần = doanh thu − trả hàng.','Khớp màn Tổng quan Kiot (đã đối chiếu T9). Trước 16/10 app bỏ hoá đơn Đang xử lý.','16/10'],
- ['bao_cao','Kênh bán','Theo ô kênh bán trên hoá đơn Kiot. Không ghi kênh = Bán trực tiếp tại cửa hàng; "Facebook" chung (gắn thiếu thương hiệu) → theo chi nhánh: Facebook Chánh Tâm / Hiền Thuỷ / Shidai; "Siêu thị Phật Giáo Hiền Thuỷ" = Shopee Hiền Thuỷ.','Chỉ đổi tên trong báo cáo, dữ liệu Kiot giữ nguyên. "Khác" = nhân viên tự chọn Khác trên Kiot.','16/10'],
+ ['bao_cao','Kênh bán','Theo ô kênh bán trên hoá đơn Kiot. Không ghi kênh = Bán trực tiếp tại cửa hàng; "Facebook" chung (gắn thiếu thương hiệu) → theo chi nhánh: Facebook Chánh Tâm / Hiền Thuỷ / Shidai; "Siêu thị Phật Giáo Hiền Thuỷ" = Shopee Hiền Thuỷ.','Chỉ đổi tên trong báo cáo, dữ liệu Kiot giữ nguyên. "Khác" = nhân viên tự chọn Khác trên Kiot. Online / offline (Tổng quan, P&L): offline = trực tiếp, Khác, không ghi kênh, Chùa Vẻn (anh 30/10: không phải fanpage → offline); còn lại (fanpage Facebook, Tiktok, Website, Shopee…) = online.','16/10 · 30/10'],
  ['bao_cao','P&L','Giá vốn = giá vốn Kiot lúc kéo về − giá vốn hàng trả (theo tỷ lệ HĐ gốc).','Gần đúng; Kiot không trả giá vốn tại lúc bán.','14/10'],
  ['bao_cao','P&L / KQKD','Chi phí HẠCH TOÁN = phiếu đã xác nhận (chờ chi + đã chi), trừ tạm ứng; ghi vào tháng phân bổ > tháng hạch toán ghi tay > tháng sử dụng DV (thiếu: ngày đề nghị).','Kế toán góp ý 16/10: không lấy mọi phiếu chi trả trong tháng làm chi phí tháng. Phiếu chưa gán loại chi chưa vào được. Áp dụng Tổng quan, P&L, ngân sách, theo cơ sở.','16/10'],
  ['bao_cao','Dòng tiền vs KQKD','Dòng tiền / Sổ quỹ = tiền thật ra vào tài khoản theo ngày chi / thu. KQKD = chi phí hạch toán. Hai báo cáo tách riêng.','Cùng 1 phiếu: chi phí tháng sử dụng, dòng tiền tháng trả.','16/10'],

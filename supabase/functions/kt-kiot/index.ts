@@ -92,7 +92,8 @@ const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, s
     doi: x => ({ id: x.id, ma: x.code, ten: x.name, sdt: x.contactNumber ?? null, loai: x.type ?? null, chi_nhanh_id: x.branchId ?? null,
       cong_no: n0(x.debt), tong_mua: n0(x.totalInvoiced), tong_mua_tru_tra: n0(x.totalRevenue), tao_kiot: vn(x.createdDate), sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
   ncc: { bang: 'kt_kiot_ncc', duong: 'suppliers', tham: {},
-    doi: x => ({ id: x.id, ma: x.code, ten: x.name, sdt: x.contactNumber ?? null, hoat_dong: x.isActive ?? true, cong_no: n0(x.debt),
+    doi: x => ({ id: x.id, ma: x.code, ten: x.name, sdt: x.contactNumber ?? null, dia_chi: x.address ?? null, hoat_dong: x.isActive ?? true, cong_no: n0(x.debt),   // 30/10: + địa chỉ (kế toán: sửa NCC trên Kiot app tự theo)
+   
       tong_nhap: n0(x.totalInvoiced), tong_nhap_tru_tra: n0(x.totalInvoicedWithoutReturn), tao_kiot: vn(x.createdDate), sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
   hang: { bang: 'kt_kiot_hang', duong: 'products', tham: { includeInventory: 'true' },
     doi: x => { const ton = (x.inventories || []).map((i: any) => ({ cn: i.branchName, ton: i.onHand, gia_von: n0(i.cost) }));
