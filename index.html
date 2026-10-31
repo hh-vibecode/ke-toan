@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.278';
-const APP_VERSION='31/10/2026 20:17';
+const APP_SO='1.279';
+const APP_VERSION='31/10/2026 20:21';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4812,8 +4812,8 @@ function hhTinh(d,ms){
   const NG={},ng=(ten,bp,vt)=>{const o=NG[ten]=NG[ten]||{ten,bp,vt:new Set(),sales:0,quy:0,dong:0,giao:0,cong:{},chiaQuy:[],saleKy:[],don:{}};if(vt)o.vt.add(vt);if(bp&&(!o.bp||o.bp==='khac'))o.bp=bp;return o};
   const thamGia=(o,h,vai,tien)=>{const x=o.don[h.id]=o.don[h.id]||{h,vai:[],tien:0};if(!x.vai.includes(vai))x.vai.push(vai);x.tien+=tien||0};
   // A. sales online — chính sách riêng; hoa hồng chia về từng đơn theo tỷ trọng thực thu (để tra đơn)
-  // 31/10 anh: "tao có phải sale đâu" → người cs 'online' (hỗ trợ vận hành) KHÔNG áp tính trước tiền cọc: bỏ dòng cọc, hoá đơn tính đủ thực thu (thu_dg)
-  const SA=[];ms.forEach(m=>CH.nguoi.forEach((p,i)=>{const onl=p.cs==='online',H=HD.filter(h=>h.thang===m&&(onl?h.on&&!h.la_coc:kiotCua[h.nv]===i)).map(h=>onl&&h.coc?{...h,thu:h.thu_dg,coc:0}:h);if(!H.length)return;const dt=sumBy(H,h=>h.dt),thu=sumBy(H,h=>h.thu);
+  // 31/10 anh: "tao có tính cọc mà" → người cs 'online' (hỗ trợ vận hành) cũng tính cọc như sales: dòng cọc online + hoá đơn đã trừ cọc
+  const SA=[];ms.forEach(m=>CH.nguoi.forEach((p,i)=>{const onl=p.cs==='online',H=HD.filter(h=>h.thang===m&&(onl?h.on:kiotCua[h.nv]===i));if(!H.length)return;const dt=sumBy(H,h=>h.dt),thu=sumBy(H,h=>h.thu);
     const ht=p.ho_tro&&p.ho_tro.tu&&m>=p.ho_tro.tu.slice(0,7)&&m<(p.ho_tro.den||'9999').slice(0,7),moc=ht?+p.ho_tro.moc||600e6:600e6;
     const [hh,cach]=onl?hhTl(thu,+p.tl||0):p.cs==='si'?hhSi(thu,moc):hhLe(thu),x={m,p,dt,thu,hh,moc,ht,cach:cach||'—',nv:onl?[]:[...new Set(H.map(h=>h.nv))],H};SA.push(x);
     const o=onl?ng(p.ten,'vh',p.vt||'Hỗ trợ vận hành'):ng(p.ten,'sales','Sales online');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,onl?'Đơn online':'Bán',thu>0?hh*h.thu/thu:0))}));
