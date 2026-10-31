@@ -26,8 +26,19 @@ const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers
 const MAI = () => new Date(Date.now() + 31 * 3600e3).toISOString().slice(0, 10);   // ngày mai giờ VN — Kiot cần đủ cặp từ / đến ngày
 let tok = '';
 
+// 31/10/2026: đứt mạng tới Kiot ("http2 error: connection error", ~2% lần chạy — 32 / 1.445 trong 15 ngày) làm fetch NÉM lỗi → trước đây
+// dừng cả lần kéo (lần sau 15 phút tự kéo bù). Giờ mọi lệnh gọi Kiot thử lại tối đa 4 lần, cả lỗi mạng lẫn 429 / 5xx. — Monsieur Claude
+async function kf(url: string, init?: RequestInit): Promise<Response> {
+  for (let lan = 0; ; lan++) {
+    try {
+      const r = await fetch(url, init);
+      if ((r.status !== 429 && r.status < 500) || lan === 3) return r;
+    } catch (e) { if (lan === 3) throw e; }
+    await new Promise(s => setTimeout(s, 1500 * (lan + 1)));
+  }
+}
 async function kiotToken() {
-  const r = await fetch('https://id.kiotviet.vn/connect/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  const r = await kf('https://id.kiotviet.vn/connect/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ scopes: 'PublicApi.Access', grant_type: 'client_credentials',
       client_id: Deno.env.get('KT_KIOT_CLIENT_ID')!, client_secret: Deno.env.get('KT_KIOT_CLIENT_SECRET')! }) });
   if (!r.ok) throw new Error('Kiot token lỗi ' + r.status);
@@ -37,27 +48,18 @@ async function kiotHet(duong: string, tham: Record<string, string>) {
   const all: any[] = []; let off = 0, total = Infinity;
   while (off < total) {
     const qs = new URLSearchParams({ ...tham, pageSize: '100', currentItem: String(off) });
-    let r: Response | null = null;
-    for (let lan = 0; lan < 4; lan++) {
-      r = await fetch(`https://public.kiotapi.com/${duong}?${qs}`, { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
-      if (r.status !== 429 && r.status < 500) break;
-      await new Promise(s => setTimeout(s, 1500 * (lan + 1)));
-    }
-    if (!r || !r.ok) throw new Error(`Kiot ${duong} lỗi ${r && r.status}`);
+    const r = await kf(`https://public.kiotapi.com/${duong}?${qs}`, { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
+    if (!r.ok) throw new Error(`Kiot ${duong} lỗi ${r.status}`);
     const j = await r.json(); total = j.total || 0; const d = j.data || [];
     all.push(...d); if (!d.length) break; off += d.length;
   }
   return all;
 }
 async function kiotMot(duong: string) {   // 1 bản ghi (vd products/{id}); 404 → null
-  for (let lan = 0; lan < 4; lan++) {
-    const r = await fetch(`https://public.kiotapi.com/${duong}`, { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
-    if (r.status === 404) return null;
-    if (r.ok) return await r.json();
-    if (r.status !== 429 && r.status < 500) throw new Error(`Kiot ${duong} lỗi ${r.status}`);
-    await new Promise(s => setTimeout(s, 1500 * (lan + 1)));
-  }
-  throw new Error(`Kiot ${duong} lỗi lặp lại`);
+  const r = await kf(`https://public.kiotapi.com/${duong}`, { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
+  if (r.status === 404) return null;
+  if (r.ok) return await r.json();
+  throw new Error(`Kiot ${duong} lỗi ${r.status}`);
 }
 const sbH = { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/json' };
 const sb = (duong: string, body: unknown, prefer = 'return=minimal') => fetch(SB + '/rest/v1/' + duong, { method: 'POST', headers: { ...sbH, Prefer: prefer }, body: JSON.stringify(body) });
@@ -73,7 +75,7 @@ async function ghi(bang: string, rows0: any[]) {
 async function danhMuc() {
   const nhom = await kiotHet('categories', { hierachicalData: 'false' });
   await ghi('kt_kiot_nhom', nhom.map((c: any) => ({ id: c.categoryId, ten: c.categoryName, cha_id: c.parentId ?? null, sua_kiot: vn(c.modifiedDate ?? c.createdDate), keo_luc: new Date().toISOString() })));
-  const r = await fetch('https://public.kiotapi.com/salechannel', { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
+  const r = await kf('https://public.kiotapi.com/salechannel', { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
   const kenh = r.ok ? ((await r.json()).data || []) : [];
   if (kenh.length) await ghi('kt_kiot_kenh', kenh.map((k: any) => ({ id: k.id, ten: k.name, keo_luc: new Date().toISOString() })));
   return { nhom: nhom.length, kenh: kenh.length };
