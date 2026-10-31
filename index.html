@@ -1066,8 +1066,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.271';
-const APP_VERSION='30/10/2026 17:05';
+const APP_SO='1.272';
+const APP_VERSION='31/10/2026 09:46';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4764,6 +4764,18 @@ async function pageBCCs(){const el=$('#page');el.innerHTML='<div class="m-empty"
 //   (Hiền Thủy biên cao 2% / biên thấp 0,8%; Chánh Tâm 2%); đơn sales online cửa hàng xử lý → quỹ vận hành 1,5%. Chia: QL 40% · GS 25% · NV 35% (Chánh Tâm QL 40% · NV 60%).
 // • Mọi số tính trên THỰC THU (khách đã trả trên hoá đơn, trừ tiền hoàn khi trả hàng). — Monsieur Claude
 const HH_CS={le:'Sales online lẻ (CS-VH04-16)',si:'Sales online mảng buôn (CS-VH04-13)'};
+// 31/10 anh: "thêm Nguyễn Hoàng Hải, nhận 1% từ doanh thu online thực tế trong tháng" + "vị trí hỗ trợ vận hành" → người cs 'online' (tl = tỷ lệ) hưởng
+// thực thu MỌI hoá đơn online trong tháng (cờ on = kênh bán Kiot, cùng luật Tổng quan / P&L), trả hàng trừ theo đơn gốc
+const hhCsTen=p=>p.cs==='online'?(p.vt||'Hỗ trợ vận hành')+' — '+((+p.tl||0)*100).toLocaleString('vi-VN')+'% thực thu đơn online':HH_CS[p.cs]||p.cs;
+// 31/10 anh: "hoa hồng thêm bộ lọc theo người và theo cửa hàng" → lọc chung cho thẻ, 3 tab và file xuất từ trang
+const hhBP=()=>[['HT','Cửa hàng '+csTen3('HT')],['CT','Cửa hàng '+csTen3('CT')],['sales','Sales online'],['vh','Hỗ trợ vận hành'],['kho','Kho (đóng gói / giao hàng)'],['khac','Đóng gói / giao hàng (nhân sự khác)']];
+const hhLoc=(K,bp,ng)=>({NGs:K.NGs.filter(o=>(!bp||o.bp===bp)&&(!ng||o.ten===ng)),SA:K.SA.filter(x=>(!bp||bp===(x.p.cs==='online'?'vh':'sales'))&&(!ng||x.p.ten===ng)),
+  CHs:K.CHs.filter(x=>(!bp||bp===x.cs)&&(!ng||x.vt.some(r=>r.ng.some(n=>n.n===ng))))});
+function hhLocBar(K){const bp=S.f.hh_bp||'',ng=S.f.hh_ng||'',co=new Set(K.NGs.map(o=>o.bp)),ten=K.NGs.filter(o=>!bp||o.bp===bp).map(o=>o.ten).sort((a,b)=>a.localeCompare(b,'vi'));
+  return `<div class="m-flt" style="margin:2px 0 10px"><div class="m-f"><span>Cửa hàng / bộ phận</span><select class="m-in" style="min-width:230px" onchange="S.f.hh_bp=this.value;S.f.hh_ng='';render()"><option value="">Tất cả</option>${hhBP().filter(([k])=>co.has(k)||k===bp).map(([k,t])=>`<option value="${k}" ${k===bp?'selected':''}>${esc(t)}</option>`).join('')}</select></div>
+    <div class="m-f"><span>Nhân sự</span><select class="m-in" style="min-width:230px" onchange="S.f.hh_ng=this.value;render()"><option value="">Tất cả nhân sự</option>${[...new Set([...ten,...(ng?[ng]:[])])].map(n=>`<option value="${esc(n)}" ${n===ng?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
+    ${bp||ng?`<button class="m-btn out" style="height:36px" onclick="S.f.hh_bp='';S.f.hh_ng='';render()">Bỏ lọc</button>`:''}</div>`}
+const hhTl=(x,t)=>[Math.round(x*t),fmtTr(x)+' × '+(t*100).toLocaleString('vi-VN')+'%'];
 const HH_NHOM={cao:'Biên cao — 2%',thap:'Biên thấp — 0,8%',khong:'Không tính'};
 const hhLe=x=>{let r=0,c=[];for(const [tu,den,t] of [[0,150e6,.015],[150e6,200e6,.018],[200e6,300e6,.02],[300e6,Infinity,.025]]){const p=Math.max(0,Math.min(x,den)-tu);if(p>0){r+=p*t;c.push(fmtTr(p)+' × '+(t*100).toLocaleString('vi-VN')+'%')}}return [Math.round(r),c.join(' + ')]};
 const hhSi=(x,moc)=>{if(x<moc)return [0,'chưa đạt mốc '+fmtTr(moc)];let r=0,c=[];for(const [tu,den,t] of [[0,600e6,.015],[600e6,1.2e9,.02],[1.2e9,Infinity,.025]]){const p=Math.max(0,Math.min(x,den)-tu);if(p>0){r+=p*t;c.push(fmtTr(p)+' × '+(t*100).toLocaleString('vi-VN')+'%')}}return [Math.round(r),c.join(' + ')]};
@@ -4771,7 +4783,7 @@ const fmtTr=v=>v>=1e9?(Math.round(v/1e7)/100).toLocaleString('vi-VN')+' tỷ':(M
 // 28/10 anh: "sắp xếp lại trang hoa hồng, nhiều số mà bừa quá — nhóm lại, chia tab nhỏ" + "bên trong các tổng hợp truy xuất được các đơn — sale phản hồi thiếu thì check lại đủ chưa"
 // + "click tên người → popup lịch sử các đơn họ tham gia trong kỳ, tối đa 15 đơn" + "tham khảo app MKT (lịch sử đơn Kiot)" →
 // MỌI số tính từ danh sách hoá đơn (kt_bc_hoa_hong.hd, có dòng âm = trả hàng) nên cộng các đơn = số tổng; mã đơn bấm mở Kiot; kèm mặt hàng.
-const HH_TABS=[['ns','Theo nhân sự'],['sales','Sales online'],['ch','Cửa hàng offline']];   // 28/10 anh: bỏ tab Cài đặt (chức danh / người hưởng / phân nhóm sửa qua Claude)
+const HH_TABS=[['ns','Theo nhân sự'],['sales','Online'],['ch','Cửa hàng offline']];   // 28/10 anh: bỏ tab Cài đặt (chức danh / người hưởng / phân nhóm sửa qua Claude)
 const KIOT_MAN='https://sieuthidotho285.kiotviet.vn/man/#/';
 const hhKiot=h=>h.la_tra?`<a href="${KIOT_MAN}Returns?Code=${encodeURIComponent(h.ma_tra||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma_tra||'Trả hàng')} ↗</a><div class="muted" style="font-size:11px">trả của ${esc(h.ma||'')}</div>`
   :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>`;
@@ -4785,10 +4797,10 @@ function hhTinh(d,ms){
   const NG={},ng=(ten,bp,vt)=>{const o=NG[ten]=NG[ten]||{ten,bp,vt:new Set(),sales:0,quy:0,dong:0,giao:0,cong:{},chiaQuy:[],saleKy:[],don:{}};if(vt)o.vt.add(vt);if(bp&&(!o.bp||o.bp==='khac'))o.bp=bp;return o};
   const thamGia=(o,h,vai,tien)=>{const x=o.don[h.id]=o.don[h.id]||{h,vai:[],tien:0};if(!x.vai.includes(vai))x.vai.push(vai);x.tien+=tien||0};
   // A. sales online — chính sách riêng; hoa hồng chia về từng đơn theo tỷ trọng thực thu (để tra đơn)
-  const SA=[];ms.forEach(m=>CH.nguoi.forEach((p,i)=>{const H=HD.filter(h=>h.thang===m&&kiotCua[h.nv]===i);if(!H.length)return;const dt=sumBy(H,h=>h.dt),thu=sumBy(H,h=>h.thu);
+  const SA=[];ms.forEach(m=>CH.nguoi.forEach((p,i)=>{const onl=p.cs==='online',H=HD.filter(h=>h.thang===m&&(onl?h.on:kiotCua[h.nv]===i));if(!H.length)return;const dt=sumBy(H,h=>h.dt),thu=sumBy(H,h=>h.thu);
     const ht=p.ho_tro&&p.ho_tro.tu&&m>=p.ho_tro.tu.slice(0,7)&&m<(p.ho_tro.den||'9999').slice(0,7),moc=ht?+p.ho_tro.moc||600e6:600e6;
-    const [hh,cach]=p.cs==='si'?hhSi(thu,moc):hhLe(thu),x={m,p,dt,thu,hh,moc,ht,cach:cach||'—',nv:[...new Set(H.map(h=>h.nv))],H};SA.push(x);
-    const o=ng(p.ten,'sales','Sales online');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,'Bán',thu>0?hh*h.thu/thu:0))}));
+    const [hh,cach]=onl?hhTl(thu,+p.tl||0):p.cs==='si'?hhSi(thu,moc):hhLe(thu),x={m,p,dt,thu,hh,moc,ht,cach:cach||'—',nv:onl?[]:[...new Set(H.map(h=>h.nv))],H};SA.push(x);
+    const o=onl?ng(p.ten,'vh',p.vt||'Hỗ trợ vận hành'):ng(p.ten,'sales','Sales online');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,onl?'Đơn online':'Bán',thu>0?hh*h.thu/thu:0))}));
   // B. quỹ cửa hàng — khách trực tiếp theo nhóm sản phẩm, đơn sales online 1,5%; chia chức danh, nhân viên theo ngày công
   const TL={HT:{ql:.4,gs:.25,nv:.35},CT:{ql:.4,gs:0,nv:.6}},CHs=[];
   ms.forEach(m=>['HT','CT'].forEach(cs=>{const H=HD.filter(h=>h.thang===m&&csCuaCN(h.cn)===cs);if(!H.length)return;
@@ -4817,7 +4829,7 @@ function hhTinh(d,ms){
   return {CH,SA,CHs,NGs,dgKho,cg,muc,HD,phan};
 }
 async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tính...</div>';
-  const ky=bcKy(),d=await rpc('kt_bc_hoa_hong',{p_tu:ky.tu,p_den:ky.den}),K=hhTinh(d,ky.ms),{CH,SA,CHs,NGs}=K;
+  const ky=bcKy(),d=await rpc('kt_bc_hoa_hong',{p_tu:ky.tu,p_den:ky.den}),K=hhTinh(d,ky.ms),{CH}=K,{SA,CHs,NGs}=hhLoc(K,S.f.hh_bp,S.f.hh_ng);
   S.cache.hh_ch=JSON.parse(JSON.stringify(CH));S.cache.hh_d=d;S.cache.hh_kq=K;
   const g=coGhi('pl'),tab=HH_TABS.some(t=>t[0]===S.f.bc_hoa_hong_tab)?S.f.bc_hoa_hong_tab:'ns',motThang=ky.ms.length===1,ma=n=>esc(JSON.stringify(n));
   const tSA=sumBy(NGs,o=>o.sales),tCH=sumBy(NGs,o=>o.quy+o.dong+o.giao),tNG=sumBy(NGs,o=>o.tong),v=x=>x?fmt(x):'–';
@@ -4825,22 +4837,23 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
   const sec=(t,phai)=>`<div class="sec" style="display:flex;align-items:center;gap:8px">${t}<span style="margin-left:auto"></span>${phai||''}</div>`;
   const card=(cols,body,foot)=>`<div class="m-card"><div class="scroll"><table class="m-t"><tr>${cols.map(([t,c])=>`<th class="${c||''}">${t}</th>`).join('')}</tr>${body}${foot||''}</table></div></div>`;
   // tab 1: theo nhân sự — nhóm bộ phận
-  const NHOM=[['HT','Cửa hàng '+csTen3('HT')],['CT','Cửa hàng '+csTen3('CT')],['sales','Sales online'],['kho','Kho (đóng gói / giao hàng)'],['khac','Đóng gói / giao hàng (nhân sự khác)']];
+  const NHOM=hhBP();
   const thuTu=o=>{const t=[...o.vt].join(' ');return /Quản lý/.test(t)?0:/Giám sát/.test(t)?1:/Nhân viên/.test(t)?2:3};
   const dongNS=o=>`<tr class="click" onclick="hhCT(${ma(o.ten)})" title="Bấm xem các đơn ${esc(o.ten)} tham gia"><td class="ten"><b>${esc(o.ten)}</b></td><td>${esc([...o.vt].join(' · ')||'Đóng gói / giao hàng')}</td>
     <td class="num" onclick="event.stopPropagation()">${Object.keys(o.cong).length?(g&&motThang?`<input class="m-in" style="width:56px;min-width:0;max-width:56px;height:26px;padding:0 8px;text-align:right" inputmode="numeric" value="${o.cong[ky.ms[0]]}" onchange="hhDoiCong('${ky.ms[0]}',${ma(o.ten)},this.value)">`:Object.values(o.cong).join(' · ')):'–'}</td>
     <td class="num"><span class="m-link">${v(o.soDon)}</span></td><td class="num">${v(o.sales)}</td><td class="num">${v(o.quy)}</td><td class="num">${v(o.dong+o.giao)}</td><td class="num"><b>${fmt(o.tong)}</b></td></tr>`;
+  const motNhom=new Set(NGs.map(o=>o.bp)).size<=1;   // lọc còn 1 nhóm: bỏ dòng Cộng (trùng dòng Tổng)
   const bodyNS=NHOM.map(([k,t])=>{const ds=NGs.filter(o=>o.bp===k).sort((a,b)=>thuTu(a)-thuTu(b)||b.tong-a.tong);if(!ds.length)return '';
-    return `<tr><td colspan="8" style="background:var(--bg2);font-weight:700;font-size:12px">${esc(t)}</td></tr>${ds.map(dongNS).join('')}
-      <tr><td colspan="4" class="muted" style="font-size:12px">Cộng ${esc(t.replace(/^Cửa hàng /,''))}</td><td class="num muted">${v(sumBy(ds,o=>o.sales))}</td><td class="num muted">${v(sumBy(ds,o=>o.quy))}</td><td class="num muted">${v(sumBy(ds,o=>o.dong+o.giao))}</td><td class="num"><b>${fmt(sumBy(ds,o=>o.tong))}</b></td></tr>`}).join('');
-  const tabNS=sec('Hoa hồng theo nhân sự','<span class="badge">Bấm 1 người → các đơn đã tham gia</span>')+card([['Nhân sự','ten'],['Vị trí',''],['Ngày công','num'],['Số đơn','num'],['Hoa hồng sales','num'],['Quỹ cửa hàng','num'],['Đóng gói · giao','num'],['Tổng','num']],
+    return `<tr><td colspan="8" style="background:var(--bg2);font-weight:700;font-size:12px">${esc(t)}</td></tr>${ds.map(dongNS).join('')}${motNhom?'':`
+      <tr><td colspan="4" class="muted" style="font-size:12px">Cộng ${esc(t.replace(/^Cửa hàng /,''))}</td><td class="num muted">${v(sumBy(ds,o=>o.sales))}</td><td class="num muted">${v(sumBy(ds,o=>o.quy))}</td><td class="num muted">${v(sumBy(ds,o=>o.dong+o.giao))}</td><td class="num"><b>${fmt(sumBy(ds,o=>o.tong))}</b></td></tr>`}`}).join('');
+  const tabNS=sec('Hoa hồng theo nhân sự','<span class="badge">Bấm 1 người → các đơn đã tham gia</span>')+card([['Nhân sự','ten'],['Vị trí',''],['Ngày công','num'],['Số đơn','num'],['Hoa hồng online','num'],['Quỹ cửa hàng','num'],['Đóng gói · giao','num'],['Tổng','num']],
     bodyNS||'<tr><td colspan="8" class="m-empty">Chưa có dữ liệu</td></tr>',
-    `<tr class="tong"><td colspan="4"><b>Tổng</b></td><td class="num"><b>${fmt(tSA)}</b></td><td class="num"><b>${fmt(sumBy(NGs,o=>o.quy))}</b></td><td class="num"><b>${fmt(sumBy(NGs,o=>o.dong+o.giao))}</b></td><td class="num"><b>${fmt(tNG)}</b></td></tr>`)
+    `<tr class="tong"><td colspan="4"><b>Tổng</b></td><td class="num"><b>${v(tSA)}</b></td><td class="num"><b>${v(sumBy(NGs,o=>o.quy))}</b></td><td class="num"><b>${v(sumBy(NGs,o=>o.dong+o.giao))}</b></td><td class="num"><b>${fmt(tNG)}</b></td></tr>`)
     +(motThang?'':`<div class="muted bc-ghi">Sửa ngày công: chọn kỳ 1 tháng.</div>`);
   // tab 2: sales online
-  const tabSA=sec('Hoa hồng sales online','<span class="badge">Mỗi người 1 chính sách riêng · tính trên thực thu · bấm 1 dòng xem các đơn</span>')+card([['Tháng','nw'],['Nhân viên','ten'],['Chính sách',''],['Số đơn','num'],['Doanh thu bán','num'],['Thực thu','num'],['Cách tính',''],['Hoa hồng','num']],
+  const tabSA=sec('Hoa hồng online','<span class="badge">Mỗi người 1 chính sách riêng · tính trên thực thu · bấm 1 dòng xem các đơn</span>')+card([['Tháng','nw'],['Nhân viên','ten'],['Chính sách',''],['Số đơn','num'],['Doanh thu bán','num'],['Thực thu','num'],['Cách tính',''],['Hoa hồng','num']],
     SA.map(x=>`<tr class="click" onclick="hhCT(${ma(x.p.ten)})"><td class="nw">${qtThg(x.m)}</td><td class="ten"><b>${esc(x.p.ten)}</b>${x.nv.length>1?`<div class="muted" style="font-size:11.5px">gộp: ${esc(x.nv.join(' + '))}</div>`:''}</td>
-      <td style="font-size:12px">${esc(HH_CS[x.p.cs]||x.p.cs)}${x.p.cs==='si'?`<div class="muted">mốc ${fmtTr(x.moc)}${x.ht?' (hỗ trợ sales mới)':''}</div>`:''}</td>
+      <td style="font-size:12px">${esc(hhCsTen(x.p))}${x.p.cs==='si'?`<div class="muted">mốc ${fmtTr(x.moc)}${x.ht?' (hỗ trợ sales mới)':''}</div>`:''}</td>
       <td class="num"><span class="m-link">${x.H.length}</span></td><td class="num">${fmt(x.dt)}</td><td class="num">${fmt(x.thu)}</td><td style="font-size:12px">${esc(x.cach)}</td><td class="num"><b>${fmt(x.hh)}</b></td></tr>`).join('')||'<tr><td colspan="8" class="m-empty">Chưa có dữ liệu</td></tr>',
     SA.length>1?`<tr class="tong"><td colspan="4"><b>Tổng</b></td><td class="num"><b>${fmt(sumBy(SA,x=>x.dt))}</b></td><td class="num"><b>${fmt(sumBy(SA,x=>x.thu))}</b></td><td></td><td class="num"><b>${fmt(sumBy(SA,x=>x.hh))}</b></td></tr>`:'');
   // tab 3: cửa hàng offline — mỗi cửa hàng 1 khối: quỹ từ đâu (bấm xem đơn) → chia cho ai
@@ -4855,16 +4868,16 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
           :`<tr><td>${esc(r.ten)} ${Math.round(r.tl*100)}%</td><td class="muted">Chưa có người giữ vị trí — không chi</td><td class="num">–</td><td class="num muted">${fmt(r.khongChi)}</td></tr>`).join('')}</table></div>`;
   const dgNG=NGs.filter(o=>o.dong||o.giao).sort((a,b)=>(b.dong+b.giao)-(a.dong+a.giao)),soViec=(o,k)=>o.ds.filter(x=>x.vai.some(s=>s.startsWith(k))).length;
   const tabCH=sec('Quỹ hoa hồng cửa hàng','<span class="badge">Bấm số thực thu → các đơn tạo nên quỹ</span>')
-    +`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px">${CHs.map(khoi).join('')||'<div class="m-card m-empty">Chưa có dữ liệu</div>'}</div>`
+    +`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px">${CHs.map(x=>khoi(x,K.CHs.indexOf(x))).join('')||'<div class="m-card m-empty">Chưa có dữ liệu</div>'}</div>`
     +sec('Đóng gói / giao hàng 0,25%','<span class="badge">Theo tên trong ghi chú hoá đơn Kiot · nhiều người cùng làm chia đều · bấm 1 người xem đơn</span>')
     +card([['Nhân sự','ten'],['Đơn đóng gói','num'],['Tiền đóng gói','num'],['Đơn giao hàng','num'],['Tiền giao hàng','num'],['Cộng','num']],
       dgNG.map(o=>`<tr class="click" onclick="hhCT(${ma(o.ten)})"><td class="ten"><b>${esc(o.ten)}</b></td><td class="num">${soViec(o,'Đóng gói')}</td><td class="num">${v(o.dong)}</td><td class="num">${soViec(o,'Giao hàng')}</td><td class="num">${v(o.giao)}</td><td class="num"><b>${fmt(o.dong+o.giao)}</b></td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Chưa có</td></tr>',
       dgNG.length?`<tr class="tong"><td colspan="2"><b>Tổng</b></td><td class="num"><b>${fmt(sumBy(dgNG,o=>o.dong))}</b></td><td></td><td class="num"><b>${fmt(sumBy(dgNG,o=>o.giao))}</b></td><td class="num"><b>${fmt(sumBy(dgNG,o=>o.dong+o.giao))}</b></td></tr>`:'')
     +(K.dgKho?`<div class="muted bc-ghi">Đơn ghi chung "kho" đóng / giao (không tên người): không chi ${fmt(Math.round(K.dgKho))}.</div>`:'');
-  S.cache.bc_xuat=()=>xuatCSV('hoa-hong-'+ky.tu+'_'+ky.den,[['Nhân sự',o=>o.ten],['Vị trí',o=>[...o.vt].join(' · ')],['Ngày công',o=>Object.values(o.cong).join(' · ')],['Số đơn',o=>o.soDon],['Hoa hồng sales',o=>o.sales],['Quỹ cửa hàng',o=>o.quy],['Đóng gói',o=>o.dong],['Giao hàng',o=>o.giao],['Tổng',o=>o.tong]],NGs);
+  S.cache.bc_xuat=xuatHoaHong;   // 31/10: file Excel cùng mẫu với Cài đặt → Xuất dữ liệu (vừa A4)
   el.innerHTML=qtDau('Hoa hồng & thưởng','Tính trên thực thu Kiot')
-    +`<div class="m-kpis m-k3">${the('ns','teal','Tổng hoa hồng',fmt(tNG),NGs.filter(o=>o.tong).length+' nhân sự có hoa hồng')}${the('sales','info','Sales online',fmt(tSA),SA.length+' người × tháng')}${the('ch','ok','Cửa hàng offline',fmt(tCH),'quỹ cửa hàng + đóng gói / giao')}</div>`
-    +`<div class="m-seg bc-tabs" style="margin-bottom:4px">${HH_TABS.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.bc_hoa_hong_tab='${k}';render()">${t}</button>`).join('')}</div>`
+    +`<div class="m-kpis m-k3">${the('ns','teal','Tổng hoa hồng',fmt(tNG),NGs.filter(o=>o.tong).length+' nhân sự có hoa hồng')}${the('sales','info','Online',fmt(tSA),SA.length+' người × tháng')}${the('ch','ok','Cửa hàng offline',fmt(tCH),'quỹ cửa hàng + đóng gói / giao')}</div>`
+    +hhLocBar(K)+`<div class="m-seg bc-tabs" style="margin-bottom:4px">${HH_TABS.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.bc_hoa_hong_tab='${k}';render()">${t}</button>`).join('')}</div>`
     +(tab==='sales'?tabSA:tab==='ch'?tabCH:tabNS)
     +`<div class="muted bc-ghi">Thực thu = phần khách đã trả trên hoá đơn Kiot hoàn thành trong tháng (hoá đơn còn nợ chưa tính) trừ tiền hoàn khi trả hàng. Chưa tính: thưởng Top Sales, thưởng target tháng / năm.</div>`;
 }
@@ -4878,14 +4891,16 @@ function hhPopup(){const P=S.cache.hh_pop;if(!P)return;const n=P.rows.length,tr=
     ${pg.map(P.dong).join('')||`<tr><td colspan="${cols.length}" class="m-empty">Không có đơn</td></tr>`}${n?P.tong:''}</table></div></div>${pager}
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`);const b=$('#modal>div');if(b){b.style.width='min(1040px,96vw)';b.style.maxWidth='1040px'}}
 const hhSp=h=>h.sp?`<div class="muted" style="font-size:11px;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(h.sp)}">${esc(h.sp)}</div>`:'';
-// bấm 1 nhân sự → các đơn tham gia trong kỳ
-function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)return;
-  const kq=[['Hoa hồng sales',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
-  let dau=`<div class="bc-k" style="grid-template-columns:repeat(${kq.length+1},1fr)"><div><span>Tổng hoa hồng</span><b>${fmt(o.tong)}</b></div>${kq.map(([a,b])=>`<div><span>${a}</span><b>${fmt(b)}</b></div>`).join('')}</div>`;
-  // 28/10 anh: "trình bày dài thế, ghi công thức ra là được, không cần số"
-  const cach=[...new Set([...o.saleKy.map(x=>x.p.cs==='si'?'Thực thu (Kiot) × tỷ lệ giật cấp — sales mảng buôn, dưới mốc không tính':'Thực thu (Kiot) × tỷ lệ giật cấp — sales online lẻ'),
+// công thức từng người (popup + file xuất) — 28/10 anh: "ghi công thức ra là được, không cần số"
+const hhCach=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?'Thực thu đơn online (Kiot, mọi cơ sở) × '+((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% — '+(x.p.vt||'hỗ trợ vận hành').toLowerCase():x.p.cs==='si'?'Thực thu (Kiot) × tỷ lệ giật cấp — sales mảng buôn, dưới mốc không tính':'Thực thu (Kiot) × tỷ lệ giật cấp — sales online lẻ'),
     ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
     ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
+// bấm 1 nhân sự → các đơn tham gia trong kỳ
+function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)return;
+  const kq=[['Hoa hồng online',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
+  let dau=`<div class="bc-k" style="grid-template-columns:repeat(${kq.length+1},1fr)"><div><span>Tổng hoa hồng</span><b>${fmt(o.tong)}</b></div>${kq.map(([a,b])=>`<div><span>${a}</span><b>${fmt(b)}</b></div>`).join('')}</div>`;
+  // 28/10 anh: "trình bày dài thế, ghi công thức ra là được, không cần số"
+  const cach=hhCach(o);
   if(cach.length)dau+=`<div class="muted" style="font-size:12.5px;line-height:1.7;margin:2px 0 10px">${cach.map(esc).join('<br>')}</div>`;
   S.cache.hh_pop={tieu:`${esc(ten)} <span class="badge" style="vertical-align:middle">${esc(bcKy().ten)} · ${o.ds.length} đơn tham gia</span>`,dau,trang:1,rows:o.ds,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Cơ sở','nw'],['Vai trò','nw'],['Thực thu','num'],['Hoa hồng','num']],
@@ -6337,6 +6352,7 @@ const XU_PHAN=[
   {k:'no_ncc',ten:'Công nợ nhà cung cấp',mo:'Số còn phải trả từng nhà cung cấp (số dư hiện tại, không theo kỳ)',quyen:()=>coXem('no_ncc')},
   {k:'hd',ten:'Hoá đơn đầu vào / đầu ra',mo:'Ký hiệu, số HĐ, đối tác, MST, tiền hàng, thuế, tổng',quyen:()=>can('hoa_don_thue')},
   {k:'pl',ten:'Báo cáo P&L theo tháng',mo:'Doanh thu, giá vốn, chi phí theo mục, lợi nhuận — từng tháng trong kỳ (giống P&L chi tiết)',quyen:()=>can('pl')},
+  {k:'hh',ten:'Hoa hồng & thưởng',mo:'Như trang Hoa hồng (mục 9): theo nhân sự + online + quỹ cửa hàng + đóng gói / giao + thông số + đơn từng người — trọn tháng',quyen:()=>can('pl')},
   {k:'nkc',ten:'Sổ nhật ký chung (bút toán Nợ / Có)',mo:'Định khoản theo hệ thống tài khoản kế toán',sap:1},
   {k:'ton',ten:'Tồn kho & nhập xuất tồn',mo:'Theo mã hàng, theo kho',sap:1},
   {k:'ts',ten:'Tài sản & khấu hao',mo:'Danh sách tài sản, khấu hao luỹ kế',sap:1},
@@ -6436,6 +6452,7 @@ const XU_LAY={
       {ten:'Vay - giao dịch',tieuDe:'VAY — NHẬN TIỀN / TRẢ GỐC, LÃI TRONG KỲ',rows:gd,cols:[['Ngày',g=>g.ngay,'ngay'],['Khoản vay',g=>g.ten],['Loại',g=>g.loai],['Tài khoản',g=>xuTK(g.tk)],
         ['Nhận tiền',g=>g.nhan,'so'],['Trả gốc',g=>g.goc,'so'],['Trả lãi',g=>g.lai,'so'],['Trạng thái',g=>g.tt],['Phiếu chi',g=>g.pc?maPC(g.pc):''],['Ghi chú',g=>g.gc]]}]},
   no_kh:()=>xuCongNo('kh'),no_ncc:()=>xuCongNo('ncc'),
+  hh:(tu,den)=>{const ms=[];for(let m=tu.slice(0,7);m<=den.slice(0,7);m=thangSau(m))ms.push(m);return xuHH(ms[0]+'-01',cuoiThang(ms[ms.length-1]),ms)},
   hd:async(tu,den,x)=>{const ch=x.hd==='ca_hai'?['vao','ra']:[x.hd],out=[];
     for(const c of ch){const ds=(await rpc('kt_thue_hd_ds',{p_tu:tu,p_den:den,p_chieu:c,p_hkd:null,p_tim:null})).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:0);
       out.push({ten:c==='vao'?'HĐ đầu vào':'HĐ đầu ra',tieuDe:c==='vao'?'HOÁ ĐƠN ĐẦU VÀO':'HOÁ ĐƠN ĐẦU RA',rows:ds,cols:[['Ngày',h=>h.ngay,'ngay'],['Ký hiệu',h=>h.ky_hieu],['Số HĐ',h=>h.so_hd],
@@ -6451,6 +6468,66 @@ const XU_LAY={
     return [{ten:'P&L',tieuDe:'BÁO CÁO KẾT QUẢ KINH DOANH (P&L) THEO THÁNG',phu:'Kỳ: T'+(+tu.slice(5,7))+'/'+tu.slice(0,4)+' – T'+(+den.slice(5,7))+'/'+den.slice(0,4)+' (trọn tháng)',ghi:'Theo trang P&L chi tiết · mọi cơ sở · chi phí ghi số âm',rows:cap.r.filter(r=>!r.an),tong:false,loc:false,coDinhCot:1,
       dong:r=>({b:['tong','net','nhom','nhom2'].includes(r.kieu),nen:r.kieu==='tong'?'FFFFF2CC':r.kieu==='net'?'FFE2EFDA':null,le:r.kieu==='con'?1:r.kieu==='con2'?2:0}),
       cols:cap.c.map((c,j)=>[c[0],j?c[1]:r=>String(c[1](r)).trim(),j?'so':'chu'])}]}};
+// 31/10 anh: "trong xuất báo cáo thêm form xuất cho trang hoa hồng, đảm bảo xuất các thông số, tên nhân sự và mức hoa hồng chi trả chuẩn"
+// + "hết phần giao diện ở trang theo nhân sự" + "vừa khổ giấy A4, dễ nhìn". Tính bằng CHÍNH hhTinh của trang (cùng kỳ, cùng hàm SQL) → số khớp trang.
+async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p_den:den}),K=hhTinh(d,ms),{CH}=K,{SA,CHs,NGs}=hhLoc(K,loc&&loc.bp,loc&&loc.ng),mot=ms.length===1;
+  const kyT=mot?qtThg(ms[0]):qtThg(ms[0])+' – '+qtThg(ms[ms.length-1]),locT=[loc&&loc.bp?(hhBP().find(b=>b[0]===loc.bp)||[])[1]:'',loc&&loc.ng].filter(Boolean).join(' · ');
+  const phu='Kỳ: '+kyT+(locT?' · lọc: '+locT:'')+' · tính trên thực thu Kiot';
+  const NHOM=hhBP();
+  const thuTu=o=>{const t=[...o.vt].join(' ');return /Quản lý/.test(t)?0:/Giám sát/.test(t)?1:/Nhân viên/.test(t)?2:3},cong=o=>Object.keys(o.cong).length?(mot?o.cong[ms[0]]:Object.values(o.cong).join(' · ')):null;
+  const ns=[];let stt=0;
+  NHOM.forEach(([k,t])=>{const ds=NGs.filter(o=>o.bp===k).sort((a,b)=>thuTu(a)-thuTu(b)||b.tong-a.tong);if(!ds.length)return;
+    ns.push({kieu:'nhom',ten:t});ds.forEach(o=>ns.push({kieu:'ng',stt:++stt,ten:o.ten,vt:[...o.vt].join(' · ')||'Đóng gói / giao hàng',cong:cong(o),don:o.soDon,on:o.sales,quy:o.quy,dg:o.dong+o.giao,tong:o.tong}));
+    if(new Set(NGs.map(o=>o.bp)).size>1)ns.push({kieu:'cong',ten:'Cộng '+t.replace(/^Cửa hàng /,''),on:sumBy(ds,o=>o.sales),quy:sumBy(ds,o=>o.quy),dg:sumBy(ds,o=>o.dong+o.giao),tong:sumBy(ds,o=>o.tong)})});
+  const co=NGs.filter(o=>o.tong);ns.push({kieu:'tong',ten:'TỔNG CHI TRẢ ('+co.length+' người có hoa hồng)',on:sumBy(co,o=>o.sales),quy:sumBy(co,o=>o.quy),dg:sumBy(co,o=>o.dong+o.giao),tong:sumBy(co,o=>o.tong)});
+  const z=v=>v||null;
+  const shNS={ten:'Theo nhân sự',tieuDe:'BẢNG HOA HỒNG THEO NHÂN SỰ',phu,ghi:'số đã làm tròn đồng',rows:ns,tong:false,loc:false,
+    dong:r=>r.kieu==='nhom'?{b:1,nen:'FFDDEBF7'}:r.kieu==='cong'?{b:1,nen:'FFF2F2F2'}:r.kieu==='tong'?{b:1,nen:'FFFFF2CC'}:null,
+    cols:[['STT',r=>r.stt,'so',{w:5}],['Nhân sự',r=>r.ten,'chu',{w:26}],['Vị trí',r=>r.vt,'chu',{w:17}],[mot?'Ngày công':'Ngày công (từng tháng)',r=>r.cong,mot?'so':'chu',{w:mot?7:11}],
+      ['Số đơn',r=>r.don,'so',{w:7}],['Hoa hồng online',r=>z(r.on),'so',{w:13}],['Quỹ cửa hàng',r=>z(r.quy),'so',{w:13}],['Đóng gói · giao',r=>z(r.dg),'so',{w:12}],['Tổng chi trả',r=>r.tong,'so',{w:14}]]};
+  const shCach={ten:'Cách tính từng người',tieuDe:'CÁCH TÍNH HOA HỒNG TỪNG NGƯỜI',phu,rows:NGs.slice().sort((a,b)=>NHOM.findIndex(n=>n[0]===a.bp)-NHOM.findIndex(n=>n[0]===b.bp)||thuTu(a)-thuTu(b)||b.tong-a.tong),tong:false,doc:1,
+    cols:[['Nhân sự',o=>o.ten,'chu',{w:24}],['Công thức',o=>hhCach(o).join('\n'),'chu',{w:54}],['Tổng chi trả',o=>o.tong,'so',{w:14}]]};
+  const shOn={ten:'Online',tieuDe:'HOA HỒNG ONLINE',phu,ghi:'mỗi người 1 chính sách riêng',rows:SA,
+    cols:[['Tháng',x=>qtThg(x.m),'chu',{w:9}],['Nhân sự',x=>x.p.ten+(x.nv.length>1?' (gộp: '+x.nv.join(' + ')+')':''),'chu',{w:24}],['Chính sách',x=>hhCsTen(x.p)+(x.p.cs==='si'?' · mốc '+fmtTr(x.moc)+(x.ht?' (hỗ trợ sales mới)':''):''),'chu',{w:26}],
+      ['Số đơn',x=>x.H.length,'so',{w:7}],['Doanh thu bán',x=>x.dt,'so',{w:14}],['Thực thu',x=>x.thu,'so',{w:14}],['Cách tính',x=>x.cach,'chu',{w:26}],['Hoa hồng',x=>x.hh,'so',{w:13}]]};
+  const qr=[];CHs.forEach(x=>{const c=csTen3(x.cs),th=qtThg(x.m);
+    (x.cs==='CT'?[['Khách trực tiếp — mọi nhóm hàng',x.cao,'2%',x.qCao]]:[['Khách trực tiếp — nhóm biên cao',x.cao,'2%',x.qCao],['Khách trực tiếp — nhóm biên thấp',x.thap,'0,8%',x.qThap]])
+      .concat([['Đơn sales online cửa hàng xử lý',x.onT,'1,5%',x.qOn]]).forEach(([t,thu,tl,q])=>qr.push({th,c,muc:'Quỹ hình thành',ct:t,thu,tl,q}));
+    x.vt.forEach(r=>r.ng.length?r.ng.forEach(n=>qr.push({th,c,muc:'Chia quỹ',ct:r.ten+' '+Math.round(r.tl*100)+'%',ng:n.n,cong:r.k==='nv'?n.c:null,chi:n.tien}))
+      :qr.push({th,c,muc:'Chia quỹ',ct:r.ten+' '+Math.round(r.tl*100)+'%',ng:'Chưa có người — không chi ('+fmt(r.khongChi)+')',chi:0}))});
+  const shQ={ten:'Quỹ cửa hàng',tieuDe:'QUỸ HOA HỒNG CỬA HÀNG OFFLINE',phu,rows:qr,dong:r=>r.muc==='Quỹ hình thành'?{nen:'FFF7FAFD'}:null,
+    cols:[['Tháng',r=>r.th,'chu',{w:9}],['Cửa hàng',r=>r.c,'chu',{w:12}],['Mục',r=>r.muc,'chu',{w:14}],['Chi tiết',r=>r.ct,'chu',{w:26}],['Thực thu',r=>r.thu,'so',{w:14}],['Tỷ lệ',r=>r.tl,'chu',{w:6}],
+      ['Quỹ',r=>r.q,'so',{w:12}],['Người nhận',r=>r.ng,'chu',{w:22}],['Ngày công',r=>r.cong,'so',{tong:false,w:7}],['Chi trả',r=>r.chi,'so',{w:12}]]};
+  const dg=NGs.filter(o=>o.dong||o.giao).sort((a,b)=>(b.dong+b.giao)-(a.dong+a.giao)),soViec=(o,k)=>o.ds.filter(x=>x.vai.some(v=>v.startsWith(k))).length;
+  const shDG={ten:'Đóng gói - giao',tieuDe:'ĐÓNG GÓI / GIAO HÀNG 0,25%',phu,ghi:'theo tên trong ghi chú hoá đơn Kiot, nhiều người cùng làm chia đều'+(K.dgKho&&!locT?' · đơn ghi chung "kho" không tên người: không chi '+fmt(Math.round(K.dgKho)):''),rows:dg,doc:1,
+    cols:[['Nhân sự',o=>o.ten,'chu',{w:26}],['Đơn đóng gói',o=>soViec(o,'Đóng gói'),'so',{w:9}],['Tiền đóng gói',o=>o.dong,'so',{w:13}],['Đơn giao',o=>soViec(o,'Giao hàng'),'so',{w:9}],['Tiền giao',o=>o.giao,'so',{w:13}],['Cộng',o=>o.dong+o.giao,'so',{w:13}]]};
+  const ts=[['Sales online lẻ (CS-VH04-16)','Thực thu × giật cấp: đến 150tr 1,5% · 150–200tr 1,8% · 200–300tr 2% · trên 300tr 2,5%'],
+    ['Sales online mảng buôn (CS-VH04-13)','Dưới mốc 600tr: 0 · 600tr đầu 1,5% · 600tr–1,2 tỷ 2% · trên 1,2 tỷ 2,5% (thời gian hỗ trợ sales mới: hạ mốc)'],
+    ...CH.nguoi.map(p=>['Người hưởng: '+p.ten,hhCsTen(p)+(p.kiot&&p.kiot.length?' · doanh thu Kiot của: '+p.kiot.join(', '):'')+(p.ho_tro&&p.ho_tro.tu?' · hỗ trợ '+fmtD(p.ho_tro.tu)+'–'+fmtD(p.ho_tro.den)+', mốc '+fmtTr(+p.ho_tro.moc||0):'')]),
+    ['Quỹ cửa hàng — khách trực tiếp',csTen3('HT')+': nhóm biên cao 2%, biên thấp 0,8% · '+csTen3('CT')+': mọi nhóm 2%'],
+    ['Quỹ cửa hàng — đơn sales online cửa hàng xử lý','1,5% thực thu'],
+    ['Chia quỹ '+csTen3('HT'),'Quản lý 40% · Giám sát 25% · Nhân viên 35% (chia theo ngày công)'],['Chia quỹ '+csTen3('CT'),'Quản lý 40% · Nhân viên 60% (chia theo ngày công)'],
+    ...['HT','CT'].map(cs=>{const v=CH.cua_hang[cs]||{};return ['Chức danh '+csTen3(cs),'Quản lý: '+((v.ql||[]).join(', ')||'—')+' · Giám sát: '+((v.gs||[]).join(', ')||'—')+' · Nhân viên: '+((v.nv||[]).join(', ')||'—')]}),
+    ['Ngày công','Mặc định 26 ngày / tháng'+(Object.keys(CH.cong||{}).filter(m=>ms.includes(m)).length?' · đã sửa: '+ms.map(m=>Object.entries((CH.cong||{})[m]||{}).map(([n,c])=>n+' '+c+' ('+qtThg(m)+')').join(', ')).filter(Boolean).join(', '):'')],
+    ['Đóng gói / giao hàng','0,25% thực thu đơn cửa hàng, nhiều người chia đều · người kho: '+((CH.kho||[]).join(', ')||'—')],
+    ...Object.entries(CH.nhom||{}).sort((a,b)=>a[0].localeCompare(b[0],'vi')).map(([k,v])=>['Nhóm hàng: '+k,HH_NHOM[v]||v]),
+    ['Thực thu','Phần khách đã trả trên hoá đơn Kiot hoàn thành trong tháng (gồm phiếu thu cục phân bổ vào hoá đơn), trừ tiền hoàn khi trả hàng'],
+    ['Online / offline','Theo kênh bán trên hoá đơn Kiot (trống thì kênh đơn đặt hàng): bán trực tiếp / Khác / trống / Chùa Vẻn = offline'],
+    ['Chưa tính','Thưởng Top Sales, thưởng target tháng / năm']].map(([a,b])=>({a,b}));
+  const shTS={ten:'Thông số',tieuDe:'THÔNG SỐ TÍNH HOA HỒNG',phu,rows:ts,tong:false,doc:1,
+    cols:[['Mục',r=>r.a,'chu',{w:30}],['Thông số',r=>r.b,'chu',{w:60}]]};
+  const don=[];NGs.forEach(o=>o.ds.forEach(x=>don.push({o,x})));
+  const shDon={ten:'Đơn từng người',tieuDe:'CÁC ĐƠN TÍNH HOA HỒNG — TỪNG NGƯỜI',phu,ghi:'"qua quỹ" = đơn người đó bán, hưởng qua quỹ cửa hàng (xem sheet Quỹ cửa hàng)',rows:don,
+    cols:[['Nhân sự',r=>r.o.ten,'chu',{w:22}],['Ngày',r=>r.x.h.ngay,'ngay',{w:10}],['Số HĐ',r=>r.x.h.la_tra?(r.x.h.ma_tra||'Trả hàng')+' (trả của '+r.x.h.ma+')':r.x.h.ma,'chu',{w:16}],
+      ['Khách hàng',r=>r.x.h.khach||'','chu',{w:24}],['Cơ sở',r=>csTen3(csCuaCN(r.x.h.cn))||r.x.h.cn,'chu',{w:11}],['Vai trò',r=>r.x.vai.join(' · ')+(!r.x.tien&&r.x.vai.includes('Bán')&&r.o.quy?' (qua quỹ)':''),'chu',{w:16}],
+      ['Thực thu',r=>r.x.h.thu,'so',{w:13}],['Hoa hồng',r=>r.x.tien?Math.round(r.x.tien):null,'so',{w:12}]]};
+  return [shNS,shCach,shOn,shQ,shDG,shTS,shDon]}
+async function xuatHoaHong(){const ky=bcKy(),loc={bp:S.f.hh_bp||'',ng:S.f.hh_ng||''};toast('Đang tạo file Excel hoa hồng...');
+  try{const E=await napExcelJS(),wb=new E.Workbook();wb.creator='App kế toán';wb.created=new Date();
+    for(const s of await xuHH(ky.tu,ky.den,ky.ms,loc))xuSheet(wb,s,ky.tu,ky.den);
+    const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    a.download='Hoa-hong_'+ky.tu+'_'+ky.den+(loc.ng?'_'+boDau(loc.ng).replace(/\s+/g,'-'):loc.bp?'_'+loc.bp:'')+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('Đã xuất file hoa hồng')}
+  catch(e){toast('Không xuất được: '+e.message,1)}}
 async function xuCongNo(loai){const KH=loai==='kh',ds=(await rpc('kt_cong_no_dt',{p_loai:loai})).filter(x=>Math.round(+x.no||0)!==0).sort((a,b)=>b.no-a.no);
   const nhTen=x=>(NHOM_KH.find(n=>n[0]===nhomKH(x.ten))||[])[1]||'';
   return [{ten:KH?'Công nợ KH':'Công nợ NCC',tieuDe:KH?'CÔNG NỢ PHẢI THU KHÁCH HÀNG':'CÔNG NỢ PHẢI TRẢ NHÀ CUNG CẤP',ghi:'Số dư tại thời điểm xuất (không theo kỳ) · số âm = '+(KH?'khách trả trước':'đã trả trước'),rows:ds,
@@ -6477,7 +6554,7 @@ function xuSheet(wb,s,tu,den,ws){const n=s.cols.length,DAU=3;
       return v==null?'':String(v)}));
     s.cols.forEach((c,j)=>{const o=row.getCell(j+1),k=c[2];o.border=VIEN;
       if(k==='so')o.numFmt='#,##0;[Red]-#,##0';else if(k==='pct')o.numFmt='0.0%';else if(k==='ngay')o.numFmt='dd/mm/yyyy';
-      o.alignment={vertical:'top',horizontal:can_(k),indent:j===0&&st.le?st.le:0};
+      o.alignment={vertical:'top',horizontal:can_(k),indent:j===0&&st.le?st.le:0,wrapText:!!(c[3]&&c[3].w)};
       if(k==='link')o.font={color:{argb:'FF0563C1'},underline:true};else if(st.b)o.font={bold:true};
       if(st.nen)o.fill={type:'pattern',pattern:'solid',fgColor:{argb:st.nen}};else if(i%2)o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF7FAFD'}};
       const v=o.value,L=k==='so'?fmt(v).length+1:k==='pct'?6:k==='ngay'?10:String(v&&v.text||v||'').length+(j===0&&st.le?st.le*2:0);if(L>w[j])w[j]=L})});
@@ -6490,9 +6567,10 @@ function xuSheet(wb,s,tu,den,ws){const n=s.cols.length,DAU=3;
       o.border={top:{style:'medium',color:{argb:XANH}},bottom:V,left:V,right:V};o.alignment={horizontal:can_(c[2])};
       if(c[2]==='so')o.numFmt='#,##0;[Red]-#,##0';else if(c[2]==='pct')o.numFmt='0.0%'})}
   if(!s.rows.length){ws.getCell(DAU+1,1).value='Không có dữ liệu trong kỳ';ws.getCell(DAU+1,1).font={italic:true,color:{argb:'FF808080'}}}
-  s.cols.forEach((c,j)=>{ws.getColumn(j+1).width=Math.min(60,Math.max(9,w[j]+3))});
+  s.cols.forEach((c,j)=>{ws.getColumn(j+1).width=c[3]&&c[3].w?c[3].w:Math.min(60,Math.max(9,w[j]+3))});
   if(s.loc!==false&&s.rows.length)ws.autoFilter={from:{row:DAU,column:1},to:{row:DAU,column:n}};
-  ws.pageSetup={paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:DAU+':'+DAU};
+  ws.pageSetup={paperSize:9,orientation:s.doc?'portrait':'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:DAU+':'+DAU,
+    margins:{left:.4,right:.4,top:.5,bottom:.5,header:.3,footer:.3},horizontalCentered:true};
   return ws}
 async function xuatDuLieu(btn){const x=xuSt(),tu=x.tu,den=x.den;
   if(!tu||!den||tu>den)return toast('Chọn lại kỳ: Từ ngày phải trước Đến ngày');
