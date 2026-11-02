@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.291';
-const APP_VERSION='02/11/2026 15:38';
+const APP_SO='1.292';
+const APP_VERSION='02/11/2026 15:41';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4780,12 +4780,16 @@ const KIOT_MAN='https://sieuthidotho285.kiotviet.vn/man/#/';
 // dòng tiền trả trước tháng hàng đi ghi "trả trước · hàng đi ngày …" (bán tính tháng nhận tiền, đóng / giao tính tháng hàng đi)
 const hhNg=v=>{const t=String(v||'');return t.slice(8,10)+'/'+t.slice(5,7)};
 const hhTraTruoc=h=>!h.la_coc&&!h.la_phieu&&!h.la_tra&&h.ngay_hd&&String(h.ngay_hd).slice(0,7)>h.thang;
-const hhCocTxt=h=>(h.coc_ds||[]).length?'cọc trước '+fmt(h.coc)+': '+h.coc_ds.map(c=>c.ma+' · '+hhNg(c.ngay)).join(', '):+h.coc>0?'cọc trước '+fmt(h.coc):hhTraTruoc(h)?'trả trước · hàng đi '+hhNg(h.ngay_hd):'';
+// anh 02/11: "có cọc trước thì phải có trả nốt" + "ghi cọc trước, ngày cọc và trả nốt bao nhiêu là được, không cần mã" — mỗi ý 1 dòng
+const hhNgs=ds=>[...new Set((ds||[]).map(c=>hhNg(c.ngay)))].join(', ');
+const hhCocTxt=h=>{if(hhTraTruoc(h))return 'trả trước · hàng đi '+hhNg(h.ngay_hd);if(!(+h.coc>0))return '';
+  const tra=sumBy(h.tra_ds||[],c=>+c.tien),r=['cọc trước '+fmt(h.coc)+((h.coc_ds||[]).length?' ngày '+hhNgs(h.coc_ds):'')];
+  if(tra>0)r.push('trả nốt '+fmt(tra)+' ngày '+hhNgs(h.tra_ds));if(+h.con>0)r.push((tra>0?'còn nợ ':'chưa trả nốt ')+fmt(h.con));return r.join('\n')};
 const hhKiot=h=>h.la_tra?`<a href="${KIOT_MAN}Returns?Code=${encodeURIComponent(h.ma_tra||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma_tra||'Trả hàng')} ↗</a><div class="muted" style="font-size:11px">trả của ${esc(h.ma||'')}</div>`
   // 31/10: dòng cọc TTDH (tính ở tháng nhận cọc) · hoá đơn của đơn có cọc ghi phần cọc đã trừ
   :h.la_coc?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">cọc đơn ${esc(h.ma_don||'')}</div>`
   :h.la_phieu?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">phiếu chưa có hoá đơn</div>`
-  :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:normal">${esc(hhCocTxt(h))}</div>`:''}`;
+  :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:nowrap">${esc(hhCocTxt(h)).replace(/\n/g,'<br>')}</div>`:''}`;
 // 02/11 anh "có thực sự check note không": đọc ghi chú TỪNG DÒNG (trước gộp 1 dòng nên chữ dòng sau dính vào tên), nhận cả kiểu
 // "Người đóng hàng 1 :", "Người: đóng hàng:", tên viết thường; bỏ phần trong ngoặc; viết tắt "Tên ĐH / GH" giữ như cũ. — Monsieur Claude
 function hhDocDG(gc){const ds={dong:[],giao:[]},hoa=w=>w.charAt(0).toUpperCase()+w.slice(1);
@@ -6568,7 +6572,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
     cols:[['Mục',r=>r.a,'chu',{w:30}],['Thông số',r=>r.b,'chu',{w:60}]]};
   const don=[];NGs.forEach(o=>o.ds.forEach(x=>don.push({o,x})));
   const shDon={ten:'Đơn từng người',tieuDe:'CÁC ĐƠN TÍNH HOA HỒNG — TỪNG NGƯỜI',phu,ghi:'"qua quỹ" = đơn người đó bán, hưởng qua quỹ cửa hàng (xem sheet Quỹ cửa hàng)',rows:don,
-    cols:[['Nhân sự',r=>r.o.ten,'chu',{w:22}],['Ngày',r=>r.x.h.ngay,'ngay',{w:10}],['Số HĐ',r=>r.x.h.la_tra?(r.x.h.ma_tra||'Trả hàng')+' (trả của '+r.x.h.ma+')':r.x.h.la_coc?r.x.h.ma+' (cọc đơn '+r.x.h.ma_don+')':r.x.h.ma+(hhCocTxt(r.x.h)?' ('+hhCocTxt(r.x.h)+')':''),'chu',{w:20}],
+    cols:[['Nhân sự',r=>r.o.ten,'chu',{w:22}],['Ngày',r=>r.x.h.ngay,'ngay',{w:10}],['Số HĐ',r=>r.x.h.la_tra?(r.x.h.ma_tra||'Trả hàng')+' (trả của '+r.x.h.ma+')':r.x.h.la_coc?r.x.h.ma+' (cọc đơn '+r.x.h.ma_don+')':r.x.h.ma+(hhCocTxt(r.x.h)?' ('+hhCocTxt(r.x.h).replace(/\n/g,'; ')+')':''),'chu',{w:20}],
       ['Khách hàng',r=>r.x.h.khach||'','chu',{w:24}],['Cơ sở',r=>csTen3(csCuaCN(r.x.h.cn))||r.x.h.cn,'chu',{w:11}],['Vai trò',r=>r.x.vai.join(' · ')+(!r.x.tien&&r.x.vai.includes('Bán')&&r.o.quy?' (qua quỹ)':''),'chu',{w:16}],
       ['Thực thu',r=>r.x.h.thu,'so',{w:13}],['Hoa hồng',r=>r.x.tien?Math.round(r.x.tien):null,'so',{w:12}]]};
   return [shNS,shCach,shOn,shQ,shDG,shTS,shDon]}
