@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.300';
-const APP_VERSION='02/11/2026 16:46';
+const APP_SO='1.301';
+const APP_VERSION='02/11/2026 16:52';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4855,14 +4855,14 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
   const NHOM=hhBP();
   const CN_HH=[['SD','Shidai',['kho','SD']],['HT','Hiền Thủy',['HT']],['CT','Chánh Tâm',['CT']],['VP','Văn phòng',null]],cnCua=bp=>CN_HH.find(c=>c[2]&&c[2].includes(bp))||CN_HH[3];
   const thuTu=o=>{const t=[...o.vt].join(' ');return /Quản lý/.test(t)?0:/Giám sát/.test(t)?1:/Nhân viên/.test(t)?2:3};
-  const dongNS=(o,ghi)=>`<tr class="click" onclick="hhCT(${ma(o.ten)})" title="Bấm xem các đơn ${esc(o.ten)} tham gia"><td class="ten"><b>${esc(o.ten)}</b></td><td>${ghi?`<span class="muted">${esc(ghi)} · </span>`:''}${esc([...o.vt].join(' · ')||'Đóng gói / giao hàng')}<div class="hh-cs">${esc(hhTomTat(o))}</div></td>
+  const dongNS=(o,ghi)=>`<tr class="click" onclick="hhCT(${ma(o.ten)})" title="Bấm xem các đơn ${esc(o.ten)} tham gia"><td class="ten"><b>${esc(o.ten)}</b></td><td>${ghi?`<span class="muted">${esc(ghi)} · </span>`:''}${esc([...o.vt].join(' · ')||'Đóng gói / giao hàng')}</td><td class="muted" style="font-size:12px;line-height:1.55">${hhCachDong(o).map(esc).join('<br>')}</td>
     <td class="num" onclick="event.stopPropagation()">${Object.keys(o.cong).length?(g&&motThang?`<input class="m-in" style="width:56px;min-width:0;max-width:56px;height:26px;padding:0 8px;text-align:right" inputmode="numeric" value="${o.cong[ky.ms[0]]}" onchange="hhDoiCong('${ky.ms[0]}',${ma(o.ten)},this.value)">`:Object.values(o.cong).join(' · ')):'–'}</td>
     <td class="num"><span class="m-link">${v(o.soDon)}</span></td><td class="num">${v(o.sales)}</td><td class="num">${v(o.quy)}</td><td class="num">${v(o.dong+o.giao)}</td><td class="num"><b>${fmt(o.tong)}</b></td></tr>`;
-  const cotNS=[['Nhân sự','ten'],['Vị trí',''],['Ngày công','num'],['Số đơn','num'],['Hoa hồng online','num'],['Quỹ cửa hàng','num'],['Đóng gói · giao','num'],['Tổng','num']];
-  const tongNS=`<tr class="tong"><td colspan="4"><b>Tổng</b></td><td class="num"><b>${v(tSA)}</b></td><td class="num"><b>${v(sumBy(NGs,o=>o.quy))}</b></td><td class="num"><b>${v(sumBy(NGs,o=>o.dong+o.giao))}</b></td><td class="num"><b>${fmt(tNG)}</b></td></tr>`;
-  const ghiCong=motThang?'':`<div class="muted bc-ghi">Sửa ngày công: chọn kỳ 1 tháng.</div>`,trong='<tr><td colspan="8" class="m-empty">Chưa có dữ liệu</td></tr>';
+  const cotNS=[['Nhân sự','ten'],['Vị trí',''],['Cách tính',''],['Ngày công','num'],['Số đơn','num'],['Hoa hồng online','num'],['Quỹ cửa hàng','num'],['Đóng gói · giao','num'],['Tổng','num']];
+  const tongNS=`<tr class="tong"><td colspan="5"><b>Tổng</b></td><td class="num"><b>${v(tSA)}</b></td><td class="num"><b>${v(sumBy(NGs,o=>o.quy))}</b></td><td class="num"><b>${v(sumBy(NGs,o=>o.dong+o.giao))}</b></td><td class="num"><b>${fmt(tNG)}</b></td></tr>`;
+  const ghiCong=motThang?'':`<div class="muted bc-ghi">Sửa ngày công: chọn kỳ 1 tháng.</div>`,trong='<tr><td colspan="9" class="m-empty">Chưa có dữ liệu</td></tr>';
   // 02/11 anh: "tách các khối ra, đừng để sát nhau" (kiểu bảng giống Excel v1.295 anh bỏ: "không làm giống Excel") — mỗi chi nhánh 1 khung riêng; cột cố định độ rộng để các khung thẳng hàng
-  const COL_NS='<colgroup><col style="width:190px"><col><col style="width:84px"><col style="width:70px"><col style="width:128px"><col style="width:120px"><col style="width:120px"><col style="width:120px"></colgroup>';
+  const COL_NS='<colgroup><col style="width:190px"><col style="width:170px"><col><col style="width:84px"><col style="width:70px"><col style="width:128px"><col style="width:120px"><col style="width:120px"><col style="width:120px"></colgroup>';
   // 02/11 anh: "thiếu quỹ cửa hàng ở mỗi chi nhánh" + "khó nhìn, thò thụt" — quỹ = 1 hàng ô đều nhau trải hết khung (4 cột, ô Tổng quỹ luôn ở cột cuối), thẳng mép bảng nhân sự
   const quyCN=(k,t)=>{const xs=CHs.filter(x=>x.cs===k);if(!xs.length)return '';const s=f=>sumBy(xs,f),i=xs.length===1?K.CHs.indexOf(xs[0]):-1;
     const so=(loai,val)=>{val=Math.round(val);return i>=0&&val?`<span class="m-link" onclick="hhDS(${i},'${loai}')">${fmt(val)}</span>`:fmt(val)};
@@ -4875,7 +4875,7 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
   const khoiCN=CN_HH.map(([k,t])=>{const ds=NGs.filter(o=>cnCua(o.bp)[0]===k).sort((a,b)=>thuTu(a)-thuTu(b)||b.tong-a.tong);if(!ds.length)return '';
     return `<div class="m-card" style="margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px;padding:12px 6px 6px"><b style="font-size:14.5px">${esc(t)}</b><span class="badge" style="margin-left:auto">${ds.length} người</span></div>${quyCN(k,t)}
       <div class="scroll"><table class="m-t" style="table-layout:fixed;width:100%">${COL_NS}<tr>${cotNS.map(([a,c])=>`<th class="${c||''}">${a}</th>`).join('')}</tr>${ds.map(o=>dongNS(o)).join('')}
-      <tr class="tong"><td colspan="4"><b>Cộng ${esc(t)}</b></td><td class="num"><b>${v(sumBy(ds,o=>o.sales))}</b></td><td class="num"><b>${v(sumBy(ds,o=>o.quy))}</b></td><td class="num"><b>${v(sumBy(ds,o=>o.dong+o.giao))}</b></td><td class="num"><b>${fmt(sumBy(ds,o=>o.tong))}</b></td></tr></table></div></div>`}).join('');
+      <tr class="tong"><td colspan="5"><b>Cộng ${esc(t)}</b></td><td class="num"><b>${v(sumBy(ds,o=>o.sales))}</b></td><td class="num"><b>${v(sumBy(ds,o=>o.quy))}</b></td><td class="num"><b>${v(sumBy(ds,o=>o.dong+o.giao))}</b></td><td class="num"><b>${fmt(sumBy(ds,o=>o.tong))}</b></td></tr></table></div></div>`}).join('');
   const tabNS=sec('Hoa hồng theo nhân sự','<span class="badge">Bấm 1 người → các đơn đã tham gia</span>')+card(cotNS,[...NGs].sort((a,b)=>b.tong-a.tong).map(o=>dongNS(o,cnCua(o.bp)[1])).join('')||trong,tongNS)+ghiCong;
   const tabCH=sec('Hoa hồng theo chi nhánh','<span class="badge">Bấm 1 người → các đơn đã tham gia</span>')+(khoiCN||'<div class="m-card m-empty">Chưa có dữ liệu</div>')+ghiCong;
   S.cache.bc_xuat=xuatHoaHong;   // 31/10: file Excel cùng mẫu với Cài đặt → Xuất dữ liệu (vừa A4)
@@ -4909,9 +4909,13 @@ const hhCach=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?['Tiền về 
     ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
 // 02/11 anh: "ghi tóm tắt chính sách ngay dưới các vị trí ấy, để t xem m hiểu có đúng không" — 1 dòng dưới vị trí từng người, dòng nhóm ghi quỹ hình thành thế nào
 const HH_QUY={HT:'Quỹ = khách trực tiếp: nhóm biên cao 2%, biên thấp 0,8% · đơn sales online cửa hàng xử lý 1,5%',CT:'Quỹ = khách trực tiếp: mọi nhóm 2% · đơn sales online cửa hàng xử lý 1,5%'};
-const hhTomTat=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online theo báo cáo MKT: khách online, đơn trong 1 tháng từ đơn đầu hoặc 30 ngày từ lần nhắn trang cuối (Shopee: mọi đơn) · đơn mua lại không tính':x.p.cs==='si'?'CS-VH04-13: dưới mốc 0 · 600tr đầu 1,5% · đến 1,2 tỷ 2% · trên 2,5%'+(x.ht?' (hỗ trợ: mốc '+fmtTr(x.moc)+')':''):'CS-VH04-16: giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% (mốc 150 / 200 / 300tr)'),
-    ...o.chiaQuy.map(x=>Math.round(x.tl*100)+'% quỹ '+csTen3(x.cs)+(x.k==='tl'?' (biên bản họp)':x.k==='nv'?', chia theo ngày công':x.tc>1?', chia đều '+x.tc+' người':'')),
-    ...(o.dong+o.giao?['0,25% thực thu đơn đóng / giao, nhiều người chia đều']:[])])].join(' · ');
+// 02/11 anh: "tách riêng 1 cột logic tính hoa hồng, xuống dòng cho cân, không để dài" — mỗi ý 1 dòng ngắn
+const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online (báo cáo MKT)','Tháng đầu của khách / ≤ 30 ngày từ lần nhắn trang','Shopee: mọi đơn · không tính đơn mua lại']
+    :x.p.cs==='si'?['Quỹ team sỉ theo tiền về, đạt mốc '+fmtTr(x.moc)+' mới tính','600tr đầu 1,5% · đến 1,2 tỷ 2% · trên 2,5%']
+    :['Tiền về × giật cấp phần vượt','Đến 150tr 1,5% · đến 200tr 1,8%','Đến 300tr 2% · trên 300tr 2,5%']),
+    ...o.chiaQuy.map(x=>Math.round(x.tl*100)+'% quỹ '+csTen3(x.cs)+(x.k==='tl'?' (biên bản họp)':x.k==='nv'?' × ngày công':x.tc>1?' ÷ '+x.tc+' người':'')),
+    ...(o.dong+o.giao?['0,25% tiền về đơn đóng / giao','Nhiều người cùng làm chia đều']:[])])];
+const hhTomTat=o=>hhCachDong(o).join(' · ');
 // bấm 1 nhân sự → các đơn tham gia trong kỳ
 function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)return;
   const kq=[['Hoa hồng online',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
