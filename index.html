@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.290';
-const APP_VERSION='02/11/2026 15:27';
+const APP_SO='1.291';
+const APP_VERSION='02/11/2026 15:38';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4786,6 +4786,15 @@ const hhKiot=h=>h.la_tra?`<a href="${KIOT_MAN}Returns?Code=${encodeURIComponent(
   :h.la_coc?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">cọc đơn ${esc(h.ma_don||'')}</div>`
   :h.la_phieu?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">phiếu chưa có hoá đơn</div>`
   :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:normal">${esc(hhCocTxt(h))}</div>`:''}`;
+// 02/11 anh "có thực sự check note không": đọc ghi chú TỪNG DÒNG (trước gộp 1 dòng nên chữ dòng sau dính vào tên), nhận cả kiểu
+// "Người đóng hàng 1 :", "Người: đóng hàng:", tên viết thường; bỏ phần trong ngoặc; viết tắt "Tên ĐH / GH" giữ như cũ. — Monsieur Claude
+function hhDocDG(gc){const ds={dong:[],giao:[]},hoa=w=>w.charAt(0).toUpperCase()+w.slice(1);
+  for(const dong of String(gc||'').split(/\r?\n|\s+(?=\d+\.\s*Người)/i)){const mm=dong.match(/Người\s*:?\s*(đóng|giao)\s*hàng\s*\d*\s*:\s*(.+)$/i);if(!mm)continue;
+    mm[2].replace(/\(.*?\)/g,' ').split(/\s*[+,&;]\s*|\s+và\s+/).map(n=>n.trim()).filter(Boolean)
+      .forEach(n=>ds[/đóng/i.test(mm[1])?'dong':'giao'].push(/\d|:/.test(n)||n.split(/\s+/).length>5?n:n.split(/\s+/).map(hoa).join(' ')))}
+  // viết tắt "Thành, A.Toàn ĐH" / "Thành.Diệp ĐH": chỉ lấy từ viết hoa (hoặc "kho") — trước lấy cả chữ thường nên "cuối năm, Diệp ĐH" ra người tên "năm"
+  for(const mm of String(gc||'').matchAll(/((?:\p{Lu}\p{Ll}*|kho)(?:\s*[,.]\s*(?:\p{Lu}\p{Ll}*|kho))*)\s+(ĐH|GH)(?!\p{L})/gu))mm[1].split(/\s*[,.]\s*/).filter(n=>n.length>1).forEach(n=>ds[mm[2]==='ĐH'?'dong':'giao'].push(n));
+  return ds}
 function hhTinh(d,ms){
   const CH=Object.assign({nguoi:[],nhom:{},cua_hang:{},kho:[],ten_tat:{},cong:{}},d.cau_hinh||{});
   const kiotCua={};CH.nguoi.forEach((p,i)=>(p.kiot||[]).forEach(k=>kiotCua[k]=i));
@@ -4821,9 +4830,7 @@ function hhTinh(d,ms){
   // 29/10 anh: "a Toàn vs a Hào đều là bên kho phụ trách đóng vs giao, tính hoa hồng theo vị trí ấy" → người kho (CH.kho) nhận 0,25% đóng / giao, nhóm Kho; chữ "kho" không tên người vẫn bỏ qua
   const nguoiKho=n=>(CH.kho||[]).find(k=>n===k||n.endsWith(' '+k)||n.endsWith('.'+k)),laKho=n=>!nguoiKho(n)&&/kho/i.test(n),sach=n=>{const r=[];for(const w of n.split(/\s+/)){if(w&&w[0]!==w[0].toLowerCase())r.push(w);else break}return r.join(' ')||n},tat=n=>CH.ten_tat[sach(n)]||sach(n);
   let dgKho=0;
-  HD.filter(h=>h.gc&&!h.la_tra&&['HT','CT','SD'].includes(csCuaCN(h.cn))&&h.thu_dg>0).forEach(h=>{const gc=h.gc,ds={dong:[],giao:[]};
-    for(const [re,k] of [[/Người đóng hàng\s*:\s*(.+?)(?=\s+\d\.|$)/i,'dong'],[/Người giao hàng\s*:\s*(.+?)(?=\s+\d\.|$)/i,'giao']]){const mm=gc.match(re);if(mm)mm[1].split(/\s*[+,&;]\s*|\s+và\s+/).forEach(n=>n.trim()&&ds[k].push(n.trim()))}
-    for(const mm of gc.matchAll(/((?:(?:[AC]\.\s*)?[A-ZÀ-Ỹa-zà-ỹ]+)(?:\s*,\s*(?:[AC]\.\s*)?[A-ZÀ-Ỹa-zà-ỹ]+)*)\s+(ĐH|GH)\b/g))mm[1].split(/\s*,\s*/).map(n=>n.replace(/^[AC]\.\s*/,'')).forEach(n=>ds[mm[2]==='ĐH'?'dong':'giao'].push(n));
+  HD.filter(h=>h.gc&&!h.la_tra&&['HT','CT','SD'].includes(csCuaCN(h.cn))&&h.thu_dg>0).forEach(h=>{const ds=hhDocDG(h.gc);
     for(const k of ['dong','giao']){const ns=ds[k].filter(n=>!/từ kho/i.test(n)).map(tat);if(!ns.length)continue;const tien=Math.round(h.thu_dg*.0025/ns.length);   // 31/10 kế toán: hàng rời kho mới tính đóng / giao — cả hoá đơn (gồm phần cọc)
       ns.forEach(n=>{if(laKho(n)){dgKho+=tien;return}const nk=nguoiKho(n),o=nk?ng(CH.ten_tat[nk]||nk,'kho','Kho (đóng gói / giao)'):ng(n,'khac','');o[k]+=tien;thamGia(o,h,(k==='dong'?'Đóng gói':'Giao hàng')+(ns.length>1?' (chia '+ns.length+')':''),tien)})}});
   const NGs=Object.values(NG).map(o=>({...o,tong:o.sales+o.quy+o.dong+o.giao,ds:Object.values(o.don).sort((a,b)=>a.h.ngay<b.h.ngay?-1:a.h.ngay>b.h.ngay?1:a.h.id-b.h.id)})).map(o=>({...o,soDon:o.ds.length}));
