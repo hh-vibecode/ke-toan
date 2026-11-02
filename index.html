@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.297';
-const APP_VERSION='02/11/2026 16:28';
+const APP_SO='1.298';
+const APP_VERSION='02/11/2026 16:34';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4862,14 +4862,15 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
   const ghiCong=motThang?'':`<div class="muted bc-ghi">Sửa ngày công: chọn kỳ 1 tháng.</div>`,trong='<tr><td colspan="8" class="m-empty">Chưa có dữ liệu</td></tr>';
   // 02/11 anh: "tách các khối ra, đừng để sát nhau" (kiểu bảng giống Excel v1.295 anh bỏ: "không làm giống Excel") — mỗi chi nhánh 1 khung riêng; cột cố định độ rộng để các khung thẳng hàng
   const COL_NS='<colgroup><col style="width:190px"><col><col style="width:84px"><col style="width:70px"><col style="width:128px"><col style="width:120px"><col style="width:120px"><col style="width:120px"></colgroup>';
-  // 02/11 anh: "thiếu quỹ cửa hàng ở mỗi chi nhánh" — khung Hiền Thủy / Chánh Tâm có bảng quỹ hình thành từ đâu (bấm số thực thu → các đơn)
+  // 02/11 anh: "thiếu quỹ cửa hàng ở mỗi chi nhánh" + "khó nhìn, thò thụt" — quỹ = 1 hàng ô đều nhau trải hết khung (4 cột, ô Tổng quỹ luôn ở cột cuối), thẳng mép bảng nhân sự
   const quyCN=(k,t)=>{const xs=CHs.filter(x=>x.cs===k);if(!xs.length)return '';const s=f=>sumBy(xs,f),i=xs.length===1?K.CHs.indexOf(xs[0]):-1;
-    const so=(loai,val)=>{val=Math.round(val);return i>=0&&val?`<span class="m-link" onclick="hhDS(${i},'${loai}')">${fmt(val)}</span>`:v(val)};
-    const dong=(ten,loai,thu,tl,q)=>`<tr><td>${ten}</td><td class="num">${so(loai,thu)}</td><td class="num">${tl}</td><td class="num">${v(Math.round(q))}</td></tr>`;
-    return `<div style="padding:0 6px 12px"><table class="m-t" style="width:auto;min-width:620px"><tr><th>Quỹ cửa hàng hình thành từ</th><th class="num">Thực thu</th><th class="num">Tỷ lệ</th><th class="num">Quỹ</th></tr>
-      ${k==='CT'?dong('Khách trực tiếp — mọi nhóm hàng','cao',s(x=>x.cao),'2%',s(x=>x.qCao)):dong('Khách trực tiếp — nhóm biên cao','cao',s(x=>x.cao),'2%',s(x=>x.qCao))+dong('Khách trực tiếp — nhóm biên thấp','thap',s(x=>x.thap),'0,8%',s(x=>x.qThap))}
-      ${dong('Đơn sales online cửa hàng xử lý','on',s(x=>x.onT),'1,5%',s(x=>x.qOn))}
-      <tr class="tong"><td colspan="3"><b>Quỹ cửa hàng ${esc(t)}</b></td><td class="num"><b>${fmt(Math.round(s(x=>x.q)))}</b></td></tr></table></div>`};
+    const so=(loai,val)=>{val=Math.round(val);return i>=0&&val?`<span class="m-link" onclick="hhDS(${i},'${loai}')">${fmt(val)}</span>`:fmt(val)};
+    const o=(ten,loai,thu,tl,q,cot)=>`<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;${cot?'grid-column:'+cot:''}"><div class="muted" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ten}</div>
+      <div style="font-size:16px;font-weight:700;margin:2px 0">${fmt(Math.round(q))}</div><div class="muted" style="font-size:12px">thực thu ${so(loai,thu)} × ${tl}</div></div>`;
+    return `<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:0 6px 12px">
+      ${k==='CT'?o('Khách trực tiếp — mọi nhóm hàng','cao',s(x=>x.cao),'2%',s(x=>x.qCao),'span 2'):o('Khách trực tiếp — nhóm biên cao','cao',s(x=>x.cao),'2%',s(x=>x.qCao))+o('Khách trực tiếp — nhóm biên thấp','thap',s(x=>x.thap),'0,8%',s(x=>x.qThap))}
+      ${o('Đơn sales online cửa hàng xử lý','on',s(x=>x.onT),'1,5%',s(x=>x.qOn))}
+      <div style="grid-column:4;border-radius:10px;padding:10px 12px;background:var(--bg2)"><div class="muted" style="font-size:12px">Quỹ cửa hàng ${esc(t)}</div><div style="font-size:16px;font-weight:800;margin:2px 0">${fmt(Math.round(s(x=>x.q)))}</div><div class="muted" style="font-size:12px">chia theo bảng dưới</div></div></div>`};
   const khoiCN=CN_HH.map(([k,t])=>{const ds=NGs.filter(o=>cnCua(o.bp)[0]===k).sort((a,b)=>thuTu(a)-thuTu(b)||b.tong-a.tong);if(!ds.length)return '';
     return `<div class="m-card" style="margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px;padding:12px 6px 6px"><b style="font-size:14.5px">${esc(t)}</b><span class="badge" style="margin-left:auto">${ds.length} người</span></div>${quyCN(k,t)}
       <div class="scroll"><table class="m-t" style="table-layout:fixed;width:100%">${COL_NS}<tr>${cotNS.map(([a,c])=>`<th class="${c||''}">${a}</th>`).join('')}</tr>${ds.map(o=>dongNS(o)).join('')}
