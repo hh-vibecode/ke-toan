@@ -591,8 +591,7 @@ tr.bc-so_du td{font-weight:700;color:var(--text2)}tr.bc-con td:first-child{paddi
 .bc-mo{display:inline-block;width:16px;cursor:pointer;color:var(--muted)}.bc-so{display:inline-block;min-width:30px;color:var(--text2)}
 .bc-ghi{font-size:11.5px;margin-top:10px;line-height:1.6}
 .bc-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 10px}.bc-k>div{background:var(--bg2);border-radius:9px;padding:8px 10px}.bc-k span{display:block;font-size:11px;color:var(--muted)}.bc-k b{font-size:15px}
-.ns-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;align-items:start}.ns-k{padding:10px 12px}.ns-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.ns-goi{display:flex;flex-wrap:wrap;gap:6px}select.no-pt{height:28px;font-size:12px;max-width:190px}select.no-pt.kiot{color:var(--muted);font-style:italic}
+select.no-pt{height:28px;font-size:12px;max-width:190px}select.no-pt.kiot{color:var(--muted);font-style:italic}
 .m-chon{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;margin-bottom:10px;border-radius:10px;background:var(--sel-bg);border:1.5px solid var(--accent);font-size:12.5px}
 .ld{margin:2px 0 10px}.ld-n{display:flex;gap:10px;position:relative;padding-bottom:12px}
 .ld-n:not(:last-child)::before{content:'';position:absolute;left:11px;top:25px;bottom:1px;width:2px;background:var(--border)}.ld-n.xong:not(:last-child)::before{background:var(--ok)}
@@ -1068,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.287';
-const APP_VERSION='02/11/2026 11:06';
+const APP_SO='1.288';
+const APP_VERSION='02/11/2026 13:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2838,32 +2837,7 @@ function tabNo(on){const t=(TAB_NO.find(([k])=>k===on)||TAB_NO.find(([k])=>k===S
 // ── NHÂN SỰ PHỤ TRÁCH theo bộ phận (14/10/2026, anh: tham khảo bảng Nhân sự Sale ở trang Phân quyền app MKT/Sale)
 // Bảng kt_nhan_su (supabase-schema-kt-nhan-su.sql): tên chuẩn + bộ phận (danh mục Cơ sở / bộ phận, ô "Bộ phận đề nghị") + các tên trên Kiot.
 // Dùng cho cột "Người phụ trách" ở Công nợ: gán tay > NV bán hoá đơn gần nhất trên Kiot (quy về tên chuẩn) > tên Kiot thô.
-async function nhanSuHtml(){
-  const d=await rpc('kt_ds_nhan_su');S.cache.ns=d.ns;const sua=heThong();
-  const bps=[...S.dm.don_vi.filter(x=>x.la_bo_phan&&(x.hoat_dong||d.ns.some(n=>n.bo_phan_id===x.id))),{id:null,ten:'Chưa xếp bộ phận'}];
-  const khoi=bp=>{const ds=d.ns.filter(n=>(n.bo_phan_id||null)===bp.id).sort((a,b)=>(b.dang_lam-a.dang_lam)||a.ten.localeCompare(b.ten,'vi'));if(!ds.length&&bp.id===null)return '';
-    return `<div class="card ns-k"><div class="ns-h"><b>${esc(bp.ten)}</b><span class="badge">${ds.filter(n=>n.dang_lam).length} người</span></div>
-      <table class="m-t">${ds.map(n=>`<tr class="${n.dang_lam?'':'muted'}"><td><b>${esc(n.ten)}</b>${n.dang_lam?'':' '+pill('Đã nghỉ','')}${(n.ten_kiot||[]).length?`<div class="muted" style="font-size:11px">Trên Kiot: ${esc(n.ten_kiot.join(', '))}</div>`:''}</td>
-        <td class="nw muted" style="font-size:11.5px">${n.so_kh?n.so_kh+' khách':''}${n.so_kh&&n.so_ncc?' · ':''}${n.so_ncc?n.so_ncc+' NCC':''}</td>
-        <td class="nw" style="text-align:right">${sua?`<button class="btn sm" onclick="formNS(${n.id})">${IC_SUA} Sửa</button> <button class="btn sm ${n.dang_lam?'bad':'ok'}" onclick="nghiNS(${n.id},${!n.dang_lam})">${n.dang_lam?'Cho nghỉ':'Cho làm lại'}</button>`:''}</td></tr>`).join('')||'<tr><td class="m-empty">Chưa có ai</td></tr>'}</table></div>`};
-  return `<div class="sec" style="flex-wrap:wrap">Nhân sự phụ trách theo bộ phận <span class="badge">người phụ trách công nợ khách / NCC</span>
-      ${sua?'<button class="btn pri" style="margin-left:auto" onclick="formNS()">+ Thêm nhân sự</button>':''}</div>
-    <div class="ns-g">${bps.map(khoi).join('')}</div>
-    ${sua&&d.kiot.length?`<div class="card" style="padding:12px 14px;margin-top:10px"><div style="font-weight:700;margin-bottom:6px">Tên nhân viên bán trên Kiot chưa có trong danh sách <span class="badge">bấm để thêm</span></div>
-      <div class="ns-goi">${d.kiot.map(x=>`<button class="btn sm" onclick='formNS(null,${esc(JSON.stringify(x))})'>+ ${esc(x.ten)} <span class="muted">${fmt(x.so_hd)} HĐ</span></button>`).join('')}</div></div>`:''}`}
-function formNS(id,goi){const n=id?S.cache.ns.find(x=>x.id===id):{ten:goi?goi.ten:'',ten_kiot:[],bo_phan_id:goi?((S.dm.don_vi.find(v=>v.la_bo_phan&&(v.kiot_chi_nhanh||[]).includes(goi.cn))||{}).id||null):null};
-  const bps=S.dm.don_vi.filter(x=>x.la_bo_phan&&(x.hoat_dong||x.id===n.bo_phan_id));
-  modal(`<h2>${id?'Sửa nhân sự':'Thêm nhân sự'}</h2><div class="form" id="f">
-    <label class="full">Họ tên (tên chuẩn)<input name="ten" value="${esc(n.ten||'')}" maxlength="80"></label>
-    <label class="full">Bộ phận<select name="bo_phan_id">${opts(bps,n.bo_phan_id,'— chọn bộ phận —')}</select></label>
-    <label class="full">Tên trên Kiot nếu khác tên chuẩn (cách nhau dấu phẩy)<input name="ten_kiot" value="${esc((n.ten_kiot||[]).join(', '))}" placeholder="vd: Vân Ngọc, Trịnh Lê Vân Ngọc"></label>
-    <label class="full">Ghi chú<input name="ghi_chu" value="${esc(n.ghi_chu||'')}"></label></div>
-    <div class="muted" style="font-size:12px;margin-top:6px">Bộ phận lấy từ danh mục Cài đặt → Cơ sở / bộ phận (ô "Bộ phận đề nghị"). Thiếu bộ phận thì thêm ở đó.</div>
-    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuNS(${id||'null'})">Lưu</button></div>`)}
-async function luuNS(id){const o=formData($('#f'));o.id=id;o.bo_phan_id=o.bo_phan_id?+o.bo_phan_id:null;o.ten_kiot=(o.ten_kiot||'').split(',').map(s=>s.trim()).filter(Boolean);
-  if(!o.ten.trim())return alert('Nhập họ tên');await save('kt_luu_nhan_su',{p_dong:o});render()}
-async function nghiNS(id,lam){const n=S.cache.ns.find(x=>x.id===id);if(!lam&&!confirm(`Cho ${n.ten} nghỉ? Người này không còn trong ô chọn người phụ trách (khách đang gán vẫn giữ).`))return;
-  await save('kt_luu_nhan_su',{p_dong:{...n,dang_lam:lam}},lam?'Đã cho làm lại':'Đã cho nghỉ');render()}
+// 02/11/2026 anh: "clear phần này đi" → bỏ khối Nhân sự phụ trách ở Phân quyền (bảng kt_nhan_su giữ nguyên, ô chọn ở Công nợ đọc như cũ). — Monsieur Claude
 // ô chọn người phụ trách (công nợ): nhân sự đang làm theo bộ phận; trống = theo Kiot
 function nsOpts(cur){const ds=(S.cache.ns||[]).filter(n=>n.dang_lam||n.id===cur),bp=id=>((S.dm.don_vi.find(v=>v.id===id)||{}).ten)||'Chưa xếp bộ phận';
   const g={};ds.forEach(n=>(g[bp(n.bo_phan_id)]=g[bp(n.bo_phan_id)]||[]).push(n));
@@ -6204,7 +6178,6 @@ async function pageCaiDat(mod){
         <td><code>${esc(x.ten_dang_nhap)}</code></td><td>${qtxt(x)}</td><td class="nw">${fmtDT(x.dang_nhap_luc)}</td>
         <td>${!x.hoat_dong?vb('Đã khoá','grey'):x.dang_khoa?vb('Tạm khoá (sai MK)','warn'):vb('Đang hoạt động','ok')}</td>
         <td class="nw">${sua&&x.vi_tri!=='supreme'?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button> <button class="btn sm" onclick="datLaiMK(${x.id})">Đặt lại mật khẩu</button> ${x.hoat_dong?`<button class="btn sm bad" onclick="khoaND(${x.id},false)">Khoá</button>`:`<button class="btn sm ok" onclick="khoaND(${x.id},true)">Mở lại</button>`}${chiGD()&&x.hoat_dong&&x.id!==S.toi.id&&!xnDoc()?` <button class="btn sm" title="Xem app đúng như tài khoản này thấy — chỉ xem" onclick="xemNhu(${x.id},'${esc(x.ho_ten).replace(/'/g,'')}')">Xem như</button>`:''}`:sua&&x.id===S.toi.id?`<button class="btn sm" onclick="formND(${x.id})">${IC_SUA} Sửa</button>`:''}</td></tr>`).join('')}</table></div></div>`;
-    c.insertAdjacentHTML('beforeend',await nhanSuHtml().catch(e=>`<div class="empty neg">${esc(e.message)}</div>`));
   }else if(S.f.cd==='nhat_ky'){
     const ds=await rpc('kt_ds_nhat_ky');
     c.innerHTML=`<div class="card scroll"><table><tr><th>Lúc</th><th>Người</th><th>Bảng</th><th>Dòng</th><th>Việc</th><th>Chi tiết</th></tr>
@@ -6909,7 +6882,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(PAGE
 // 20/10/2026 rà soát (anh: "rà đủ các case người dùng có thể ấn nhầm"): bấm đúp nút Lưu tạo 2 phiếu → mỗi hàm lưu / duyệt chỉ chạy 1 lượt
 // cho CÙNG 1 phiếu tại 1 thời điểm (khoá theo tham số đầu = id phiếu; phiếu mới = null), lượt bấm thêm khi đang chạy bị bỏ qua.
 (()=>{const khoaLuu=fn=>{const dang=new Set();return async function(...a){const k=String(a[0]);if(dang.has(k))return;dang.add(k);try{return await fn.apply(this,a)}finally{dang.delete(k)}}};
-  ['tuChiLoatLuu','duyetLenhLoat','lapLenh','tqNhan','luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuNS','luuTL','luuTT','luuNganSach','luuNoTach','luuDcf','luuNap']
+  ['tuChiLoatLuu','duyetLenhLoat','lapLenh','tqNhan','luuChi','luuThu','luuDC','luuTU','luuTUHoan','luuVay','luuVayNhan','luuVayTra','luuPhieu','doiTTChi','luuPhanBo','duyetNhanh','xacNhanDC','luuThuHoi','luuXNHU','luuKiemKet','luuNo','luuST','luuTS','luuDCT','luuDM','luuND','luuTL','luuTT','luuNganSach','luuNoTach','luuDcf','luuNap']
     .forEach(k=>{if(typeof window[k]==='function')window[k]=khoaLuu(window[k])})})();
 </script>
 </body>
