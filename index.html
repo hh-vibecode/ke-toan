@@ -299,6 +299,7 @@ table.tq-t td:first-child b{white-space:nowrap}
 .tq-ten{max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gd-pc.tu{outline:1px dashed currentColor;outline-offset:-1px}
 .xn-1{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hh-cs{font-size:11px;font-weight:400;color:var(--muted);margin-top:1px;line-height:1.35}.hh-cs.n{margin:0 0 0 10px}
 .tq-nh-m{display:inline-block;width:14px;color:var(--muted);font-size:10px}
 table.tq-nh tr.tq-nh-con td{background:var(--bg2,#f8fafc);font-size:12px}table.tq-nh tr.tq-nh-con td:not(.pos-t){color:var(--text2)}table.tq-nh tr.tq-nh-con td:first-child{padding-left:30px}
 table.tq-t th{font-size:10.5px;color:var(--muted);font-weight:700;text-align:left;padding:6px 5px;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -1067,8 +1068,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.279';
-const APP_VERSION='31/10/2026 20:21';
+const APP_SO='1.280';
+const APP_VERSION='02/11/2026 09:02';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4826,8 +4827,9 @@ function hhTinh(d,ms){
     const qCao=Math.round(cao*.02),qThap=Math.round(thap*.008),qOn=Math.round(onT*.015),q=qCao+qThap+qOn;
     const x={m,cs,cao,thap,onT,qCao,qThap,qOn,q,vt:[],wi,on,dkCao,dkThap};
     for(const [k,ten,tl,ds] of [['ql','Quản lý',t.ql,vt.ql||[]],['gs','Giám sát',t.gs,vt.gs||[]],['nv','Nhân viên',t.nv,vt.nv||[]]]){if(!tl)continue;
-      const phanQ=Math.round(q*tl),tc=k==='nv'?sumBy(ds,n=>cg(m,n)):ds.length;
-      const ng2=ds.map(n=>{const c=k==='nv'?cg(m,n):1,tien=tc?Math.round(phanQ*c/tc):0,o=ng(n,cs,ten);o.quy+=tien;if(k==='nv')o.cong[m]=c;o.chiaQuy.push({m,cs,vt:ten,tl,q,phan:phanQ,c,tc,k,tien,dsc:ds.map(z=>[z,k==='nv'?cg(m,z):1])});return {n,c,tien}});
+      // 02/11 kế toán (biên bản họp cửa hàng): Hiền Thủy từ T10 phần nhân viên 35% chia cố định Hòa 25% · Cường 10% (phần còn lại), không theo ngày công — cấu hình cua_hang.HT.nv_tl
+      const tlR=k==='nv'&&vt.nv_tl&&m>=vt.nv_tl.tu?vt.nv_tl.ds:null,phanQ=Math.round(q*tl),tc=k==='nv'?sumBy(ds,n=>cg(m,n)):ds.length;let conQ=phanQ;
+      const ng2=ds.map((n,i)=>{const r=tlR?+tlR[n]||0:null,c=k==='nv'&&!tlR?cg(m,n):1,tien=tlR?(i===ds.length-1?conQ:Math.round(q*r)):tc?Math.round(phanQ*c/tc):0,o=ng(n,cs,ten);conQ-=tien;o.quy+=tien;if(k==='nv'&&!tlR)o.cong[m]=c;o.chiaQuy.push({m,cs,vt:ten,tl:tlR?r:tl,q,phan:tlR?tien:phanQ,c,tc:tlR?1:tc,k:tlR?'tl':k,tien,dsc:ds.map(z=>[z,k==='nv'&&!tlR?cg(m,z):1])});return {n,c,tien,tl:r}});
       x.vt.push({k,ten,tl,phan:phanQ,ng:ng2,khongChi:ds.length?0:phanQ})}
     CHs.push(x)}));
   // nhân sự cửa hàng tự bán (người bán trên Kiot) → đơn tham gia (hưởng qua quỹ, không tính riêng từng đơn)
@@ -4855,12 +4857,12 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
   // tab 1: theo nhân sự — nhóm bộ phận
   const NHOM=hhBP();
   const thuTu=o=>{const t=[...o.vt].join(' ');return /Quản lý/.test(t)?0:/Giám sát/.test(t)?1:/Nhân viên/.test(t)?2:3};
-  const dongNS=o=>`<tr class="click" onclick="hhCT(${ma(o.ten)})" title="Bấm xem các đơn ${esc(o.ten)} tham gia"><td class="ten"><b>${esc(o.ten)}</b></td><td>${esc([...o.vt].join(' · ')||'Đóng gói / giao hàng')}</td>
+  const dongNS=o=>`<tr class="click" onclick="hhCT(${ma(o.ten)})" title="Bấm xem các đơn ${esc(o.ten)} tham gia"><td class="ten"><b>${esc(o.ten)}</b></td><td>${esc([...o.vt].join(' · ')||'Đóng gói / giao hàng')}<div class="hh-cs">${esc(hhTomTat(o))}</div></td>
     <td class="num" onclick="event.stopPropagation()">${Object.keys(o.cong).length?(g&&motThang?`<input class="m-in" style="width:56px;min-width:0;max-width:56px;height:26px;padding:0 8px;text-align:right" inputmode="numeric" value="${o.cong[ky.ms[0]]}" onchange="hhDoiCong('${ky.ms[0]}',${ma(o.ten)},this.value)">`:Object.values(o.cong).join(' · ')):'–'}</td>
     <td class="num"><span class="m-link">${v(o.soDon)}</span></td><td class="num">${v(o.sales)}</td><td class="num">${v(o.quy)}</td><td class="num">${v(o.dong+o.giao)}</td><td class="num"><b>${fmt(o.tong)}</b></td></tr>`;
   const motNhom=new Set(NGs.map(o=>o.bp)).size<=1;   // lọc còn 1 nhóm: bỏ dòng Cộng (trùng dòng Tổng)
   const bodyNS=NHOM.map(([k,t])=>{const ds=NGs.filter(o=>o.bp===k).sort((a,b)=>thuTu(a)-thuTu(b)||b.tong-a.tong);if(!ds.length)return '';
-    return `<tr><td colspan="8" style="background:var(--bg2);font-weight:700;font-size:12px">${esc(t)}</td></tr>${ds.map(dongNS).join('')}${motNhom?'':`
+    return `<tr><td colspan="8" style="background:var(--bg2);font-weight:700;font-size:12px">${esc(t)}${HH_QUY[k]?`<span class="hh-cs n">${HH_QUY[k]}</span>`:''}</td></tr>${ds.map(dongNS).join('')}${motNhom?'':`
       <tr><td colspan="4" class="muted" style="font-size:12px">Cộng ${esc(t.replace(/^Cửa hàng /,''))}</td><td class="num muted">${v(sumBy(ds,o=>o.sales))}</td><td class="num muted">${v(sumBy(ds,o=>o.quy))}</td><td class="num muted">${v(sumBy(ds,o=>o.dong+o.giao))}</td><td class="num"><b>${fmt(sumBy(ds,o=>o.tong))}</b></td></tr>`}`}).join('');
   const tabNS=sec('Hoa hồng theo nhân sự','<span class="badge">Bấm 1 người → các đơn đã tham gia</span>')+card([['Nhân sự','ten'],['Vị trí',''],['Ngày công','num'],['Số đơn','num'],['Hoa hồng online','num'],['Quỹ cửa hàng','num'],['Đóng gói · giao','num'],['Tổng','num']],
     bodyNS||'<tr><td colspan="8" class="m-empty">Chưa có dữ liệu</td></tr>',
@@ -4884,7 +4886,7 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
         ${x.cs==='CT'?dongQ(x,i,'Khách trực tiếp — mọi nhóm hàng',x.cao,'2%',x.qCao,'cao'):dongQ(x,i,'Khách trực tiếp — nhóm biên cao',x.cao,'2%',x.qCao,'cao')+dongQ(x,i,'Khách trực tiếp — nhóm biên thấp',x.thap,'0,8%',x.qThap,'thap')}
         ${dongQ(x,i,'Đơn sales online cửa hàng xử lý',x.onT,'1,5%',x.qOn,'on')}</table>
       <table class="m-t" style="margin-top:10px"><tr><th>Chia quỹ</th><th>Người nhận</th><th class="num">Ngày công</th><th class="num">Số tiền</th></tr>
-        ${x.vt.map(r=>r.ng.length?r.ng.map((n,j)=>`<tr class="click" onclick="hhCT(${ma(n.n)})"><td>${j?'':esc(r.ten)+' '+Math.round(r.tl*100)+'%'}</td><td><b>${esc(n.n)}</b></td><td class="num">${r.k==='nv'?n.c:'–'}</td><td class="num">${fmt(n.tien)}</td></tr>`).join('')
+        ${x.vt.map(r=>r.ng.length?r.ng.map((n,j)=>`<tr class="click" onclick="hhCT(${ma(n.n)})"><td>${n.tl!=null?esc(r.ten)+' '+Math.round(n.tl*100)+'%':j?'':esc(r.ten)+' '+Math.round(r.tl*100)+'%'}</td><td><b>${esc(n.n)}</b></td><td class="num">${r.k==='nv'&&n.tl==null?n.c:'–'}</td><td class="num">${fmt(n.tien)}</td></tr>`).join('')
           :`<tr><td>${esc(r.ten)} ${Math.round(r.tl*100)}%</td><td class="muted">Chưa có người giữ vị trí — không chi</td><td class="num">–</td><td class="num muted">${fmt(r.khongChi)}</td></tr>`).join('')}</table></div>`;
   const dgNG=NGs.filter(o=>o.dong||o.giao).sort((a,b)=>(b.dong+b.giao)-(a.dong+a.giao)),soViec=(o,k)=>o.ds.filter(x=>x.vai.some(s=>s.startsWith(k))).length;
   const tabCH=sec('Quỹ hoa hồng cửa hàng','<span class="badge">Bấm số thực thu → các đơn tạo nên quỹ</span>')
@@ -4913,8 +4915,13 @@ function hhPopup(){const P=S.cache.hh_pop;if(!P)return;const n=P.rows.length,tr=
 const hhSp=h=>h.sp?`<div class="muted" style="font-size:11px;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(h.sp)}">${esc(h.sp)}</div>`:'';
 // công thức từng người (popup + file xuất) — 28/10 anh: "ghi công thức ra là được, không cần số"
 const hhCach=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?'Thực thu đơn online (Kiot, mọi cơ sở) × '+((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% — '+(x.p.vt||'hỗ trợ vận hành').toLowerCase():x.p.cs==='si'?'Thực thu (Kiot) × tỷ lệ giật cấp — sales mảng buôn, dưới mốc không tính':'Thực thu (Kiot) × tỷ lệ giật cấp — sales online lẻ'),
-    ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
+    ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='tl'?' (cố định theo biên bản họp cửa hàng)':x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
     ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
+// 02/11 anh: "ghi tóm tắt chính sách ngay dưới các vị trí ấy, để t xem m hiểu có đúng không" — 1 dòng dưới vị trí từng người, dòng nhóm ghi quỹ hình thành thế nào
+const HH_QUY={HT:'Quỹ = khách trực tiếp: nhóm biên cao 2%, biên thấp 0,8% · đơn sales online cửa hàng xử lý 1,5%',CT:'Quỹ = khách trực tiếp: mọi nhóm 2% · đơn sales online cửa hàng xử lý 1,5%'};
+const hhTomTat=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% thực thu mọi đơn online, gồm cọc':x.p.cs==='si'?'CS-VH04-13: dưới mốc 0 · 600tr đầu 1,5% · đến 1,2 tỷ 2% · trên 2,5%'+(x.ht?' (hỗ trợ: mốc '+fmtTr(x.moc)+')':''):'CS-VH04-16: giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% (mốc 150 / 200 / 300tr)'),
+    ...o.chiaQuy.map(x=>Math.round(x.tl*100)+'% quỹ '+csTen3(x.cs)+(x.k==='tl'?' (biên bản họp)':x.k==='nv'?', chia theo ngày công':x.tc>1?', chia đều '+x.tc+' người':'')),
+    ...(o.dong+o.giao?['0,25% thực thu đơn đóng / giao, nhiều người chia đều']:[])])].join(' · ');
 // bấm 1 nhân sự → các đơn tham gia trong kỳ
 function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)return;
   const kq=[['Hoa hồng online',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
@@ -6096,7 +6103,7 @@ const LOGIC2=[
  ['bao_cao','Khoá sổ tháng','Job Kiot / meInvoice vẫn chạy; số đổi sau khoá → trang Khoá kỳ báo "Đã đổi".','','14/10'],
  ['bao_cao','Khoá sổ tháng','Chỉ khoá tháng đã kết thúc; mở khoá: Supreme / Admin.','','14/10'],
  ['bao_cao','Hoa hồng (mục 9)','Tính trên THỰC THU Kiot = khách đã trả trên hoá đơn + phiếu thu cục trên sổ quỹ Kiot (mã TT…, gắn khách, không đánh hoá đơn) phân bổ vào hoá đơn còn nợ của khách đó, hoá đơn cũ trước, chỉ hoá đơn có ngày ≤ ngày thu — trừ tiền hoàn khi trả hàng (kế toán 29/10). Sales online theo chính sách riêng: online lẻ CS-VH04-16 giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% (mốc 150 / 200 / 300tr); mảng buôn CS-VH04-13 quỹ dưới mốc = 0, 600tr đầu 1,5%, đến 1,2 tỷ 2%, trên 2,5% (mốc 600tr; thời gian hỗ trợ sales mới hạ mốc). Doanh thu 1 người = hoá đơn của các nhân viên Kiot gán cho người đó.','Anh 28/10: Nguyên tính doanh thu Nguyên + Oanh (hỗ trợ), hạ mốc 300tr 7/10/2026–7/1/2027. Cấu hình (người hưởng, chức danh, phân nhóm) nhắn Claude sửa — anh bỏ tab Cài đặt 28/10.','28/10'],
- ['bao_cao','Hoa hồng (mục 9)','Cửa hàng offline (chính sách cửa hàng): đơn khách trực tiếp → Hiền Thủy nhóm biên cao 2% / biên thấp 0,8%, Chánh Tâm 2%; đơn sales online cửa hàng xử lý → 1,5%. Đóng gói / giao 0,25% theo tên trong ghi chú — người kho (Toàn, Hào) nhận theo vị trí kho, nhóm Kho (anh 29/10). Chia: Quản lý 40% · Giám sát 25% · Nhân viên 35% (Chánh Tâm QL 40% · NV 60%), nhân viên theo ngày công (mặc định 26, sửa được). Đóng gói / giao hàng 0,25% theo tên trong ghi chú Kiot, nhiều người chia đều.','Chưa có người giữ vị trí → phần đó không chi. Nhân sự kho không thuộc chính sách cửa hàng → không chi đóng gói / giao.','28/10'],
+ ['bao_cao','Hoa hồng (mục 9)','Cửa hàng offline (chính sách cửa hàng): đơn khách trực tiếp → Hiền Thủy nhóm biên cao 2% / biên thấp 0,8%, Chánh Tâm 2%; đơn sales online cửa hàng xử lý → 1,5%. Đóng gói / giao 0,25% theo tên trong ghi chú — người kho (Toàn, Hào) nhận theo vị trí kho, nhóm Kho (anh 29/10). Chia: Quản lý 40% · Giám sát 25% · Nhân viên 35% (Chánh Tâm QL 40% · NV 60%), nhân viên theo ngày công (mặc định 26, sửa được) — riêng Hiền Thủy từ T10/2026 phần nhân viên cố định Lê Thị Hòa 25% · Vũ Mạnh Cường 10% theo biên bản họp cửa hàng (kế toán 02/11). Đóng gói / giao hàng 0,25% theo tên trong ghi chú Kiot, nhiều người chia đều.','Chưa có người giữ vị trí → phần đó không chi. Nhân sự kho không thuộc chính sách cửa hàng → không chi đóng gói / giao.','28/10'],
  // ── KIOT
  ['kiot','Kéo Kiot','Luồng kéo riêng của app kế toán, 15 phút / lần (phút 2, 17, 32, 47).','Chỉ đọc Kiot.','14/10'],
  ['kiot','Kéo Kiot','Sổ quỹ lấy 10 ngày gần nhất; hoá đơn, trả hàng, nhập, đơn đặt, khách, NCC, hàng hoá lấy phần mới sửa.','','14/10'],
@@ -6515,7 +6522,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
       .concat([['Đơn sales online cửa hàng xử lý',x.onT,'1,5%',x.qOn]]).forEach(([t,thu,tl,q],j,arr)=>{const loai=j===arr.length-1?'on':j===0?'cao':'thap';
         const coc=loai==='on'?sumBy(x.on.filter(h=>h.la_coc),h=>h.thu):sumBy(x.wi.filter(h=>h.la_coc),h=>K.phan(h,loai==='cao'?x.dkCao:x.dkThap));
         qr.push({th,c,muc:'Quỹ hình thành',ct:t,thu,hd:Math.round(thu-coc)||null,coc:Math.round(coc)||null,tl,q})});
-    x.vt.forEach(r=>r.ng.length?r.ng.forEach(n=>qr.push({th,c,muc:'Chia quỹ',ct:r.ten+' '+Math.round(r.tl*100)+'%',ng:n.n,cong:r.k==='nv'?n.c:null,chi:n.tien}))
+    x.vt.forEach(r=>r.ng.length?r.ng.forEach(n=>qr.push({th,c,muc:'Chia quỹ',ct:r.ten+' '+Math.round((n.tl!=null?n.tl:r.tl)*100)+'%',ng:n.n,cong:r.k==='nv'&&n.tl==null?n.c:null,chi:n.tien}))
       :qr.push({th,c,muc:'Chia quỹ',ct:r.ten+' '+Math.round(r.tl*100)+'%',ng:'Chưa có người — không chi ('+fmt(r.khongChi)+')',chi:0}))});
   const shQ={ten:'Quỹ cửa hàng',tieuDe:'QUỸ HOA HỒNG CỬA HÀNG OFFLINE',phu,rows:qr,dong:r=>r.muc==='Quỹ hình thành'?{nen:'FFF7FAFD'}:null,
     cols:[['Tháng',r=>r.th,'chu',{w:9}],['Cửa hàng',r=>r.c,'chu',{w:10}],['Mục',r=>r.muc,'chu',{w:11}],['Chi tiết',r=>r.ct,'chu',{w:19}],['Thực thu từ hoá đơn',r=>r.hd,'so',{w:12}],['Thực thu từ cọc',r=>r.coc,'so',{w:12}],['Thực thu tính quỹ',r=>r.thu,'so',{w:12}],['Tỷ lệ',r=>r.tl,'chu',{w:6}],
@@ -6528,7 +6535,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
     ...CH.nguoi.map(p=>['Người hưởng: '+p.ten,hhCsTen(p)+(p.kiot&&p.kiot.length?' · doanh thu Kiot của: '+p.kiot.join(', '):'')+(p.ho_tro&&p.ho_tro.tu?' · hỗ trợ '+fmtD(p.ho_tro.tu)+'–'+fmtD(p.ho_tro.den)+', mốc '+fmtTr(+p.ho_tro.moc||0):'')]),
     ['Quỹ cửa hàng — khách trực tiếp',csTen3('HT')+': nhóm biên cao 2%, biên thấp 0,8% · '+csTen3('CT')+': mọi nhóm 2%'],
     ['Quỹ cửa hàng — đơn sales online cửa hàng xử lý','1,5% thực thu'],
-    ['Chia quỹ '+csTen3('HT'),'Quản lý 40% · Giám sát 25% · Nhân viên 35% (chia theo ngày công)'],['Chia quỹ '+csTen3('CT'),'Quản lý 40% · Nhân viên 60% (chia theo ngày công)'],
+    ['Chia quỹ '+csTen3('HT'),'Quản lý 40% · Giám sát 25% · Nhân viên 35%'+(((CH.cua_hang.HT||{}).nv_tl||{}).tu&&ms.some(m=>m>=CH.cua_hang.HT.nv_tl.tu)?' — từ '+qtThg(CH.cua_hang.HT.nv_tl.tu)+' cố định theo biên bản họp: '+Object.entries(CH.cua_hang.HT.nv_tl.ds).map(([n,t])=>n+' '+Math.round(t*100)+'%').join(' · '):' (chia theo ngày công)')],['Chia quỹ '+csTen3('CT'),'Quản lý 40% · Nhân viên 60% (chia theo ngày công)'],
     ...['HT','CT'].map(cs=>{const v=CH.cua_hang[cs]||{};return ['Chức danh '+csTen3(cs),'Quản lý: '+((v.ql||[]).join(', ')||'—')+' · Giám sát: '+((v.gs||[]).join(', ')||'—')+' · Nhân viên: '+((v.nv||[]).join(', ')||'—')]}),
     ['Ngày công','Mặc định 26 ngày / tháng'+(Object.keys(CH.cong||{}).filter(m=>ms.includes(m)).length?' · đã sửa: '+ms.map(m=>Object.entries((CH.cong||{})[m]||{}).map(([n,c])=>n+' '+c+' ('+qtThg(m)+')').join(', ')).filter(Boolean).join(', '):'')],
     ['Đóng gói / giao hàng','0,25% thực thu đơn cửa hàng, nhiều người chia đều · người kho: '+((CH.kho||[]).join(', ')||'—')],
