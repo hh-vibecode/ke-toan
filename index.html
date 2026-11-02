@@ -1068,8 +1068,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.285';
-const APP_VERSION='02/11/2026 10:39';
+const APP_SO='1.286';
+const APP_VERSION='02/11/2026 10:42';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4837,12 +4837,12 @@ function hhTinh(d,ms){
     CHs.push(x)}));
   // nhân sự cửa hàng tự bán (người bán trên Kiot) → đơn tham gia (hưởng qua quỹ, không tính riêng từng đơn)
   HD.filter(h=>['HT','CT'].includes(csCuaCN(h.cn))&&kiotCua[h.nv]==null&&NG[h.nv]).forEach(h=>thamGia(NG[h.nv],h,'Bán',0));
-  // C. đóng gói / giao hàng 0,25% theo ghi chú Kiot
+  // C. đóng gói / giao hàng 0,25% theo ghi chú Kiot — 02/11 kế toán: tính cả đơn Kho Shidai (trước chỉ quét Hiền Thủy, Chánh Tâm nên kho không có đơn nào)
   // 29/10 anh: "a Toàn vs a Hào đều là bên kho phụ trách đóng vs giao, tính hoa hồng theo vị trí ấy" → người kho (CH.kho) nhận 0,25% đóng / giao, nhóm Kho; chữ "kho" không tên người vẫn bỏ qua
   const nguoiKho=n=>(CH.kho||[]).find(k=>n===k||n.endsWith(' '+k)||n.endsWith('.'+k)),laKho=n=>!nguoiKho(n)&&/kho/i.test(n),sach=n=>{const r=[];for(const w of n.split(/\s+/)){if(w&&w[0]!==w[0].toLowerCase())r.push(w);else break}return r.join(' ')||n},tat=n=>CH.ten_tat[sach(n)]||sach(n);
   let dgKho=0;
-  HD.filter(h=>h.gc&&!h.la_tra&&['HT','CT'].includes(csCuaCN(h.cn))&&h.thu_dg>0).forEach(h=>{const gc=h.gc,ds={dong:[],giao:[]};
-    for(const [re,k] of [[/Người đóng hàng\s*:\s*(.+?)(?=\s+\d\.|$)/i,'dong'],[/Người giao hàng\s*:\s*(.+?)(?=\s+\d\.|$)/i,'giao']]){const mm=gc.match(re);if(mm)mm[1].split(/\s*[+,&]\s*|\s+và\s+/).forEach(n=>n.trim()&&ds[k].push(n.trim()))}
+  HD.filter(h=>h.gc&&!h.la_tra&&['HT','CT','SD'].includes(csCuaCN(h.cn))&&h.thu_dg>0).forEach(h=>{const gc=h.gc,ds={dong:[],giao:[]};
+    for(const [re,k] of [[/Người đóng hàng\s*:\s*(.+?)(?=\s+\d\.|$)/i,'dong'],[/Người giao hàng\s*:\s*(.+?)(?=\s+\d\.|$)/i,'giao']]){const mm=gc.match(re);if(mm)mm[1].split(/\s*[+,&;]\s*|\s+và\s+/).forEach(n=>n.trim()&&ds[k].push(n.trim()))}
     for(const mm of gc.matchAll(/((?:(?:[AC]\.\s*)?[A-ZÀ-Ỹa-zà-ỹ]+)(?:\s*,\s*(?:[AC]\.\s*)?[A-ZÀ-Ỹa-zà-ỹ]+)*)\s+(ĐH|GH)\b/g))mm[1].split(/\s*,\s*/).map(n=>n.replace(/^[AC]\.\s*/,'')).forEach(n=>ds[mm[2]==='ĐH'?'dong':'giao'].push(n));
     for(const k of ['dong','giao']){const ns=ds[k].filter(n=>!/từ kho/i.test(n)).map(tat);if(!ns.length)continue;const tien=Math.round(h.thu_dg*.0025/ns.length);   // 31/10 kế toán: hàng rời kho mới tính đóng / giao — cả hoá đơn (gồm phần cọc)
       ns.forEach(n=>{if(laKho(n)){dgKho+=tien;return}const nk=nguoiKho(n),o=nk?ng(CH.ten_tat[nk]||nk,'kho','Kho (đóng gói / giao)'):ng(n,'khac','');o[k]+=tien;thamGia(o,h,(k==='dong'?'Đóng gói':'Giao hàng')+(ns.length>1?' (chia '+ns.length+')':''),tien)})}});
@@ -6135,7 +6135,7 @@ const LOGIC2=[
  ['bao_cao','Khoá sổ tháng','Chỉ khoá tháng đã kết thúc; mở khoá: Supreme / Admin.','','14/10'],
  ['bao_cao','Hoa hồng (mục 9)','Tính trên THỰC THU Kiot = khách đã trả trên hoá đơn + phiếu thu cục trên sổ quỹ Kiot (mã TT…, gắn khách, không đánh hoá đơn) phân bổ vào hoá đơn còn nợ của khách đó, hoá đơn cũ trước, chỉ hoá đơn có ngày ≤ ngày thu — trừ tiền hoàn khi trả hàng (kế toán 29/10). Sales online theo chính sách riêng: online lẻ CS-VH04-16 giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% (mốc 150 / 200 / 300tr); mảng buôn CS-VH04-13 quỹ dưới mốc = 0, 600tr đầu 1,5%, đến 1,2 tỷ 2%, trên 2,5% (mốc 600tr; thời gian hỗ trợ sales mới hạ mốc). Doanh thu 1 người = hoá đơn của các nhân viên Kiot gán cho người đó.','Anh 28/10: Nguyên tính doanh thu Nguyên + Oanh (hỗ trợ), hạ mốc 300tr 7/10/2026–7/1/2027. Cấu hình (người hưởng, chức danh, phân nhóm) nhắn Claude sửa — anh bỏ tab Cài đặt 28/10.','28/10'],
  ['bao_cao','Hoa hồng · Đối chiếu sổ quỹ','Sổ quỹ Kiot là chuẩn. Đối chéo 2 chiều trong kỳ: (1) phiếu thu khách → hoá đơn: phần chưa vào hoá đơn 2026 nào, phần vào hoá đơn tháng trước; (2) hoá đơn → sổ quỹ: thực thu app (đã trả + phân bổ phiếu cục) so với phiếu Kiot chia vào hoá đơn có trong sổ quỹ + cọc của đơn. Lệch mà khách có phiếu cục chưa đánh hoá đơn đủ bù = khớp (ghép theo khách); còn lại = cần soát. Điểm thưởng tách riêng, không có tiền về.','Anh 02/11. Chỉ đối chiếu, không đổi số hoa hồng. Bảng chia phiếu vào hoá đơn kéo mỗi đêm 00:45–00:55 (Kiot không báo hoá đơn có sửa khi phiếu thu đến sau), hoá đơn 12 tháng gần nhất; sổ quỹ 15 phút / lần.','02/11'],
- ['bao_cao','Hoa hồng (mục 9)','Cửa hàng offline (chính sách cửa hàng): đơn khách trực tiếp → Hiền Thủy nhóm biên cao 2% / biên thấp 0,8%, Chánh Tâm 2%; đơn sales online cửa hàng xử lý → 1,5%. Đóng gói / giao 0,25% theo tên trong ghi chú — người kho (Toàn, Hào) nhận theo vị trí kho, nhóm Kho (anh 29/10). Chia: Quản lý 40% · Giám sát 25% · Nhân viên 35% (Chánh Tâm QL 40% · NV 60%), nhân viên theo ngày công (mặc định 26, sửa được) — riêng Hiền Thủy từ T10/2026 phần nhân viên cố định Lê Thị Hòa 25% · Vũ Mạnh Cường 10% theo biên bản họp cửa hàng (kế toán 02/11). Đóng gói / giao hàng 0,25% theo tên trong ghi chú Kiot, nhiều người chia đều.','Chưa có người giữ vị trí → phần đó không chi. Nhân sự kho không thuộc chính sách cửa hàng → không chi đóng gói / giao.','28/10'],
+ ['bao_cao','Hoa hồng (mục 9)','Cửa hàng offline (chính sách cửa hàng): đơn khách trực tiếp → Hiền Thủy nhóm biên cao 2% / biên thấp 0,8%, Chánh Tâm 2%; đơn sales online cửa hàng xử lý → 1,5%. Đóng gói / giao 0,25% theo tên trong ghi chú, gồm cả đơn Kho Shidai (kế toán 02/11) — người kho (Toàn, Hào) nhận theo vị trí kho, nhóm Kho (anh 29/10). Chia: Quản lý 40% · Giám sát 25% · Nhân viên 35% (Chánh Tâm QL 40% · NV 60%), nhân viên theo ngày công (mặc định 26, sửa được) — riêng Hiền Thủy từ T10/2026 phần nhân viên cố định Lê Thị Hòa 25% · Vũ Mạnh Cường 10% theo biên bản họp cửa hàng (kế toán 02/11). Đóng gói / giao hàng 0,25% theo tên trong ghi chú Kiot, nhiều người chia đều.','Chưa có người giữ vị trí → phần đó không chi. Nhân sự kho không thuộc chính sách cửa hàng → không chi đóng gói / giao.','28/10'],
  // ── KIOT
  ['kiot','Kéo Kiot','Luồng kéo riêng của app kế toán, 15 phút / lần (phút 2, 17, 32, 47).','Chỉ đọc Kiot.','14/10'],
  ['kiot','Kéo Kiot','Sổ quỹ lấy 10 ngày gần nhất; hoá đơn, trả hàng, nhập, đơn đặt, khách, NCC, hàng hoá lấy phần mới sửa.','','14/10'],
@@ -6573,7 +6573,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
     ['Chia quỹ '+csTen3('HT'),'Quản lý 40% · Giám sát 25% · Nhân viên 35%'+(((CH.cua_hang.HT||{}).nv_tl||{}).tu&&ms.some(m=>m>=CH.cua_hang.HT.nv_tl.tu)?' — từ '+qtThg(CH.cua_hang.HT.nv_tl.tu)+' cố định theo biên bản họp: '+Object.entries(CH.cua_hang.HT.nv_tl.ds).map(([n,t])=>n+' '+Math.round(t*100)+'%').join(' · '):' (chia theo ngày công)')],['Chia quỹ '+csTen3('CT'),'Quản lý 40% · Nhân viên 60% (chia theo ngày công)'],
     ...['HT','CT'].map(cs=>{const v=CH.cua_hang[cs]||{};return ['Chức danh '+csTen3(cs),'Quản lý: '+((v.ql||[]).join(', ')||'—')+' · Giám sát: '+((v.gs||[]).join(', ')||'—')+' · Nhân viên: '+((v.nv||[]).join(', ')||'—')]}),
     ['Ngày công','Mặc định 26 ngày / tháng'+(Object.keys(CH.cong||{}).filter(m=>ms.includes(m)).length?' · đã sửa: '+ms.map(m=>Object.entries((CH.cong||{})[m]||{}).map(([n,c])=>n+' '+c+' ('+qtThg(m)+')').join(', ')).filter(Boolean).join(', '):'')],
-    ['Đóng gói / giao hàng','0,25% thực thu đơn cửa hàng, nhiều người chia đều · người kho: '+((CH.kho||[]).join(', ')||'—')],
+    ['Đóng gói / giao hàng','0,25% thực thu đơn cửa hàng + Kho Shidai, nhiều người chia đều · người kho: '+((CH.kho||[]).join(', ')||'—')],
     ...Object.entries(CH.nhom||{}).sort((a,b)=>a[0].localeCompare(b[0],'vi')).map(([k,v])=>['Nhóm hàng: '+k,HH_NHOM[v]||v]),
     ['Thực thu','Phần khách đã trả trên hoá đơn Kiot hoàn thành trong tháng (gồm phiếu thu cục phân bổ vào hoá đơn), trừ tiền hoàn khi trả hàng'],
     ['Tiền cọc (TTDH)','Tính hoa hồng ngay tháng nhận cọc (đơn chưa huỷ); đơn thành hoá đơn chỉ tính phần nhận thêm · đóng gói / giao tính khi hàng đi, trên cả hoá đơn'],
