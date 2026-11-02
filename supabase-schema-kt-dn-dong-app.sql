@@ -1,4 +1,5 @@
 -- 02/11/2026 kế toán (báo lỗi 25) + anh: hình thức nhận tiền thứ 3 "Trả trên app" — không bắt ngân hàng / STK. — Monsieur Claude
+-- Anh: trả trên app không có người thụ hưởng, không bắt tên.
 CREATE OR REPLACE FUNCTION public.kt_gui_de_nghi(p_dong jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -34,7 +35,8 @@ begin
   begin v_han := nullif(p_dong->>'han_tt', '')::date; exception when others then raise exception 'Ngày mong muốn thanh toán không hợp lệ'; end;
   if v_han is not null and (v_han < v_hom - 1 or v_han > v_hom + 365) then raise exception 'Ngày mong muốn thanh toán phải từ hôm nay trở đi'; end if;
   if v_loai = 'hoan_ung' and length(v_th) < 2 then v_th := v_nguoi; end if;   -- hoàn ứng: không nhận tiền qua phiếu này
-  if length(v_th) < 2 or length(v_th) > 150 then raise exception 'Nhập tên người / đơn vị thụ hưởng'; end if;
+  if coalesce(p_dong->>'hinh_thuc', '') = 'app' and v_loai <> 'hoan_ung' then v_th := null;   -- trả trên app: không có người thụ hưởng
+  elsif length(v_th) < 2 or length(v_th) > 150 then raise exception 'Nhập tên người / đơn vị thụ hưởng'; end if;
   v_ck := coalesce(p_dong->>'hinh_thuc', 'ck') not in ('tien_mat', 'app') and v_loai <> 'hoan_ung';
   if v_ck then
     if length(v_nh) < 2 or length(v_nh) > 100 then raise exception 'Nhập ngân hàng thụ hưởng'; end if;
