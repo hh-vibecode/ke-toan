@@ -1068,8 +1068,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.283';
-const APP_VERSION='02/11/2026 10:10';
+const APP_SO='1.284';
+const APP_VERSION='02/11/2026 10:18';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5721,18 +5721,18 @@ function xemCT(bang,id,ctId){const ds=S.cache['ct_'+bang+id]||[];let i=ds.findIn
 // Trang đếm số chưa đọc mỗi phút (chỉ khi tab đang mở); bấm chuông xem 40 cái gần nhất, bấm 1 cái → mở đúng phiếu.
 S.tb=0;
 // AI ĐANG TRONG APP (19/10/2026, anh: "bên MKT có sẵn, cái hiển thị người đang trong app, lấy icon bên nó") — như app MKT:
-// mỗi trình duyệt 1 dòng, 30 giây báo danh (kt_bao_danh), quá 90 giây không báo = đã thoát; con vật ngẫu nhiên mỗi lần mở app (thu/a01..a30.png, ảnh của app MKT)
+// mỗi trình duyệt 1 dòng, 30 giây báo danh (kt_bao_danh), quá 90 giây không báo = đã thoát; con vật cố định theo tài khoản do máy chủ gán, không trùng người (02/11 anh; thu/a01..a30.png, ảnh của app MKT)
 const DX_SO=30,dxCon=Math.floor(Math.random()*DX_SO)+1;let DX_DS=[];
 function dxMa(){let id='';try{id=localStorage.getItem('kt_dx')||'';if(!id){id=Date.now().toString(36)+Math.random().toString(36).slice(2,9);localStorage.setItem('kt_dx',id)}}catch(e){id='tam'+dxCon}return id}
 const dxAnh=c=>'thu/a'+String(((+c||1)-1)%DX_SO+1).padStart(2,'0')+'.png';
 const dxHtml=()=>'<div class="dx" id="dang-xem"></div>';
 async function dxBao(){if(!S.phien||!S.toi||document.hidden)return;try{DX_DS=await rpc('kt_bao_danh',{p_ma:dxMa(),p_trang:(PAGES[S.page]||{}).ten||'',p_con:dxCon});veDX()}catch(e){}}
-function veDX(){const el=$('#dang-xem');if(!el)return;const ds=(DX_DS||[]).slice(),toi=dxMa();if(!ds.length){el.innerHTML='';return}
-  ds.sort((p,q)=>p.ma===toi?-1:q.ma===toi?1:String(p.ten).localeCompare(String(q.ten),'vi'));
+function veDX(){const el=$('#dang-xem');if(!el)return;const ds=(DX_DS||[]).slice();if(!ds.length){el.innerHTML='';return}
+  ds.sort((p,q)=>p.toi?-1:q.toi?1:String(p.ten).localeCompare(String(q.ten),'vi'));
   const av=(x,z)=>`<span class="dx-av" style="width:${z}px;height:${z}px" title="${esc(x.ten)}"><img src="${dxAnh(x.con)}" alt=""></span>`;
   const hien=ds.slice(0,4),them=ds.length-hien.length;
   el.innerHTML=`<div class="dx-h">${hien.map(x=>av(x,28)).join('')}${them>0?`<span class="dx-av dx-them">+${them}</span>`:''}</div>
-    <div class="dx-pop"><div class="dx-t">Đang trong app (${ds.length})</div>${ds.map(x=>`<div class="dx-r">${av(x,24)}<div><b>${esc(x.ten)}</b>${x.ma===toi?' <span class="muted">(bạn)</span>':''}${x.trang?`<div class="muted">${esc(x.trang)}</div>`:''}</div></div>`).join('')}</div>`}
+    <div class="dx-pop"><div class="dx-t">Đang trong app (${ds.length})</div>${ds.map(x=>`<div class="dx-r">${av(x,24)}<div><b>${esc(x.ten)}</b>${x.toi?' <span class="muted">(bạn)</span>':''}${x.trang?`<div class="muted">${esc(x.trang)}</div>`:''}</div></div>`).join('')}</div>`}
 setInterval(dxBao,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dxBao()});
 const chuongHtml=()=>`<div class="tb-dd tb-chuong"><button class="tb-btn chuong" title="Thông báo" onclick="event.stopPropagation();moChuong(this)">${IC.chuong}<span class="cb-so" ${S.tb?'':'hidden'}>${S.tb>99?'99+':S.tb}</span></button><div class="tb-menu-dd cb-ds" onclick="event.stopPropagation()"></div></div>`;
 function veSoChuong(){$$('.cb-so').forEach(n=>{n.hidden=!S.tb;n.textContent=S.tb>99?'99+':S.tb})}
@@ -5995,7 +5995,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hoạt động','Khung Hoạt động trong cửa sổ phiếu: lưu vết từ lúc tạo (mọi lần đổi trạng thái / sửa, trường nào đổi từ → sang, chứng từ, ảnh giao dịch) + bình luận.','Bình luận báo chuông cho người trong phiếu: người tạo / đề nghị, người xác nhận, người đã bình luận, người đang phải xử lý bước hiện tại. Xoá được bình luận của mình.','16/10'],
  ['thu_chi','Phiếu chi — loại chi','Kế toán đổi Loại chi ngay trên bảng Phiếu chi (ô chọn ở cột Loại chi), lưu luôn.','Phiếu đã thanh toán bắt buộc có loại chi; kỳ đã khoá thì không đổi được.','16/10'],
  ['chung','Lọc cơ sở','Chỉ 1 ô lọc cơ sở ở thanh trên (cạnh ô kỳ), tick chọn 1 hoặc nhiều cơ sở cùng lúc; áp dụng cho mọi trang. Bỏ ô cơ sở trong từng trang và ở cột lọc bên trái.','Bỏ tick hết = Tất cả cơ sở. Bấm tên cơ sở trên dòng phiếu chi vẫn lọc nhanh theo cơ sở đó.','19/10'],
- ['chung','Người đang trong app','Thanh trên cạnh chuông: avatar con vật của những ai đang mở app (rê chuột xem tên + trang đang xem). Như app MKT, ảnh con vật lấy từ app MKT.','Mỗi trình duyệt 30 giây báo danh 1 lần (kt_bao_danh, bảng kt_dang_xem riêng app kế toán); quá 90 giây không báo = đã thoát; đăng xuất = rời ngay. Lúc Xem như không báo danh.','19/10'],
+ ['chung','Người đang trong app','Thanh trên cạnh chuông: avatar con vật của những ai đang mở app (rê chuột xem tên + trang đang xem). Mỗi tài khoản 1 con vật cố định, không trùng người khác (đến 30 tài khoản); 1 người mở nhiều máy chỉ hiện 1 icon. Ảnh con vật lấy từ app MKT.','Mỗi trình duyệt 30 giây báo danh 1 lần (kt_bao_danh, bảng kt_dang_xem riêng app kế toán); quá 90 giây không báo = đã thoát; đăng xuất = rời ngay. Lúc Xem như không báo danh.','19/10 · 02/11'],
  ['thu_chi','Huỷ "Đã chi tiền"','Phiếu đã bấm Đã chi tiền nhầm (vd chưa duyệt lệnh ngân hàng): người xác nhận (kế toán có quyền xác nhận) hoặc giám đốc bấm "↩ Huỷ đã chi" ở chân cửa sổ phiếu → về Chờ chi tiền.','Không phải tạo lại phiếu; tiền không còn trừ tài khoản cho tới khi bấm Đã chi tiền lại; chuông báo người chi; nhật ký ghi lại.','20/10'],
  ['thu_chi','Nộp két từ Kiot (quầy → két)','Mỗi lần cửa hàng nộp doanh thu tiền mặt trên Kiot (cặp phiếu Chuyển rút CTM… chi tiền mặt quầy + TTD_CTM… thu vào Két) → app tự tạo điều chuyển "Nộp két" TIỀN MẶT QUẦY → KÉT TIỀN MẶT, 15 phút / lần. Phiếu Kiot bị huỷ → app ẩn theo.','Đã có điều chuyển quầy → két cùng số tiền, lệch ≤ 4 ngày (từ file dòng tiền / nhập tay) thì chỉ gắn mã Kiot, không tạo trùng. Thủ quỹ up ảnh chứng từ nộp tiền vào chính phiếu điều chuyển đó; kế toán xem ảnh rồi bấm Xác nhận.','19/10'],
  ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
