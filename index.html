@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.289';
-const APP_VERSION='02/11/2026 15:19';
+const APP_SO='1.290';
+const APP_VERSION='02/11/2026 15:27';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4776,11 +4776,16 @@ const fmtTr=v=>v>=1e9?(Math.round(v/1e7)/100).toLocaleString('vi-VN')+' tỷ':(M
 // MỌI số tính từ danh sách hoá đơn (kt_bc_hoa_hong.hd, có dòng âm = trả hàng) nên cộng các đơn = số tổng; mã đơn bấm mở Kiot; kèm mặt hàng.
 const HH_TABS=[['ns','Theo nhân sự'],['sales','Online'],['ch','Cửa hàng offline'],['dc','Đối chiếu sổ quỹ']];   // 28/10 anh: bỏ tab Cài đặt (chức danh / người hưởng / phân nhóm sửa qua Claude)
 const KIOT_MAN='https://sieuthidotho285.kiotviet.vn/man/#/';
+// 02/11 anh: "ghi rõ ra trong phần hoá đơn vs đơn hàng khi click vào nhân sự, cho mọi người hiểu" — hoá đơn có cọc / trả trước ghi mã phiếu + ngày;
+// dòng tiền trả trước tháng hàng đi ghi "trả trước · hàng đi ngày …" (bán tính tháng nhận tiền, đóng / giao tính tháng hàng đi)
+const hhNg=v=>{const t=String(v||'');return t.slice(8,10)+'/'+t.slice(5,7)};
+const hhTraTruoc=h=>!h.la_coc&&!h.la_phieu&&!h.la_tra&&h.ngay_hd&&String(h.ngay_hd).slice(0,7)>h.thang;
+const hhCocTxt=h=>(h.coc_ds||[]).length?'cọc trước '+fmt(h.coc)+': '+h.coc_ds.map(c=>c.ma+' · '+hhNg(c.ngay)).join(', '):+h.coc>0?'cọc trước '+fmt(h.coc):hhTraTruoc(h)?'trả trước · hàng đi '+hhNg(h.ngay_hd):'';
 const hhKiot=h=>h.la_tra?`<a href="${KIOT_MAN}Returns?Code=${encodeURIComponent(h.ma_tra||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma_tra||'Trả hàng')} ↗</a><div class="muted" style="font-size:11px">trả của ${esc(h.ma||'')}</div>`
   // 31/10: dòng cọc TTDH (tính ở tháng nhận cọc) · hoá đơn của đơn có cọc ghi phần cọc đã trừ
   :h.la_coc?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">cọc đơn ${esc(h.ma_don||'')}</div>`
   :h.la_phieu?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">phiếu chưa có hoá đơn</div>`
-  :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${+h.coc>0?`<div class="muted" style="font-size:11px">đã cọc ${fmt(h.coc)}</div>`:''}`;
+  :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:normal">${esc(hhCocTxt(h))}</div>`:''}`;
 function hhTinh(d,ms){
   const CH=Object.assign({nguoi:[],nhom:{},cua_hang:{},kho:[],ten_tat:{},cong:{}},d.cau_hinh||{});
   const kiotCua={};CH.nguoi.forEach((p,i)=>(p.kiot||[]).forEach(k=>kiotCua[k]=i));
@@ -4932,12 +4937,12 @@ function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)r
   const kq=[['Hoa hồng online',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
   let dau=`<div class="bc-k" style="grid-template-columns:repeat(${kq.length+1},1fr)"><div><span>Tổng hoa hồng</span><b>${fmt(o.tong)}</b></div>${kq.map(([a,b])=>`<div><span>${a}</span><b>${fmt(b)}</b></div>`).join('')}</div>`;
   // 28/10 anh: "trình bày dài thế, ghi công thức ra là được, không cần số"
-  const cach=hhCach(o);
+  const cach=hhCach(o);if(o.ds.some(x=>+x.h.coc>0||hhTraTruoc(x.h)))cach.push('Cọc / trả trước: tính bán hàng ở tháng nhận tiền, tính đóng gói / giao ở tháng hàng đi');
   if(cach.length)dau+=`<div class="muted" style="font-size:12.5px;line-height:1.7;margin:2px 0 10px">${cach.map(esc).join('<br>')}</div>`;
   S.cache.hh_pop={tieu:`${esc(ten)} <span class="badge" style="vertical-align:middle">${esc(bcKy().ten)} · ${o.ds.length} đơn tham gia</span>`,dau,trang:1,rows:o.ds,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Cơ sở','nw'],['Vai trò','nw'],['Thực thu','num'],['Hoa hồng','num']],
     dong:x=>`<tr><td class="nw">${fmtD(x.h.ngay)}</td><td class="nw">${hhKiot(x.h)}</td><td class="ten">${esc(x.h.khach||'')}${hhSp(x.h)}</td><td class="nw">${esc(csTen3(csCuaCN(x.h.cn))||x.h.cn)}</td>
-      <td class="nw" style="font-size:12px">${esc(x.vai.join(' · '))}</td><td class="num ${x.h.thu+x.h.coc<x.h.dt?'neg-t':''}" title="${x.h.thu+x.h.coc<x.h.dt?'Khách chưa trả đủ — phần chưa thu chưa tính':''}">${fmt(x.h.thu)}</td><td class="num">${x.tien?fmt(Math.round(x.tien)):x.vai.includes('Bán')&&o.quy?'<span class="muted" style="font-size:11px">qua quỹ</span>':'–'}</td></tr>`,
+      <td class="nw" style="font-size:12px">${esc(x.vai.join(' · '))}</td><td class="num ${x.h.thu+x.h.coc<x.h.dt&&!hhTraTruoc(x.h)?'neg-t':''}" title="${x.h.thu+x.h.coc<x.h.dt&&!hhTraTruoc(x.h)?'Khách chưa trả đủ — phần chưa thu chưa tính':''}">${fmt(x.h.thu)}${x.vai.some(v=>/^(Đóng gói|Giao hàng)/.test(v))&&Math.round(x.h.thu_dg)!==Math.round(x.h.thu)?`<div class="muted" style="font-size:11px">tính đóng / giao ${fmt(x.h.thu_dg)}</div>`:''}</td><td class="num">${x.tien?fmt(Math.round(x.tien)):x.vai.includes('Bán')&&o.quy?'<span class="muted" style="font-size:11px">qua quỹ</span>':'–'}</td></tr>`,
     tong:`<tr class="tong"><td colspan="5"><b>Tổng ${o.ds.length} đơn</b></td><td class="num"><b>${fmt(sumBy(o.ds,x=>x.h.thu))}</b></td><td class="num"><b>${fmt(Math.round(sumBy(o.ds,x=>x.tien)))}</b></td></tr>`};
   hhPopup()}
 // bấm 1 dòng quỹ cửa hàng → các đơn tạo nên số thực thu đó
@@ -6556,7 +6561,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
     cols:[['Mục',r=>r.a,'chu',{w:30}],['Thông số',r=>r.b,'chu',{w:60}]]};
   const don=[];NGs.forEach(o=>o.ds.forEach(x=>don.push({o,x})));
   const shDon={ten:'Đơn từng người',tieuDe:'CÁC ĐƠN TÍNH HOA HỒNG — TỪNG NGƯỜI',phu,ghi:'"qua quỹ" = đơn người đó bán, hưởng qua quỹ cửa hàng (xem sheet Quỹ cửa hàng)',rows:don,
-    cols:[['Nhân sự',r=>r.o.ten,'chu',{w:22}],['Ngày',r=>r.x.h.ngay,'ngay',{w:10}],['Số HĐ',r=>r.x.h.la_tra?(r.x.h.ma_tra||'Trả hàng')+' (trả của '+r.x.h.ma+')':r.x.h.la_coc?r.x.h.ma+' (cọc đơn '+r.x.h.ma_don+')':r.x.h.ma+(r.x.h.coc>0?' (trừ cọc '+fmt(r.x.h.coc)+')':''),'chu',{w:20}],
+    cols:[['Nhân sự',r=>r.o.ten,'chu',{w:22}],['Ngày',r=>r.x.h.ngay,'ngay',{w:10}],['Số HĐ',r=>r.x.h.la_tra?(r.x.h.ma_tra||'Trả hàng')+' (trả của '+r.x.h.ma+')':r.x.h.la_coc?r.x.h.ma+' (cọc đơn '+r.x.h.ma_don+')':r.x.h.ma+(hhCocTxt(r.x.h)?' ('+hhCocTxt(r.x.h)+')':''),'chu',{w:20}],
       ['Khách hàng',r=>r.x.h.khach||'','chu',{w:24}],['Cơ sở',r=>csTen3(csCuaCN(r.x.h.cn))||r.x.h.cn,'chu',{w:11}],['Vai trò',r=>r.x.vai.join(' · ')+(!r.x.tien&&r.x.vai.includes('Bán')&&r.o.quy?' (qua quỹ)':''),'chu',{w:16}],
       ['Thực thu',r=>r.x.h.thu,'so',{w:13}],['Hoa hồng',r=>r.x.tien?Math.round(r.x.tien):null,'so',{w:12}]]};
   return [shNS,shCach,shOn,shQ,shDG,shTS,shDon]}
