@@ -615,6 +615,9 @@ select.no-pt{height:28px;font-size:12px;max-width:190px}select.no-pt.kiot{color:
 .ncc-h{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)}.ncc-h1{font-size:18px}
 /* 03/11 giao diện NCC mới: ô lọc nhanh · tên + dòng phụ · cửa sổ 2 cột (hồ sơ NCC | số liệu) · sổ công nợ */
 .ncc-seg{margin-bottom:12px;width:max-content;max-width:100%}.ncc-chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}
+.no-the{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 12px}.no-k{text-align:left;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--c);border-radius:10px;padding:12px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit}
+.no-k span{font-size:12.5px;color:var(--muted);font-weight:600}.no-k b{font-size:22px;font-weight:800;color:var(--text)}.no-k em{font-style:normal;font-size:12px;color:var(--muted)}.no-k:hover{background:var(--bg2)}.no-k.on{background:var(--bg2);box-shadow:0 0 0 2px var(--c) inset}
+@media (max-width:760px){.no-the{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ncc-chip{display:flex;align-items:baseline;gap:8px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 12px;font-size:12.5px;color:var(--text2);white-space:nowrap}
 .ncc-chip b{font-size:14px;color:var(--text)}.ncc-chip em{font-style:normal;font-weight:600;color:var(--text)}.ncc-chip:hover{background:var(--bg2)}.ncc-chip.on{border-color:var(--accent);background:var(--sel-bg);color:var(--accent)}.ncc-chip.on b,.ncc-chip.on em{color:var(--accent)}
 .ncc-dst th:first-child{width:34%}.ncc-dst th.num,.ncc-dst th.c{min-width:110px}.ncc-dst td:last-child,.ncc-dst th:last-child{padding-left:36px}.nv .tl{grid-template-columns:240px minmax(0,1fr)}.nv .tl-bs:empty{display:none}.nv-r .m-tabs{overflow-x:auto;white-space:nowrap}.nv{position:relative}
@@ -1086,8 +1089,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.311';
-const APP_VERSION='03/11/2026 16:10';
+const APP_SO='1.312';
+const APP_VERSION='03/11/2026 16:20';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2936,8 +2939,9 @@ async function pageCongNoDT(loai){
       <div class="m-f"><span>Người phụ trách</span>${opt(k+'_pt',[...[...new Set(ds.map(x=>x.nv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi')).map(v=>[v,v]),['_chua','(Chưa có)']],'Tất cả')}</div>
       <div class="m-f"><span>&nbsp;</span><input class="m-in" type="search" placeholder="Tìm kiếm" value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()"></div></div>
     <div class="m-chon" id="no-chon" style="display:none"></div>
+    ${KH&&ds.some(x=>x.no_that!=null)?`<div class="no-the">${Object.entries(LOAI_NO).map(([v,[t,c]])=>`<button class="no-k ${f[k+'_ln']===v?'on':''}" style="--c:var(--${c})" title="${f[k+'_ln']===v?'Đang lọc — bấm lại để bỏ lọc':'Bấm để lọc'}" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';S.f['${k}_tr']=1;render()"><span>${t}</span><b>${fmt(sumBy(l0,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</b><em>${fmt(l0.filter(x=>(+x[LOAI_NO_K[v]]||0)>0).length)} khách</em></button>`).join('')}</div>`:''}
     <div class="m-split ${chon?'co':''}"><div class="m-card"><div class="m-ch">Danh sách công nợ ${dt} <span class="m-cnt">(Tổng ${fmt(l.length)} ${dt})</span>
-        <span class="r">${KH&&ds.some(x=>x.no_that!=null)?Object.entries(LOAI_NO).map(([v,[t,c]])=>`<span class="m-pill click ${f[k+'_ln']===v?'on':''}" title="${f[k+'_ln']===v?'Đang lọc — bấm lại để bỏ lọc':'Bấm để lọc'}" onclick="S.f['${k}_ln']=S.f['${k}_ln']==='${v}'?'':'${v}';S.f['${k}_tr']=1;render()">${pill(t,c)} ${fmt(sumBy(l0,x=>Math.max(+x[LOAI_NO_K[v]]||0,0)))}</span>`).join(' ')+' ':''}${KH&&sumBy(l0,x=>+x.tra_lau||0)?`<span class="m-pill" title="Đơn đánh dấu sẽ trả hàng quá 30 ngày chưa có phiếu trả trên Kiot">${pill('Trả hàng treo > 30 ngày: '+sumBy(l0,x=>+x.tra_lau||0)+' HĐ','bad')}</span> `:''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
+        <span class="r">${KH&&sumBy(l0,x=>+x.tra_lau||0)?`<span class="m-pill" title="Đơn đánh dấu sẽ trả hàng quá 30 ngày chưa có phiếu trả trên Kiot">${pill('Trả hàng treo > 30 ngày: '+sumBy(l0,x=>+x.tra_lau||0)+' HĐ','bad')}</span> `:''}<span class="m-pill">Hạn nợ ${ds[0]?ds[0].han:30} ngày</span></span></div>
       <div class="scroll"><table class="m-t"><tr><th class="c"><input type="checkbox"></th><th>Mã ${KH?'KH':'NCC'}</th><th>${KH?'Tên khách hàng':'Nhà cung cấp'}</th><th>Cơ sở</th><th class="num">Tổng công nợ</th><th class="num">Đã thanh toán</th><th class="num">Còn phải ${KH?'thu':'trả'}</th><th>Ngày đến hạn</th><th class="num">Số ngày<br>quá hạn</th><th class="c">Trạng thái</th><th class="m-nguon">Nguồn</th>${KH?'<th>Nhóm KH</th>':''}<th>Người phụ trách</th></tr>
       ${trang.map(x=>{const t=ttCongNo(x),con=Math.abs(x.no);return `<tr class="click ${x.id===chon?'on':''}" data-id="${x.id}" onclick="xemCongNo('${loai}',${x.id})"><td class="c">${ganDuoc?`<input type="checkbox" ${(f[k+'_sel']||[]).includes(x.id)?'checked':''} onclick="event.stopPropagation();chonNo('${k}',${x.id},this.checked)">`:''}</td>
         <td class="nw">${esc(x.ma)}</td><td class="ten">${esc(x.ten)}</td><td class="nw">${esc((CS3.find(c=>c[0]===csCuaCN(x.cn))||[])[1]||x.cn||'')}</td><td class="num"><b>${fmt(x.tong_ct||con)}</b></td><td class="num">${fmt(Math.max((x.tong_ct||con)-con,0))}</td>
