@@ -1086,8 +1086,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.310';
-const APP_VERSION='03/11/2026 16:06';
+const APP_SO='1.311';
+const APP_VERSION='03/11/2026 16:10';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1710,7 +1710,21 @@ const XN_QUYEN={nhom:'ban_hang',sp:'ban_hang',kh:'khach_hang',hd:'khach_hang',to
 const xnDuoc=l=>coXem(XN_QUYEN[l]||l);
 let XN_STACK=[];
 const xnAttr=(l,k,cn,t)=>xnDuoc(l)?`class="xn" onclick="event.stopPropagation();xemNhanh('${l}',${JSON.stringify(String(k??'')).replace(/"/g,'&quot;')},${cn?JSON.stringify(cn).replace(/"/g,'&quot;'):'null'},${JSON.stringify(t||'').replace(/"/g,'&quot;')})"`:'';
+// 03/11/2026 anh: "bấm vào 1 hoá đơn đang không ra cái gì, MISA xem được ảnh" → hoá đơn công ty (MISA): mở khung xem bản hoá đơn PDF.
+// Lấy qua Edge Function kt-meinvoice (HĐ ra) / kt-meinvoice-bot (HĐ vào): kiểm phiên + quyền, lần đầu tải từ MISA (5–8 giây) rồi lưu sẵn, lần sau mở ngay. — Monsieur Claude
+async function hdXem(so,hkd,ngay){
+  const m=modal(`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h2 style="margin:0">Xem hoá đơn</h2><span class="muted" id="hd-xem-t" style="font-size:13px"></span><span style="margin-left:auto"></span><span id="hd-xem-nut"></span><button class="x" onclick="closeModal()">✕</button></div>
+    <div id="hd-xem" class="m-empty" style="height:78vh;display:flex;align-items:center;justify-content:center">Đang lấy hoá đơn từ MISA…</div>`);
+  const b=m.firstElementChild;b.style.width='min(1100px,96vw)';b.style.maxWidth='1100px';
+  try{const hd=await rpc('kt_hd_xem',{p_so_hd:String(so),p_hkd:hkd,p_ngay:ngay});if(!hd)throw new Error('Không tìm thấy hoá đơn');
+    const t=$('#hd-xem-t');if(t)t.textContent=[hd.ky_hieu,'số '+soHD(hd.so_hd),fmtD(hd.ngay),hd.nguoi_mua,fmt(hd.tong)+' đ'].filter(Boolean).join(' · ');
+    const r=await fetch(SB_URL+'/functions/v1/'+(hd.chieu==='vao'?'kt-meinvoice-bot':'kt-meinvoice'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({viec:'xem_hd',phien:S.phien,so_hd:String(so),hkd,ngay})});
+    const j=await r.json();if(!r.ok||!j.url)throw new Error(j.loi||'Lỗi '+r.status);
+    const el=$('#hd-xem');if(!el)return;el.className='';el.style.display='block';el.innerHTML=`<iframe src="${j.url}" style="width:100%;height:78vh;border:1px solid var(--border);border-radius:8px;background:#fff"></iframe>`;
+    const n=$('#hd-xem-nut');if(n)n.innerHTML=`<a class="m-btn out" href="${j.url}" target="_blank" rel="noopener">Mở tab mới</a>`;
+  }catch(e){const el=$('#hd-xem');if(el)el.innerHTML=`<span class="neg">${esc(e.message)}</span>`}}
 async function xemNhanh(loai,khoa,cn,tieu,giuStack){
+  if(loai==='thue_hd'&&cn==='CTY')return hdXem(khoa,cn,String(tieu).slice(-10));
   if(!giuStack){if(!$('#modal')||!$('#modal .xn-pn'))XN_STACK=[];XN_STACK.push([loai,khoa,cn,tieu])}
   const ve=h=>{let m=$('#modal');if(!m||!m.querySelector('.xn-pn'))m=modal(`<div class="m-pn xn-pn" style="position:static;max-height:none;border:none"></div>`,true);m.querySelector('.xn-pn').innerHTML=h};
   const dau=t=>`<div class="m-pn-h">${XN_STACK.length>1?`<button class="m-btn" style="height:30px" onclick="XN_STACK.pop();const p=XN_STACK[XN_STACK.length-1];xemNhanh(p[0],p[1],p[2],p[3],true)">← Quay lại</button>`:''}<h2>${t}</h2><span class="r"><button class="x" onclick="closeModal()">✕</button></span></div>`;

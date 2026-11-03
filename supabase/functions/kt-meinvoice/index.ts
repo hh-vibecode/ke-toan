@@ -48,10 +48,44 @@ async function taiPdfRa(A: any, n: number, batDau: number) {
 const thangVN = (lech: number) => { const d = new Date(Date.now() + 7 * 3600e3); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + lech); return d.toISOString().slice(0, 7); };
 const cuoiThang = (t: string) => new Date(Date.UTC(+t.slice(0, 4), +t.slice(5, 7), 0)).toISOString().slice(0, 10);
 
+// 03/11/2026 anh: "bấm vào 1 hoá đơn không ra cái gì, MISA xem được ảnh" → {viec:'xem_hd', phien, so_hd, hkd, ngay} từ trình duyệt:
+// kiểm phiên + quyền (rpc kt_hd_xem) → PDF có sẵn trong kt-chung-tu hd/{chieu}/{mã}.pdf thì ký link, chưa có thì tải từ MISA rồi lưu. — Monsieur Claude
+const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type, apikey, authorization', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
+const traJ = (x: unknown, s = 200) => new Response(JSON.stringify(x), { status: s, headers: { ...CORS, 'Content-Type': 'application/json' } });
+async function kyLink(duong: string) {
+  const r = await fetch(`${SB}/storage/v1/object/sign/kt-chung-tu/${duong}`, { method: 'POST', headers: sbH, body: JSON.stringify({ expiresIn: 600 }) });
+  if (!r.ok) return null; const j = await r.json(); return j.signedURL ? `${SB}/storage/v1${j.signedURL}` : null;
+}
+async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>) {
+  try {
+    const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay }) });
+    const hd = await q.json(); if (!q.ok) throw new Error(hd.message || 'Không có quyền');
+    if (!hd || !hd.ma) throw new Error('Hoá đơn này không có mã trên MISA');
+    const duong = `hd/${hd.chieu}/${String(hd.ma).replace(/[^A-Za-z0-9_-]/g, '_')}.pdf`;
+    let url = await kyLink(duong);
+    if (!url) {
+      const pdf = await taiPdf(String(hd.ma));
+      if (!pdf) throw new Error('MISA chưa trả được bản hoá đơn, thử lại sau ít phút');
+      const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
+      if (!up.ok) throw new Error('Lưu hoá đơn lỗi ' + up.status);
+      url = await kyLink(duong);
+    }
+    return traJ({ url, hd });
+  } catch (e) { return traJ({ loi: String((e as any)?.message || e) }, 400); }
+}
+async function pdfRaMot(ma: string) {
+  const t = await goi(MI + '/invoice/token', { method: 'POST', headers: H, body: JSON.stringify({ taxcode: Deno.env.get('KT_MEINVOICE_MST'), username: Deno.env.get('KT_MEINVOICE_USER'), password: Deno.env.get('KT_MEINVOICE_PASS') }) });
+  const A = { ...H, Authorization: 'Bearer ' + t.Data };
+  const j = await goi(MI + '/invoice/Download?downloadDataType=Pdf&invoiceWithCode=true', { method: 'POST', headers: A, body: JSON.stringify([ma]) });
+  const f = ((doc(j.Data) || []) as any[]).find(k => String(k.TransactionID) === ma), b64 = f ? (f.Data || f.data) : null;
+  return b64 && !f.ErrorCode ? Uint8Array.from(atob(String(b64)), c => c.charCodeAt(0)) : null;
+}
 Deno.serve(async req => {
-  if (req.headers.get('x-kt-cron') !== Deno.env.get('KT_CRON_KEY')) return new Response('không có quyền', { status: 401 });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   const batDau = Date.now(); let body: any = {};
   try { body = await req.json(); } catch (_) { /* cron gửi {} */ }
+  if (body.viec === 'xem_hd') return xemHd(body, pdfRaMot);
+  if (req.headers.get('x-kt-cron') !== Deno.env.get('KT_CRON_KEY')) return new Response('không có quyền', { status: 401 });
   const kq: any = { thang: {} };
   try {
     const t = await goi(MI + '/invoice/token', { method: 'POST', headers: H, body: JSON.stringify({
