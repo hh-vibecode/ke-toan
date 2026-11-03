@@ -1084,8 +1084,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.305';
-const APP_VERSION='03/11/2026 14:11';
+const APP_SO='1.306';
+const APP_VERSION='03/11/2026 14:14';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5025,13 +5025,14 @@ function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)r
   hhPopup()}
 // bấm 1 dòng quỹ cửa hàng → các đơn tạo nên số thực thu đó
 function hhDS(i,loai,coc){const K=S.cache.hh_kq,x=K&&K.CHs[i];if(!x)return;
-  const ten={cao:x.cs==='CT'?'khách trực tiếp — mọi nhóm hàng':'khách trực tiếp — nhóm biên cao',thap:'khách trực tiếp — nhóm biên thấp',on:'đơn sales online cửa hàng xử lý'}[loai];
+  const ten={cao:x.cs==='CT'?'khách trực tiếp — mọi nhóm hàng':'khách trực tiếp — nhóm biên cao',thap:'khách trực tiếp — nhóm biên thấp',on:'kết hợp bán — sales online chuyển cửa hàng'}[loai];
+  const dkL=loai==='cao'?x.dkCao:loai==='thap'?x.dkThap:null,nhGhi=h=>{if(!dkL)return '';const nh=Object.keys(h.nh||{}),co=nh.filter(dkL),ko=nh.filter(k=>!dkL(k));return ko.length?`<div class="muted" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px" title="${esc(ko.join(', '))}">Không tính: ${esc(ko.map(k=>k.replace(/\s*\(.*?\)/g,'').toLowerCase()).join(', '))}</div>`:''};
   const ds=(loai==='on'?x.on.map(h=>({h,p:h.thu})):x.wi.map(h=>({h,p:K.phan(h,loai==='cao'?x.dkCao:x.dkThap)}))).filter(r=>Math.round(r.p)!==0&&(!coc||(coc===1?r.h.la_coc:!r.h.la_coc)));   // coc: 1 = chỉ đơn cọc · 2 = chỉ hoá đơn
   const tl=loai==='on'?.015:loai==='thap'?.008:.02;
   S.cache.hh_pop={tieu:`${esc(csTen3(x.cs))} · ${ten}${coc===1?' · thu từ cọc':coc===2?' · thu từ hoá đơn':''} <span class="badge" style="vertical-align:middle">${qtThg(x.m)} · ${ds.length} đơn</span>`,trang:1,rows:ds,
     dau:`<div class="muted" style="font-size:12.5px;margin-bottom:8px">Phần thực thu tính quỹ: ${loai==='on'?'cả đơn':'chỉ phần tiền hàng thuộc nhóm này (theo tỷ trọng dòng hàng trong đơn)'} · tỷ lệ ${(tl*100).toLocaleString('vi-VN')}%</div>`,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Người bán','nw'],['Thực thu đơn','num'],['Phần tính quỹ','num']],
-    dong:r=>`<tr><td class="nw">${fmtD(r.h.ngay)}</td><td class="nw">${hhKiot(r.h)}</td><td class="ten">${esc(r.h.khach||'')}${hhSp(r.h)}</td><td class="nw" style="font-size:12px">${esc(r.h.nv)}</td><td class="num">${fmt(r.h.thu)}</td><td class="num">${fmt(Math.round(r.p))}</td></tr>`,
+    dong:r=>`<tr><td class="nw">${fmtD(r.h.ngay)}</td><td class="nw">${hhKiot(r.h)}</td><td class="ten">${esc(r.h.khach||'')}${hhSp(r.h)}${nhGhi(r.h)}</td><td class="nw" style="font-size:12px">${esc(r.h.nv)}</td><td class="num">${fmt(r.h.thu)}</td><td class="num">${fmt(Math.round(r.p))}</td></tr>`,
     tong:`<tr class="tong"><td colspan="4"><b>Tổng ${ds.length} đơn</b></td><td class="num"><b>${fmt(sumBy(ds,r=>r.h.thu))}</b></td><td class="num"><b>${fmt(Math.round(sumBy(ds,r=>r.p)))}</b></td></tr>`};
   hhPopup()}
 async function hhLuu(ch,tb){try{await rpc('kt_luu_hh_cau_hinh',{p_cau_hinh:ch});toast(tb||'Đã lưu');render()}catch(e){alert(e.message)}}
