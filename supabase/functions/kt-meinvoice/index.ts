@@ -56,6 +56,29 @@ async function kyLink(duong: string) {
   const r = await fetch(`${SB}/storage/v1/object/sign/kt-chung-tu/${duong}`, { method: 'POST', headers: sbH, body: JSON.stringify({ expiresIn: 600 }) });
   if (!r.ok) return null; const j = await r.json(); return j.signedURL ? `${SB}/storage/v1${j.signedURL}` : null;
 }
+// 03/11/2026 anh: "kéo ảnh định kỳ về đắp lên Supabase" — lưu PDF vào kt-chung-tu hd/{chieu}/{mã}.pdf + ghi kt_hd_pdf
+async function luuPdf(chieu: string, ma: string, pdf: Uint8Array) {
+  const duong = `hd/${chieu}/${String(ma).replace(/[^A-Za-z0-9_-]/g, '_')}.pdf`;
+  const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
+  if (!up.ok) return false;
+  await fetch(SB + '/rest/v1/kt_hd_pdf?on_conflict=ma', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ ma, chieu, duong, kich_thuoc: pdf.length }) });
+  return true;
+}
+async function taiPdfXem(A: any, batDau: number) {
+  const r = await sb('rpc/kt_hd_can_pdf_xem', { p_chieu: 'ra', p_n: 90 }, 'return=representation');
+  const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0 };
+  for (let i = 0; i < ds.length && Date.now() - batDau < 105e3; i += 3) {
+    const nhom = ds.slice(i, i + 3); let kq: any[] = [];
+    try { const j = await goi(MI + '/invoice/Download?downloadDataType=Pdf&invoiceWithCode=true', { method: 'POST', headers: A, body: JSON.stringify(nhom.map(x => x.ma)) }); kq = (doc(j.Data) || []) as any[]; }
+    catch (e) { m.loi += nhom.length; m.loi_cuoi = String(e).slice(0, 160); continue; }
+    for (const x of nhom) {
+      const f = kq.find(k => String(k.TransactionID) === String(x.ma)), b64 = f ? (f.Data || f.data) : null;
+      if (!b64 || f.ErrorCode) { m.loi++; continue; }
+      try { if (await luuPdf('ra', x.ma, Uint8Array.from(atob(String(b64)), c => c.charCodeAt(0)))) m.luu++; else m.loi++; } catch (_) { m.loi++; }
+    }
+  }
+  return m;
+}
 async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>) {
   try {
     const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay }) });
@@ -68,6 +91,7 @@ async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>)
       if (!pdf) throw new Error('MISA chưa trả được bản hoá đơn, thử lại sau ít phút');
       const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
       if (!up.ok) throw new Error('Lưu hoá đơn lỗi ' + up.status);
+      await fetch(SB + '/rest/v1/kt_hd_pdf?on_conflict=ma', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ ma: hd.ma, chieu: hd.chieu, duong, kich_thuoc: pdf.length }) });
       url = await kyLink(duong);
     }
     return traJ({ url, hd });
@@ -91,6 +115,11 @@ Deno.serve(async req => {
     const t = await goi(MI + '/invoice/token', { method: 'POST', headers: H, body: JSON.stringify({
       taxcode: Deno.env.get('KT_MEINVOICE_MST'), username: Deno.env.get('KT_MEINVOICE_USER'), password: Deno.env.get('KT_MEINVOICE_PASS') }) });
     const A = { ...H, Authorization: 'Bearer ' + t.Data };
+    if (body.pdf_xem) {   // chỉ tải sẵn PDF hoá đơn ra (lịch kt-hd-pdf-ra mỗi giờ)
+      kq.pdf_xem = await taiPdfXem(A, batDau); kq.giay = Math.round((Date.now() - batDau) / 1000);
+      if (kq.pdf_xem.can) await sb('kt_nhat_ky', { nguoi: 'meInvoice (tự kéo)', bang: 'kt_hd_pdf', hanh_dong: 'tai_pdf_hd_ra', du_lieu: kq });
+      return Response.json(kq);
+    }
     const mau = doc((await goi(MI + '/invoice/templates?invoiceWithCode=true', { headers: A })).Data) as any[];
     const ten: Record<string, string> = {}; mau.forEach(m => ten[m.InvSeries] = m.TemplateName);
     const ks = mau.map(m => m.InvSeries).filter(s => !BO_QUA.includes(String(s).slice(-3)));

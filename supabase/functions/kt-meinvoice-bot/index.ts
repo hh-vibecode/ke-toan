@@ -96,6 +96,24 @@ async function kyLink(duong: string) {
   const r = await fetch(`${SB}/storage/v1/object/sign/kt-chung-tu/${duong}`, { method: 'POST', headers: sbH, body: JSON.stringify({ expiresIn: 600 }) });
   if (!r.ok) return null; const j = await r.json(); return j.signedURL ? `${SB}/storage/v1${j.signedURL}` : null;
 }
+// 03/11/2026 anh: "kéo ảnh định kỳ về đắp lên Supabase" — lưu PDF vào kt-chung-tu hd/{chieu}/{mã}.pdf + ghi kt_hd_pdf
+async function luuPdf(chieu: string, ma: string, pdf: Uint8Array) {
+  const duong = `hd/${chieu}/${String(ma).replace(/[^A-Za-z0-9_-]/g, '_')}.pdf`;
+  const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
+  if (!up.ok) return false;
+  await fetch(SB + '/rest/v1/kt_hd_pdf?on_conflict=ma', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ ma, chieu, duong, kich_thuoc: pdf.length }) });
+  return true;
+}
+async function taiPdfXem(A: any, subId: string, orgs: any[], batDau: number) {
+  const r = await sb('rpc/kt_hd_can_pdf_xem', { p_chieu: 'vao', p_n: 40 }, 'return=representation');
+  const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0 }, hetGio = batDau + 115e3;
+  for (let i = 0; i < ds.length && Date.now() < hetGio - 15e3; i += 5) {
+    await Promise.all(ds.slice(i, i + 5).map(async (x: any) => {
+      try { const pdf = await pdfMot(A, subId, orgs, x.ma, hetGio); if (pdf && await luuPdf('vao', x.ma, pdf)) m.luu++; else m.loi++; } catch (_) { m.loi++; }
+    }));
+  }
+  return m;
+}
 async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>) {
   try {
     const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay }) });
@@ -108,6 +126,7 @@ async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>)
       if (!pdf) throw new Error('MISA chưa trả được bản hoá đơn, thử lại sau ít phút');
       const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
       if (!up.ok) throw new Error('Lưu hoá đơn lỗi ' + up.status);
+      await fetch(SB + '/rest/v1/kt_hd_pdf?on_conflict=ma', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ ma: hd.ma, chieu: hd.chieu, duong, kich_thuoc: pdf.length }) });
       url = await kyLink(duong);
     }
     return traJ({ url, hd });
@@ -141,6 +160,11 @@ Deno.serve(async req => {
     for (const u of ung) { try { og = await goi('organizations', `${MI}/${u}/organizations`, { headers: A }, 3); subId = u; break; } catch (e) { loiOrg.push(String(e)); } }
     if (!og) throw new Error('organizations lỗi: ' + loiOrg.join(' | '));
     const orgs = (Array.isArray(og.Data) ? og.Data : og.Data?.Items || []) as any[];
+    if (body.pdf_xem) {   // chỉ tải sẵn PDF hoá đơn vào (lịch kt-hd-pdf-vao mỗi giờ)
+      kq.pdf_xem = await taiPdfXem(A, subId, orgs, batDau); kq.giay = Math.round((Date.now() - batDau) / 1000);
+      if (kq.pdf_xem.can) await sb('kt_nhat_ky', { nguoi: 'MISA Bot (tự kéo)', bang: 'kt_hd_pdf', hanh_dong: 'tai_pdf_hd_vao', du_lieu: kq });
+      return Response.json(kq);
+    }
     if (!body.pdf) for (let th = String(body.tu || thangVN(-1)); th <= String(body.den || thangVN(0)); th = sauThang(th)) {
       const gap = new Map<string, any>(); const m: any = { lay: 0, bo_xoa: 0, bo_thay_huy: 0, khac_thang: 0 };
       for (const o of orgs) {
