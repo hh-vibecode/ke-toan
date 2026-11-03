@@ -499,6 +499,8 @@ body{font-size:13px}
 .sb-nv svg{width:20px;height:20px;flex:none}.sb-nv:hover{background:rgba(255,255,255,.07)}
 .sb-nv.on{background:var(--accent);box-shadow:none}
 .sb-t{flex:1;min-width:0}
+.sb-acc{margin:2px 0 6px 18px;padding-left:8px;border-left:1px solid rgba(255,255,255,.16)}.sb-acc .sb-cd{padding:8px 9px 2px}.sb-cv{margin-left:auto;font-size:14px;opacity:.6;transition:transform .15s}.sb-nv.mo .sb-cv{transform:rotate(90deg)}
+body.sb-an:not(.sb-rong) .sb-acc,body.sb-an:not(.sb-rong) .sb-cv{display:none}
 .sb-box{margin:10px 8px 0;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.03)}
 .sb-bh{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer}
 .sb-bh .cv{font-size:11px;opacity:.8;transition:transform .15s}.sb-box.gon .cv{transform:rotate(180deg)}.sb-box.gon>.sb-bb{display:none}
@@ -1084,8 +1086,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.309';
-const APP_VERSION='03/11/2026 16:01';
+const APP_SO='1.310';
+const APP_VERSION='03/11/2026 16:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1640,9 +1642,10 @@ const IC_SB={so:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 function shell(){
   const nb=n=>n?`<span class="nav-badge">${n}</span>`:'',cur=PAGES[S.page].nv,nvO=NV.find(v=>v.k===cur)||{},ks=mucNV(cur),ln=locNhanh(cur);
   const nav=NV.map(v=>{const kk=mucNV(v.k);if(!kk.length)return '';
-    return `<div class="sb-nv ${cur===v.k?'on':''}" data-g="${v.k}" onclick="go('${kk[0]}')">${v.ic}<span class="sb-t">${v.ten}</span>${nb(kk.reduce((a,k)=>a+demMuc(k),0))}</div>`}).join('');
-  const subs=ks.length>1?`<div class="sb-box ${S.f.sb_gon?'gon':''}"><div class="sb-bh" onclick="S.f.sb_gon=!S.f.sb_gon;this.parentNode.classList.toggle('gon')"><span>${nvO.ten||''}</span><span class="cv">⌃</span></div>
-      <div class="sb-bb">${sbMuc(ks,nb)}</div></div>`:'';
+    // 03/11 anh: menu kiểu MISA — mục con xổ ngay dưới nghiệp vụ đang chọn (bỏ khung mục con ở cuối menu)
+    const mo=cur===v.k&&kk.length>1;
+    return `<div class="sb-nv ${cur===v.k?'on':''}${mo?' mo':''}" data-g="${v.k}" onclick="go('${kk[0]}')">${v.ic}<span class="sb-t">${v.ten}</span>${nb(kk.reduce((a,k)=>a+demMuc(k),0))}${kk.length>1?'<span class="sb-cv">›</span>':''}</div>${mo?`<div class="sb-acc">${sbMuc(kk,nb)}</div>`:''}`}).join('');
+  const subs='';
   // 19/10 anh: "thanh bên trên không cho linh tinh lên" — bỏ ô tìm kiếm ở thanh trên, mỗi trang tìm trong thanh lọc riêng
   const ten=S.toi.ho_ten||'',vt=(VI_TRI[S.toi.vi_tri]||'').split(' (')[0],av=ten.split(/\s+/).filter(Boolean).slice(-2).map(w=>w[0]).join('').toUpperCase();
   $('#app').innerHTML=`<div class="lay"><aside class="sb" onmouseenter="sbVao()" onmouseleave="sbRa()"><div class="sb-brand"><div class="bn"><b>TÂN HƯNG THỊNH</b><span>KẾ TOÁN QUẢN TRỊ</span></div><button class="sb-x" onclick="document.body.classList.remove('sb-mo')">✕</button></div>
