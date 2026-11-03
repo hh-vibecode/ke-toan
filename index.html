@@ -611,6 +611,23 @@ select.no-pt{height:28px;font-size:12px;max-width:190px}select.no-pt.kiot{color:
 [onclick]:not(input):not(textarea):not(select){cursor:pointer}
 .ncc-top{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px;flex-wrap:wrap}.ncc-tit{font-size:19px;font-weight:800;display:flex;align-items:center;gap:8px}.ncc-ctl{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .ncc-h{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)}.ncc-h1{font-size:18px}
+/* 03/11 giao diện NCC mới: ô lọc nhanh · tên + dòng phụ · cửa sổ 2 cột (hồ sơ NCC | số liệu) · sổ công nợ */
+.ncc-seg{margin-bottom:12px;width:max-content;max-width:100%}.ncc-chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}
+.ncc-chip{display:flex;align-items:baseline;gap:8px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 12px;font-size:12.5px;color:var(--text2);white-space:nowrap}
+.ncc-chip b{font-size:14px;color:var(--text)}.ncc-chip em{font-style:normal;font-weight:600;color:var(--text)}.ncc-chip:hover{background:var(--bg2)}.ncc-chip.on{border-color:var(--accent);background:var(--sel-bg);color:var(--accent)}.ncc-chip.on b,.ncc-chip.on em{color:var(--accent)}
+.ncc-dst th:first-child{width:34%}.ncc-dst th.num,.ncc-dst th.c{min-width:110px}.ncc-dst td:last-child,.ncc-dst th:last-child{padding-left:36px}.nv .tl{grid-template-columns:240px minmax(0,1fr)}.nv .tl-bs:empty{display:none}.nv-r .m-tabs{overflow-x:auto;white-space:nowrap}.nv{position:relative}
+.ncc-ten b{font-weight:600}.ncc-sub{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:400}.ncc-dst td{vertical-align:middle}
+.nv{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}.nv-l{border-right:1px solid var(--border);padding-right:18px;min-width:0}
+.nv-ten{font-size:18px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}.nv-ma{font-size:12.5px;color:var(--muted);margin-top:2px}.nv-pills{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px}
+.nv-nut{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.nv-g{border-top:1px solid var(--border);padding:10px 0 6px}.nv-gt{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.nv-o{padding:4px 0;font-size:13px}.nv-o>span{display:block;font-size:11.5px;color:var(--muted)}.nv-o>div{font-weight:600;overflow-wrap:anywhere}.nv-gc{font-size:13px;white-space:pre-wrap}.nv-trong{font-size:12.5px;padding:10px 0;border-top:1px solid var(--border)}
+.nv-r{min-width:0}.nv-rh{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}.nv-ks{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.nv-k{border:1px solid var(--border);border-left:3px solid var(--c);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:var(--surface);min-width:0}
+.nv-k>span{font-size:12px;color:var(--text2)}.nv-k>b{font-size:19px;font-weight:800}.nv-k>em{font-style:normal;font-size:11.5px;color:var(--muted)}.nv-k.click:hover{background:var(--bg2)}
+.ncc-so .ncc-so-d td{background:var(--bg2)}.ncc-note.bao{background:var(--warn-bg)}.tl-nh td{background:var(--bg2);font-size:12px;color:var(--text2);padding-top:6px;padding-bottom:6px}
+@media(max-width:900px){.nv{grid-template-columns:1fr}.nv-l{border-right:0;padding-right:0;border-bottom:1px solid var(--border);padding-bottom:8px}.tl{grid-template-columns:1fr}}
+@media(max-width:900px){.nv .tl{grid-template-columns:1fr}.nv-rh>.x{position:absolute;top:0;right:0}.nv-ten{padding-right:40px}}
+@media(max-width:560px){.nv-ks{grid-template-columns:1fr}.ncc-chips{padding:0 12px 12px}}
 .ncc-tt{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px}.ncc-ttg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px}
 .ncc-o>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}.ncc-o div{font-size:13px;font-weight:600;overflow-wrap:anywhere}
 .ncc-k4{grid-template-columns:repeat(4,minmax(0,1fr))!important;margin-bottom:6px}.ncc-st{font-size:14px;font-weight:800;margin:4px 0 10px;display:flex;align-items:center;gap:8px}
@@ -1067,8 +1084,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.302';
-const APP_VERSION='03/11/2026 10:19';
+const APP_SO='1.303';
+const APP_VERSION='03/11/2026 11:19';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2956,26 +2973,50 @@ const nccTT=x=>x.hoat_dong===false?['Tạm ngưng','warn']:(x.so_phieu>0||x.so_n
 async function nccDS(){const kk=S.tu+'|'+S.den;let d=S.cache.hs_d;
   if(!d||S.cache.hs_d_k!==kk||Date.now()-(S.cache.hs_d_luc||0)>120000){d=await rpc('kt_ds_ncc',{p_tu:S.tu||null,p_den:S.den||null});S.cache.hs_d=d;S.cache.hs_d_k=kk;S.cache.hs_d_luc=Date.now()}
   return d}
-async function pageNccDS(kieu){const K=NCC_KIEU[kieu],el=$('#page'),f=S.f,k='ncc_'+kieu,g=nccGhi();
+// 03/11/2026 kế toán: "nghiên cứu lại giao diện phần NCC, thấy chưa hợp lý" + anh: "xử lý hết, sắp xếp lại cho dễ nhìn, tham khảo các bên khác, giao diện này hơi phổ thông"
+// → kiểu danh bạ đối tác (MISA / Xero): hàng ô lọc nhanh có số tiền (bấm = lọc) · bảng gọn: tên (mã · SĐT dưới) · giao dịch gần nhất · còn phải trả · quá hạn · ứng trước.
+// Số = công nợ HIỆN TẠI theo Kiot (không theo kỳ trên cùng). NCC nước ngoài: cột theo luồng đặt hàng (đã trả, chờ trả, hồ sơ nhập khẩu) + tab Hồ sơ nhập khẩu. — Monsieur Claude
+const nccGan=x=>[x.nhap_cuoi,x.lan_cuoi].filter(Boolean).map(v=>String(v).slice(0,10)).sort().pop()||'';
+function nccNgoaiTabs(nNcc,nNk){const nk=S.page==='lo_nk';
+  return `<div class="m-seg ncc-seg">${[['ncc_ngoai','Nhà cung cấp nước ngoài',nNcc,!nk],['lo_nk','Hồ sơ nhập khẩu',nNk,nk]].map(([p,l,n,on])=>`<button class="${on?'on':''}" onclick="go('${p}')">${l} <span class="badge">${fmt(n)}</span></button>`).join('')}</div>`}
+async function pageNccDS(kieu){const K=NCC_KIEU[kieu],el=$('#page'),f=S.f,k='ncc_'+kieu,g=nccGhi(),ngoai=kieu==='ngoai';
   if(!S.cache.hs_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const d=await nccDS(),T=d.ncc.filter(K.loc),tt=f[k+'_tt']||'',lo=f[k+'_loai']||'';   // 30/10 kế toán: lọc riêng Dịch vụ (trong nội địa) / Trung gian (trong nước ngoài)
-  const l=T.filter(x=>(!tt||nccTT(x)[0]===tt)&&(!lo||x.loai===lo)&&(!f[k+'_q']||khopTim(f[k+'_q'],[x.ma,x.ten,x.sdt])));
-  const moi=f[k+'_moi']||50,[a,b,tr]=phanTrang(k,l.length,moi);
-  el.innerHTML=`<div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">${K.ten} <span class="badge">${fmt(T.length)}</span></div><div class="muted" style="font-size:13px;margin-top:2px">${K.mo}</div></div>
-      <div class="ncc-ctl"><input class="m-in" type="search" style="width:260px" placeholder="Tìm mã, tên nhà cung cấp..." value="${esc(f[k+'_q']||'')}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()">
-        <select class="m-in" style="width:160px" onchange="S.f['${k}_loai']=this.value;S.f['${k}_tr']=1;render()"><option value="">Tất cả loại NCC</option>${K.cac.map(v=>`<option value="${v}" ${lo===v?'selected':''}>${NCC_LOAI[v][0]} (${fmt(T.filter(x=>x.loai===v).length)})</option>`).join('')}</select>
-        <select class="m-in" style="width:170px" onchange="S.f['${k}_tt']=this.value;S.f['${k}_tr']=1;render()">${[['','Tất cả trạng thái'],['Đang giao dịch','Đang giao dịch'],['Chưa giao dịch','Chưa giao dịch'],['Tạm ngưng','Tạm ngưng']].map(([v,t])=>`<option value="${v}" ${tt===v?'selected':''}>${t}</option>`).join('')}</select>
-        ${d.cho?`<button class="m-btn out" title="Phiếu chi đã chi trong kỳ, chưa vào NCC nào" onclick="hsChoMo()">Chờ phân NCC <span class="badge">${fmt(d.cho)}</span></button>`:''}
+  const d=await nccDS(),T=d.ncc.filter(K.loc),lo=f[k+'_loai']||'',q=f[k+'_q']||'',sx=f[k+'_sx']||(ngoai?'moi':'no'),nk=ngoai?(await lnkDS()).length:0;
+  const chua=x=>nccTT(x)[0]==='Chưa giao dịch';
+  const LOC=ngoai?[['','Tất cả',()=>true],['tra','Đã thanh toán',x=>+x.da_tra>0,x=>+x.da_tra],['cho','Đang chờ trả',x=>+x.cho_tra>0,x=>+x.cho_tra],['nk','Có hồ sơ nhập khẩu',x=>+x.so_nk>0],['chua','Chưa giao dịch',chua]]
+    :[['','Tất cả',()=>true],['no','Còn phải trả',x=>+x.phai_tra>0,x=>+x.phai_tra],['qh','Quá hạn',x=>+x.qua_han>0,x=>+x.qua_han],['ung','Ứng trước',x=>+x.phai_thu>0,x=>+x.phai_thu],['chua','Chưa giao dịch',chua]];
+  const lc=LOC.some(z=>z[0]===f[k+'_loc'])?f[k+'_loc']:'',dk=LOC.find(z=>z[0]===lc)[2],T2=T.filter(x=>!lo||x.loai===lo);
+  const SX={no:(a,b)=>(+b.phai_tra-+a.phai_tra)||(+b.phai_thu-+a.phai_thu)||nccGan(b).localeCompare(nccGan(a)),moi:(a,b)=>nccGan(b).localeCompare(nccGan(a))||String(a.ten).localeCompare(String(b.ten),'vi'),
+    ten:(a,b)=>String(a.ten).localeCompare(String(b.ten),'vi')};
+  const l=T2.filter(x=>dk(x)&&(!q||khopTim(q,[x.ma,x.ten,x.sdt]))).sort(SX[sx]||SX.no);
+  const moi=f[k+'_moi']||50,[a,b,tr]=phanTrang(k,l.length,moi),v=x=>+x?fmt(x):'<span class="muted">–</span>';
+  const chip=([key,ten,ok,tien])=>{const ds=T2.filter(ok);return `<button class="ncc-chip${lc===key?' on':''}" onclick="S.f['${k}_loc']='${key}';S.f['${k}_tr']=1;render()"><span>${ten}</span><b>${fmt(ds.length)}</b>${tien&&sumBy(ds,tien)?`<em>${fmt(sumBy(ds,tien))}</em>`:''}</button>`};
+  const tenO=x=>`<div class="ncc-ten"><b>${esc(x.ten)}</b>${['dich_vu','trung_gian'].includes(x.loai)?' '+nccPill(x.loai):''}${x.hoat_dong===false?' '+pill('Tạm ngưng','warn'):''}</div><div class="ncc-sub">${esc([x.ma,ngoai?(x.them||{}).quoc_gia:x.sdt].filter(Boolean).join(' · '))}</div>`;
+  const gan=x=>{const n=nccGan(x);return n?`${fmtD(n)}<div class="ncc-sub">${x.nhap_cuoi&&String(x.nhap_cuoi).slice(0,10)===n?'nhập hàng':'thanh toán'}</div>`:'<span class="muted">—</span>'};
+  const cols=ngoai?[['Nhà cung cấp',''],['Tiền tệ','c'],['Hồ sơ nhập khẩu','c'],['Đã thanh toán','num'],['Đang chờ trả','num'],['Giao dịch gần nhất','']]
+    :[['Nhà cung cấp',''],['Giao dịch gần nhất',''],['Phiếu nhập','num'],['Còn phải trả','num'],['Quá hạn','num'],['Ứng trước','num']];
+  const dong=x=>ngoai?`<td>${tenO(x)}</td><td class="c">${esc((x.them||{}).tien_te||'VND')}</td><td class="c">${+x.so_nk?`<span class="badge">${x.so_nk}</span>`:'<span class="muted">–</span>'}</td><td class="num">${v(x.da_tra)}</td><td class="num">${v(x.cho_tra)}</td><td class="nw">${gan(x)}</td>`
+    :`<td>${tenO(x)}</td><td class="nw">${gan(x)}</td><td class="num">${v(x.so_nhap)}</td><td class="num">${+x.phai_tra?`<b class="neg-t">${fmt(x.phai_tra)}</b>`:v(0)}</td>
+      <td class="num">${+x.qua_han?`<span class="neg-t">${fmt(x.qua_han)}</span>${+x.so_qh?`<div class="ncc-sub">${x.so_qh} phiếu nhập</div>`:''}`:v(0)}</td><td class="num">${+x.phai_thu?`<span class="pos-t">${fmt(x.phai_thu)}</span>`:v(0)}</td>`;
+  const tong=ngoai?`<td colspan="3"><b>Tổng ${fmt(l.length)} nhà cung cấp</b></td><td class="num"><b>${fmt(sumBy(l,x=>+x.da_tra))}</b></td><td class="num"><b>${fmt(sumBy(l,x=>+x.cho_tra))}</b></td><td></td>`
+    :`<td colspan="3"><b>Tổng ${fmt(l.length)} nhà cung cấp</b></td><td class="num"><b>${fmt(sumBy(l,x=>+x.phai_tra))}</b></td><td class="num"><b>${fmt(sumBy(l,x=>+x.qua_han))}</b></td><td class="num"><b>${fmt(sumBy(l,x=>+x.phai_thu))}</b></td>`;
+  const loaiK=K.cac.filter(c=>T.some(x=>x.loai===c));
+  el.innerHTML=(ngoai?nccNgoaiTabs(T.length,nk):'')+`<div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">${K.ten} <span class="badge">${fmt(T.length)}</span></div><div class="muted" style="font-size:12.5px;margin-top:2px">${ngoai?'Theo dõi đặt hàng, thanh toán và hồ sơ nhập khẩu':'Công nợ hiện tại theo Kiot · không phụ thuộc kỳ đang chọn'}</div></div>
+      <div class="ncc-ctl"><input class="m-in" type="search" style="width:240px" placeholder="Tìm tên, mã, số điện thoại..." value="${esc(q)}" onchange="S.f['${k}_q']=this.value;S.f['${k}_tr']=1;render()">
+        ${loaiK.length>1?`<select class="m-in" style="width:150px" onchange="S.f['${k}_loai']=this.value;S.f['${k}_tr']=1;render()"><option value="">Mọi loại NCC</option>${loaiK.map(c=>`<option value="${c}" ${lo===c?'selected':''}>${NCC_LOAI[c][0]} (${fmt(T.filter(x=>x.loai===c).length)})</option>`).join('')}</select>`:''}
+        <select class="m-in" style="width:190px" title="Sắp xếp" onchange="S.f['${k}_sx']=this.value;render()">${(ngoai?[['moi','Giao dịch gần nhất'],['ten','Tên A – Z']]:[['no','Còn phải trả nhiều nhất'],['moi','Giao dịch gần nhất'],['ten','Tên A – Z']]).map(([v2,t])=>`<option value="${v2}" ${sx===v2?'selected':''}>${t}</option>`).join('')}</select>
+        ${d.cho?`<button class="m-btn out" title="Phiếu chi đã chi trong kỳ đang chọn, chưa vào NCC nào" onclick="hsChoMo()">Chờ phân NCC <span class="badge">${fmt(d.cho)}</span></button>`:''}
         ${g?`<button class="m-btn pri" onclick="formNCC(null,'${K.loai}')">+ Thêm NCC</button>`:''}</div></div>
-    <div class="scroll"><table class="m-t"><tr><th>Mã NCC</th><th>Tên nhà cung cấp</th><th class="c">Loại NCC</th><th>Số điện thoại</th><th class="num">Phải thu (ứng trước)</th><th class="num">Phải trả</th><th class="num">Số dư</th><th class="c">Trạng thái</th></tr>
-    ${l.slice(a,b).map(x=>{const du=+x.phai_thu-+x.phai_tra;return `<tr class="click" onclick="nccMo(${x.id},'gd')"><td class="nw">${esc(x.ma||'')}</td><td class="ten">${esc(x.ten)}</td><td class="c">${nccPill(x.loai)}</td><td class="nw">${esc(x.sdt||'')}</td>
-      <td class="num">${fmt(x.phai_thu)}</td><td class="num ${+x.phai_tra>0?'neg-t':''}">${fmt(x.phai_tra)}</td><td class="num ${du<0?'neg-t':''}">${fmt(du)}</td><td class="c">${pill(...nccTT(x))}</td></tr>`}).join('')||'<tr><td colspan="8" class="m-empty">Không có nhà cung cấp phù hợp</td></tr>'}</table></div>
+    <div class="ncc-chips">${LOC.map(chip).join('')}</div>
+    <div class="scroll"><table class="m-t ncc-dst"><tr>${cols.map(([t,c])=>`<th class="${c}">${t}</th>`).join('')}</tr>
+    ${l.slice(a,b).map(x=>`<tr class="click" onclick="nccMo(${x.id},'${x.nguon==='kiot'?'so':'gd'}')">${dong(x)}</tr>`).join('')||`<tr><td colspan="6" class="m-empty">Không có nhà cung cấp phù hợp</td></tr>`}
+    ${l.length?`<tr class="tong">${tong}</tr>`:''}</table></div>
     ${thanhTrang(k,l.length,moi,tr,'nhà cung cấp')}</div>`;
 }
 // Chờ phân NCC: popup — phiếu chi đã chi trong kỳ đang chọn, chưa vào NCC nào (kèm NCC gợi ý), gán hàng loạt theo gợi ý
 async function hsChoMo(){const kk=S.tu+'|'+S.den;
   if(S.cache.hs_cho_k!==kk||!S.cache.hs_cho){try{S.cache.hs_cho=await rpc('kt_ncc_cho',{p_tu:S.tu||null,p_den:S.den||null})}catch(e){return alert(e.message)}S.cache.hs_cho_k=kk;S.f.hs_sel=[]}
-  const f=S.f,ds=S.cache.hs_cho,co=ds.filter(x=>(x.goi_y||[]).length),loc=f.hs_cho_loc==='tat_ca'?'tat_ca':'goi_y',l=loc==='goi_y'?co:ds,g=nccGhi();
+  const f=S.f,ds=S.cache.hs_cho,co=ds.filter(x=>(x.goi_y||[]).length),loc=(f.hs_cho_loc||(co.length?'goi_y':'tat_ca'))==='tat_ca'?'tat_ca':'goi_y',l=loc==='goi_y'?co:ds,g=nccGhi();
   const moi=15,tr=Math.min(Math.max(f.hsc_tr||1,1),Math.max(1,Math.ceil(l.length/moi)));f.hsc_tr=tr;const trang=l.slice((tr-1)*moi,tr*moi),sel=f.hs_sel||[];S.cache.hs_trang=trang.filter(x=>(x.goi_y||[]).length).map(x=>x.id);
   const so=Math.max(1,Math.ceil(l.length/moi));
   const html=`<div class="ncc-h"><b class="ncc-h1">Phiếu chi chờ phân NCC</b><span class="badge">Đã chi trong kỳ · chưa vào NCC</span><button class="x" style="margin-left:auto" title="Đóng" onclick="closeModal()">✕</button></div>
@@ -3025,93 +3066,140 @@ function nccGD(c){const L=[],han=+c.han||30,nay=homNay(),dn=Object.fromEntries((
     L.push({ngay:String(p.ngay||'').slice(0,10),so:maPh(p.bang,p.id),p,loai,hs:p.ho_so_id||null,nd:p.noi_dung||'',tien:+p.so_tien,tt,hanTT:loai==='dn'?'cho':'xong'})});
   return L.sort((a,b)=>a.ngay<b.ngay?1:a.ngay>b.ngay?-1:0)}
 const NCC_GD={nhap:['Nhập hàng','vio'],tt:['Thanh toán','ok'],ung:['Ứng trước','info'],dn:['Đề nghị thanh toán','warn'],thu:['Thu về','']};
-function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGhi(),so=nccSo(c),soDu=so.phai_thu-so.phai_tra;
-  const tabs=[['gd','Giao dịch'],['hs','Hồ sơ']],tab=tabs.some(t=>t[0]===f.ncc_tab)?f.ncc_tab:'gd';
-  const hsM=Object.fromEntries(c.ho_so.map(h=>[h.id,h])),daTra=ds=>sumBy(ds.filter(p=>p.bang==='chi'&&p.trang_thai==='da_tt'),p=>+p.so_tien);
-  const L=nccGD(c),denHan=L.filter(x=>x.hanTT==='qua');
-  const the=(c2,ic,l,v,cls,on)=>`<div class="m-k${on?' click':''}" style="--c:var(--${c2})" ${on?`onclick="${on}"`:''}><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v ${cls||''}">${v}</div></div>${on?'<span class="muted" style="align-self:center;font-size:18px">›</span>':''}</div>`;
-  const luoi=(bang,id,sua)=>ctBox(bang,id,sua).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,'').replace('class="ct"','class="ct" data-xong="1" style="margin-top:8px"');   // ảnh vẽ 1 lượt bằng nccVeCT
+// 03/11 sổ chi tiết công nợ NCC (kiểu MISA): phiếu nhập Kiot (phát sinh nợ) + tiền trả / thu với NCC trên sổ quỹ Kiot, số dư chạy; đầu năm suy từ công nợ Kiot hiện tại
+// → số dư cuối luôn = công nợ Kiot. Phiếu chi trên app ghép với phiếu trả Kiot (cùng mã Kiot, hoặc cùng số tiền lệch ≤ 3 ngày); phiếu app không thấy trên Kiot → báo riêng.
+function nccSoCN(c){const n=c.ncc,no=+n.cong_no||0,nh=(c.nhap||[]).filter(x=>x.trang_thai===3&&+x.tong>0);
+  const ev=[...nh.map(x=>({ngay:String(x.ngay).slice(0,10),loai:'nhap',so:x.ma,nd:['Nhập hàng',x.chi_nhanh,x.mo_ta].filter(Boolean).join(' · '),no:+x.tong,tra:0,x})),
+    ...(c.sq||[]).map(q=>{const t=Math.abs(+q.tien);return {ngay:String(q.ngay).slice(0,10),loai:q.thu?'thu':'tra',so:q.ma,nd:[q.thu?'Thu tiền NCC trả lại':(q.nhom||'Trả tiền NCC'),q.nd].filter(Boolean).join(' · '),no:q.thu?t:0,tra:q.thu?0:t,q}})]
+    .sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:(a.loai==='nhap'?0:1)-(b.loai==='nhap'?0:1));
+  const dau0=no-sumBy(ev,e=>e.no-e.tra);let du=dau0;ev.forEach(e=>{du+=e.no-e.tra;e.du=du});
+  const app=c.phieu.filter(p=>p.bang==='chi'&&p.trang_thai==='da_tt').map(p=>({p,ngay:String(p.ngay||'').slice(0,10)})),dung=new Set();
+  const tra=ev.filter(e=>e.loai==='tra');
+  tra.forEach(e=>{const a=app.find(z=>!dung.has(z)&&z.p.kiot_ma&&z.p.kiot_ma===e.so);if(a){dung.add(a);e.app=a.p}});
+  tra.filter(e=>!e.app).forEach(e=>{let tot=null,kc=9;app.forEach(a=>{if(dung.has(a)||Math.abs(+a.p.so_tien-e.tra)>1)return;const d=Math.abs((Date.parse(a.ngay)-Date.parse(e.ngay))/864e5);if(d<=3&&d<kc){kc=d;tot=a}});if(tot){dung.add(tot);e.app=tot.p}});
+  return {ev,dau0,cuoi:du,le:app.filter(a=>!dung.has(a)).map(a=>a.p)}}
+function nccXuatSo(){const c=S.cache.ncc_ct;if(!c)return;const S2=nccSoCN(c),ky=S.f.ncc_so_ky||'';
+  xuatCSV('so-cong-no-'+(c.ncc.ma||c.ncc.id)+(ky?'-'+ky:''),[['Ngày',e=>e.ngay],['Chứng từ',e=>e.so],['Diễn giải',e=>e.nd],['Phát sinh nợ',e=>e.no||''],['Đã trả',e=>e.tra||''],['Còn nợ',e=>Math.round(e.du)],['Phiếu chi trên app',e=>e.app?maPh('chi',e.app.id):'']],S2.ev.filter(e=>!ky||e.ngay.slice(0,7)===ky))}
+// tên tệp chứng từ dễ đọc: tên máy sinh (z7615…, UNC_Image…, chuỗi số / mã băm) → "Uỷ nhiệm chi · PC001420", "Ảnh 2 · PC001420"; tên gốc để ở chú thích khi rê chuột
+const tlTenMay=t=>{const s=String(t||'').replace(/\.[a-z0-9]{2,4}$/i,'');return /^(z\d{6,}|unc[_ -]|img[_ -]|image|scan|screenshot|\d{6,})/i.test(s)||/[0-9a-f]{16,}/i.test(s)||(!/\s/.test(s)&&s.length>28)};
+function nccVe(){const c=S.cache.ncc_ct;if(!c)return;const n=c.ncc,f=S.f,g=nccGhi(),kiot=n.nguon==='kiot',X=n.them||{},ngoai=['nuoc_ngoai','trung_gian'].includes(n.loai);
+  const L=nccGD(c),pb=c.pb||[],hsM=Object.fromEntries(c.ho_so.map(h=>[h.id,h])),{ds:tlDs}=nccTL(c);S.cache.ncc_gd_all=L;
+  const chuaGan=L.filter(x=>!x.kiot&&x.p.bang==='chi'&&x.p.trang_thai==='da_tt'&&nccTTGan(x,pb)[2]!=='du').length,nNk=(c.lo_nk||[]).length,bd=v=>v?` <span class="badge">${v}</span>`:'';
+  const tabs=kiot?[['so','Sổ công nợ'],['gd','Gắn thanh toán'+bd(chuaGan)],['hs','Chứng từ'+bd(tlDs.length)]]:[['gd','Thanh toán'],['nk','Hồ sơ nhập khẩu'+bd(nNk)],['hs','Chứng từ'+bd(tlDs.length)]];
+  const tab=tabs.some(t=>t[0]===f.ncc_tab)?f.ncc_tab:tabs[0][0];
   const hsLink=id=>{const h=hsM[id];return h?`<span class="m-link" title="${esc(h.ten)}" onclick="event.stopPropagation();S.f.ncc_tab='hs';S.f.tl_muc='';nccVe()">${esc(h.so_hd||maHS(h.id))} ↗</span>`:'<span class="muted">—</span>'};
+  const S2=kiot?nccSoCN(c):null,nam=homNay().slice(0,4);
   let body='';
-  if(tab==='gd'){
-    // 29/10 anh (ảnh mẫu): 2 khối — A. Phát sinh công nợ (nhập hàng) · B. Thanh toán & Đề nghị thanh toán (phân bổ cho phiếu nhập); kế toán tự gắn, app chỉ gợi ý
-    const ky=f.ncc_gd_ky||'',hn=f.ncc_gd_han||'',tg=f.ncc_gd_gan||'',q=(f.ncc_gd_q||'').trim(),pb=c.pb||[];
+  if(tab==='so'){const ky=f.ncc_so_ky||'',thg=[...new Set(S2.ev.map(e=>e.ngay.slice(0,7)))].sort().reverse();
+    const R=S2.ev.filter(e=>!ky||e.ngay.slice(0,7)===ky),dau=S2.dau0+sumBy(S2.ev.filter(e=>ky&&e.ngay.slice(0,7)<ky),e=>e.no-e.tra),psNo=sumBy(R,e=>e.no),psTra=sumBy(R,e=>e.tra),cuoi=dau+psNo-psTra;
+    const iL=e=>e.loai==='nhap'?L.findIndex(y=>y.kiot&&y.x.id===e.x.id):e.app?L.findIndex(y=>!y.kiot&&y.p.bang==='chi'&&y.p.id===e.app.id):-1;
+    const du=v=>Math.round(v)<0?`<span class="pos-t" title="NCC đang giữ tiền ứng trước">ứng ${fmt(-v)}</span>`:fmt(v);
+    const tu0=S2.ev.length?S2.ev[0].ngay:nam+'-01-01';
+    body=`<div class="m-flt" style="align-items:center"><select class="m-in" style="width:auto;min-width:210px" onchange="S.f.ncc_so_ky=this.value;nccVe()"><option value="">Từ ${fmtD(tu0)} đến nay</option>${thg.map(m=>`<option value="${m}" ${ky===m?'selected':''}>Tháng ${+m.slice(5)}/${m.slice(0,4)}</option>`).join('')}</select>
+        <span class="badge" title="Phiếu nhập + tiền trả trên sổ quỹ Kiot; số dư cuối bằng công nợ Kiot hiện tại">Khớp công nợ Kiot</span><span style="margin-left:auto"></span><button class="m-btn out" onclick="nccXuatSo()">${IC_XLS} Xuất Excel</button></div>
+      <div class="scroll"><table class="m-t ncc-so"><tr><th>Ngày</th><th>Chứng từ</th><th>Diễn giải</th><th class="num">Phát sinh nợ</th><th class="num">Đã trả</th><th class="num">Còn nợ</th><th>Phiếu chi trên app</th></tr>
+      <tr class="ncc-so-d"><td colspan="5"><b>Số dư đầu ${ky?'kỳ':'kỳ (trước '+fmtD(tu0)+')'}</b></td><td class="num"><b>${du(dau)}</b></td><td></td></tr>
+      ${R.map(e=>{const i=iL(e);return `<tr${i>=0?` class="click" onclick="nccGDMo(${i})"`:''}><td class="nw">${fmtD(e.ngay)}</td><td class="nw">${e.loai==='nhap'?`<span class="m-link">${esc(e.so)}</span>`:`<span title="Phiếu trên sổ quỹ Kiot">${esc(e.so)}</span>`}</td>
+        <td class="gd-nd">${esc(e.nd)}</td><td class="num">${e.no?fmt(e.no):''}</td><td class="num">${e.tra?fmt(e.tra):''}</td><td class="num">${du(e.du)}</td>
+        <td class="nw">${e.app?`<span class="m-link">${maPh('chi',e.app.id)}</span>${+e.app.so_ct?` <span class="ghim" title="Xem chứng từ" onclick="event.stopPropagation();nccGDAnh('chi',${e.app.id})">${IC.ghim}${e.app.so_ct}</span>`:''}`:e.loai==='nhap'?'':'<span class="muted" title="Không thấy phiếu chi cùng số tiền trên app (lệch ≤ 3 ngày)">—</span>'}</td></tr>`}).join('')||'<tr><td colspan="7" class="m-empty">Không có phát sinh trong kỳ</td></tr>'}
+      <tr class="tong"><td colspan="3"><b>Cộng phát sinh · số dư cuối kỳ</b></td><td class="num"><b>${fmt(psNo)}</b></td><td class="num"><b>${fmt(psTra)}</b></td><td class="num"><b>${du(cuoi)}</b></td><td></td></tr></table></div>
+      ${S2.le.length?`<div class="ncc-note bao">${S2.le.length} phiếu chi trên app chưa thấy trên sổ quỹ Kiot (công nợ Kiot chưa trừ): ${S2.le.map(p=>`<span class="m-link" onclick="nccGDMo(${L.findIndex(y=>!y.kiot&&y.p.bang==='chi'&&y.p.id===p.id)})">${maPh('chi',p.id)} · ${fmt(p.so_tien)} · ${fmtD(String(p.ngay||'').slice(0,10))}</span>`).join(' · ')}</div>`:''}`;
+  }else if(tab==='gd'){
+    // phiếu nhập Kiot ↔ phiếu chi: kế toán tự gắn, app chỉ gợi ý (29/10). 03/11: bỏ cột trống / lặp, nút gắn chỉ ở phiếu còn nợ, ô lọc ghi rõ tên
+    const ky=f.ncc_gd_ky||'',hn=f.ncc_gd_han||'',tg=f.ncc_gd_gan||'',q=(f.ncc_gd_q||'').trim();
     const loc=x=>(!ky||(x.ngay>=(S.tu||'')&&x.ngay<=(S.den||'9999')))&&(!q||khopTim(q,[x.so,x.nd,x.p&&x.p.nguoi_nhan]));
-    const N=L.filter(x=>x.kiot&&loc(x)&&(!hn||x.hanTT===hn)),P=L.filter(x=>!x.kiot&&loc(x)&&(tg?nccTTGan(x,pb)[2]===tg:nccTTGan(x,pb)[2]!=='du'));S.cache.ncc_gd=[...N,...P];   // 29/10 anh: gắn đủ thì chuyển lên khối A, bảng dưới chỉ còn phiếu chưa gắn xong
+    const N=L.filter(x=>x.kiot&&loc(x)&&(!hn||x.hanTT===hn)),P=L.filter(x=>!x.kiot&&loc(x)&&(tg?nccTTGan(x,pb)[2]===tg:!kiot||nccTTGan(x,pb)[2]!=='du'));S.cache.ncc_gd=[...N,...P];
     const sel=(key,list)=>`<select class="m-in" style="width:auto;min-width:150px" onchange="S.f.${key}=this.value;S.f.ncc_n_tr=1;S.f.ncc_p_tr=1;nccVe()">${list.map(([v,t])=>`<option value="${v}" ${(f[key]||'')===v?'selected':''}>${t}</option>`).join('')}</select>`;
-    const gy=S.cache.ncc_tim_q?null:S.cache.ncc_tim;   // số gợi ý đối soát (phiếu chi chưa vào NCC, có tên NCC này)
+    const gy=S.cache.ncc_tim_q?null:S.cache.ncc_tim;
     const trang=(ds,k,moi)=>{const trs=Math.max(1,Math.ceil(ds.length/moi)),tr=Math.min(Math.max(f[k]||1,1),trs);f[k]=tr;return [ds.slice((tr-1)*moi,tr*moi),trs>1?`<div class="ncc-pg"><span class="muted">Hiển thị ${(tr-1)*moi+1} – ${Math.min(tr*moi,ds.length)} / ${ds.length}</span><span style="margin-left:auto"></span><button class="m-btn out" style="height:30px" ${tr<=1?'disabled':''} onclick="S.f.${k}--;nccVe()">‹</button><b style="min-width:52px;text-align:center">${tr} / ${trs}</b><button class="m-btn out" style="height:30px" ${tr>=trs?'disabled':''} onclick="S.f.${k}++;nccVe()">›</button></div>`:'']};
     const ganP=x=>pb.filter(b=>b.chi_id===x.p.id);
     const [Nt,Npg]=trang(N,'ncc_n_tr',15),[Pt,Ppg]=trang(P,'ncc_p_tr',15);
-    const dau=(chu,ten,phu,n,cls,nut)=>`<div class="gd-kh ${cls}"><span class="gd-so">${chu}</span><b>${ten}</b>${phu?`<span class="muted" style="font-size:12.5px">${phu}</span>`:''}<span class="badge">${n} giao dịch</span><span style="margin-left:auto"></span>${nut||''}</div>`;
-    const kA=`<div class="gd-k">${dau('A','Phát sinh công nợ','(nhập hàng)',N.length,'a',`<a class="m-btn sm out" href="${KIOT_MAN}PurchaseOrder" target="_blank" rel="noopener" title="Phiếu nhập tạo trên Kiot, app tự kéo về">+ Thêm phiếu nhập (Kiot) ↗</a>`)}
-      <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số chứng từ</th><th class="c">Loại giao dịch</th><th>Nội dung</th><th>Hợp đồng</th><th class="num">Giá trị (đ)</th><th class="num">Đã thanh toán (đ)</th><th class="num">Còn nợ (đ)</th><th class="c">Trạng thái</th><th>Phiếu chi đã gắn</th>${g?'<th class="c"></th>':''}</tr>
-      ${Nt.map(x=>`<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td><td class="c">${pill('Nhập hàng','vio')}</td>
-        <td class="gd-nd">${esc(x.nd)||'<span class="muted">—</span>'}</td><td class="nw">${hsLink(x.hs)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
-        <td class="num" title="${x.nguon==='gan'?'Theo phiếu chi kế toán đã gắn':'Theo công nợ Kiot'}">${fmt(x.da)}</td><td class="num ${x.con>0?'neg-t':''}">${fmt(x.con)}</td><td class="c">${pill(...x.tt)}</td>
+    const dau=(ten,phu,n,cls,nut)=>`<div class="gd-kh ${cls}"><b>${ten}</b>${phu?`<span class="muted" style="font-size:12.5px">${phu}</span>`:''}<span class="badge">${n}</span><span style="margin-left:auto"></span>${nut||''}</div>`;
+    const coNd=N.some(x=>x.nd),coHs=N.some(x=>x.hs),soCot=7+(coNd?1:0)+(coHs?1:0)+(g?1:0);
+    const kA=`<div class="gd-k">${dau('Phiếu nhập hàng','đã trả / còn nợ theo phiếu chi đã gắn',N.length,'a',`<a class="m-btn sm out" href="${KIOT_MAN}PurchaseOrder" target="_blank" rel="noopener" title="Phiếu nhập tạo trên Kiot, app tự kéo về">Mở Kiot ↗</a>`)}
+      <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th>${coNd?'<th>Nội dung</th>':''}${coHs?'<th>Hợp đồng</th>':''}<th class="num">Giá trị</th><th class="num">Đã trả</th><th class="num">Còn nợ</th><th class="c">Trạng thái</th><th>Phiếu chi đã gắn</th>${g?'<th class="c"></th>':''}</tr>
+      ${Nt.map(x=>`<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td>
+        ${coNd?`<td class="gd-nd">${esc(x.nd)||'<span class="muted">—</span>'}</td>`:''}${coHs?`<td class="nw">${hsLink(x.hs)}</td>`:''}<td class="num"><b>${fmt(x.tien)}</b></td>
+        <td class="num" title="${x.nguon==='gan'?'Theo phiếu chi kế toán đã gắn':'Theo công nợ Kiot'}">${fmt(x.da)}</td><td class="num ${x.con>0?'neg-t':''}">${x.con>0?fmt(x.con):'<span class="muted">–</span>'}</td><td class="c">${pill(...x.tt)}</td>
         <td onclick="event.stopPropagation()">${(()=>{const gn=pb.filter(b=>b.nhap_id===x.x.id).map(b=>[b,L.find(y=>!y.kiot&&y.p.id===b.chi_id)]).filter(z=>z[1]);return gn.length?`<div class="gd-pcs">${gn.map(([b,y])=>`<span class="gd-pc${b.tao_boi===TU_GAN?' tu':''}" title="${esc(y.nd)} · ${fmt(y.tien)}${b.tao_boi===TU_GAN?' — hệ thống tự gắn '+fmt(b.so_tien)+', cần soát':''}" onclick="nccGDMo(${L.indexOf(y)})">${esc(y.so)}</span>`).join('')}</div>`:'<span class="muted">—</span>'})()}</td>
-        ${g?`<td class="c" onclick="event.stopPropagation()"><button class="m-btn sm out" title="Gắn phiếu chi đã trả cho phiếu nhập này" onclick="nccGanMo('nhap',${L.indexOf(x)})">Gắn thanh toán</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?11:10}" class="m-empty">Không có phiếu nhập phù hợp</td></tr>`}
-      ${N.length?`<tr class="tong"><td colspan="5">Tổng</td><td class="num">${fmt(sumBy(N,x=>x.tien))}</td><td class="num">${fmt(sumBy(N,x=>x.da))}</td><td class="num">${fmt(sumBy(N,x=>x.con))}</td><td colspan="${g?3:2}"></td></tr>`:''}</table></div>${Npg}</div>`;
-    const kB=`<div class="gd-k">${dau('B','Thanh toán & Đề nghị thanh toán',tg?'':'(chưa gắn xong)',P.length,'b',g?`<button class="m-btn sm out" title="Tạo đề nghị chi — lưu xong chọn NCC ở bước 2 của phiếu" onclick="closeModal();formChi()">+ Thêm phiếu chi / DNTT</button>`:'')}
-      <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số chứng từ</th><th class="c">Loại giao dịch</th><th>Nội dung</th><th class="num">Số tiền (đ)</th><th class="c">Phân bổ</th><th class="c">Trạng thái</th><th class="c">Chứng từ</th>${g?'<th class="c"></th>':''}</tr>
-      ${Pt.map(x=>{const gp=x.p.bang==='chi'?ganP(x):[],tg2=nccTTGan(x,pb),coGan=x.p.bang==='chi'&&x.p.trang_thai==='da_tt'&&c.ncc.nguon==='kiot';
+        ${g?`<td class="c" onclick="event.stopPropagation()">${x.con>0?`<button class="m-btn sm out" title="Gắn phiếu chi đã trả cho phiếu nhập này" onclick="nccGanMo('nhap',${L.indexOf(x)})">Gắn thanh toán</button>`:''}</td>`:''}</tr>`).join('')||`<tr><td colspan="${soCot}" class="m-empty">Không có phiếu nhập phù hợp</td></tr>`}
+      ${N.length?`<tr class="tong"><td colspan="${2+(coNd?1:0)+(coHs?1:0)}">Tổng</td><td class="num">${fmt(sumBy(N,x=>x.tien))}</td><td class="num">${fmt(sumBy(N,x=>x.da))}</td><td class="num">${fmt(sumBy(N,x=>x.con))}</td><td colspan="${g?3:2}"></td></tr>`:''}</table></div>${Npg}</div>`;
+    const kB=`<div class="gd-k">${dau(kiot?'Phiếu chi chưa gắn vào phiếu nhập':'Phiếu chi & đề nghị thanh toán',kiot&&!tg?'gắn xong tự chuyển lên bảng phiếu nhập':'',P.length,'b',g?`<button class="m-btn sm out ncc-ds" onclick="S.f.ncc_gan=S.f.ncc_gan?0:1;nccVe()" title="Phiếu chi chưa vào NCC nào nhưng có tên NCC này — gắn vào NCC">${f.ncc_gan?'Đóng tìm phiếu':'Tìm phiếu chi chưa vào NCC'}${gy&&gy.length?`<i>${gy.length}</i>`:''}</button> <button class="m-btn sm out" title="Tạo đề nghị chi — lưu xong chọn NCC ở bước 2 của phiếu" onclick="closeModal();formChi()">+ Phiếu chi / đề nghị</button>`:'')}
+      <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Số phiếu</th><th class="c">Loại</th><th>Nội dung</th><th class="num">Số tiền</th>${kiot?'<th class="c">Gắn phiếu nhập</th>':''}<th class="c">Trạng thái</th><th class="c">Chứng từ</th>${g&&kiot?'<th class="c"></th>':''}</tr>
+      ${Pt.map(x=>{const gp=x.p.bang==='chi'?ganP(x):[],tg2=nccTTGan(x,pb),coGan=x.p.bang==='chi'&&x.p.trang_thai==='da_tt'&&kiot;
         return `<tr class="click" onclick="nccGDMo(${L.indexOf(x)})"><td class="nw">${fmtD(x.ngay)}</td><td class="nw"><span class="m-link">${esc(x.so)}</span></td><td class="c">${pill(...NCC_GD[x.loai])}</td>
         <td class="gd-nd">${esc(x.nd)}</td><td class="num"><b>${fmt(x.tien)}</b></td>
-        <td class="c">${['du','mot','chua'].includes(tg2[2])?pill(...tg2):'<span class="muted">—</span>'}${x.p.tu_gan||gp.some(b=>b.tao_boi===TU_GAN)?`<div class="muted" style="font-size:10.5px;margin-top:2px" title="${x.p.tu_gan?'Hệ thống tự gắn phiếu này vào NCC (theo tên). ':''}${gp.some(b=>b.tao_boi===TU_GAN)?'Hệ thống tự chia cho phiếu nhập cũ trước. ':''}Sai thì bấm Gắn phiếu nhập để sửa.">tự gắn — cần soát</div>`:''}</td>
+        ${kiot?`<td class="c">${['du','mot','chua'].includes(tg2[2])?pill(...tg2):'<span class="muted">—</span>'}${x.p.tu_gan||gp.some(b=>b.tao_boi===TU_GAN)?`<div class="muted" style="font-size:10.5px;margin-top:2px" title="${x.p.tu_gan?'Hệ thống tự gắn phiếu này vào NCC (theo tên). ':''}${gp.some(b=>b.tao_boi===TU_GAN)?'Hệ thống tự chia cho phiếu nhập cũ trước. ':''}Sai thì bấm Gắn phiếu nhập để sửa.">tự gắn — cần soát</div>`:''}</td>`:''}
         <td class="c">${pill(...x.tt)}</td><td class="c" onclick="event.stopPropagation()">${x.p.so_ct?`<span class="ghim" title="${x.p.so_ct} ảnh / tệp — bấm để xem" onclick="nccGDAnh('${x.p.bang}',${x.p.id})">${IC.ghim}${x.p.so_ct}</span>`:'<span class="muted">—</span>'}</td>
-        ${g?`<td class="c" onclick="event.stopPropagation()">${coGan?`<button class="m-btn sm out" title="Gắn phiếu chi này cho phiếu nhập" onclick="nccGanMo('chi',${L.indexOf(x)})">Gắn phiếu nhập</button>`:''}</td>`:''}</tr>`}).join('')||`<tr><td colspan="${g?9:8}" class="m-empty">${tg?'Không có phiếu thanh toán phù hợp':'Không còn phiếu thanh toán chưa gắn — phiếu đã gắn đủ nằm ở cột "Phiếu chi đã gắn" khối A'}</td></tr>`}</table></div>${Ppg}</div>`;
-    body=`<div class="m-flt" style="align-items:center">${sel('ncc_gd_ky',[['','Tất cả giao dịch'],['ky','Trong kỳ đang chọn']])}${sel('ncc_gd_han',[['','A: mọi trạng thái'],['trong','Trong hạn'],['sap','Sắp đến hạn'],['qua','Quá hạn'],['xong','Đã thanh toán']])}
-        ${sel('ncc_gd_gan',[['','B: mọi phân bổ'],['chua','Chưa phân bổ'],['mot','Phân bổ một phần'],['du','Đã phân bổ'],['cho','Chờ duyệt / chờ chi']])}
-        <input class="m-in" type="search" style="width:220px" placeholder="Tìm số chứng từ, nội dung..." value="${esc(q)}" onchange="S.f.ncc_gd_q=this.value;S.f.ncc_n_tr=1;S.f.ncc_p_tr=1;nccVe()">
-        <span style="margin-left:auto"></span>${g?`<button class="m-btn pri ncc-ds" onclick="S.f.ncc_gan=S.f.ncc_gan?0:1;nccVe()" title="Phiếu chi chưa vào NCC nào, có tên NCC này — gắn vào NCC">${f.ncc_gan?'Đóng đối soát':'Đối soát thanh toán'}${gy&&gy.length?` (${gy.length})<i>${gy.length}</i>`:''}</button>`:''}<button class="m-btn out" onclick="nccXuatGD()">${IC_XLS} Xuất Excel</button></div>
-      ${f.ncc_gan&&g?nccGanHtml(c):''}${c.ncc.nguon==='kiot'?kA:''}${kB}`;
+        ${g&&kiot?`<td class="c" onclick="event.stopPropagation()">${coGan?`<button class="m-btn sm out" title="Gắn phiếu chi này cho phiếu nhập" onclick="nccGanMo('chi',${L.indexOf(x)})">Gắn phiếu nhập</button>`:''}</td>`:''}</tr>`}).join('')||`<tr><td colspan="${kiot?(g?9:8):7}" class="m-empty">${kiot&&!tg?'Mọi phiếu chi đã gắn đủ vào phiếu nhập':'Chưa có phiếu chi nào của nhà cung cấp này'}</td></tr>`}</table></div>${Ppg}</div>`;
+    body=`<div class="m-flt" style="align-items:center">${sel('ncc_gd_ky',[['','Mọi thời gian'],['ky','Trong kỳ đang chọn']])}${kiot?sel('ncc_gd_han',[['','Phiếu nhập: mọi trạng thái'],['trong','Phiếu nhập: trong hạn'],['sap','Phiếu nhập: sắp đến hạn'],['qua','Phiếu nhập: quá hạn'],['xong','Phiếu nhập: đã trả đủ']])
+        +sel('ncc_gd_gan',[['','Phiếu chi: chưa gắn xong'],['chua','Phiếu chi: chưa gắn'],['mot','Phiếu chi: gắn một phần'],['du','Phiếu chi: đã gắn đủ'],['cho','Phiếu chi: chờ duyệt / chờ chi']]):''}
+        <input class="m-in" type="search" style="width:180px" placeholder="Tìm số phiếu, nội dung..." value="${esc(q)}" onchange="S.f.ncc_gd_q=this.value;S.f.ncc_n_tr=1;S.f.ncc_p_tr=1;nccVe()">
+        <span style="margin-left:auto"></span><button class="m-btn out" onclick="nccXuatGD()">${IC_XLS} Xuất Excel</button></div>
+      ${kiot?kA:''}${f.ncc_gan&&g?nccGanHtml(c):''}${kB}`;
+  }else if(tab==='nk'){const ds=c.lo_nk||[];
+    body=`<div class="m-flt" style="align-items:center"><span class="muted" style="font-size:12.5px">Lô hàng / container có đơn đặt hàng của nhà cung cấp này</span><span style="margin-left:auto"></span>${g?`<button class="m-btn pri" onclick="closeModal();lnkForm()">+ Tạo hồ sơ nhập khẩu</button>`:''}</div>
+      <div class="scroll"><table class="m-t"><tr><th>Mã hồ sơ</th><th>Lô hàng</th><th class="c">Trạng thái</th></tr>${ds.map(z=>`<tr class="click" onclick="closeModal();lnkMo(${z.id})"><td class="nw"><span class="m-link">${esc(z.ma)}</span></td><td>${esc(z.ten||'')}</td><td class="c">${pill(...(LNK_TT[z.trang_thai]||[z.trang_thai,'']))}</td></tr>`).join('')||'<tr><td colspan="3" class="m-empty">Chưa có hồ sơ nhập khẩu — tạo hồ sơ rồi thêm đơn đặt hàng của nhà cung cấp này</td></tr>'}</table></div>`;
   }else{
-    // 29/10 ảnh mẫu tab Hồ sơ: trái = cây "Danh mục hồ sơ" (số đếm) · phải = bảng tài liệu (tên · loại · số / ký hiệu · ngày ban hành · hiệu lực — bỏ kích thước); bấm tài liệu → popup xem trước / thông tin
+    // chứng từ: cây thư mục + bảng; 03/11: gom theo phiếu (dòng tiêu đề số phiếu · ngày · số tệp), tên máy sinh đổi thành tên dễ đọc, cột Hiệu lực chỉ khi có hợp đồng / hồ sơ pháp lý
     const {ds,cay}=nccTL(c),mu=f.tl_muc||'',q=(f.tl_q||'').trim(),kieu=f.tl_kieu||'',sx=f.tl_sx||'moi',nay=homNay();
     const dem=k=>ds.filter(d=>d.muc===k||d.goc===k).length;
     const muc=(k,t,cap,sua)=>`<div class="tl-m${mu===k?' on':''}${cap?' con':''}" data-k="${esc(k)}" onclick="S.f.tl_muc=this.dataset.k;S.f.tl_tr=1;nccVe()">${cap?IC_TL.tep:IC_TL.muc}<span>${esc(t)}</span><b>${k===''?ds.length:dem(k)}</b>${g&&!sua?'<i class="tl-bs"></i>':''}${g&&sua?`<i class="tl-bs" onclick="event.stopPropagation()">${cap?'':`<button title="Thêm thư mục con" onclick="nccTMThem(this.closest('.tl-m').dataset.k)">＋</button>`}<button title="Đổi tên" onclick="nccTMSua(this.closest('.tl-m').dataset.k)">${IC_SUA}</button><button class="x2" title="Xoá thư mục" onclick="nccTMXoa(this.closest('.tl-m').dataset.k)">✕</button></i>`:''}</div>`;
-    const trai=`<div class="tl-l"><div class="tl-lh"><b>Danh mục hồ sơ</b>${g?`<button class="m-btn sm out" title="Thêm thư mục mới (dùng chung mọi NCC)" onclick="nccTMThem()">+ Thư mục</button>`:''}</div>${muc('','Tất cả tài liệu')}${cay.map(n=>muc(n.ten,n.ten,0,!n.co_dinh)+n.con.map(k=>muc(k,k,1,1)).join('')).join('')}</div>`;
+    const trai=`<div class="tl-l"><div class="tl-lh"><b>Thư mục</b>${g?`<button class="m-btn sm out" title="Thêm thư mục mới (dùng chung mọi NCC)" onclick="nccTMThem()">+ Thư mục</button>`:''}</div>${muc('','Tất cả tài liệu')}${cay.map(nd=>muc(nd.ten,nd.ten,0,!nd.co_dinh)+nd.con.map(k=>muc(k,k,1,1)).join('')).join('')}</div>`;
     const loaiF=d=>/^image\//.test(d.mime||'')?'anh':/pdf/i.test((d.mime||'')+d.ten)?'pdf':/sheet|excel|csv|\.xlsx?$|\.csv$/i.test((d.mime||'')+' '+d.ten)?'xls':/word|\.docx?$/i.test((d.mime||'')+' '+d.ten)?'doc':'khac';
     let l=ds.filter(d=>(!mu||d.muc===mu||d.goc===mu)&&(!kieu||loaiF(d)===kieu)&&(!q||khopTim(q,[d.ten,d.so,d.muc,d.m.mo_ta])));
     l=l.sort(sx==='ten'?(a,b)=>String(a.ten).localeCompare(String(b.ten),'vi'):sx==='cu'?(a,b)=>String(a.tao_luc).localeCompare(String(b.tao_luc)):(a,b)=>String(b.tao_luc).localeCompare(String(a.tao_luc)));
+    const gop=sx!=='ten';if(gop){const th={};l.forEach(d=>{const k2=d.so||'';if(!(k2 in th))th[k2]=Object.keys(th).length});l=l.map((d,i)=>[d,i]).sort((a,b)=>th[a[0].so||'']-th[b[0].so||'']||a[1]-b[1]).map(z=>z[0])}
     S.cache.tl_ds=ds;const moi=50,trs=Math.max(1,Math.ceil(l.length/moi)),tr=Math.min(Math.max(f.tl_tr||1,1),trs);f.tl_tr=tr;const sel=S.cache.tl_sel||(S.cache.tl_sel=[]);
+    const coHl=['Hợp đồng','Hồ sơ pháp lý'].includes(mu)||l.some(d=>d.m.hl_tu||d.m.hl_den),coMuc=new Set(l.map(d=>d.muc)).size>1,soCot=2+(coMuc?1:0)+(gop?0:2)+(coHl?1:0);
     const hl=m=>m.hl_den?(m.hl_den>=nay?pill('Hiệu lực','ok'):pill('Hết hiệu lực','bad')):m.hl_tu?pill('Hiệu lực','ok'):'<span class="muted">—</span>';
-    const tieu=mu||'Tất cả tài liệu',caiLen=g&&mu!=='Chứng từ giao dịch';
+    const tenL=d=>{if(!tlTenMay(d.ten))return esc(d.ten);const cung=ds.filter(z=>(z.so||'')===(d.so||'')&&loaiF(z)===loaiF(d)),i=cung.indexOf(d)+1,unc=/^unc/i.test(d.ten);
+      return esc((unc?'Uỷ nhiệm chi':loaiF(d)==='anh'?'Ảnh':loaiF(d)==='pdf'?'Tệp PDF':'Tệp')+(cung.length>1&&!unc?' '+i:'')+(!gop&&d.so?' · '+d.so:''))};
+    const tieu=mu||'Tất cả tài liệu',caiLen=g&&mu!=='Chứng từ giao dịch',trang=l.slice((tr-1)*moi,tr*moi);let truoc=null;
+    const dongs=trang.map(d=>{let h='';if(gop&&(d.so||'')!==truoc){truoc=d.so||'';const cung=l.filter(z=>(z.so||'')===truoc);h=`<tr class="tl-nh"><td colspan="${soCot}"><b>${esc(truoc||'Tài liệu chung')}</b>${d.ngay?' · '+fmtD(d.ngay):''} · ${cung.length} tệp</td></tr>`}
+      return h+`<tr class="click" onclick="nccTLMo(${d.id})"><td class="c" onclick="event.stopPropagation()"><input type="checkbox" ${sel.includes(d.id)?'checked':''} onchange="nccTLChon(${d.id},this.checked)"></td>
+        <td><div class="tl-ten"><span class="tl-ic ${loaiF(d)}">${loaiF(d)==='anh'?'ẢNH':ctNhanTep(d.mime||'',d.ten||'')}</span><span class="ncc-nd" title="${esc(d.ten)}">${tenL(d)}</span></div></td>
+        ${coMuc?`<td class="c">${pill(d.muc,tlMau(d.goc,cay.findIndex(nd=>nd.ten===d.goc)))}</td>`:''}${gop?'':`<td class="nw">${esc(d.so||'')||'<span class="muted">—</span>'}</td><td class="nw">${d.ngay?fmtD(d.ngay):'<span class="muted">—</span>'}</td>`}${coHl?`<td class="c">${hl(d.m)}</td>`:''}</tr>`}).join('');
     const phai=`<div class="tl-r"><div class="tl-rh"><b>${esc(tieu)} (${l.length})</b>
-        <input class="m-in" type="search" style="width:220px" placeholder="Tìm kiếm tài liệu..." value="${esc(q)}" onchange="S.f.tl_q=this.value;S.f.tl_tr=1;nccVe()">
-        <select class="m-in" style="width:170px" onchange="S.f.tl_kieu=this.value;S.f.tl_tr=1;nccVe()">${[['','Tất cả loại tệp'],['pdf','PDF'],['anh','Ảnh'],['xls','Excel'],['doc','Word'],['khac','Khác']].map(([v,t])=>`<option value="${v}" ${kieu===v?'selected':''}>${t}</option>`).join('')}</select>
-        <select class="m-in" style="width:130px" onchange="S.f.tl_sx=this.value;nccVe()">${[['moi','Mới nhất'],['cu','Cũ nhất'],['ten','Tên A–Z']].map(([v,t])=>`<option value="${v}" ${sx===v?'selected':''}>${t}</option>`).join('')}</select>
+        <input class="m-in" type="search" style="width:170px" placeholder="Tìm tài liệu, số phiếu..." value="${esc(q)}" onchange="S.f.tl_q=this.value;S.f.tl_tr=1;nccVe()">
+        <select class="m-in" style="width:130px" onchange="S.f.tl_kieu=this.value;S.f.tl_tr=1;nccVe()">${[['','Mọi loại tệp'],['pdf','PDF'],['anh','Ảnh'],['xls','Excel'],['doc','Word'],['khac','Khác']].map(([v,t])=>`<option value="${v}" ${kieu===v?'selected':''}>${t}</option>`).join('')}</select>
+        <select class="m-in" style="width:120px" onchange="S.f.tl_sx=this.value;nccVe()">${[['moi','Mới nhất'],['cu','Cũ nhất'],['ten','Tên A–Z']].map(([v,t])=>`<option value="${v}" ${sx===v?'selected':''}>${t}</option>`).join('')}</select>
         <span style="margin-left:auto"></span><button class="m-btn out" id="tl-tai" ${sel.length?'':'style="display:none"'} onclick="taiVeCT(S.cache.tl_sel)">⬇ Tải xuống (<span>${sel.length}</span>)</button>
         ${caiLen?`<label class="m-btn pri" title="Tải tệp vào thư mục ${esc(mu&&mu!=='Chứng từ giao dịch'?mu:'Khác')}">⬆ Tải lên<input type="file" multiple hidden accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" onchange="nccTaiLen(this.files);this.value=''"></label>`:''}</div>
-      <div class="scroll"><table class="m-t"><tr><th class="c" style="width:34px"></th><th>Tên tài liệu</th><th class="c">Loại tài liệu</th><th>Số / Ký hiệu</th><th>Ngày ban hành</th><th class="c">Hiệu lực</th></tr>
-      ${l.slice((tr-1)*moi,tr*moi).map(d=>`<tr class="click" onclick="nccTLMo(${d.id})"><td class="c" onclick="event.stopPropagation()"><input type="checkbox" ${sel.includes(d.id)?'checked':''} onchange="nccTLChon(${d.id},this.checked)"></td>
-        <td><div class="tl-ten"><span class="tl-ic ${loaiF(d)}">${loaiF(d)==='anh'?'ẢNH':ctNhanTep(d.mime||'',d.ten||'')}</span><span class="ncc-nd" title="${esc(d.ten)}">${esc(d.ten)}</span></div></td>
-        <td class="c">${pill(d.muc,tlMau(d.goc,cay.findIndex(nd=>nd.ten===d.goc)))}</td><td class="nw">${esc(d.so||'')||'<span class="muted">—</span>'}</td><td class="nw">${d.ngay?fmtD(d.ngay):'<span class="muted">—</span>'}</td><td class="c">${hl(d.m)}</td></tr>`).join('')||`<tr><td colspan="6" class="m-empty">${ds.length?'Không có tài liệu phù hợp':'Chưa có tài liệu — bấm ⬆ Tải lên'}</td></tr>`}</table></div>
+      <div class="scroll"><table class="m-t"><tr><th class="c" style="width:34px"></th><th>Tên tài liệu</th>${coMuc?'<th class="c">Thư mục</th>':''}${gop?'':'<th>Số phiếu / ký hiệu</th><th>Ngày</th>'}${coHl?'<th class="c">Hiệu lực</th>':''}</tr>
+      ${dongs||`<tr><td colspan="${soCot}" class="m-empty">${ds.length?'Không có tài liệu phù hợp':'Chưa có tài liệu — bấm ⬆ Tải lên'}</td></tr>`}</table></div>
       <div class="ncc-pg"><span class="muted">Hiển thị ${l.length?(tr-1)*moi+1:0} – ${Math.min(tr*moi,l.length)} / ${l.length} tài liệu</span><span style="margin-left:auto"></span>${trs>1?`<button class="m-btn out" style="height:30px" ${tr<=1?'disabled':''} onclick="S.f.tl_tr--;nccVe()">‹</button><b style="min-width:52px;text-align:center">${tr} / ${trs}</b><button class="m-btn out" style="height:30px" ${tr>=trs?'disabled':''} onclick="S.f.tl_tr++;nccVe()">›</button>`:''}</div></div>`;
     body=`<div class="tl">${trai}${phai}</div>`;
   }
-  // 29/10 ảnh mẫu "giao diện thông tin NCC thiết kế như này": dòng phụ quốc gia · loại hình · ngành hàng; Thông tin cơ bản 2 cột; thẻ theo tiền tệ NCC (≈ VND theo tỷ giá kế toán nhập)
-  const tt=nccTT({hoat_dong:true,so_phieu:c.phieu.length,so_nhap:(c.nhap||[]).length}),X=n.them||{},ngoai=['nuoc_ngoai','trung_gian'].includes(n.loai);
-  const ICM={qg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>',
-    lh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21V9l6-4v4l6-4v4l6-4v16z"/></svg>',ng:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v13H4zM8 7V4h8v3"/></svg>'};
-  const meta=[[ICM.qg,X.quoc_gia||(ngoai?'':'Việt Nam')],[ICM.lh,X.loai_hinh],[ICM.ng,X.nganh_hang]].filter(z=>z[1]).map(([ic,t])=>`<span class="ncc-meta">${ic}${esc(t)}</span>`).join('');
-  const dong=(l,v)=>`<div class="ncc-r"><span>${l}</span><div>${v&&v.h?v.h:v?esc(v):'<span class="muted">—</span>'}</div></div>`;
-  const trai=[['Tên giao dịch',X.ten_giao_dich||n.ten],...(ngoai||X.ten_goc?[[/trung/i.test(X.quoc_gia||'')?'Tên tiếng Trung':'Tên tiếng nước ngoài',X.ten_goc]]:[]),['Địa chỉ',n.dia_chi],['Liên hệ chính',n.lien_he],['Chức vụ',X.chuc_vu]];
-  const phai=[...(n.email?[['Email',n.email]]:[]),['Điện thoại',n.sdt],['Mã số thuế'+(ngoai&&X.quoc_gia?' ('+X.quoc_gia+')':''),n.mst],['Điều kiện thanh toán',X.dieu_kien_tt],
-    ['Tiền tệ giao dịch',X.tien_te?(X.tien_te+(X.ty_gia&&X.tien_te!=='VND'?' · tỷ giá '+fmt(X.ty_gia):'')):'VND'],...(ngoai||X.dieu_kien_giao?[['Điều kiện giao hàng',X.dieu_kien_giao]]:[]),['Số TK nhận tiền',(n.stk||[]).join(', ')],...((c.lo_nk||[]).length?[['Hồ sơ nhập khẩu',{h:`<div class="gd-pcs" style="max-width:none">${c.lo_nk.map(z=>`<span class="gd-pc lnk-c" title="${esc(z.ten)} · ${esc((LNK_TT[z.trang_thai]||[''])[0])}" onclick="closeModal();lnkMo(${z.id})">${esc(z.ma)}</span>`).join('')}</div>`}]]:[]),...(n.ghi_chu?[['Ghi chú',n.ghi_chu]]:[])];
-  const tTe=X.tien_te&&X.tien_te!=='VND'&&+X.ty_gia>0?X.tien_te:null,soTe=v=>tTe?{v:fmt(Math.round(v/+X.ty_gia*100)/100)+' '+tTe,s:'≈ '+fmt(v)+' đ'}:{v:fmt(v),s:''};
-  const ICN={thu:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h11l3 3v15H5zm3 6h8v2H8zm0 4h8v2H8z"/></svg>',tra:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v12H3zm2 2v2h14V8zm0 5v3h6v-3z"/></svg>',
-    du:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 17l6-6 4 4 6-6v4h2V5h-8v2h4l-4 4-4-4-8 8z"/></svg>',han:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1 5v6l5 3 1-1.7-4-2.3V7z"/></svg>'};
-  const theT=(c2,ic,l,v,cls)=>{const z=soTe(v);return `<div class="m-k" style="--c:var(--${c2})"><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${l}</div><div class="v ${cls||''}">${z.v}</div>${z.s?`<div class="s">${z.s}</div>`:''}</div></div>`};
-  const html=`<div class="ncc-h"><div style="min-width:0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b class="ncc-h1">${esc(n.ma||'')} - ${esc(n.ten)}</b>${pill(...tt)}${nccPill(n.loai)}</div>${meta?`<div class="ncc-metas">${meta}</div>`:''}</div><span style="margin-left:auto"></span>
-      ${g?`<button class="m-btn out" onclick="formNCC(${n.id})">${IC_SUA} Sửa</button><span class="ncc-them"><button class="m-btn out" title="Thêm thao tác" onclick="this.parentNode.classList.toggle('on')">⋯</button><span class="ncc-menu"><label>⬆ Tải chứng từ lên NCC<input type="file" multiple hidden accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" onchange="nccTaiLen(this.files);this.value=''"></label><span onclick="S.f.ncc_tab='hs';nccVe()">Mở hồ sơ & lưu trữ</span></span></span>`:''}<button class="x" title="Đóng" onclick="closeModal()">✕</button></div>
-    <div class="ncc-tt"><div class="ncc-st" style="margin:0 0 6px">Thông tin cơ bản</div><div class="ncc-tt2"><div>${trai.map(([l,v])=>dong(l,v)).join('')}</div><div>${phai.map(([l,v])=>dong(l,v)).join('')}</div></div></div>
-    <div class="m-kpis ncc-k4">${theT('ok',ICN.thu,'Phải thu (ứng trước)',so.phai_thu)}${theT('bad',ICN.tra,'Phải trả',so.phai_tra,so.phai_tra>0?'neg-t':'')}${theT('grey',ICN.du,'Số dư',soDu,soDu<0?'neg-t':'')}${the('info',ICN.han,'Công nợ đến hạn',fmt(denHan.length)+' khoản','',`S.f.ncc_tab='gd';S.f.ncc_gd_han=S.f.ncc_gd_han==='qua'?'':'qua';S.f.ncc_gd_tr=1;nccVe()`)}</div>
-    <div class="m-tabs">${tabs.map(([kk,t])=>`<button class="m-tab ${tab===kk?'on':''}" onclick="S.f.ncc_tab='${kk}';nccVe()">${t}</button>`).join('')}</div><div class="ncc-b">${body}</div>`;
-  S.cache.ncc_gd_all=L;
+  // cột trái — hồ sơ NCC (kiểu Xero / Odoo): tên, mã, trạng thái · nhóm Liên hệ / Thanh toán / Nhập khẩu; chỉ hiện dòng có dữ liệu
+  const tt=nccTT({hoat_dong:true,so_phieu:c.phieu.length,so_nhap:(c.nhap||[]).length});
+  const o=(l,v)=>v?`<div class="nv-o"><span>${l}</span><div>${v.h||esc(v)}</div></div>`:'';
+  const nhom=(t,rows)=>{const h=rows.join('');return h?`<div class="nv-g"><div class="nv-gt">${t}</div>${h}</div>`:''};
+  const lienHe=nhom('Liên hệ',[o('Điện thoại',n.sdt),o('Email',n.email),o('Địa chỉ',n.dia_chi),o('Người liên hệ',[n.lien_he,X.chuc_vu].filter(Boolean).join(' · '))]);
+  const thanhToan=nhom('Thanh toán',[o('Số tài khoản nhận tiền',(n.stk||[]).join(', ')),o('Mã số thuế',n.mst),o('Điều kiện thanh toán',X.dieu_kien_tt),o('Tiền tệ',X.tien_te&&X.tien_te!=='VND'?X.tien_te+(+X.ty_gia?' · tỷ giá '+fmt(X.ty_gia):''):'')]);
+  const khac=nhom(ngoai?'Nhập khẩu':'Thông tin khác',[o('Quốc gia',X.quoc_gia),o(/trung/i.test(X.quoc_gia||'')?'Tên tiếng Trung':'Tên nước ngoài',X.ten_goc),o('Tên giao dịch',X.ten_giao_dich&&X.ten_giao_dich!==n.ten?X.ten_giao_dich:''),o('Loại hình',X.loai_hinh),o('Ngành hàng',X.nganh_hang),o('Điều kiện giao hàng',X.dieu_kien_giao),
+    o('Hồ sơ nhập khẩu',nNk?{h:`<div class="gd-pcs" style="max-width:none">${c.lo_nk.map(z=>`<span class="gd-pc lnk-c" title="${esc(z.ten)} · ${esc((LNK_TT[z.trang_thai]||[''])[0])}" onclick="closeModal();lnkMo(${z.id})">${esc(z.ma)}</span>`).join('')}</div>`}:'')]);
+  const ghi=n.ghi_chu?nhom('Ghi chú',[`<div class="nv-gc">${esc(n.ghi_chu)}</div>`]):'';
+  const trai=`<aside class="nv-l"><div class="nv-ten">${esc(n.ten)}</div><div class="nv-ma">${esc(n.ma||'')}</div><div class="nv-pills">${pill(...tt)}${nccPill(n.loai)}</div>
+      ${g?`<div class="nv-nut"><button class="m-btn out sm" onclick="formNCC(${n.id})">${IC_SUA} Sửa thông tin</button><label class="m-btn out sm" title="Tải chứng từ vào hồ sơ NCC">⬆ Tải chứng từ<input type="file" multiple hidden accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" onchange="nccTaiLen(this.files);this.value=''"></label></div>`:''}
+      ${lienHe}${thanhToan}${khac}${ghi}${!lienHe&&!thanhToan?`<div class="nv-trong muted">Chưa có điện thoại, số tài khoản, mã số thuế.${g?' Bấm Sửa thông tin để bổ sung.':''}</div>`:''}</aside>`;
+  // 3 thẻ số: Kiot = còn phải trả (hoặc ứng trước) · quá hạn (FIFO theo phiếu nhập) · đã trả năm nay; NCC app = đã thanh toán · đang chờ trả · hồ sơ nhập khẩu
+  const theK=(c2,l,v,s,on,cls)=>`<div class="nv-k${on?' click':''}" style="--c:var(--${c2})" ${on?`onclick="${on}" title="Bấm để xem"`:''}><span>${l}</span><b class="${cls||''}">${v}</b>${s?`<em>${s}</em>`:''}</div>`;
+  const tTe=X.tien_te&&X.tien_te!=='VND'&&+X.ty_gia>0?X.tien_te:null,te=v=>tTe?fmtTe(Math.round(v/+X.ty_gia*100)/100)+' '+tTe:fmt(v),teS=v=>tTe?'≈ '+fmt(v)+' đ':'';
+  let the;
+  if(kiot){const no=+n.cong_no||0,han=+c.han||30,dn=(c.no&&c.no.dang_no)||[],qhR=dn.filter(r=>+r.tuoi>=han),cu=Math.max(no-sumBy(dn,r=>+r.con_no),0),qh=no>0?sumBy(qhR,r=>+r.con_no)+cu:0;
+    const traN=S2.ev.filter(e=>e.loai==='tra'&&e.ngay.slice(0,4)===nam);
+    the=(no>=0?theK('bad','Còn phải trả',fmt(no),dn.length?dn.length+' phiếu nhập chưa trả hết':'theo công nợ Kiot','',no>0?'neg-t':''):theK('ok','Đang ứng trước',fmt(-no),'NCC đang giữ tiền trả trước','','pos-t'))
+      +theK('warn','Quá hạn',qh?fmt(qh):'0',qh?(qhR.length?qhR.length+' phiếu nhập quá '+han+' ngày':'')+(cu?(qhR.length?' · ':'')+'nợ cũ '+fmt(cu):''):'không có khoản quá '+han+' ngày',qh?`S.f.ncc_tab='gd';S.f.ncc_gd_han='qua';S.f.ncc_n_tr=1;nccVe()`:'',qh?'neg-t':'')
+      +theK('info','Đã trả năm '+nam,fmt(sumBy(traN,e=>e.tra)),traN.length+' lần · theo sổ quỹ Kiot');
+  }else{const da=sumBy(c.phieu.filter(p=>p.bang==='chi'&&p.trang_thai==='da_tt'),p=>+p.so_tien),cho=sumBy(c.phieu.filter(p=>p.bang==='chi'&&['cho_duyet','cho_gd','cho_tt'].includes(p.trang_thai)),p=>+p.so_tien);
+    the=theK('ok','Đã thanh toán',te(da),teS(da))+theK('warn','Đang chờ trả',te(cho),cho?teS(cho)||'đề nghị chờ duyệt / chờ chi':'không có đề nghị đang chờ')+theK('info','Hồ sơ nhập khẩu',fmt(nNk),nNk?'lô hàng có đơn của NCC này':'chưa có lô hàng',nNk?`S.f.ncc_tab='nk';nccVe()`:'');
+  }
+  const html=`<div class="nv">${trai}<div class="nv-r"><div class="nv-rh"><div class="nv-ks">${the}</div><button class="x" title="Đóng" onclick="closeModal()">✕</button></div>
+    <div class="m-tabs">${tabs.map(([kk,t])=>`<button class="m-tab ${tab===kk?'on':''}" onclick="S.f.ncc_tab='${kk}';nccVe()">${t}</button>`).join('')}</div><div class="ncc-b">${body}</div></div></div>`;
   const m=$('#modal');if(m&&m.dataset.ncc===String(n.id)){m.firstElementChild.innerHTML=html;setTimeout(ganCT,0)}
-  else{const mm=modal(html);mm.dataset.ncc=n.id;const b=mm.firstElementChild;b.style.width='min(1240px,96vw)';b.style.maxWidth='1240px'}
-  if(g&&S.cache.ncc_tim==null&&!S.cache.ncc_tim_dang)setTimeout(()=>nccTim(''),0);   // đếm gợi ý đối soát (chạy nền)
+  else{const mm=modal(html);mm.dataset.ncc=n.id;const b=mm.firstElementChild;b.style.width='min(1360px,97vw)';b.style.maxWidth='1360px'}
+  if(g&&S.cache.ncc_tim==null&&!S.cache.ncc_tim_dang)setTimeout(()=>nccTim(''),0);   // đếm gợi ý phiếu chi chưa vào NCC (chạy nền)
   setTimeout(nccVeCT,0)}
 // ── HỒ SƠ NHẬP KHẨU (30/10/2026 anh gửi sơ đồ "Luồng xử lý tổng quát": đơn đặt hàng NCC nước ngoài → thanh toán → hồ sơ nhập khẩu (lô / container) → hàng về kho, phân bổ giá vốn → Kiot) — Monsieur Claude
 // Trang = thẻ số (bấm lọc) + bảng hồ sơ; bấm 1 hồ sơ → popup: tiến trình · thông tin chung · 3 thẻ · tab Đơn hàng / Chi phí / Phân bổ giá vốn / Chứng từ. Giá vốn tính trên trình duyệt từ đơn hàng + chi phí (không lưu số).
@@ -3129,13 +3217,13 @@ const IC_LNK={tien:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h1
   xong:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-1.2 13.4 6.5-6.5-1.4-1.4-5.1 5.1-2.3-2.3-1.4 1.4z"/></svg>'};
 async function lnkDS(moi){if(!moi&&S.cache.lnk_ds&&Date.now()-(S.cache.lnk_luc||0)<120000)return S.cache.lnk_ds;S.cache.lnk_ds=await rpc('kt_ds_lo_nk');S.cache.lnk_luc=Date.now();return S.cache.lnk_ds}
 async function pageLoNK(){const el=$('#page'),f=S.f,g=nccGhi();if(!S.cache.lnk_ds)el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const T=await lnkDS(),tl=f.lnk_the||'',tt=f.lnk_tt||'',q=f.lnk_q||'';
+  const T=await lnkDS(),nNgoai=(await nccDS()).ncc.filter(NCC_KIEU.ngoai.loc).length,tl=f.lnk_the||'',tt=f.lnk_tt||'',q=f.lnk_q||'';
   const l=T.filter(x=>(!tl||LNK_NHOM[tl].includes(x.trang_thai))&&(!tt||x.trang_thai===tt)&&(!q||khopTim(q,[x.ma,x.ten,x.so_cont,x.forwarder,...(x.ncc||[])])));
   const theT=(c,ic,lb,v,s)=>`<div class="m-k" style="--c:var(--${c})"><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${lb}</div><div class="v">${v}</div><div class="s">${s}</div></div></div>`;
   const theS=(k,c,ic,lb,s)=>`<div class="m-k click${tl===k?' on':''}" style="--c:var(--${c})" title="Bấm để chỉ xem phần này · bấm lại để xem tất cả" onclick="S.f.lnk_the=S.f.lnk_the==='${k}'?'':'${k}';S.f.lnk_tr=1;render()"><div class="m-ic">${ic}</div><div style="min-width:0;flex:1"><div class="l">${lb}</div><div class="v">${fmt(T.filter(x=>LNK_NHOM[k].includes(x.trang_thai)).length)} hồ sơ</div><div class="s">${s}</div></div></div>`;
   const gt=sumBy(l,x=>+x.gia_tri),cp=sumBy(l,x=>+x.chi_phi);
   const moi=30,[a,b,tr]=phanTrang('lnk',l.length,moi);
-  el.innerHTML=`<div class="m-kpis m-k3">${theT('info',IC_LNK.tien,'Giá trị hàng',fmt(gt),fmt(l.length)+' hồ sơ · quy đổi VND')}${theT('warn',IC_LNK.cp,'Chi phí nhập khẩu',fmt(cp),'vận chuyển, thuế, hải quan… tính giá vốn')}${theT('ok',IC_LNK.gv,'Tổng giá vốn',fmt(gt+cp),gt>0?'chi phí = '+(cp/gt*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'% giá trị hàng':'hàng + chi phí')}</div>
+  el.innerHTML=nccNgoaiTabs(nNgoai,T.length)+`<div class="m-kpis m-k3">${theT('info',IC_LNK.tien,'Giá trị hàng',fmt(gt),fmt(l.length)+' hồ sơ · quy đổi VND')}${theT('warn',IC_LNK.cp,'Chi phí nhập khẩu',fmt(cp),'vận chuyển, thuế, hải quan… tính giá vốn')}${theT('ok',IC_LNK.gv,'Tổng giá vốn',fmt(gt+cp),gt>0?'chi phí = '+(cp/gt*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'% giá trị hàng':'hàng + chi phí')}</div>
     <div class="m-kpis m-k3">${theS('di','warn',IC_LNK.di,'Đang về','đặt hàng → thông quan')}${theS('ve','teal',IC_LNK.ve,'Đã về kho','chờ phân bổ giá vốn, hoàn tất')}${theS('xong','ok',IC_LNK.xong,'Hoàn tất','đã đóng hồ sơ')}</div>
     <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Hồ sơ nhập khẩu <span class="badge">${fmt(T.length)}</span></div><div class="muted" style="font-size:13px;margin-top:2px">Lô hàng / container nhập khẩu</div></div>
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:260px" placeholder="Tìm mã, lô hàng, container, NCC..." value="${esc(q)}" onchange="S.f.lnk_q=this.value;S.f.lnk_tr=1;render()">
