@@ -1089,8 +1089,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.313';
-const APP_VERSION='03/11/2026 16:41';
+const APP_SO='1.314';
+const APP_VERSION='03/11/2026 17:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2471,7 +2471,7 @@ function hdvHtml(x){
     :goc?`<div class="hdv-lb">Số hoá đơn</div><div><b>${esc(goc)}</b></div>`:'';
   if(!o&&!dg.length&&!gy.length)return '';
   return `<div class="hdv">${o}${dg.length?ctHD('chi',x.id):''}${dg.map(h=>hdThe(h,h.ncc,
-      hdNut('Xem',`xemHDMisa('chi',${x.id},'${esc(h.hd_ma)}')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
+      hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
     ${gy.length?`<div class="hdv-lb">Hoá đơn MISA có thể khớp</div>`+gy.slice(0,3).map(h=>hdThe(h,h.ncc,g?hdNut('✓ Đúng',`ghepHD(${x.id},'${esc(h.hd_ma)}')`):'')).join(''):''}
     ${x.so_hd_do&&!dg.length?'<div class="hdv-n muted">Số khai tay — chưa thấy HĐ này trên MISA</div>':''}</div>`;
 }
@@ -2487,7 +2487,7 @@ const hdtGoiY=id=>(((S.cache.hdt||{}).goi_y)||[]).filter(h=>h.thu_id===id);
 function hdtHtml(x){
   const g=coGhi('thu'),dg=hdtGhep(x.id),gy=dg.length?[]:hdtGoiY(x.id);
   if(!dg.length&&!gy.length)return '<div class="muted" style="font-size:12.5px">Chưa thấy hoá đơn bán ra (meInvoice) khớp phiếu này</div>';
-  return `<div class="hdv"><div class="hdv-lb">${dg.length?'Số hoá đơn':'Có thể khớp'}</div>${dg.length?ctHD('thu',x.id):''}${dg.map(h=>hdThe(h,h.nguoi_mua,g?hdNut('✕',`ghepHDThu(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):'')).join('')}
+  return `<div class="hdv"><div class="hdv-lb">${dg.length?'Số hoá đơn':'Có thể khớp'}</div>${dg.length?ctHD('thu',x.id):''}${dg.map(h=>hdThe(h,h.nguoi_mua,hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}')`)+(g?hdNut('✕',`ghepHDThu(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
     ${gy.slice(0,3).map(h=>hdThe(h,h.nguoi_mua,g?hdNut('✓ Đúng',`ghepHDThu(${x.id},'${esc(h.hd_ma)}')`):'')).join('')}${g&&!dg.length?hdTimO('ra',x.id,x.so_tien):''}</div>`;
 }
 // 23/10 kế toán: "HĐ đã xuất mà chưa nối được với app thì làm gì để nối?" → gõ số HĐ / MST / tên người bán (mua) → bấm ✓ Gắn
@@ -2693,10 +2693,13 @@ async function pageChi(){
   const soPhieu=x=>'PC'+String(x.id).padStart(6,'0');
   const csTen=x=>[...new Set((x.phan_bo||[]).map(p=>{const c=csCuaDV(p.don_vi_id);return c?(CS3.find(z=>z[0]===c)||[])[1]:((dv(p.don_vi_id)||{}).ten||'')}))].join(', ');
   const ttPill=x=>{const m={cho_duyet:['Chờ xác nhận','warn'],cho_gd:['Chờ xác nhận','warn'],cho_tt:['Chờ '+aiChi(x).toLowerCase()+' chi','warn'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối TT','bad']}[x.trang_thai]||['—',''];return pill(...m)};
-  const hdPill=x=>!x.co_hd_do||x.ca_nhan?pill('Không cần',''):x.hd_do_nhan?pill('Đã nhận','ok'):hdvGoiY(x.id).length?pill('Có HĐ gợi ý','info'):pill('Chưa nhận','bad');
+  // 03/11 anh: "hoá đơn đã nhận thì ghi luôn mã hoá đơn ra và gắn file vô mã để click xem luôn, thay vì phải mở cả phiếu"
+  const hdPill=x=>{if(!x.co_hd_do||x.ca_nhan)return pill('Không cần','');if(!x.hd_do_nhan)return hdvGoiY(x.id).length?pill('Có HĐ gợi ý','info'):pill('Chưa nhận','bad');
+    const dg=hdvGhep(x.id),so=dg.length?dg.map(h=>`<span class="m-link" title="Bấm xem hoá đơn" onclick="event.stopPropagation();hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}')">${esc((h.ky_hieu?h.ky_hieu+' · ':'')+soHD(h.so_hd))}</span>`).join('<br>'):x.so_hd_do?`<span class="muted" title="Số khai tay, chưa thấy trên MISA">${esc(x.so_hd_do)}</span>`:'';
+    return pill('Đã nhận','ok')+(so?`<div style="font-size:11.5px;margin-top:3px;line-height:1.5">${so}</div>`:'')};
   const kiPill=x=>chuaKiot(x)?pill('Chưa cập nhật','warn'):x.kiot==='da_tao'?pill(x.nguon==='kiot'?'Từ Kiot':'Đã cập nhật','ok'):x.kiot==='khong_tao'?pill('Không tạo (4B)',''):pill('Không áp dụng','');
   const cols=[['Ngày sử dụng',x=>x.ngay_su_dung||x.ngay_de_nghi],['Ngày thanh toán',x=>x.ngay_tt||''],['Người nhận tiền mặt',x=>x.nguoi_nhan_tien||''],['Số phiếu',soPhieu],['Cơ sở',csTen],['Loại chi',x=>(lo(x.loai_id)||{}).ten||(nhomKiotChi(x)?'Kiot: '+nhomKiotChi(x):'')],['Nội dung',ndChi],['Nhà cung cấp',nccChi],['Người thụ hưởng',x=>x.thu_huong_ten||''],['Ngân hàng',x=>x.thu_huong_nh||''],['Số tài khoản',x=>x.thu_huong_stk||''],['Số tiền',x=>x.so_tien],
-    ['Trạng thái TT',x=>(TT_CHI[x.trang_thai]||[''])[0]],['Hoá đơn',x=>!x.co_hd_do?'Không cần':x.hd_do_nhan?'Đã nhận':'Chưa nhận'],['Người đề nghị',x=>x.nguoi_de_nghi||'']];
+    ['Trạng thái TT',x=>(TT_CHI[x.trang_thai]||[''])[0]],['Hoá đơn',x=>!x.co_hd_do?'Không cần':x.hd_do_nhan?'Đã nhận':'Chưa nhận'],['Số hoá đơn',x=>hdvGhep(x.id).map(h=>(h.ky_hieu?h.ky_hieu+' ':'')+soHD(h.so_hd)).join(', ')||x.so_hd_do||''],['Người đề nghị',x=>x.nguoi_de_nghi||'']];
   S.cache.chi_xuat=()=>xuatCSV('phieu-chi-'+S.tu+'_'+S.den,cols,l);
   const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.chi_tr=1;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=`<div>${nhomSeg('chi',ds.filter(x=>csOK(x)&&tkOK(x)&&trongKy(x,S.tu,denSD)),'chi_tr')}<div class="m-kpis m-k3">
