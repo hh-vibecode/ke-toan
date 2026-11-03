@@ -1084,8 +1084,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.303';
-const APP_VERSION='03/11/2026 11:19';
+const APP_SO='1.305';
+const APP_VERSION='03/11/2026 14:11';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4913,8 +4913,8 @@ function hhTinh(d,ms){
   // B. quỹ cửa hàng — khách trực tiếp theo nhóm sản phẩm, đơn sales online 1,5%; chia chức danh, nhân viên theo ngày công
   const TL={HT:{ql:.4,gs:.25,nv:.35},CT:{ql:.4,gs:0,nv:.6}},CHs=[];
   ms.forEach(m=>['HT','CT'].forEach(cs=>{const H=HD.filter(h=>h.thang===m&&csCuaCN(h.cn)===cs);if(!H.length)return;
-    const wi=H.filter(h=>!h.on&&kiotCua[h.nv]==null),on=H.filter(h=>h.on||kiotCua[h.nv]!=null),   // 02/11 anh: "sao khách trực tiếp có đơn shopee" — khách trực tiếp = kênh Kiot offline VÀ không do sales online chốt; kênh online (Facebook, Shopee, Tiktok, Website…) = đơn online cửa hàng xử lý 1,5%
-   t=TL[cs],vt=CH.cua_hang[cs]||{};
+    const wi=H.filter(h=>kiotCua[h.nv]==null),on=H.filter(h=>kiotCua[h.nv]!=null),   // 03/11 anh: kết hợp bán = CHỈ đơn sales online (người bán là sales online) chuyển cửa hàng xử lý; đơn nhân viên cửa hàng bán (kể cả kênh online) = cửa hàng tự xử lý → khách trực tiếp (bỏ cách 02/11 xét kênh)
+    t=TL[cs],vt=CH.cua_hang[cs]||{};
     const dkCao=cs==='CT'?k=>muc(k)!=='khong':k=>muc(k)==='cao',dkThap=k=>muc(k)==='thap';
     const cao=sumBy(wi,h=>phan(h,dkCao)),thap=cs==='CT'?0:sumBy(wi,h=>phan(h,dkThap)),onT=sumBy(on,h=>h.thu);
     const qCao=Math.round(cao*.02),qThap=Math.round(thap*.008),qOn=Math.round(onT*.015),q=qCao+qThap+qOn;
@@ -4964,7 +4964,7 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
       <div style="font-size:16px;font-weight:700;margin:2px 0">${fmt(Math.round(q))}</div><div class="muted" style="font-size:12px">thực thu ${so(loai,thu)} × ${tl}</div></div>`;
     return `<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:0 6px 12px">
       ${k==='CT'?o('Khách trực tiếp — mọi nhóm hàng','cao',s(x=>x.cao),'2%',s(x=>x.qCao),'span 2'):o('Khách trực tiếp — nhóm biên cao','cao',s(x=>x.cao),'2%',s(x=>x.qCao))+o('Khách trực tiếp — nhóm biên thấp','thap',s(x=>x.thap),'0,8%',s(x=>x.qThap))}
-      ${o('Đơn sales online cửa hàng xử lý','on',s(x=>x.onT),'1,5%',s(x=>x.qOn))}
+      ${o('Kết hợp bán — sales online chuyển cửa hàng','on',s(x=>x.onT),'1,5%',s(x=>x.qOn))}
       <div style="grid-column:4;border-radius:10px;padding:10px 12px;background:var(--bg2)"><div class="muted" style="font-size:12px">Quỹ cửa hàng ${esc(t)}</div><div style="font-size:16px;font-weight:800;margin:2px 0">${fmt(Math.round(s(x=>x.q)))}</div><div class="muted" style="font-size:12px">chia theo bảng dưới</div></div></div>`};
   const khoiCN=CN_HH.map(([k,t])=>{const ds=NGs.filter(o=>cnCua(o.bp)[0]===k).sort((a,b)=>thuTu(a)-thuTu(b)||b.tong-a.tong);if(!ds.length)return '';
     return `<div class="m-card" style="margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px;padding:12px 6px 6px"><b style="font-size:14.5px">${esc(t)}</b><span class="badge" style="margin-left:auto">${ds.length} người</span></div>${quyCN(k,t)}
@@ -4997,14 +4997,14 @@ const hhSp=h=>h.sp?`<div class="muted" style="font-size:11px;max-width:320px;whi
 // công thức từng người (popup + file xuất) — 28/10 anh: "ghi công thức ra là được, không cần số"
 const hhCach=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?['Tiền về trong tháng của đơn online (mọi cơ sở, gồm cọc) × '+((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% — '+(x.p.vt||'hỗ trợ vận hành').toLowerCase(),
     'Đơn online theo đúng báo cáo MKT: khách online (từng mua qua kênh online Facebook / Tiktok / Shopee / Website… hoặc chốt qua fanpage Pancake)',
-    'và đơn trong 1 tháng tròn từ đơn đầu tiên, hoặc trong 30 ngày từ lần khách nhắn trang cuối; khách Shopee tính mọi đơn',
-    'Không tính: đơn mua lại (khách online quá các mốc trên), khách offline, khách vãng lai, đơn trước 1/6/2026'].join('\n'):x.p.cs==='si'?'Thực thu (Kiot) × tỷ lệ giật cấp — sales mảng buôn, dưới mốc không tính':'Thực thu (Kiot) × tỷ lệ giật cấp — sales online lẻ'),
+    'và đơn trong 1 tháng tròn từ đơn đầu tiên, hoặc trong 30 ngày từ lần khách nhắn trang cuối',
+    'Không tính: đơn Shopee (anh 03/11), đơn mua lại (khách online quá các mốc trên), khách offline, khách vãng lai, đơn trước 1/6/2026'].join('\n'):x.p.cs==='si'?'Thực thu (Kiot) × tỷ lệ giật cấp — sales mảng buôn, dưới mốc không tính':'Thực thu (Kiot) × tỷ lệ giật cấp — sales online lẻ'),
     ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='tl'?' (cố định theo biên bản họp cửa hàng)':x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
     ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
 // 02/11 anh: "ghi tóm tắt chính sách ngay dưới các vị trí ấy, để t xem m hiểu có đúng không" — 1 dòng dưới vị trí từng người, dòng nhóm ghi quỹ hình thành thế nào
 const HH_QUY={HT:'Quỹ = khách trực tiếp: nhóm biên cao 2%, biên thấp 0,8% · đơn sales online cửa hàng xử lý 1,5%',CT:'Quỹ = khách trực tiếp: mọi nhóm 2% · đơn sales online cửa hàng xử lý 1,5%'};
 // 02/11 anh: "tách riêng 1 cột logic tính hoa hồng, xuống dòng cho cân, không để dài" — mỗi ý 1 dòng ngắn
-const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online (báo cáo MKT)','Tháng đầu của khách / ≤ 30 ngày từ lần nhắn trang','Shopee: mọi đơn · không tính đơn mua lại']
+const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online (báo cáo MKT)','Tháng đầu của khách / ≤ 30 ngày từ lần nhắn trang','Không tính đơn Shopee, đơn mua lại']
     :x.p.cs==='si'?['Quỹ team sỉ theo tiền về, đạt mốc '+fmtTr(x.moc)+' mới tính','600tr đầu 1,5% · đến 1,2 tỷ 2% · trên 2,5%']
     :['Tiền về × giật cấp phần vượt','Đến 150tr 1,5% · đến 200tr 1,8%','Đến 300tr 2% · trên 300tr 2,5%']),
     ...o.chiaQuy.map(x=>Math.round(x.tl*100)+'% quỹ '+csTen3(x.cs)+(x.k==='tl'?' (biên bản họp)':x.k==='nv'?' × ngày công':x.tc>1?' ÷ '+x.tc+' người':'')),
@@ -6190,8 +6190,8 @@ const LOGIC2=[
  ['bao_cao','Khoá sổ tháng','Tháng đã khoá: không thêm / sửa / xoá số tiền, ngày, TK, loại của phiếu trong tháng.','Sửa ghi chú, chứng từ, HĐ đỏ, 4A/4B vẫn được.','14/10'],
  ['bao_cao','Khoá sổ tháng','Job Kiot / meInvoice vẫn chạy; số đổi sau khoá → trang Khoá kỳ báo "Đã đổi".','','14/10'],
  ['bao_cao','Khoá sổ tháng','Chỉ khoá tháng đã kết thúc; mở khoá: Supreme / Admin.','','14/10'],
- ['bao_cao','Hoa hồng (mục 9)','Tính trên TIỀN VỀ trong tháng theo sổ quỹ Kiot, không phân biệt hoá đơn tháng nào (anh 02/11): phiếu chia vào hoá đơn + phiếu cục ghép hoá đơn còn nợ của khách (trả trước / cọc không gắn đơn: ghép phần còn nợ của hoá đơn kế tiếp trong 90 ngày, sau khi đã trừ tiền trả sau), không có thì theo hoá đơn gần nhất + cọc TTDH − tiền hoàn khi trả hàng. Không tính khoản trả bằng điểm. Hỗ trợ vận hành (anh Hải) 1% thực thu đơn ONLINE theo ĐÚNG luật báo cáo MKT (khách online: kênh phiếu online / Pancake; đơn online: 1 tháng tròn từ đơn đầu, hoặc ≤ 30 ngày từ lần nhắn trang cuối, hoặc khách Shopee; còn lại mua lại = offline) — chỉ áp cho phần này (anh 02/11). Sales online theo chính sách riêng: online lẻ CS-VH04-16 giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% (mốc 150 / 200 / 300tr); mảng buôn CS-VH04-13 quỹ dưới mốc = 0, 600tr đầu 1,5%, đến 1,2 tỷ 2%, trên 2,5% (mốc 600tr; thời gian hỗ trợ sales mới hạ mốc). Doanh thu 1 người = hoá đơn của các nhân viên Kiot gán cho người đó.','Anh 28/10: Nguyên tính doanh thu Nguyên + Oanh (hỗ trợ), hạ mốc 300tr 7/10/2026–7/1/2027. Cấu hình (người hưởng, chức danh, phân nhóm) nhắn Claude sửa — anh bỏ tab Cài đặt 28/10.','02/11'],
- ['bao_cao','Hoa hồng (mục 9)','Cửa hàng offline (chính sách cửa hàng): đơn khách trực tiếp (kênh Kiot offline và khách chưa từng mua online; kênh online / tên sàn / khách online = đơn online cửa hàng xử lý — anh 02/11) → Hiền Thủy nhóm biên cao 2% / biên thấp 0,8%, Chánh Tâm 2%; đơn sales online cửa hàng xử lý → 1,5%. Đóng gói / giao 0,25% theo tên trong ghi chú, gồm cả đơn Kho Shidai (kế toán 02/11); tiền cọc (TTDH + trả trước ghép hoá đơn) tính ở tháng hàng đi (anh 02/11) — người kho (Toàn, Hào) nhận theo vị trí kho, nhóm Kho (anh 29/10). Chia: Quản lý 40% · Giám sát 25% · Nhân viên 35% (Chánh Tâm QL 40% · NV 60%), nhân viên theo ngày công (mặc định 26, sửa được) — riêng Hiền Thủy từ T10/2026 phần nhân viên cố định Lê Thị Hòa 25% · Vũ Mạnh Cường 10% theo biên bản họp cửa hàng (kế toán 02/11). Đóng gói / giao hàng 0,25% theo tên trong ghi chú Kiot, nhiều người chia đều.','Chưa có người giữ vị trí → phần đó không chi. Nhân sự kho không thuộc chính sách cửa hàng → không chi đóng gói / giao.','28/10'],
+ ['bao_cao','Hoa hồng (mục 9)','Tính trên TIỀN VỀ trong tháng theo sổ quỹ Kiot, không phân biệt hoá đơn tháng nào (anh 02/11): phiếu chia vào hoá đơn + phiếu cục ghép hoá đơn còn nợ của khách (trả trước / cọc không gắn đơn: ghép phần còn nợ của hoá đơn kế tiếp trong 90 ngày, sau khi đã trừ tiền trả sau), không có thì theo hoá đơn gần nhất + cọc TTDH − tiền hoàn khi trả hàng. Không tính khoản trả bằng điểm. Hỗ trợ vận hành (anh Hải) 1% thực thu đơn ONLINE theo ĐÚNG luật báo cáo MKT (khách online: kênh phiếu online / Pancake; đơn online: 1 tháng tròn từ đơn đầu, hoặc ≤ 30 ngày từ lần nhắn trang cuối; KHÔNG tính đơn Shopee (anh 03/11); còn lại mua lại = offline) — chỉ áp cho phần này (anh 02/11). Sales online theo chính sách riêng: online lẻ CS-VH04-16 giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% (mốc 150 / 200 / 300tr); mảng buôn CS-VH04-13 quỹ dưới mốc = 0, 600tr đầu 1,5%, đến 1,2 tỷ 2%, trên 2,5% (mốc 600tr; thời gian hỗ trợ sales mới hạ mốc). Doanh thu 1 người = hoá đơn của các nhân viên Kiot gán cho người đó.','Anh 28/10: Nguyên tính doanh thu Nguyên + Oanh (hỗ trợ), hạ mốc 300tr 7/10/2026–7/1/2027. Cấu hình (người hưởng, chức danh, phân nhóm) nhắn Claude sửa — anh bỏ tab Cài đặt 28/10.','02/11'],
+ ['bao_cao','Hoa hồng (mục 9)','Cửa hàng offline (chính sách cửa hàng): đơn khách trực tiếp (mọi đơn nhân viên cửa hàng bán, kể cả kênh online — anh 03/11) → Hiền Thủy nhóm biên cao 2% / biên thấp 0,8%, Chánh Tâm 2%; đơn sales online cửa hàng xử lý → 1,5%. Đóng gói / giao 0,25% theo tên trong ghi chú, gồm cả đơn Kho Shidai (kế toán 02/11); tiền cọc (TTDH + trả trước ghép hoá đơn) tính ở tháng hàng đi (anh 02/11) — người kho (Toàn, Hào) nhận theo vị trí kho, nhóm Kho (anh 29/10). Chia: Quản lý 40% · Giám sát 25% · Nhân viên 35% (Chánh Tâm QL 40% · NV 60%), nhân viên theo ngày công (mặc định 26, sửa được) — riêng Hiền Thủy từ T10/2026 phần nhân viên cố định Lê Thị Hòa 25% · Vũ Mạnh Cường 10% theo biên bản họp cửa hàng (kế toán 02/11). Đóng gói / giao hàng 0,25% theo tên trong ghi chú Kiot, nhiều người chia đều.','Chưa có người giữ vị trí → phần đó không chi. Nhân sự kho không thuộc chính sách cửa hàng → không chi đóng gói / giao.','28/10'],
  // ── KIOT
  ['kiot','Kéo Kiot','Luồng kéo riêng của app kế toán, 15 phút / lần (phút 2, 17, 32, 47).','Chỉ đọc Kiot.','14/10'],
  ['kiot','Kéo Kiot','Sổ quỹ lấy 10 ngày gần nhất; hoá đơn, trả hàng, nhập, đơn đặt, khách, NCC, hàng hoá lấy phần mới sửa.','','14/10'],
@@ -6609,7 +6609,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
       ['Số đơn',x=>x.H.length,'so',{w:7}],...['hd','coc','thu'].map(k=>[HH_COT[k][3],x=>hhSo(x.H,k),'so',{w:13}]),['Cách tính',x=>x.cach,'chu',{w:18}],['Hoa hồng',x=>x.hh,'so',{w:12}]]};
   const qr=[];CHs.forEach(x=>{const c=csTen3(x.cs),th=qtThg(x.m);
     (x.cs==='CT'?[['Khách trực tiếp — mọi nhóm hàng',x.cao,'2%',x.qCao]]:[['Khách trực tiếp — nhóm biên cao',x.cao,'2%',x.qCao],['Khách trực tiếp — nhóm biên thấp',x.thap,'0,8%',x.qThap]])
-      .concat([['Đơn sales online cửa hàng xử lý',x.onT,'1,5%',x.qOn]]).forEach(([t,thu,tl,q],j,arr)=>{const loai=j===arr.length-1?'on':j===0?'cao':'thap';
+      .concat([['Kết hợp bán — sales online chuyển cửa hàng',x.onT,'1,5%',x.qOn]]).forEach(([t,thu,tl,q],j,arr)=>{const loai=j===arr.length-1?'on':j===0?'cao':'thap';
         const coc=loai==='on'?sumBy(x.on.filter(h=>h.la_coc),h=>h.thu):sumBy(x.wi.filter(h=>h.la_coc),h=>K.phan(h,loai==='cao'?x.dkCao:x.dkThap));
         qr.push({th,c,muc:'Quỹ hình thành',ct:t,thu,hd:Math.round(thu-coc)||null,coc:Math.round(coc)||null,tl,q})});
     x.vt.forEach(r=>r.ng.length?r.ng.forEach(n=>qr.push({th,c,muc:'Chia quỹ',ct:r.ten+' '+Math.round((n.tl!=null?n.tl:r.tl)*100)+'%',ng:n.n,cong:r.k==='nv'&&n.tl==null?n.c:null,chi:n.tien}))

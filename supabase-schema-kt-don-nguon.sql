@@ -219,3 +219,8 @@ begin
     'cau_hinh', (select gia_tri::jsonb from kt_cai_dat where khoa = 'hh_cau_hinh'),
     'sua', (select jsonb_build_object('luc', sua_luc) from kt_cai_dat where khoa = 'hh_cau_hinh'));
 end $function$;
+
+-- 03/11/2026 anh: "của t không tính đơn Shopee" → hoa hồng online 1% bỏ đơn khách Shopee (ly_do 'shopee'). — Monsieur Claude
+create or replace function public.kt_hd_online(p_hd bigint, p_dh bigint) returns boolean language sql stable set search_path to 'public' as $$
+  select coalesce((select n.online and n.ly_do <> 'shopee' from kt_don_nguon n where (p_dh is not null and n.loai = 'dh' and n.id = p_dh) or (p_dh is null and n.loai = 'hd' and n.id = p_hd) limit 1), false)
+$$;
