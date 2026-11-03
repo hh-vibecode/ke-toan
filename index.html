@@ -1067,8 +1067,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.301';
-const APP_VERSION='02/11/2026 16:52';
+const APP_SO='1.302';
+const APP_VERSION='03/11/2026 10:19';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4805,6 +4805,12 @@ function hhTinh(d,ms){
   const kiotCua={};CH.nguoi.forEach((p,i)=>(p.kiot||[]).forEach(k=>kiotCua[k]=i));
   const muc=nh=>CH.nhom[nh]||'thap',cg=(m,ten)=>{const v=((CH.cong||{})[m]||{})[ten];return v==null||v===''?26:+v};
   const HD=(d.hd||[]).filter(h=>ms.includes(h.thang)).map(h=>({...h,tong:+h.tong,tra:+h.tra||0,thu:+h.thu,coc:+h.coc||0,thu_dg:h.thu_dg!=null?+h.thu_dg:+h.thu,dt:(+h.tong)-(+h.tra||0)}));
+  // 03/11 anh (ảnh HD060153 cọc 15,6tr 14/10 + trả nốt 17tr 23/10: "phải tính tổng 32tr6 chứ sao lại 17tr, tất cả phát sinh tháng 10"): tiền vẫn đủ nhưng tách 2 dòng
+  // → cọc và hoá đơn CÙNG THÁNG, cùng người bán / chi nhánh / cờ online → gộp vào dòng hoá đơn (thực thu = cọc + trả nốt), bỏ dòng cọc riêng. Tổng không đổi. — Monsieur Claude
+  {const gop=new Set();HD.forEach(h=>{if(h.la_coc||h.la_tra||h.la_phieu||!h.ma_don||!(h.coc>0))return;
+    const cs=HD.filter(c=>c.la_coc&&!gop.has(c)&&c.ma_don===h.ma_don&&c.thang===h.thang&&c.nv===h.nv&&c.cn===h.cn&&!!c.on===!!h.on&&!!c.on_mkt===!!h.on_mkt);
+    if(!cs.length)return;cs.forEach(c=>gop.add(c));h.coc_trong=sumBy(cs,c=>c.thu);h.thu+=h.coc_trong});
+   for(let i=HD.length-1;i>=0;i--)if(gop.has(HD[i]))HD.splice(i,1)}
   // phần thực thu của 1 hoá đơn rơi vào các nhóm thoả điều kiện (theo tỷ trọng tiền dòng hàng)
   const phan=(h,dk)=>{const nh=h.nh||{},tot=Object.values(nh).reduce((s,v)=>s+(+v),0);return tot?h.thu*Object.entries(nh).reduce((s,[k,v])=>s+(dk(k)?+v:0),0)/tot:(dk('(không nhóm)')?h.thu:0)};
   const NG={},ng=(ten,bp,vt)=>{const o=NG[ten]=NG[ten]||{ten,bp,vt:new Set(),sales:0,quy:0,dong:0,giao:0,cong:{},chiaQuy:[],saleKy:[],don:{}};if(vt)o.vt.add(vt);if(bp&&(!o.bp||o.bp==='khac'))o.bp=bp;return o};
@@ -4926,7 +4932,7 @@ function hhCT(ten){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten);if(!o)r
   S.cache.hh_pop={tieu:`${esc(ten)} <span class="badge" style="vertical-align:middle">${esc(bcKy().ten)} · ${o.ds.length} đơn tham gia</span>`,dau,trang:1,rows:o.ds,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Cơ sở','nw'],['Vai trò','nw'],['Thực thu','num'],['Hoa hồng','num']],
     dong:x=>`<tr><td class="nw">${fmtD(x.h.ngay)}</td><td class="nw">${hhKiot(x.h)}</td><td class="ten">${esc(x.h.khach||'')}${hhSp(x.h)}</td><td class="nw">${esc(csTen3(csCuaCN(x.h.cn))||x.h.cn)}</td>
-      <td class="nw" style="font-size:12px">${esc(x.vai.join(' · '))}</td><td class="num ${x.h.thu+x.h.coc<x.h.dt&&!hhTraTruoc(x.h)?'neg-t':''}" title="${x.h.thu+x.h.coc<x.h.dt&&!hhTraTruoc(x.h)?'Khách chưa trả đủ — phần chưa thu chưa tính':''}">${fmt(x.h.thu)}${x.vai.some(v=>/^(Đóng gói|Giao hàng)/.test(v))&&Math.round(x.h.thu_dg)!==Math.round(x.h.thu)?`<div class="muted" style="font-size:11px">tính đóng / giao ${fmt(x.h.thu_dg)}</div>`:''}</td><td class="num">${x.tien?fmt(Math.round(x.tien)):x.vai.includes('Bán')&&o.quy?'<span class="muted" style="font-size:11px">qua quỹ</span>':'–'}</td></tr>`,
+      <td class="nw" style="font-size:12px">${esc(x.vai.join(' · '))}</td><td class="num ${x.h.thu+x.h.coc-(x.h.coc_trong||0)<x.h.dt&&!hhTraTruoc(x.h)?'neg-t':''}" title="${x.h.thu+x.h.coc-(x.h.coc_trong||0)<x.h.dt&&!hhTraTruoc(x.h)?'Khách chưa trả đủ — phần chưa thu chưa tính':''}">${fmt(x.h.thu)}${x.vai.some(v=>/^(Đóng gói|Giao hàng)/.test(v))&&Math.round(x.h.thu_dg)!==Math.round(x.h.thu)?`<div class="muted" style="font-size:11px">tính đóng / giao ${fmt(x.h.thu_dg)}</div>`:''}</td><td class="num">${x.tien?fmt(Math.round(x.tien)):x.vai.includes('Bán')&&o.quy?'<span class="muted" style="font-size:11px">qua quỹ</span>':'–'}</td></tr>`,
     tong:`<tr class="tong"><td colspan="5"><b>Tổng ${o.ds.length} đơn</b></td><td class="num"><b>${fmt(sumBy(o.ds,x=>x.h.thu))}</b></td><td class="num"><b>${fmt(Math.round(sumBy(o.ds,x=>x.tien)))}</b></td></tr>`};
   hhPopup()}
 // bấm 1 dòng quỹ cửa hàng → các đơn tạo nên số thực thu đó
