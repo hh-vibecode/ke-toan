@@ -1084,8 +1084,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.308';
-const APP_VERSION='03/11/2026 15:28';
+const APP_SO='1.309';
+const APP_VERSION='03/11/2026 16:01';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5465,7 +5465,7 @@ async function pageThueTQ(){
         `<div class="th-dv">${DV_THUE.map(([h,t])=>{const x=kyMoi[h];return `<div class="click" onclick="S.f.kt_dv='${h}';S.f.kt_ky=null;go('kho_thue')"><b>${t}</b><span>${x?x.ky+' · '+fmt(x.so_ma)+' mã':'chưa có tồn sổ thuế'}</span></div>`}).join('')}</div>`)}
       ${o('bad','dc','Đối chiếu & Công việc thuế','Theo dõi các vấn đề cần xử lý, chênh lệch và công việc với kế toán thuế.',['Đối chiếu hóa đơn bán với doanh thu Kiot','Hóa đơn ghi ngày sai năm','Tháng hóa đơn lệch xa doanh thu','Theo dõi tồn kho sổ thuế từng hộ'],'Vào đối chiếu & công việc thuế','hoa_don_thue',
         `<div class="th-dv">${[['Sai thông tin (ngày)',b.ngay_sai||0],['Chênh lệch HĐ / Kiot',lech],['Điều chỉnh / thay thế',dc]].map(([t,n])=>`<div><b>${t}</b><span class="th-so">${n}</span></div>`).join('')}</div>`)}</div>
-    <div class="m-card th-lk"><span class="m-ic" style="--c:var(--info)">${IC_T.link}</span><div><b>Liên kết hệ thống</b><div class="muted">Hóa đơn công ty tự đồng bộ từ MISA meInvoice mỗi đêm (00:25). Hóa đơn 2 hộ và tồn sổ thuế từ file 3TShop.</div></div>
+    <div class="m-card th-lk"><span class="m-ic" style="--c:var(--info)">${IC_T.link}</span><div><b>Liên kết hệ thống</b><div class="muted">Hóa đơn công ty tự đồng bộ từ MISA 2 lần / ngày (00:25 và 12:25). Hóa đơn 2 hộ và tồn sổ thuế từ file 3TShop.</div></div>
       <div class="th-lk-o"><b>MISA meInvoice</b><span class="muted">Kéo gần nhất ${b.keo_luc?fmtDT(b.keo_luc):'—'}</span></div><span class="muted">⇄</span><div class="th-lk-o"><b>Thu chi & Ngân quỹ</b><span class="muted">Liên kết thanh toán (đang làm)</span></div></div>`;
 }
 const kt_cn=h=>({CTY:'Tổng kho sỉ Shidai',SD:'Tổng kho sỉ Shidai',CT:'Đồ Thờ Chánh Tâm',HT:'Đồ thờ Hiền Thủy'})[h];
@@ -5478,7 +5478,7 @@ async function pageHDList(kieu){
   S.cache[k+'_xuat']=()=>xuatCSV(k+'-'+S.tu+'_'+S.den,cols,ds);
   const tt=x=>laDC(x)?pill(/thay thế/i.test(x.ghi_chu)?'Thay thế':'Điều chỉnh','warn'):pill(kieu==='vao'?'Đã nhận':'Đã phát hành','ok');
   const ten={vao:'Hóa đơn đầu vào',ra:'Hóa đơn đầu ra',xl:'Hóa đơn điều chỉnh / thay thế'}[kieu];
-  el.innerHTML=`${kieu==='vao'?`<div class="th-bn">${IC_T.canh}<div><b>Công ty THT: tự kéo từ MISA Xử lý hóa đơn mỗi đêm (00:35)</b> · 2 hộ kinh doanh: hóa đơn mua vào trong file 3TShop. Hoá đơn MISA tự ghép với phiếu chi cùng số tiền — xem ở Phiếu chi → Chưa nhận HĐ.</div></div>`:''}
+  el.innerHTML=`${kieu==='vao'?`<div class="th-bn">${IC_T.canh}<div><b>Công ty THT: tự kéo từ MISA Xử lý hóa đơn 2 lần / ngày (00:35 và 12:35)</b> · 2 hộ kinh doanh: hóa đơn mua vào trong file 3TShop. Hoá đơn MISA tự ghép với phiếu chi cùng số tiền — xem ở Phiếu chi → Chưa nhận HĐ.</div></div>`:''}
     ${kieu==='xl'?`<div class="th-bn">${IC_T.xl}<div>Lập / điều chỉnh / thay thế / huỷ hoá đơn thực hiện trên MISA meInvoice — app chỉ đọc và theo dõi. Danh sách dưới là hoá đơn công ty có liên kết hoá đơn gốc.</div></div>`:''}
     <div class="m-flt">
       <div class="m-f"><span>Đơn vị</span><select onchange="S.f['${k}_dv']=this.value;S.f['${k}_tr']=1;render()"><option value="">Tất cả đơn vị</option>${DV_THUE.map(([h,t])=>`<option value="${h}" ${f[k+'_dv']===h?'selected':''}>${t}</option>`).join('')}</select></div>
@@ -6161,7 +6161,7 @@ const LOGIC2=[
  ['cong_no','Công nợ cũ','Trang công nợ nhập tay (sheet cũ) đã ẩn, chỉ để tra lại.','','08/10'],
  // ── HOÁ ĐƠN & THUẾ
  ['thue','Nguồn hoá đơn','Hộ Hiền Thủy, Chánh Tâm: file 3TShop (anh xuất ra Google Sheet / kéo thả trên app).','Đọc theo tên cột.','09/10'],
- ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 hằng đêm), HĐ mua từ MISA Xử lý hoá đơn (00:35).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
+ ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 và 12:25), HĐ mua từ MISA Xử lý hoá đơn (00:35 và 12:35) — 2 lần / ngày (anh 03/11).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
  ['thue','Ghép HĐ mua','Mọi phiếu chi đã trả từ 01/01 (trừ chi cá nhân) ↔ HĐ đầu vào MISA: số tiền lệch ≤ 1.000đ, ngày HĐ từ 30 ngày trước → 15 ngày sau ngày trả. Tự gắn khi 1 phiếu ↔ 1 HĐ duy nhất VÀ khớp STK người nhận (học từ lần gắn trước) / tên người nhận ≥ 50% / tên trong nội dung ≥ 80%. 1 lần trả nhiều HĐ cùng người bán: tổng HĐ = số tiền → gắn cả nhóm.','Chỉ khớp số tiền, không khớp tên / STK → không gợi ý. Không thấy → ô "Tìm HĐ MISA" (số HĐ / MST / tên) trong khung Hoá đơn đỏ.','23/10'],
  ['thue','Ghép HĐ bán ra','Phiếu thu ↔ HĐ bán ra meInvoice: số tiền lệch ≤ 1.000đ, ngày HĐ từ 15 ngày trước → 30 ngày sau ngày thu. Tự gắn khi 1 ↔ 1 VÀ nội dung phiếu ghi số HĐ ("HD 75") hoặc tên khách ≥ 80% (tên ≥ 2 chữ sau khi bỏ anh / chị / cô).','Tên ngắn kiểu "Anh Hải" → chỉ gợi ý. Xem ở khung Hoá đơn bán ra trong popup phiếu thu.','23/10'],
  ['thue','Số hoá đơn khai tay','Ô "Số hoá đơn" trong khung Hoá đơn đỏ: điền sẵn số đã gắn / số gợi ý (phiếu cần HĐ). Bấm Lưu → lưu số + đánh dấu đã nhận HĐ; thấy đúng 1 HĐ MISA cùng số chưa gắn phiếu khác (ưu tiên lệch tiền ≤ 1.000đ) thì gắn luôn, thay HĐ cũ.','Không thấy trên MISA → giữ số khai tay. Xoá trống = bỏ số khai tay.','23/10'],
@@ -6290,6 +6290,8 @@ const LICH_KT={'kt-kiot':['Kéo Kiot','15 phút/lần · phút 02, 17, 32, 47 m�
   'kt-kiot-doi-chieu':['So khớp doanh thu','23:50 hằng ngày','Kéo lại hoá đơn + trả hàng tháng này và tháng trước, so từng mã, tự bù phần thiếu'],
   'kt-meinvoice':['Kéo hoá đơn meInvoice','00:25 hằng ngày','Hoá đơn công ty tổng tháng này + tháng trước'],
   'kt-meinvoice-bot':['Kéo hoá đơn đầu vào (MISA)','00:35 hằng ngày','HĐ mua vào tháng này + tháng trước, tự gắn phiếu chi + phiếu thu ↔ HĐ bán ra, tải PDF HĐ đã gắn về chứng từ'],
+  'kt-meinvoice-trua':['Kéo hoá đơn meInvoice (lượt trưa)','12:25 hằng ngày','Như lượt 00:25 — anh 03/11: 2 lần / ngày'],
+  'kt-meinvoice-bot-trua':['Kéo hoá đơn đầu vào MISA (lượt trưa)','12:35 hằng ngày','Như lượt 00:35 — anh 03/11: 2 lần / ngày'],
   'kt-kiot-canh-bao':['Cảnh báo Kiot','Phút 05 mỗi giờ','Báo khi Kiot lâu chưa kéo được'],
   'kt-nop-ket':['Đồng bộ nộp két','15 phút/lần','Tiền cửa hàng nộp két 10 ngày gần nhất'],
   'kt-nhac-viec':['Nhắc việc','08:00 hằng ngày','Nhắc lại việc còn treo'],
