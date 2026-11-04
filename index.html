@@ -1084,6 +1084,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 .xu-loc{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.xu-loc select{height:30px;font-size:12px;max-width:210px}
 .xu-ft{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;z-index:2;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);box-shadow:0 -2px 8px rgba(16,24,40,.06)}
 @media(max-width:700px){.xu-p{flex-direction:column;align-items:stretch}.xu-loc{justify-content:flex-start;padding-left:26px}}
+/* 04/11 phân bổ phiếu chi trong popup P&L */
+.pl-pbs{min-width:96px}.pl-pb{display:inline-block;margin:1px 4px 1px 0;padding:1px 7px;border-radius:6px;background:var(--info-bg);font-size:11.5px;white-space:nowrap}.pl-pb b{font-weight:600}.pl-pb.on{background:var(--accent);color:#fff}.pl-pb.chua{background:var(--warn-bg)}.pl-on td{background:var(--sel-bg)}
 </style>
 </head>
 <body>
@@ -1095,8 +1097,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.315';
-const APP_VERSION='03/11/2026 17:39';
+const APP_SO='1.316';
+const APP_VERSION='04/11/2026 09:17';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4625,17 +4627,28 @@ async function plCT(n,tenG,thang){
   // 26/10: khoản định kỳ P&L của các loại chi này (id âm — bấm mở tab Khoản định kỳ)
   ds=[...ds,...(S.cache.pl_dk||[]).filter(x=>+x.tien&&ids.includes(+x.loai)&&x.thang>=tu.slice(0,7)&&x.thang<=den.slice(0,7)&&ok(x.dv?(csCuaDV(x.dv)||'chung'):'chung'))
     .map(x=>({id:-x.id,ngay:x.thang+'-01',so:'Định kỳ',nd:'[Định kỳ] '+x.ten+(x.kieu==='uoc_tinh'?` — bù cho đủ ước tính ${fmt(x.so_tien)} (phiếu thật ${fmt(x.thuc)})`:''),tien:+x.tien,dv:x.dv}))];
-  const tong=sumBy(ds,x=>x.tien),dt=sumBy(ky.ms,m=>(S.cache.pl_dt||{})[m]||0),loai=Object.fromEntries(b.loai.map(l=>[l.id,l.ten]));
-  const nhom=(f)=>Object.entries(ds.reduce((o,x)=>(o[f(x)]=(o[f(x)]||0)+x.tien,o),{})).sort((a,c)=>c[1]-a[1]);
-  const bangCon=(t,arr)=>`<div class="m-st">${t}</div><table class="m-t"><tr><th>Khoản mục</th><th class="num">Thực hiện</th><th class="num">Tỷ trọng</th></tr>${arr.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${fmt(v)}</td><td class="num">${pct(v,tong)}</td></tr>`).join('')||'<tr><td colspan="3" class="m-empty">Không có</td></tr>'}</table>`;
+  const dt=sumBy(ky.ms,m=>(S.cache.pl_dt||{})[m]||0),loai=Object.fromEntries(b.loai.map(l=>[l.id,l.ten]));
+  S.cache.pl_ct=ds;S.cache.pl_loai=loai;S.cache.plct={ten,ky,ds,dt,n,loc:null};plCTVe()}
+// 04/11 kế toán (ảnh popup "Chi phí đóng gói & vận chuyển · T10"): "cho hiện lên xem khoản nào đã được phân bổ vào đâu, đỡ phải click vào từng phiếu mò lại"
+// → mỗi phiếu 1 dòng + cột "Phân bổ vào" (đơn vị · số tiền, kèm tháng nếu ghi tháng khác); bấm 1 đơn vị ở bảng trên = chỉ xem phiếu phân bổ vào đơn vị đó. — Monsieur Claude
+const plDvTen=id=>id?((dv(id)||{}).ten||'#'+id):'Chưa chọn đơn vị';
+function plCTVe(){const P=S.cache.plct;if(!P)return;const {ten,ky,ds,dt,n}=P,loc=P.loc,tong=sumBy(ds,x=>x.tien);
+  const nhom=Object.entries(ds.reduce((o,x)=>{const k=x.dv||0;o[k]=(o[k]||0)+x.tien;return o},{})).sort((a2,c)=>c[1]-a2[1]);
+  // gộp theo phiếu: 1 dòng / phiếu, danh sách đơn vị chịu (định kỳ P&L id âm giữ 1 dòng)
+  const ph=[],m={};ds.forEach(x=>{const k=x.id>0?'p'+x.id:'d'+x.id+'|'+(x.dv||0);let r=m[k];if(!r){r=m[k]={...x,tien:0,pb:[]};ph.push(r)}r.tien+=x.tien;r.pb.push({dv:x.dv||0,tien:x.tien,thang:x.thang})});
+  const L=loc==null?ph:ph.filter(r=>r.pb.some(p=>String(p.dv)===String(loc)));
+  const thg=ky.ms.length===1?ky.ms[0]:null;
+  const pbO=r=>{const g={};r.pb.forEach(p=>{const k=p.dv+'|'+(p.thang||'');g[k]=g[k]||{...p,tien:0};g[k].tien+=p.tien});const ls=Object.values(g);
+    return ls.map(p=>`<span class="pl-pb${String(p.dv)===String(loc)?' on':''}${p.dv?'':' chua'}">${esc(plDvTen(p.dv).replace(/^Đồ [Tt]hờ /,''))}${ls.length>1?' <b>'+fmt(p.tien)+'</b>':''}${p.thang&&p.thang!==thg&&!thg?'':''}${p.thang&&thg&&p.thang!==thg?' · '+thgVN(p.thang):''}</span>`).join('')};
+  const tongL=sumBy(L,r=>loc==null?r.tien:sumBy(r.pb.filter(p=>String(p.dv)===String(loc)),p=>p.tien));
   $('#modal>div').innerHTML=`<h2>${esc(ten)} · ${esc(ky.ten)}</h2>
     <div class="bc-k" style="grid-template-columns:repeat(3,1fr)"><div><span>Thực hiện</span><b>${fmt(tong)}</b></div><div><span>% doanh thu</span><b>${pct(tong,dt)||'–'}</b></div><div><span>Số phiếu chi</span><b>${fmt(new Set(ds.filter(x=>x.id>0).map(x=>x.id)).size)}</b></div></div>
-    ${bangCon('Theo đơn vị chịu chi phí',nhom(x=>x.dv?((dv(x.dv)||{}).ten||'#'+x.dv):'Chưa chọn đơn vị'))}
-    <div class="m-st">Danh sách phiếu chi (${ds.length}) <span class="r">${ds.length?`<button class="m-btn sm" onclick="xuatCSV('chi-tiet-${n}',[['Ngày',x=>x.ngay],['Số phiếu',x=>x.so],['Nội dung',x=>x.nd],['Thụ hưởng',x=>x.th||''],['Loại',x=>S.cache.pl_loai[x.loai]||''],['Số tiền',x=>x.tien]],S.cache.pl_ct)">Xuất Excel</button>`:''}</span></div>
-    <table class="m-t pl-ph"><tr><th>Ngày</th><th>Số phiếu</th><th>Diễn giải</th><th class="num">Số tiền</th></tr>${ds.slice(0,200).map(x=>`<tr ${x.id>0?`onclick="plMoPhieu(${x.id})" title="Bấm mở phiếu chi"`:`onclick="closeModal();S.f.pl_tab='dk';render()" title="Khoản định kỳ P&L — bấm mở tab Khoản định kỳ"`}><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.so)}</td><td>${esc(x.nd)}${x.th?` <span class="muted">· ${esc(x.th)}</span>`:''}</td><td class="num">${fmt(x.tien)}</td></tr>`).join('')||'<tr><td colspan="4" class="m-empty">Không có phiếu</td></tr>'}
-    ${ds.length?`<tr class="tong"><td colspan="3"><b>Tổng cộng</b></td><td class="num"><b>${fmt(tong)}</b></td></tr>`:''}</table>
-    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`;
-  S.cache.pl_ct=ds;S.cache.pl_loai=loai}
+    <div class="m-st">Theo đơn vị chịu chi phí <span class="badge">bấm 1 đơn vị để xem phiếu</span></div><table class="m-t"><tr><th>Đơn vị</th><th class="num">Thực hiện</th><th class="num">Tỷ trọng</th></tr>
+      ${nhom.map(([k,v])=>`<tr class="click${String(k)===String(loc)?' pl-on':''}" onclick="S.cache.plct.loc=S.cache.plct.loc===${JSON.stringify(k)}?null:${JSON.stringify(k)};plCTVe()"><td>${esc(plDvTen(+k))}${String(k)===String(loc)?' <span class="badge">đang lọc</span>':''}</td><td class="num">${fmt(v)}</td><td class="num">${pct(v,tong)}</td></tr>`).join('')||'<tr><td colspan="3" class="m-empty">Không có</td></tr>'}</table>
+    <div class="m-st">Danh sách phiếu chi (${L.length}${loc!=null?' · '+esc(plDvTen(+loc)):''})${loc!=null?` <button class="m-btn sm out" onclick="S.cache.plct.loc=null;plCTVe()">✕ Bỏ lọc</button>`:''} <span class="r">${ds.length?`<button class="m-btn sm" onclick="xuatCSV('chi-tiet-${n}',[['Ngày',x=>x.ngay],['Số phiếu',x=>x.so],['Nội dung',x=>x.nd],['Thụ hưởng',x=>x.th||''],['Loại',x=>S.cache.pl_loai[x.loai]||''],['Đơn vị chịu',x=>plDvTen(x.dv)],['Tháng hạch toán',x=>x.thang||''],['Số tiền',x=>x.tien]],S.cache.pl_ct)">Xuất Excel</button>`:''}</span></div>
+    <table class="m-t pl-ph"><tr><th>Ngày · số phiếu</th><th>Diễn giải</th><th>Phân bổ vào</th><th class="num">Số tiền</th></tr>${L.slice(0,200).map(x=>`<tr ${x.id>0?`onclick="plMoPhieu(${x.id})" title="Bấm mở phiếu chi"`:`onclick="closeModal();S.f.pl_tab='dk';render()" title="Khoản định kỳ P&L — bấm mở tab Khoản định kỳ"`}><td class="nw">${fmtD(x.ngay)}<div class="muted" style="font-size:11.5px">${esc(x.so)}</div></td><td>${esc(x.nd)}${x.th?` <span class="muted">· ${esc(x.th)}</span>`:''}</td><td class="pl-pbs">${pbO(x)}</td><td class="num">${fmt(x.tien)}</td></tr>`).join('')||'<tr><td colspan="4" class="m-empty">Không có phiếu chi</td></tr>'}
+    ${L.length?`<tr class="tong"><td colspan="3"><b>Tổng cộng${loc!=null?' (phần của đơn vị này)':''}</b></td><td class="num"><b>${fmt(tongL)}</b></td></tr>`:''}</table>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`}
 // ── KHOẢN ĐỊNH KỲ P&L (26/10/2026, anh: "xử lý riêng cho P&L — add các khoản định kỳ, phân loại vào riêng P&L để theo dõi hiệu quả, không ảnh hưởng luồng chính")
 // Luôn tính: cộng mỗi tháng trong khoảng. Ước tính: P&L lấy số lớn hơn giữa ước tính và phiếu thật cùng mục; "Chốt số thật" → chỉ lấy phiếu thật.
 // Chỉ từ T9/2026 (T1–T8 theo 4 file P&L). Dữ liệu: supabase-schema-kt-pl-dinh-ky.sql.
