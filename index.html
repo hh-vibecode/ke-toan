@@ -1097,8 +1097,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.317';
-const APP_VERSION='04/11/2026 14:04';
+const APP_SO='1.318';
+const APP_VERSION='04/11/2026 14:21';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1854,8 +1854,15 @@ async function pageTongQuan(){
       const cp=sumBy(bc.chi_theo_dv.filter(x=>laCPHD(x)&&cung(cnDV(x.don_vi_id),cn)),x=>x.so_tien);return {key,ten,dtg,tra,dt,gv,lg:dt-gv,cp,ln:dt-gv-cp}});
     return {rows,chung:sumBy(bc.chi_theo_dv.filter(x=>laCPHD(x)&&!CS3.some(([,,cn])=>cung(cnDV(x.don_vi_id),cn))),x=>x.so_tien)}};
   const C1=cs(bh,bK),C0=cs(bh0,bK0);
-  const tongKQ=(C,chon)=>{const r=C.rows.filter(x=>!chon||chon.includes(x.key));const t={dtg:sumBy(r,x=>x.dtg),tra:sumBy(r,x=>x.tra),dt:sumBy(r,x=>x.dt),gv:sumBy(r,x=>x.gv),cp:sumBy(r,x=>x.cp)+(chon?0:C.chung)};t.lg=t.dt-t.gv;t.ln=t.lg-t.cp;return t};
-  const K1=tongKQ(C1,csSel),K0=tongKQ(C0,csSel);
+  // 04/11: KQKD toàn công ty + theo cơ sở = đúng số P&L (plTinh): doanh thu thuần đã trừ VAT 599, chi phí gồm khoản định kỳ + lãi vay chia theo doanh thu cơ sở
+  const kyT=(a,z)=>({tu:a,den:z,ms:dsThang(a.slice(0,7),z.slice(0,7)).filter(m=>a<=m+'-01'&&z>=cuoiThang(m))});
+  const [P1,P0]=await Promise.all([plTinh(kyT(S.tu,S.den),null,true),plTinh(kyT(tu0,den0),null,true)]);
+  const csP=P=>{const sm=o=>Object.values(o||{}).reduce((a,v)=>a+v,0),cpK=new Set(P.CPD.map(n=>n[0])),cpCua=c=>Object.entries(P.cpCS).filter(([k])=>k.split('|')[0]===c&&cpK.has(k.split('|')[1])).reduce((a,[,o])=>a+sm(o),0);
+    const rows=P.csDS.map(key=>{const dt=sm(P.dtCS[key]),gv=sm(P.gvCS[key]),cp=cpCua(key),thue=sm(P.thueCS[key]);return {key,ten:csTen3(key),dtg:sm(P.dtgCS[key]),tra:sm(P.traCS[key]),vat:sm(P.vatCS[key]),dt,gv,lg:dt-gv,cp,thue,ln:dt-gv-cp-thue}});
+    return {rows,chung:cpCua('chung')}};
+  const Q1=csP(P1),Q0=csP(P0);
+  const tongKQ=(C,chon)=>{const r=C.rows.filter(x=>!chon||chon.includes(x.key));const t={dtg:sumBy(r,x=>x.dtg),tra:sumBy(r,x=>x.tra),dt:sumBy(r,x=>x.dt),gv:sumBy(r,x=>x.gv),cp:sumBy(r,x=>x.cp)+(chon?0:C.chung),thue:sumBy(r,x=>x.thue||0)};t.lg=t.dt-t.gv;t.ln=t.lg-t.cp-t.thue;return t};   // thuế: chỉ T1–T8 (file P&L)
+  const K1=tongKQ(Q1,csSel),K0=tongKQ(Q0,csSel),K1o=tongKQ(C1,csSel);
   // ── trình bày ──
   const mui=(a,c,tot=true)=>{if(!c)return '<span class="muted">–</span>';const p=(a-c)/Math.abs(c)*100,len=p>=0;return `<span class="${len===tot?'pos-t':'neg-t'}">${len?'↑':'↓'} ${Math.round(Math.abs(p))}%</span>`};
   const sec=(n,c,t,ghi,body,cls='')=>`<section class="tq2 ${cls}"><div class="tq2-h"><span class="tq2-n" style="--c:var(--${c})">${n}</span><b>${t}</b><span class="muted">${ghi?'('+ghi+')':''}</span></div>${body}</section>`;
@@ -1871,10 +1878,10 @@ async function pageTongQuan(){
       ${the('ok','lg','Lợi nhuận gộp',K1.lg,K0.lg,true,'Biên lợi nhuận gộp: ',pct(K1.lg,K1.dt),coXem('pl')?"go('pl')":'')}
       ${the('vio','cp',HT?'Chi phí hoạt động (hạch toán)':'Chi phí hoạt động',K1.cp,K0.cp,false,'Tỷ lệ chi phí HĐ/DT: ',pct(K1.cp,K1.dt),xnDuoc('cp')?`xemNhanh('cp','',${csSel&&csSel.length===1?`'${(CS3.find(x=>x[0]===csSel[0])||[])[2]}'`:'null'},'')`:'')}
       ${the('teal','ln','Lợi nhuận sau chi phí (ước tính)',K1.ln,K0.ln,true,'Biên lợi nhuận: ',pct(K1.ln,K1.dt),coXem('pl')?"go('pl')":'')}</div></div>`,'tq2-1');
-  const rows2=C1.rows.filter(r=>!csSel||csSel.includes(r.key)),tg={dt:sumBy(rows2,r=>r.dt),gv:sumBy(rows2,r=>r.gv),lg:sumBy(rows2,r=>r.lg),cp:sumBy(rows2,r=>r.cp)+(csSel?0:C1.chung)};tg.ln=tg.lg-tg.cp;
+  const rows2=Q1.rows.filter(r=>!csSel||csSel.includes(r.key)),tg={dt:sumBy(rows2,r=>r.dt),gv:sumBy(rows2,r=>r.gv),lg:sumBy(rows2,r=>r.lg),cp:sumBy(rows2,r=>r.cp)+(csSel?0:Q1.chung),thue:sumBy(rows2,r=>r.thue||0)};tg.ln=tg.lg-tg.cp-tg.thue;
   const s2F=()=>sec(2,'info','Kết quả kinh doanh theo cơ sở',kyN,`<div class="scroll"><table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num" title="Doanh thu − trả hàng (như Kiot)">Doanh thu thuần</th><th class="num">Giá vốn</th><th class="num">Lợi nhuận gộp</th><th class="num" title="${HT?'Chi phí hạch toán: theo kỳ sử dụng dịch vụ / phân bổ của phiếu, không theo ngày chi tiền':'Theo ngày chi tiền'}">Chi phí HĐ${HT?'<div class="muted" style="font-size:10.5px;font-weight:400">hạch toán</div>':''}</th><th class="num">Lợi nhuận (ước tính)</th><th class="num">Biên LN</th><th class="num">${tN}</th><th class="num tq-coc-h" title="Đơn đặt trong kỳ đã có cọc, chưa xuất hoá đơn — doanh thu dự kiến">Đã cọc · chưa đi hàng</th></tr>
-      ${rows2.map(r=>{const r0=C0.rows.find(x=>x.key===r.key)||{},cn=(CS3.find(x=>x[0]===r.key)||[])[2],chon=csSel&&csSel.length===1&&csSel[0]===r.key;return `<tr class="click ${chon?'on':''}" title="${chon?'Bấm để bỏ lọc':'Bấm để lọc cả trang theo '+r.ten}" onclick="S.f.loc_cs=${chon?'null':`['${r.key}']`};shell()"><td><b>${r.ten}</b>${chon?' '+pill('Đang lọc','info'):''}</td><td class="num">${fmt(r.dt)}${r.tra?`<div class="muted" style="font-size:11px">DT ${fmtN(r.dtg)} · trả ${fmtN(r.tra)}</div>`:''}</td><td class="num">${fmt(r.gv)}</td><td class="num">${fmt(r.lg)}</td><td class="num"><span ${xnAttr('cp','',cn,'')}>${fmt(r.cp)}</span></td><td class="num"><b class="${r.ln<0?'neg-t':''}">${fmt(r.ln)}</b></td><td class="num">${pct(r.ln,r.dt)}</td><td class="num">${mui(r.ln,r0.ln)}</td>${cocO(cc.filter(x=>csCuaCN(x.cn)===r.key))}</tr>`}).join('')}
-      ${!csSel&&C1.chung?`<tr class="click" ${xnAttr('cp','','_chung','')}><td class="muted">Chi phí bộ phận chung</td><td></td><td></td><td></td><td class="num">${fmt(C1.chung)}</td><td class="num neg-t">${fmt(-C1.chung)}</td><td></td><td></td><td class="tq-coc"></td></tr>`:''}
+      ${rows2.map(r=>{const r0=Q0.rows.find(x=>x.key===r.key)||{},cn=(CS3.find(x=>x[0]===r.key)||[])[2],chon=csSel&&csSel.length===1&&csSel[0]===r.key;return `<tr class="click ${chon?'on':''}" title="${chon?'Bấm để bỏ lọc':'Bấm để lọc cả trang theo '+r.ten}" onclick="S.f.loc_cs=${chon?'null':`['${r.key}']`};shell()"><td><b>${r.ten}</b>${chon?' '+pill('Đang lọc','info'):''}</td><td class="num">${fmt(r.dt)}${r.tra?`<div class="muted" style="font-size:11px">DT ${fmtN(r.dtg)} · trả ${fmtN(r.tra)}</div>`:''}</td><td class="num">${fmt(r.gv)}</td><td class="num">${fmt(r.lg)}</td><td class="num"><span ${xnAttr('cp','',cn,'')}>${fmt(r.cp)}</span></td><td class="num"><b class="${r.ln<0?'neg-t':''}">${fmt(r.ln)}</b></td><td class="num">${pct(r.ln,r.dt)}</td><td class="num">${mui(r.ln,r0.ln)}</td>${cocO(cc.filter(x=>csCuaCN(x.cn)===r.key))}</tr>`}).join('')}
+      ${!csSel&&Q1.chung?`<tr class="click" ${xnAttr('cp','','_chung','')}><td class="muted">Chi phí bộ phận chung</td><td></td><td></td><td></td><td class="num">${fmt(Q1.chung)}</td><td class="num neg-t">${fmt(-Q1.chung)}</td><td></td><td></td><td class="tq-coc"></td></tr>`:''}
       <tr class="tong"><td><b>Tổng cộng</b></td><td class="num"><b>${fmt(tg.dt)}</b></td><td class="num"><b>${fmt(tg.gv)}</b></td><td class="num"><b>${fmt(tg.lg)}</b></td><td class="num"><b>${fmt(tg.cp)}</b></td><td class="num"><b>${fmt(tg.ln)}</b></td><td class="num"><b>${pct(tg.ln,tg.dt)}</b></td><td class="num">${mui(K1.ln,K0.ln)}</td>${cocO(cc,true)}</tr></table></div>`);
   // ô Đã cọc · chưa đi hàng: giá trị đơn + số đơn · đã cọc; bấm xem từng đơn
   const cocO=(ds,b)=>`<td class="num tq-coc click" onclick="event.stopPropagation();xemDonTQ()" title="Bấm xem từng đơn">${ds.length?`${b?'<b>':''}${fmt(sumBy(ds,x=>x.tong))}${b?'</b>':''}<div class="muted" style="font-size:11px">${ds.length} đơn · cọc ${fmtN(sumBy(ds,cocT))}</div>`:'<span class="muted">–</span>'}</td>`;
@@ -1891,7 +1898,7 @@ async function pageTongQuan(){
   const theCoc=()=>`<div class="tq2-k click" onclick="xemDonTQ()" title="Bấm xem từng đơn"><div class="tq2-kt"><span class="m-ic" style="--c:var(--warn)">${IC2.gv}</span><div><div class="l">Đã cọc · chưa đi hàng</div><div class="v">${fmt(sumBy(cc,x=>x.tong))}</div>
       <div class="s muted">${fmt(cc.length)} đơn đặt trong kỳ</div></div></div><div class="tq2-kb" style="--c:var(--warn)">Đã cọc: <b>${fmt(sumBy(cc,cocT))}</b></div></div>`;
   const sDT_bo=sec('A','ok','Doanh thu thực tế & doanh thu trên đơn',kyN,`<div class="tq2-os tq-dn">
-      ${ob('ok',IC2.dt,'Doanh thu thực tế (đã đi hàng)',K1.dt,coXem('ban_hang')?"go('ban_hang')":'','hoá đơn − trả hàng')}
+      ${ob('ok',IC2.dt,'Doanh thu thực tế (đã đi hàng)',K1o.dt,coXem('ban_hang')?"go('ban_hang')":'','hoá đơn − trả hàng')}
       ${ob('warn',IC2.gv,'Đã cọc · chưa đi hàng (đặt trong kỳ)',sumBy(cc,x=>x.tong),"xemDonTQ()",fmt(cc.length)+' đơn · cọc '+fmt(sumBy(cc,cocT)))}</div>
     <table class="m-t tq2-t" style="margin-top:8px"><tr><th>Đơn đặt hàng trong kỳ</th><th class="num">Số đơn</th><th class="num">Giá trị</th><th class="num">Tiền cọc</th></tr>
       <tr><td>Đã đi hàng (ra hoá đơn)</td><td class="num">${fmt(DI.so)}</td><td class="num">${fmt(DI.tong)}</td><td></td></tr>
@@ -4540,36 +4547,36 @@ function pl18(rows,loaiDS){const nm=s=>boDau(String(s||'')).toLowerCase().replac
     if(Math.abs(chen)>=1000)dtd.push({thang:th,cs,k:cs==='TT'||cs==='SD'?'ttv':'khac',v:chen});
     if(iT>=0)ds.slice(iT+1).forEach(r=>{if(/^thue/.test(b0(r))&&+r.th)dtd.push({thang:th,cs,k:'thue',v:+r.th})})}
   return {dong:out,dt,dtd,thang:[...thang]}}
-async function pageBCPL(){
-  const el=$('#page'),ky=bcKy(),tab=S.f.pl_tab||'tong';el.innerHTML='<div class="m-empty">Đang tính...</div>';
-  if(tab==='dk')return plDinhKy(el,ky);
+// 04/11/2026 kế toán: "Kết quả kinh doanh toàn công ty (Tổng quan) không khớp P&L" — Tổng quan tự tính riêng (thiếu trừ VAT 599, lãi vay, khoản định kỳ;
+// giá vốn nguồn khác) → tách phần TÍNH của P&L ra plTinh(), Tổng quan + P&L dùng chung 1 cách tính. ky = {tu, den, ms: các tháng nằm trọn trong kỳ}. — Monsieur Claude
+async function plTinh(ky,sel,nhe){
   const sau9=ky.den>='2026-09-01';
   const [b,p18,dtn,vat,dkt]=await Promise.all([rpc('kt_bc_pl2',{p_tu:ky.tu,p_den:ky.den}),ky.tu<='2026-08-31'?rpc('kt_pnl_t18').catch(()=>[]):[],
-    sau9?rpc('kt_pl_dt_nhom',{p_tu:ky.tu,p_den:ky.den}).catch(()=>[]):[],sau9?rpc('kt_vat_599',{p_tu:ky.tu,p_den:ky.den}).catch(()=>[]):[],
-    sau9?rpc('kt_pl_dinh_ky_thang',{p_tu:ky.tu.slice(0,7),p_den:ky.den.slice(0,7)}).catch(()=>[]):[]]);S.cache.pl2=b;S.cache.pl_dk=dkt;
-  const sel=bcCS(),ok=cs=>!sel||sel.includes(cs),loai=Object.fromEntries(b.loai.map(l=>[l.id,l]));
-  const dtCS={},gvCS={},cpN={},cpL={},cpCS={};
-  for(const x of b.dt){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,x.dt);cong(gvCS,cs,x.thang,x.gv)}
+    sau9&&!nhe?rpc('kt_pl_dt_nhom',{p_tu:ky.tu,p_den:ky.den}).catch(()=>[]):[],sau9?rpc('kt_vat_599',{p_tu:ky.tu,p_den:ky.den}).catch(()=>[]):[],
+    sau9?rpc('kt_pl_dinh_ky_thang',{p_tu:ky.tu.slice(0,7),p_den:ky.den.slice(0,7)}).catch(()=>[]):[]]);
+  const ok=cs=>!sel||sel.includes(cs),loai=Object.fromEntries(b.loai.map(l=>[l.id,l]));
+  const dtCS={},gvCS={},cpN={},cpL={},cpCS={},dtgCS={},traCS={},vatCS={};   // dtg / tra / vat theo cơ sở: cho Tổng quan
+  for(const x of b.dt){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,x.dt);cong(gvCS,cs,x.thang,x.gv);cong(dtgCS,cs,x.thang,x.dt)}
   const DTG={},TRA={};   // 16/10: tách doanh thu / trả hàng như Kiot
-  for(const x of b.dt)if(!bcCS()||bcCS().includes(csCuaCN(x.cn)))DTG[x.thang]=(DTG[x.thang]||0)+(+x.dt);
-  for(const x of b.tra){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,-x.tra);cong(gvCS,cs,x.thang,-x.gv);if(!bcCS()||bcCS().includes(cs))TRA[x.thang]=(TRA[x.thang]||0)-(+x.tra)}
+  for(const x of b.dt)if(!sel||sel.includes(csCuaCN(x.cn)))DTG[x.thang]=(DTG[x.thang]||0)+(+x.dt);
+  for(const x of b.tra){const cs=csCuaCN(x.cn)||'khac';cong(dtCS,cs,x.thang,-x.tra);cong(gvCS,cs,x.thang,-x.gv);cong(traCS,cs,x.thang,+x.tra);if(!sel||sel.includes(cs))TRA[x.thang]=(TRA[x.thang]||0)-(+x.tra)}
   for(const x of b.cp){const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung',n=String(x.loai);cong(cpCS,cs+'|'+n,x.thang,x.tien);if(ok(cs))cong(cpN,n,x.thang,x.tien)}
   // 26/10 anh: KHOẢN ĐỊNH KỲ chỉ cho P&L (thuê nhà không chi tiền, lương ước tính…) — cộng vào đúng loại chi / đơn vị, đánh dấu ● ở ô
-  const DKM={};for(const x of dkt){if(!+x.tien)continue;const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung',n=String(x.loai);cong(cpCS,cs+'|'+n,x.thang,+x.tien);if(ok(cs)){cong(cpN,n,x.thang,+x.tien);cong(DKM,n,x.thang,+x.tien)}}
+  const DKM={};for(const x of dkt){if(!+x.tien||!ky.ms.includes(x.thang))continue;const cs=x.dv?(csCuaDV(x.dv)||'chung'):'chung',n=String(x.loai);cong(cpCS,cs+'|'+n,x.thang,+x.tien);if(ok(cs)){cong(cpN,n,x.thang,+x.tien);cong(DKM,n,x.thang,+x.tien)}}
   // 23/10 anh: "kéo P&L 1–8 vào lại P&L chính" — CHI PHÍ T1–T8 lấy theo 4 file P&L kế toán (cột THỰC HIỆN), thay số tính từ phiếu chi app (tháng cũ app chưa đủ phiếu)
-  const T18=pl18(p18,S.dm.loai);   // danh mục app có mã mục (b.loai của báo cáo không kèm mã)
+  const T18=pl18(p18,S.dm.loai);T18.thang=T18.thang.filter(m=>ky.ms.includes(m));   // danh mục app có mã mục (b.loai của báo cáo không kèm mã)
   if(T18.thang.length){for(const o of [cpN,cpCS])for(const k in o)T18.thang.forEach(m=>{delete o[k][m]});
     for(const r of T18.dong)if(T18.thang.includes(r.thang)){cong(cpCS,r.cs+'|'+r.id,r.thang,r.v);if(r.cs!=='TT'?ok(r.cs):!sel)cong(cpN,String(r.id),r.thang,r.v)}
     // anh 23/10: "P&L 1–8 lấy y nguyên 4 file P&L; từ T9 mới chạy app + Kiot" → doanh thu ròng, giá vốn T1–T8 cũng theo file
-    for(const m of T18.thang){for(const o of [dtCS,gvCS])for(const k in o)delete o[k][m];delete DTG[m];delete TRA[m]}
-    for(const r of T18.dt)if(T18.thang.includes(r.thang)){cong(dtCS,r.cs,r.thang,r.dt);cong(gvCS,r.cs,r.thang,r.gv);
+    for(const m of T18.thang){for(const o of [dtCS,gvCS,dtgCS,traCS])for(const k in o)delete o[k][m];delete DTG[m];delete TRA[m]}
+    for(const r of T18.dt)if(T18.thang.includes(r.thang)){cong(dtCS,r.cs,r.thang,r.dt);cong(gvCS,r.cs,r.thang,r.gv);cong(dtgCS,r.cs,r.thang,r.dt+r.tra);cong(traCS,r.cs,r.thang,r.tra);
       if(r.cs!=='TT'?ok(r.cs):!sel){DTG[r.thang]=(DTG[r.thang]||0)+r.dt+r.tra;TRA[r.thang]=(TRA[r.thang]||0)-r.tra}}}
   // 23/10 anh: form như sheet BÁO CÁO P&L — các dòng doanh thu; T1–T8 theo file, từ T9 theo hoá đơn Kiot + trừ VAT tiền về TK công ty 599
   const DN={buon:{},off:{},on:{},ttv:{},khac:{},tra:{},giam:{},diem:{},vat:{},thue:{}},okC=cs=>cs!=='TT'?ok(cs):!sel;
-  for(const r of T18.dtd||[])if(T18.thang.includes(r.thang)&&okC(r.cs))cong(DN,r.k,r.thang,r.v);
+  const thueCS={};for(const r of T18.dtd||[])if(T18.thang.includes(r.thang)){if(r.k==='thue')cong(thueCS,r.cs,r.thang,r.v);if(okC(r.cs))cong(DN,r.k,r.thang,r.v)}
   for(const x of dtn){const cs=csCuaCN(x.cn)||'khac';if(!T18.thang.includes(x.thang)&&ok(cs))cong(DN,x.nhom,x.thang,x.dt)}
   for(const m in TRA)if(!T18.thang.includes(m))cong(DN,'tra',m,TRA[m]);
-  for(const x of vat){const cs=csCuaCN(x.cn)||'khac';if(T18.thang.includes(x.thang))continue;cong(dtCS,cs,x.thang,-x.vat);if(ok(cs))cong(DN,'vat',x.thang,-x.vat)}
+  for(const x of vat){const cs=csCuaCN(x.cn)||'khac';if(T18.thang.includes(x.thang))continue;cong(dtCS,cs,x.thang,-x.vat);cong(vatCS,cs,x.thang,+x.vat);if(ok(cs))cong(DN,'vat',x.thang,-x.vat)}
   // 27/10 kế toán: "toàn bộ chi phí lãi vay từng tháng hạch toán vào chi phí công ty, chia theo tỷ lệ doanh thu từng cơ sở, hệ thống tự cập nhật"
   // → lãi tháng m (lịch sử trả các khoản có tính chi phí) chia 3 cơ sở theo doanh thu thuần tháng m; tháng chưa có doanh thu → để "chung". T1–T8 theo file P&L.
   for(const x of b.lai_vay){if(T18.thang.includes(x.thang))continue;const m=x.thang,cs3=CS3.map(c=>c[0]),dtm=cs3.map(c=>Math.max(+((dtCS[c]||{})[m])||0,0)),tong=dtm.reduce((s,v)=>s+v,0);
@@ -4577,9 +4584,13 @@ async function pageBCPL(){
     let con=+x.lai;cs3.forEach((c,i)=>{const p=i===cs3.length-1?con:Math.round(+x.lai*dtm[i]/tong);con-=p;cong(cpCS,c+'|lai_vay',m,p);if(ok(c))cong(cpN,'lai_vay',m,p)})}
   // các dòng chi phí: loại chi nhóm "Chi vận hành & quản lí" (đang dùng hoặc có số) theo thứ tự danh mục + lãi vay (trang Vay) nếu có
   const CPD=[...b.loai.filter(l=>l.nhom_bc==='Chi vận hành & quản lí'&&(l.hoat_dong||cpN[l.id])).map(l=>[String(l.id),tenOpex(l.ten)]),...(b.lai_vay.length?[['lai_vay','Lãi vay & phí tài chính']]:[])];
-  S.cache.pl_cpd=CPD;
   const csDS=[...CS3.map(c=>c[0]).filter(ok),...(!sel&&T18.dt.some(r=>r.cs==='TT')?['TT']:[])],sumO=(o,ks)=>{const r={};ks.forEach(k=>Object.entries(o[k]||{}).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
   const am=o=>Object.fromEntries(Object.entries(o).map(([m,v])=>[m,-v])),cg=(...os)=>{const r={};os.forEach(o=>Object.entries(o).forEach(([m,v])=>r[m]=(r[m]||0)+v));return r};
+  return {b,dkt,ok,loai,dtCS,gvCS,cpN,cpCS,dtgCS,traCS,vatCS,thueCS,DTG,TRA,DKM,T18,DN,okC,CPD,csDS,sumO,am,cg}}
+async function pageBCPL(){
+  const el=$('#page'),ky=bcKy(),tab=S.f.pl_tab||'tong';el.innerHTML='<div class="m-empty">Đang tính...</div>';
+  if(tab==='dk')return plDinhKy(el,ky);
+  const sel=bcCS(),{b,dkt,ok,loai,dtCS,gvCS,cpN,cpCS,DTG,TRA,DKM,T18,DN,okC,CPD,csDS,sumO,am,cg}=await plTinh(ky,sel);S.cache.pl2=b;S.cache.pl_dk=dkt;S.cache.pl_cpd=CPD;
   // 21/10 kế toán: chi phí theo cây danh mục như sheet P&L — 9 nhóm cha (bấm ▸ mở mục con), mục con 5.1 có cấp con
   const LO=b.loai.filter(l=>l.nhom_bc==='Chi vận hành & quản lí'),conCua=id=>LO.filter(l=>l.cha_id===id).sort((x,y)=>(x.thu_tu-y.thu_tu)||(x.id-y.id));
   const cay=id=>[id,...conCua(id).flatMap(c=>cay(c.id))];
@@ -6197,11 +6208,11 @@ const LOGIC2=[
  ['chung','Cửa sổ chi tiết','Mọi phiếu trong Thu chi & Ngân quỹ (chi, thu, điều chuyển, tạm ứng, vay) + công nợ, khoá kỳ mở CỬA SỔ LỚN giữa màn hình, cùng 1 kiểu.','Có khung Hoạt động (lịch sử + bình luận báo chuông) và nút Xuất phiếu Word (thu: người nộp ký; điều chuyển: người thực hiện; tạm ứng: người nhận ký).','19/10'],
  ['chi_so','Tổng quan · Doanh thu','Tổng tiền hoá đơn Kiot trạng thái Hoàn thành + Đang xử lý (đang giao), theo NGÀY HOÁ ĐƠN trong kỳ, mọi khách, mọi kênh.','Giống màn Tổng quan Kiot. Đơn đặt chưa giao chưa tính. Dòng nhỏ: tiền trả hàng trong kỳ.','19/10'],
  ['chi_so','Tổng quan · Doanh thu theo nhóm hàng','Dòng hàng hoá đơn Kiot (Hoàn thành + Đang xử lý) gom về nhóm cha; doanh thu dòng quy về tổng hoá đơn (đã trừ giảm giá hoá đơn). Mặc định 6 nhóm lớn + Khác; bấm Khác xem đủ. Bấm 1 nhóm hoặc Tổng cộng: tách Online / Offline; bấm Online / Offline (xem đơn): popup các hoá đơn cấu thành doanh số — ngày, khách, cơ sở, nguồn, phần doanh thu của nhóm trong hoá đơn; có bảng Theo nguồn, chuyển tab Tất cả / Online / Offline, bấm hoá đơn xem chi tiết, xuất Excel.','Online / offline theo nguồn đơn Kiot = kênh bán trên hoá đơn (trống thì lấy kênh đơn đặt hàng gắn). Bán trực tiếp / Khác / Chùa Vẻn / trống = offline; Facebook, Tiktok, Website, Shopee, Nến Bơ… = online — cùng luật P&L. Tỷ trọng dòng Online / Offline = % trong nhóm đó.','30/10'],
- ['chi_so','Tổng quan · Doanh thu thuần','Doanh thu − tiền khách trả hàng trong kỳ (phiếu trả hàng Kiot).','Khớp \"Doanh thu thuần\" Kiot. Tỷ lệ trả hàng = trả hàng ÷ doanh thu.','19/10'],
- ['chi_so','Tổng quan · Giá vốn hàng bán','Giá vốn Kiot của hàng đã bán − giá vốn hàng trả lại (theo tỷ lệ hoá đơn gốc).','Tỷ lệ giá vốn = giá vốn ÷ doanh thu thuần.','19/10'],
+ ['chi_so','Tổng quan · Doanh thu thuần','= TỔNG DOANH THU RÒNG của P&L: doanh thu − trả hàng − VAT tiền về TK công ty 599 (từ T9); T1–T8 theo 4 file P&L kế toán.','Cùng cách tính với P&L (dùng chung 1 hàm). Tỷ lệ trả hàng = trả hàng ÷ doanh thu.','04/11'],
+ ['chi_so','Tổng quan · Giá vốn hàng bán','= Giá vốn hàng bán của P&L: giá vốn Kiot hàng đã bán − giá vốn hàng trả lại; T1–T8 theo file P&L.','Tỷ lệ giá vốn = giá vốn ÷ doanh thu thuần.','04/11'],
  ['chi_so','Tổng quan · Lợi nhuận gộp','Doanh thu thuần − giá vốn.','Biên lợi nhuận gộp = lợi nhuận gộp ÷ doanh thu thuần.','19/10'],
- ['chi_so','Tổng quan · Chi phí hoạt động (hạch toán)','Phiếu chi đã xác nhận (chờ chi + đã chi), trừ tạm ứng, trả gốc vay và phiếu \"không hạch toán\"; ghi vào tháng phân bổ → tháng hạch toán ghi tay → tháng sử dụng dịch vụ.','Chọn 1 cơ sở: chỉ phần chi phí phân bổ cho cơ sở đó, KHÔNG gồm chi phí chung công ty. Tỷ lệ chi phí = chi phí ÷ doanh thu thuần.','19/10'],
- ['chi_so','Tổng quan · Lợi nhuận sau chi phí (ước tính)','Lợi nhuận gộp − chi phí hoạt động.','\"Ước tính\" vì giá vốn Kiot là gần đúng và chi phí phụ thuộc phân bổ. Biên lợi nhuận = lợi nhuận ÷ doanh thu thuần.','19/10'],
+ ['chi_so','Tổng quan · Chi phí hoạt động (hạch toán)','= TỔNG CHI PHÍ của P&L: phiếu chi đã xác nhận (chờ chi + đã chi), trừ tạm ứng, trả gốc vay và phiếu \"không hạch toán\", ghi vào tháng phân bổ → tháng hạch toán ghi tay → tháng sử dụng dịch vụ; cộng khoản định kỳ (thuê nhà, lương ước tính…) và lãi vay chia theo doanh thu cơ sở; T1–T8 theo file P&L.','Chọn 1 cơ sở: chỉ phần chi phí phân bổ cho cơ sở đó, KHÔNG gồm chi phí chung công ty. Tỷ lệ chi phí = chi phí ÷ doanh thu thuần.','04/11'],
+ ['chi_so','Tổng quan · Lợi nhuận sau chi phí (ước tính)','= LỢI NHUẬN RÒNG của P&L: lợi nhuận gộp − chi phí hoạt động − thuế (dòng thuế chỉ có ở file P&L T1–T8).','Tổng quan và P&L dùng chung 1 cách tính → luôn ra cùng số (trước 04/11 Tổng quan tính riêng, thiếu VAT 599, khoản định kỳ, lãi vay). Kỳ không trọn tháng: khoản định kỳ chỉ cộng tháng nằm trọn trong kỳ. Biên lợi nhuận = lợi nhuận ÷ doanh thu thuần.','04/11'],
  ['chi_so','Tổng quan · So với tháng trước','So với kỳ liền trước CÙNG ĐỘ DÀI (vd 1–19/10 so 1–19/9).','Mũi tên xanh = tốt (doanh thu / lợi nhuận tăng, chi phí / giá vốn giảm).','19/10'],
  ['chi_so','Tổng quan · Đã cọc · chưa đi hàng','Đơn đặt chưa hoàn thành / chưa huỷ có tiền cọc (trả trên đơn + trả trước của khách chia cho đơn cũ nhất trước).','Là doanh thu DỰ KIẾN, chưa nằm trong doanh thu. Báo giá không tiền không tính.','19/10'],
  ['chi_so','So với app MKT','App kế toán = DOANH THU (hàng đã giao, theo ngày hoá đơn). App MKT = DOANH SỐ CHỐT ĐƠN của Sale (đơn đặt theo ngày đặt + hoá đơn bán thẳng, theo khách gắn mã từ lead).','Lệch vì: đơn chốt tháng này giao tháng sau (MKT tính trước); đơn chốt tháng trước giao tháng này (kế toán tính sau); phạm vi khách. Số báo lãi lỗ / thuế dùng số kế toán.','19/10'],
