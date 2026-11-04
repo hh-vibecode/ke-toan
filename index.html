@@ -1097,8 +1097,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.318';
-const APP_VERSION='04/11/2026 14:21';
+const APP_SO='1.319';
+const APP_VERSION='04/11/2026 14:26';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4877,22 +4877,24 @@ async function pageBCVay(){const el=$('#page');el.innerHTML='<div class="m-empty
 
 // 8. HIỆU QUẢ THEO CƠ SỞ / KÊNH
 async function pageBCCs(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tính...</div>';
-  const [ky,d]=await qtLay('cs'),ks=['SD','HT','CT','chung'],o={};ks.forEach(k=>o[k]={dt:0,tra:0,gv:0,so:0,cp:0});
+  // 04/11/2026: doanh thu thuần / giá vốn / chi phí / lợi nhuận theo cơ sở = đúng số P&L (plTinh, dùng chung với P&L + Tổng quan); số hoá đơn + kênh vẫn từ kt_bc_qt — Monsieur Claude
+  const [[ky,d],P]=await Promise.all([qtLay('cs'),plTinh(bcKy(),null,true)]),ks=['SD','HT','CT',...(P.csDS.includes('TT')?['TT']:[]),'chung'],o={};ks.forEach(k=>o[k]={dt:0,tra:0,gv:0,so:0,cp:0});
   d.dt.forEach(x=>{const k=csCuaCN(x.cn)||'chung';o[k].dt+=+x.dt;o[k].gv+=+(x.gv||0);o[k].so+=+x.so});d.tra.forEach(x=>{const k=csCuaCN(x.cn)||'chung';o[k].tra+=+x.tra;o[k].gv-=+(x.gv||0)});   // trừ giá vốn hàng trả như P&L
   d.cp.forEach(x=>{const k=csCuaDV(x.dv)||'chung';o[k].cp+=+x.tien});o.chung.cp+=+d.cp_khong_pb;
-  const sel=bcCS(),hien=ks.filter(k=>k==='chung'?!sel:!sel||sel.includes(k));
-  const r=k=>{const x=o[k],th=x.dt-x.tra,lg=th-x.gv;return {k,dtg:x.dt,tra:x.tra,th,gv:x.gv,lg,cp:x.cp,ln:lg-x.cp,so:x.so}},R=hien.map(r);
+  const sel=bcCS(),hien=ks.filter(k=>k==='chung'||k==='TT'?!sel:!sel||sel.includes(k));
+  const sm=o=>Object.values(o||{}).reduce((a,v)=>a+v,0),cpK=new Set(P.CPD.map(n=>n[0])),cpCua=c=>Object.entries(P.cpCS).filter(([k])=>k.split('|')[0]===c&&cpK.has(k.split('|')[1])).reduce((a,[,v])=>a+sm(v),0);
+  const r=k=>{const th=sm(P.dtCS[k]),gv=sm(P.gvCS[k]),lg=th-gv,cp=cpCua(k),thue=sm(P.thueCS[k]);return {k,dtg:sm(P.dtgCS[k]),tra:sm(P.traCS[k]),vat:sm(P.vatCS[k]),th,gv,lg,cp,thue,ln:lg-cp-thue,so:o[k].so}},R=hien.map(r);
   const kenh={};d.kenh.filter(x=>qtCS(x.cn)).forEach(x=>{const z=kenh[x.kenh]=kenh[x.kenh]||{dt:0,so:0};z.dt+=+x.dt;z.so+=+x.so});const KD=Object.entries(kenh).sort((a,b)=>b[1].dt-a[1].dt),kt=sumBy(KD,([,v])=>v.dt);
   S.cache.bc_xuat=()=>xuatCSV('hieu-qua-co-so-'+ky.tu+'_'+ky.den,[['Cơ sở',x=>csTen3(x.k)],['Doanh thu thuần',x=>Math.round(x.th)],['Giá vốn',x=>Math.round(x.gv)],['Lợi nhuận gộp',x=>Math.round(x.lg)],['Chi phí (phân bổ)',x=>Math.round(x.cp)],['Lợi nhuận sau chi phí',x=>Math.round(x.ln)]],R);
   const T=k=>sumBy(R,x=>x[k]);
-  el.innerHTML=qtDau('Hiệu quả theo cơ sở / kênh','Doanh thu Kiot · chi phí theo đơn vị chịu chi phí')+`<div class="m-kpis m-k3">${qtK('info','Doanh thu thuần',fmt(T('th')),fmt(T('so'))+' hoá đơn')}
+  el.innerHTML=qtDau('Hiệu quả theo cơ sở / kênh','Cùng số P&L · chi phí theo đơn vị chịu chi phí')+`<div class="m-kpis m-k3">${qtK('info','Doanh thu thuần',fmt(T('th')),fmt(T('so'))+' hoá đơn')}
       ${qtK('ok','Lợi nhuận gộp',fmt(T('lg')),'biên '+qtPct(T('lg'),T('th')))}${qtK(T('ln')<0?'bad':'teal','Lợi nhuận sau chi phí',fmt(T('ln')),'biên '+qtPct(T('ln'),T('th')))}</div>
-    ${qtT('Theo cơ sở',[['Cơ sở','ten'],['Doanh thu','num'],['Trả hàng','num'],['Doanh thu thuần','num'],['Giá vốn','num'],['Lợi nhuận gộp','num'],['% gộp','num'],['Chi phí (phân bổ)','num'],['Lợi nhuận sau chi phí','num'],['% sau chi phí','num']],
-      R.map(x=>[`<b>${esc(csTen3(x.k))}</b>`,fmt(x.dtg),fmt(x.tra),fmt(x.th),fmt(x.gv),fmt(x.lg),qtPct(x.lg,x.th),fmt(x.cp),`<b class="${x.ln<0?'neg-t':''}">${fmt(x.ln)}</b>`,qtPct(x.ln,x.th)]),
-      ['Tổng',fmt(T('dtg')),fmt(T('tra')),fmt(T('th')),fmt(T('gv')),fmt(T('lg')),qtPct(T('lg'),T('th')),fmt(T('cp')),fmt(T('ln')),qtPct(T('ln'),T('th'))])}
+    ${qtT('Theo cơ sở',[['Cơ sở','ten'],['Doanh thu','num'],['Trả hàng','num'],['VAT TK 599','num'],['Doanh thu thuần','num'],['Giá vốn','num'],['Lợi nhuận gộp','num'],['% gộp','num'],['Chi phí (phân bổ)','num'],['Lợi nhuận sau chi phí','num'],['% sau chi phí','num']],
+      R.map(x=>[`<b>${esc(csTen3(x.k))}</b>`,fmt(x.dtg),fmt(x.tra),fmt(x.vat),fmt(x.th),fmt(x.gv),fmt(x.lg),qtPct(x.lg,x.th),fmt(x.cp),`<b class="${x.ln<0?'neg-t':''}">${fmt(x.ln)}</b>`,qtPct(x.ln,x.th)]),
+      ['Tổng',fmt(T('dtg')),fmt(T('tra')),fmt(T('vat')),fmt(T('th')),fmt(T('gv')),fmt(T('lg')),qtPct(T('lg'),T('th')),fmt(T('cp')),fmt(T('ln')),qtPct(T('ln'),T('th'))])}
     ${qtT('Theo kênh bán',[['Kênh','ten'],['Doanh thu (HĐ hoàn thành)','num'],['Tỷ trọng','num'],['Số hoá đơn','num'],['Giá trị TB / HĐ','num']],
       KD.map(([k,v])=>[esc(k),fmt(v.dt),qtPct(v.dt,kt),fmt(v.so),fmt(v.so?v.dt/v.so:0)]),['Tổng',fmt(kt),'100%',fmt(sumBy(KD,([,v])=>v.so)),''])}
-    <div class="muted bc-ghi">"Chung" = chi phí Tổng công ty / văn phòng / kho tổng chưa chia cho cửa hàng (và phiếu chưa chọn đơn vị) — chia ở tab Phân bổ của phiếu chi. Giá vốn theo giá vốn Kiot lúc bán. Doanh thu kênh chưa trừ trả hàng.</div>`}
+    <div class="muted bc-ghi">Số theo cơ sở = đúng P&L (doanh thu thuần đã trừ VAT TK 599; chi phí gồm khoản định kỳ + lãi vay chia theo doanh thu cơ sở; T1–T8 theo file P&L). "Chung" = chi phí Tổng công ty / văn phòng / kho tổng chưa chia cho cửa hàng. Doanh thu kênh chưa trừ trả hàng.</div>`}
 
 // 9. HOA HỒNG & THƯỞNG (28/10/2026, anh: "hoa hồng đẩy vào thành mục 9 của báo cáo quản trị")
 // • Sales ONLINE — chính sách riêng từng người (cấu hình kt_cai_dat 'hh_cau_hinh'): "le" = CS-VH04-16 Sales online lẻ (giật cấp phần vượt 1,5 / 1,8 / 2 / 2,5% — mốc 150 / 200 / 300tr);
