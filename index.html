@@ -1097,8 +1097,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.316';
-const APP_VERSION='04/11/2026 09:17';
+const APP_SO='1.317';
+const APP_VERSION='04/11/2026 14:04';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1724,16 +1724,28 @@ let XN_STACK=[];
 const xnAttr=(l,k,cn,t)=>xnDuoc(l)?`class="xn" onclick="event.stopPropagation();xemNhanh('${l}',${JSON.stringify(String(k??'')).replace(/"/g,'&quot;')},${cn?JSON.stringify(cn).replace(/"/g,'&quot;'):'null'},${JSON.stringify(t||'').replace(/"/g,'&quot;')})"`:'';
 // 03/11/2026 anh: "bấm vào 1 hoá đơn đang không ra cái gì, MISA xem được ảnh" → hoá đơn công ty (MISA): mở khung xem bản hoá đơn PDF.
 // Lấy qua Edge Function kt-meinvoice (HĐ ra) / kt-meinvoice-bot (HĐ vào): kiểm phiên + quyền, lần đầu tải từ MISA (5–8 giây) rồi lưu sẵn, lần sau mở ngay. — Monsieur Claude
-async function hdXem(so,hkd,ngay){
+// 03/11 (VIEC 262) anh: "mấy phần ảnh hoá đơn ấy, xem lại xem" → PDF đã lưu sẵn ở kt-chung-tu (kt_hd_pdf) thì mở ngay: hỏi thông tin HĐ (kt_hd_xem)
+// và xin link (Edge) CÙNG LÚC; Edge kt-meinvoice ký link bản lưu sẵn của cả 2 chiều, HĐ chưa có bản lưu mới lấy từ MISA (chiều vào → kt-meinvoice-bot).
+// Có mã MISA (phiếu đã gắn HĐ) thì gửi mã — không nhầm HĐ khác cùng số + ngày. Link sống 10 phút → giữ 9 phút, mở lại không gọi máy chủ.
+// Edge nghỉ lâu thì lần gọi đầu mất thêm ~1 giây khởi động → khi trang / phiếu hiện hoá đơn thì gõ cửa trước (tối đa 1 lần / 4 phút).
+const HD_LINK={},hdAm=()=>{if(Date.now()-(hdAm.t||0)<24e4)return;hdAm.t=Date.now();fetch(SB_URL+'/functions/v1/kt-meinvoice',{method:'OPTIONS'}).catch(()=>{})};
+async function hdXem(so,hkd,ngay,ma,chieu){
   const m=modal(`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h2 style="margin:0">Xem hoá đơn</h2><span class="muted" id="hd-xem-t" style="font-size:13px"></span><span style="margin-left:auto"></span><span id="hd-xem-nut"></span><button class="x" onclick="closeModal()">✕</button></div>
-    <div id="hd-xem" class="m-empty" style="height:78vh;display:flex;align-items:center;justify-content:center">Đang lấy hoá đơn từ MISA…</div>`);
+    <div id="hd-xem" class="m-empty" style="height:78vh;display:flex;align-items:center;justify-content:center">Đang mở hoá đơn…</div>`);
   const b=m.firstElementChild;b.style.width='min(1100px,96vw)';b.style.maxWidth='1100px';
-  try{const hd=await rpc('kt_hd_xem',{p_so_hd:String(so),p_hkd:hkd,p_ngay:ngay});if(!hd)throw new Error('Không tìm thấy hoá đơn');
-    const t=$('#hd-xem-t');if(t)t.textContent=[hd.ky_hieu,'số '+soHD(hd.so_hd),fmtD(hd.ngay),hd.nguoi_mua,fmt(hd.tong)+' đ'].filter(Boolean).join(' · ');
-    const r=await fetch(SB_URL+'/functions/v1/'+(hd.chieu==='vao'?'kt-meinvoice-bot':'kt-meinvoice'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({viec:'xem_hd',phien:S.phien,so_hd:String(so),hkd,ngay})});
-    const j=await r.json();if(!r.ok||!j.url)throw new Error(j.loi||'Lỗi '+r.status);
-    const el=$('#hd-xem');if(!el)return;el.className='';el.style.display='block';el.innerHTML=`<iframe src="${j.url}" style="width:100%;height:78vh;border:1px solid var(--border);border-radius:8px;background:#fff"></iframe>`;
-    const n=$('#hd-xem-nut');if(n)n.innerHTML=`<a class="m-btn out" href="${j.url}" target="_blank" rel="noopener">Mở tab mới</a>`;
+  const k=ma||[so,hkd,ngay].join('|'),c=HD_LINK[k];
+  const tieu=hd=>{const t=$('#hd-xem-t');if(t&&hd)t.textContent=[hd.ky_hieu,'số '+soHD(hd.so_hd),fmtD(hd.ngay),hd.nguoi_mua,fmt(hd.tong)+' đ'].filter(Boolean).join(' · ')};
+  const ve=u=>{const el=$('#hd-xem');if(!el)return;el.className='';el.style.display='block';el.innerHTML=`<iframe src="${u}" style="width:100%;height:78vh;border:1px solid var(--border);border-radius:8px;background:#fff"></iframe>`;
+    const n=$('#hd-xem-nut');if(n)n.innerHTML=`<a class="m-btn out" href="${u}" target="_blank" rel="noopener">Mở tab mới</a>`};
+  const goi=fn=>fetch(SB_URL+'/functions/v1/'+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({viec:'xem_hd',phien:S.phien,so_hd:String(so||''),hkd,ngay:ngay||null,ma:ma||null})})
+    .then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.loi||'Lỗi '+r.status);return j});
+  try{if(c&&c.han>Date.now()){tieu(c.hd);return ve(c.url)}
+    const pFn=goi('kt-meinvoice');pFn.catch(()=>{});
+    const hd=await rpc('kt_hd_xem',{p_so_hd:String(so||''),p_hkd:hkd,p_ngay:ngay||null,p_ma:ma||null});if(!hd)throw new Error('Không tìm thấy hoá đơn');tieu(hd);
+    if(!hd.pdf){const el=$('#hd-xem');if(el)el.textContent='Hoá đơn chưa có bản lưu sẵn — đang lấy từ MISA (5–10 giây)…'}
+    let j=await pFn;if(j.thieu)j=await goi(j.thieu==='vao'?'kt-meinvoice-bot':'kt-meinvoice');
+    if(!j.url)throw new Error(j.loi||'Không mở được hoá đơn');
+    HD_LINK[k]={url:j.url,hd,han:Date.now()+54e4};ve(j.url);
   }catch(e){const el=$('#hd-xem');if(el)el.innerHTML=`<span class="neg">${esc(e.message)}</span>`}}
 async function xemNhanh(loai,khoa,cn,tieu,giuStack){
   if(loai==='thue_hd'&&cn==='CTY')return hdXem(khoa,cn,String(tieu).slice(-10));
@@ -2176,7 +2188,7 @@ async function pageThu(){
   const ndGon=x=>String(x.noi_dung||'').replace(/ · Kiot \S+$/,'');
   const csTen=x=>{const c=csCuaDV(x.don_vi_id);return c?(CS3.find(z=>z[0]===c)||[])[1]:((dv(x.don_vi_id)||{}).ten||'')};
   const ttP=x=>x.trang_thai==='da_duyet'?pill('Đã thu','ok'):x.trang_thai==='cho_duyet'?pill('Chưa thu','warn'):pill('Đã huỷ','bad');
-  const cols=[['Ngày',x=>x.ngay],['Số phiếu',soPT],['Nội dung',ndGon],['Cơ sở',csTen],['Tài khoản',x=>(tk(x.tai_khoan_id)||{}).ten||''],['Loại thu',x=>(lo(x.loai_id)||{}).ten||''],['Số tiền',x=>x.so_tien],['Trạng thái',x=>x.trang_thai==='da_duyet'?'Đã thu':'Chưa thu'],['Nguồn',x=>NGUON[x.nguon]||x.nguon]];
+  const cols=[['Ngày',x=>x.ngay],['Số phiếu',soPT],['Nội dung',ndGon],['Cơ sở',csTen],['Tài khoản',x=>(tk(x.tai_khoan_id)||{}).ten||''],['Loại thu',x=>(lo(x.loai_id)||{}).ten||''],['Số tiền',x=>x.so_tien],['Trạng thái',x=>x.trang_thai==='da_duyet'?'Đã thu':'Chưa thu'],['Số hoá đơn',x=>soHDPhieu(hdtGhep(x.id))],['Nguồn',x=>NGUON[x.nguon]||x.nguon]];
   S.cache.thu_xuat=()=>xuatCSV('phieu-thu-'+S.tu+'_'+S.den,cols,l);
   const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.thu_tr=1;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=`${nhomSeg('thu',ds.filter(x=>csOK(x)&&tkOK(x)),'thu_tr')}<div class="m-kpis m-k3">
@@ -2471,6 +2483,8 @@ function hdThe(h,ten,nut){
   const tip=[ten,h.mst?'MST '+h.mst:'',h.cach?(h.cach==='tu_dong'?'Hệ thống tự gắn':'Gắn tay · '+(h.boi||'')):'',h.ly_do||''].filter(Boolean).join('\n');
   return `<div class="hdv-o" title="${esc(tip)}"><div class="hdv-h"><b>${esc(h.ky_hieu||'')} · số ${esc(h.so_hd||'')}</b><span class="muted">${fmtD(h.ngay||h.ngay_hd)}</span><b class="hdv-t">${fmt(h.tong)}</b>${nut?`<span class="hdv-b">${nut}</span>`:''}</div>
     <div class="hdv-n">${esc(ten||'')}${h.ly_do?` <span class="muted">· ${esc(String(h.ly_do).split(' · ').filter(t=>!/^khớp số tiền$|^HĐ (trước|sau)|^cùng ngày$/.test(t)).join(' · ')||'khớp số tiền')}</span>`:''}</div></div>`}
+// 03/11 (VIEC 262): chuỗi số hoá đơn của phiếu (ký hiệu + số, nhiều HĐ cách bằng dấu phẩy; chưa gắn MISA thì số khai tay) — Excel danh sách + file Word phiếu
+const soHDPhieu=(ds,tay)=>ds.map(h=>(h.ky_hieu?h.ky_hieu+' ':'')+soHD(h.so_hd)).join(', ')||tay||'';
 const hdNut=(t,f,c)=>`<button class="hdv-n2 ${c||''}" onclick="${f}">${t}</button>`;
 function hdvHtml(x){
   const g=coGhi('chi'),dg=hdvGhep(x.id),gy=dg.length?[]:hdvGoiY(x.id);
@@ -2479,8 +2493,9 @@ function hdvHtml(x){
   const o=g?`<div class="hdv-lb" id="pc-sohd-w0" style="${x.co_hd_do?'':'display:none'}">Số hoá đơn</div><div class="hdv-tim" id="pc-sohd-w" style="${x.co_hd_do?'':'display:none'}"><input class="m-in" id="pc-sohd" data-goc="${esc(goc)}" value="${esc(mac)}" placeholder="Số hoá đơn" oninput="hdTim(this,'vao',${x.id},${+x.so_tien||0})"><div class="hdv-kq"></div></div>${mac&&mac!==goc?'<div class="hdv-n muted">Số gợi ý — đúng thì bấm Lưu</div>':''}`
     :goc?`<div class="hdv-lb">Số hoá đơn</div><div><b>${esc(goc)}</b></div>`:'';
   if(!o&&!dg.length&&!gy.length)return '';
+  if(dg.length)hdAm();
   return `<div class="hdv">${o}${dg.length?ctHD('chi',x.id):''}${dg.map(h=>hdThe(h,h.ncc,
-      hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
+      hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}','${esc(h.hd_ma)}','vao')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
     ${gy.length?`<div class="hdv-lb">Hoá đơn MISA có thể khớp</div>`+gy.slice(0,3).map(h=>hdThe(h,h.ncc,g?hdNut('✓ Đúng',`ghepHD(${x.id},'${esc(h.hd_ma)}')`):'')).join(''):''}
     ${x.so_hd_do&&!dg.length?'<div class="hdv-n muted">Số khai tay — chưa thấy HĐ này trên MISA</div>':''}</div>`;
 }
@@ -2496,7 +2511,8 @@ const hdtGoiY=id=>(((S.cache.hdt||{}).goi_y)||[]).filter(h=>h.thu_id===id);
 function hdtHtml(x){
   const g=coGhi('thu'),dg=hdtGhep(x.id),gy=dg.length?[]:hdtGoiY(x.id);
   if(!dg.length&&!gy.length)return '<div class="muted" style="font-size:12.5px">Chưa thấy hoá đơn bán ra (meInvoice) khớp phiếu này</div>';
-  return `<div class="hdv"><div class="hdv-lb">${dg.length?'Số hoá đơn':'Có thể khớp'}</div>${dg.length?ctHD('thu',x.id):''}${dg.map(h=>hdThe(h,h.nguoi_mua,hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}')`)+(g?hdNut('✕',`ghepHDThu(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
+  if(dg.length)hdAm();
+  return `<div class="hdv"><div class="hdv-lb">${dg.length?'Số hoá đơn':'Có thể khớp'}</div>${dg.length?ctHD('thu',x.id):''}${dg.map(h=>hdThe(h,h.nguoi_mua,hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}','${esc(h.hd_ma)}','ra')`)+(g?hdNut('✕',`ghepHDThu(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
     ${gy.slice(0,3).map(h=>hdThe(h,h.nguoi_mua,g?hdNut('✓ Đúng',`ghepHDThu(${x.id},'${esc(h.hd_ma)}')`):'')).join('')}${g&&!dg.length?hdTimO('ra',x.id,x.so_tien):''}</div>`;
 }
 // 23/10 kế toán: "HĐ đã xuất mà chưa nối được với app thì làm gì để nối?" → gõ số HĐ / MST / tên người bán (mua) → bấm ✓ Gắn
@@ -2704,11 +2720,11 @@ async function pageChi(){
   const ttPill=x=>{const m={cho_duyet:['Chờ xác nhận','warn'],cho_gd:['Chờ xác nhận','warn'],cho_tt:['Chờ '+aiChi(x).toLowerCase()+' chi','warn'],da_tt:['Đã thanh toán','ok'],tu_choi:['Từ chối','bad'],tu_choi_tt:['Từ chối TT','bad']}[x.trang_thai]||['—',''];return pill(...m)};
   // 03/11 anh: "hoá đơn đã nhận thì ghi luôn mã hoá đơn ra và gắn file vô mã để click xem luôn, thay vì phải mở cả phiếu"
   const hdPill=x=>{if(!x.co_hd_do||x.ca_nhan)return pill('Không cần','');if(!x.hd_do_nhan)return hdvGoiY(x.id).length?pill('Có HĐ gợi ý','info'):pill('Chưa nhận','bad');
-    const dg=hdvGhep(x.id),so=dg.length?dg.map(h=>`<span class="m-link" title="Bấm xem hoá đơn" onclick="event.stopPropagation();hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}')">${esc((h.ky_hieu?h.ky_hieu+' · ':'')+soHD(h.so_hd))}</span>`).join('<br>'):x.so_hd_do?`<span class="muted" title="Số khai tay, chưa thấy trên MISA">${esc(x.so_hd_do)}</span>`:'';
+    const dg=hdvGhep(x.id),so=dg.length?dg.map(h=>`<span class="m-link" title="Bấm xem hoá đơn" onclick="event.stopPropagation();hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}','${esc(h.hd_ma)}','vao')">${esc((h.ky_hieu?h.ky_hieu+' · ':'')+soHD(h.so_hd))}</span>`).join('<br>'):x.so_hd_do?`<span class="muted" title="Số khai tay, chưa thấy trên MISA">${esc(x.so_hd_do)}</span>`:'';
     return pill('Đã nhận','ok')+(so?`<div style="font-size:11.5px;margin-top:3px;line-height:1.5">${so}</div>`:'')};
   const kiPill=x=>chuaKiot(x)?pill('Chưa cập nhật','warn'):x.kiot==='da_tao'?pill(x.nguon==='kiot'?'Từ Kiot':'Đã cập nhật','ok'):x.kiot==='khong_tao'?pill('Không tạo (4B)',''):pill('Không áp dụng','');
   const cols=[['Ngày sử dụng',x=>x.ngay_su_dung||x.ngay_de_nghi],['Ngày thanh toán',x=>x.ngay_tt||''],['Người nhận tiền mặt',x=>x.nguoi_nhan_tien||''],['Số phiếu',soPhieu],['Cơ sở',csTen],['Loại chi',x=>(lo(x.loai_id)||{}).ten||(nhomKiotChi(x)?'Kiot: '+nhomKiotChi(x):'')],['Nội dung',ndChi],['Nhà cung cấp',nccChi],['Người thụ hưởng',x=>x.thu_huong_ten||''],['Ngân hàng',x=>x.thu_huong_nh||''],['Số tài khoản',x=>x.thu_huong_stk||''],['Số tiền',x=>x.so_tien],
-    ['Trạng thái TT',x=>(TT_CHI[x.trang_thai]||[''])[0]],['Hoá đơn',x=>!x.co_hd_do?'Không cần':x.hd_do_nhan?'Đã nhận':'Chưa nhận'],['Số hoá đơn',x=>hdvGhep(x.id).map(h=>(h.ky_hieu?h.ky_hieu+' ':'')+soHD(h.so_hd)).join(', ')||x.so_hd_do||''],['Người đề nghị',x=>x.nguoi_de_nghi||'']];
+    ['Trạng thái TT',x=>(TT_CHI[x.trang_thai]||[''])[0]],['Hoá đơn',x=>!x.co_hd_do?'Không cần':x.hd_do_nhan?'Đã nhận':'Chưa nhận'],['Số hoá đơn',x=>soHDPhieu(hdvGhep(x.id),x.so_hd_do)],['Người đề nghị',x=>x.nguoi_de_nghi||'']];
   S.cache.chi_xuat=()=>xuatCSV('phieu-chi-'+S.tu+'_'+S.den,cols,l);
   const sel=(k,list,trong)=>`<select class="m-in" onchange="S.f.${k}=this.value;S.f.chi_tr=1;render()">${opts(list,f[k],trong)}</select>`;
   el.innerHTML=`<div>${nhomSeg('chi',ds.filter(x=>csOK(x)&&tkOK(x)&&trongKy(x,S.tu,denSD)),'chi_tr')}<div class="m-kpis m-k3">
@@ -3936,7 +3952,7 @@ function phieuChiHtml(x){const so='PC'+String(x.id).padStart(6,'0'),tm=(tk(x.tai
 <table style="border:none"><tr><td style="border:none;font-size:12pt"><b>TÂN HƯNG THỊNH</b></td><td style="border:none;text-align:right;font-size:12pt">Số: <b>${so}</b></td></tr></table>
 <p style="text-align:center;font-size:17pt;font-weight:bold;margin:22pt 0 2pt">GIẤY XÁC NHẬN NHẬN TIỀN</p>
 <p style="text-align:center;font-style:italic;margin:0 0 16pt">${ngay}</p>
-<table>${dong('Nội dung',esc(ndChi(x)))}${dong('Số tiền','<span style="font-size:14pt">'+fmt(x.so_tien)+' đồng</span>')}${dong('Bằng chữ','<i>'+esc(soChu(x.so_tien))+'</i>')}
+<table>${dong('Nội dung',esc(ndChi(x)))}${(h=>h?dong('Số hoá đơn',esc(h)):'')(soHDPhieu(hdvGhep(x.id),x.so_hd_do))}${dong('Số tiền','<span style="font-size:14pt">'+fmt(x.so_tien)+' đồng</span>')}${dong('Bằng chữ','<i>'+esc(soChu(x.so_tien))+'</i>')}
 ${dong('Hình thức',tm?'Tiền mặt':x.thu_huong_nh===DONG_APP?DONG_APP:'Chuyển khoản')}${x.thu_huong_nh===DONG_APP&&!nhan?'':dong('Người nhận tiền',esc(nhan))}${!tm&&x.thu_huong_stk?dong('Nhận vào tài khoản',esc([x.thu_huong_nh,x.thu_huong_stk].filter(Boolean).join(' — '))):''}
 ${dong('Người đề nghị',esc(x.nguoi_de_nghi||''))}${dong('Bộ phận',esc((dv(x.bo_phan_id)||{}).ten||''))}${dong('Ngày đề nghị',fmtD(x.ngay_de_nghi))}</table>
 <p style="margin:14pt 0 0">Tôi đã nhận đủ số tiền nêu trên.</p>
@@ -4013,7 +4029,7 @@ function taiWord(ten,html){const b=new Blob(['﻿',html],{type:'application/mswo
 const tienO=v=>'<span style="font-size:14pt">'+fmt(v)+' đồng</span>';
 function xuatWordThu(id){const x=(S.cache.thu||[]).find(t=>t.id===id);if(!x)return;const so='PT'+String(x.id).padStart(6,'0'),t=tk(x.tai_khoan_id)||{};
   taiWord(so+'_xac-nhan-nop-tien',phieuWord({so,tieu_de:'GIẤY XÁC NHẬN NỘP TIỀN',ngay:x.ngay,ky:'NGƯỜI NỘP TIỀN',cam_ket:'Đã nộp đủ số tiền nêu trên.',
-    dong:[['Nội dung',esc(String(x.noi_dung||'').replace(/ · Kiot \S+$/,''))],['Số tiền',tienO(x.so_tien)],['Bằng chữ','<i>'+esc(soChu(x.so_tien))+'</i>'],['Hình thức',t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản'],['Loại thu',esc((lo(x.loai_id)||{}).ten||'')],['Cơ sở',esc((dv(x.don_vi_id)||{}).ten||'')]]}))}
+    dong:[['Nội dung',esc(String(x.noi_dung||'').replace(/ · Kiot \S+$/,''))],['Số hoá đơn',esc(soHDPhieu(hdtGhep(x.id)))],['Số tiền',tienO(x.so_tien)],['Bằng chữ','<i>'+esc(soChu(x.so_tien))+'</i>'],['Hình thức',t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản'],['Loại thu',esc((lo(x.loai_id)||{}).ten||'')],['Cơ sở',esc((dv(x.don_vi_id)||{}).ten||'')]]}))}
 function xuatWordDC(id){const x=(S.cache.dc||[]).find(t=>t.id===id);if(!x)return;const so='DC'+String(x.id).padStart(6,'0');
   taiWord(so+'_dieu-chuyen',phieuWord({so,tieu_de:'PHIẾU ĐIỀU CHUYỂN TIỀN',ngay:x.ngay,ky:'NGƯỜI THỰC HIỆN',
     dong:[['Nội dung',esc(x.noi_dung||'')],['Số tiền',tienO(x.so_tien)],['Bằng chữ','<i>'+esc(soChu(x.so_tien))+'</i>'],['Từ',esc((tk(x.tk_di_id)||{}).loai==='tien_mat'?'Tiền mặt':'Tài khoản ngân hàng')],['Đến',esc((tk(x.tk_nhan_id)||{}).loai==='tien_mat'?'Tiền mặt':'Tài khoản ngân hàng')],['Ghi chú',esc(x.ghi_chu||'')]]}))}
@@ -5487,7 +5503,7 @@ const IC_T={vao:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 
   xl:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3h-4l-.3 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.3-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>',
   kho:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l9-6 9 6v12H3zm4 4v6h4v-6zm6 0v6h4v-6z"/></svg>',dc:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h12v20H6zm3 5v2h6V7zm0 4v2h6v-2zm0 4v2h4v-2z"/></svg>',
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>'};
-const soHD=v=>String(v||'').replace(/.0+$/,'');   // số HĐ 3TShop bị Excel lưu dạng 957.0
+const soHD=v=>String(v||'').replace(/\.0+$/,'');   // 03/11: trước thiếu \ trước dấu chấm → cắt nhầm số HĐ tận cùng 0 (320 → 3) — Monsieur Claude · số HĐ 3TShop bị Excel lưu dạng 957.0
 const laDC=x=>/điều chỉnh|thay thế/i.test(String(x.ghi_chu||''));
 async function pageThueTQ(){
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tính...</div>';
@@ -5518,6 +5534,7 @@ async function pageHDList(kieu){
   const el=$('#page'),chieu=kieu==='vao'?'vao':'ra',k='hd_'+kieu,f=S.f;el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const ds=(await rpc('kt_thue_hd_ds',{p_tu:S.tu,p_den:S.den,p_chieu:chieu,p_hkd:f[k+'_dv']||null,p_tim:f[k+'_q']||null})).filter(x=>dvThueOK(x.hkd)&&(kieu!=='xl'||laDC(x)));
   const moi=f[k+'_moi']||20,[a,b,tr]=phanTrang(k,ds.length,moi),trang=ds.slice(a,b),dt=kieu==='vao'?'Nhà cung cấp':'Khách hàng';
+  if(ds.some(x=>x.hkd==='CTY'))hdAm();
   const cols=[['Ngày',x=>x.ngay],['Ký hiệu',x=>x.ky_hieu||''],['Số HĐ',x=>x.so_hd||''],[dt,x=>x.doi_tac||''],['MST',x=>x.mst||''],['Chưa thuế',x=>x.thanh_tien],['Thuế',x=>x.tien_thue],['Tổng',x=>x.tong],['Đơn vị',x=>dvThueTen(x.hkd)],['Nguồn',x=>x.nguon],['Ghi chú',x=>x.ghi_chu||'']];
   S.cache[k+'_xuat']=()=>xuatCSV(k+'-'+S.tu+'_'+S.den,cols,ds);
   const tt=x=>laDC(x)?pill(/thay thế/i.test(x.ghi_chu)?'Thay thế':'Điều chỉnh','warn'):pill(kieu==='vao'?'Đã nhận':'Đã phát hành','ok');
@@ -5530,7 +5547,7 @@ async function pageHDList(kieu){
       <span style="margin-left:auto"></span><button class="m-btn out" onclick="S.cache['${k}_xuat']()">${IC_XLS} Xuất Excel</button></div>
     <div class="m-card"><div class="m-ch">${ten} <span class="m-cnt">(${fmt(ds.length)} hóa đơn · ${fmt(sumBy(ds,x=>x.thanh_tien))} chưa thuế)</span></div>
       <div class="scroll"><table class="m-t"><tr><th class="c"><input type="checkbox"></th><th>Ngày</th><th>Ký hiệu</th><th>Số HĐ</th><th>${dt}</th><th>MST</th><th class="num">Chưa thuế</th><th class="num">Thuế</th><th class="num">Tổng thanh toán</th><th>Đơn vị</th><th>Nguồn</th><th class="c">Trạng thái</th></tr>
-      ${trang.map(x=>`<tr class="xn" onclick="xemNhanh('thue_hd','${esc(x.so_hd||'')}','${x.hkd}','${x.ngay}')"><td class="c"><input type="checkbox" onclick="event.stopPropagation()"></td><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.ky_hieu||'')}</td><td class="nw m-link">${esc(soHD(x.so_hd))}</td><td class="ten" title="${esc(x.ghi_chu||'')}">${esc(x.doi_tac||'')}${x.so_dong>1?` <span class="muted">· ${x.so_dong} dòng</span>`:''}</td>
+      ${trang.map(x=>`<tr class="xn" onclick="${x.hkd==='CTY'?`hdXem('${esc(x.so_hd||'')}','CTY','${x.ngay}','${esc(x.ma||'')}','${chieu}')`:`xemNhanh('thue_hd','${esc(x.so_hd||'')}','${x.hkd}','${x.ngay}')`}"><td class="c"><input type="checkbox" onclick="event.stopPropagation()"></td><td class="nw">${fmtD(x.ngay)}</td><td class="nw">${esc(x.ky_hieu||'')}</td><td class="nw m-link">${esc(soHD(x.so_hd))}</td><td class="ten" title="${esc(x.ghi_chu||'')}">${esc(x.doi_tac||'')}${x.so_dong>1?` <span class="muted">· ${x.so_dong} dòng</span>`:''}</td>
         <td class="nw">${esc(x.mst||'')}</td><td class="num">${fmt(x.thanh_tien)}</td><td class="num">${fmt(x.tien_thue)}</td><td class="num"><b>${fmt(x.tong)}</b></td><td class="nw">${esc(dvThueTen(x.hkd))}</td><td class="nw">${esc(x.nguon)}</td><td class="c">${tt(x)}</td></tr>`).join('')||'<tr><td colspan="12" class="m-empty">Không có hóa đơn trong kỳ</td></tr>'}</table></div>
       ${thanhTrang(k,ds.length,moi,tr,'hóa đơn')}</div>`;
 }

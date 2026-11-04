@@ -109,18 +109,21 @@ async function taiPdfXem(A: any, subId: string, orgs: any[], batDau: number) {
   const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0 }, hetGio = batDau + 115e3;
   for (let i = 0; i < ds.length && Date.now() < hetGio - 15e3; i += 5) {
     await Promise.all(ds.slice(i, i + 5).map(async (x: any) => {
-      try { const pdf = await pdfMot(A, subId, orgs, x.ma, hetGio); if (pdf && await luuPdf('vao', x.ma, pdf)) m.luu++; else m.loi++; } catch (_) { m.loi++; }
+      const hong = (ly: string) => { m.loi++; (m.ma_loi ||= []).push(`${x.ky_hieu || ''} ${x.so_hd || ''}: ${ly}`.slice(0, 120)); };   // ghi HĐ nào lỗi để soát — Monsieur Claude
+      try { const pdf = await pdfMot(A, subId, orgs, x.ma, hetGio); if (!pdf) hong('MISA không trả file'); else if (await luuPdf('vao', x.ma, pdf)) m.luu++; else hong('lưu Storage lỗi'); } catch (e) { hong(String(e)); }
     }));
   }
   return m;
 }
 async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>) {
   try {
-    const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay }) });
+    const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay || null, p_ma: b.ma || null }) });
     const hd = await q.json(); if (!q.ok) throw new Error(hd.message || 'Không có quyền');
     if (!hd || !hd.ma) throw new Error('Hoá đơn này không có mã trên MISA');
     const duong = `hd/${hd.chieu}/${String(hd.ma).replace(/[^A-Za-z0-9_-]/g, '_')}.pdf`;
-    let url = await kyLink(duong);
+    // 03/11: HĐ ra chưa có bản lưu → trả thieu để trang gọi kt-meinvoice (hàm này chỉ tải được HĐ vào từ MISA Bot). Monsieur Claude
+    let url = hd.pdf === false ? null : await kyLink(duong);
+    if (!url && hd.chieu !== 'vao') return traJ({ thieu: hd.chieu, hd });
     if (!url) {
       const pdf = await taiPdf(String(hd.ma));
       if (!pdf) throw new Error('MISA chưa trả được bản hoá đơn, thử lại sau ít phút');

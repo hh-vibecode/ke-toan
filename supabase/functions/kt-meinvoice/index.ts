@@ -10,6 +10,9 @@ const sbH = { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'applic
 const sb = (duong: string, body: unknown, prefer = 'return=minimal') => fetch(SB + '/rest/v1/' + duong, { method: 'POST', headers: { ...sbH, Prefer: prefer }, body: JSON.stringify(body) });
 const doc = (x: any) => { try { return typeof x === 'string' ? JSON.parse(x) : x; } catch (_) { return x; } };
 const ngu = (ms: number) => new Promise(r => setTimeout(r, ms));
+// 03/11/2026: giải base64 PDF bằng data: URL (máy giải gốc) — trước dùng Uint8Array.from(atob(), fn) gọi hàm từng ký tự,
+// ~28 file / lượt là vượt CPU Edge (546 WORKER_RESOURCE_LIMIT) → hàm chết trước khi ghi nhật ký tai_pdf_hd_ra. Monsieur Claude
+const b64Pdf = async (s: string) => new Uint8Array(await (await fetch('data:application/pdf;base64,' + s)).arrayBuffer());
 
 // MISA thỉnh thoảng trả 500 / rớt kết nối giữa chừng → thử lại
 async function goi(url: string, opt: RequestInit) {
@@ -33,7 +36,7 @@ async function taiPdfRa(A: any, n: number, batDau: number) {
       const b64 = f ? (f.Data || f.data) : null;   // thực tế MISA trả "Data" (tài liệu ghi "data")
       if (!f || !b64 || f.ErrorCode) { m.loi++; if (f?.ErrorCode) m.loi_cuoi = f.ErrorCode; continue; }
       try {
-        const pdf = Uint8Array.from(atob(String(b64)), c => c.charCodeAt(0));
+        const pdf = await b64Pdf(String(b64));
         const duong = `thu/${x.thu_id}/misa_${x.hd_ma}.pdf`;
         const up = await fetch(`${SB}/storage/v1/object/kt-chung-tu/${duong}`, { method: 'POST', headers: { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/pdf', 'x-upsert': 'true' }, body: pdf });
         if (!up.ok) { m.loi++; continue; }
@@ -73,19 +76,22 @@ async function taiPdfXem(A: any, batDau: number) {
     catch (e) { m.loi += nhom.length; m.loi_cuoi = String(e).slice(0, 160); continue; }
     for (const x of nhom) {
       const f = kq.find(k => String(k.TransactionID) === String(x.ma)), b64 = f ? (f.Data || f.data) : null;
-      if (!b64 || f.ErrorCode) { m.loi++; continue; }
-      try { if (await luuPdf('ra', x.ma, Uint8Array.from(atob(String(b64)), c => c.charCodeAt(0)))) m.luu++; else m.loi++; } catch (_) { m.loi++; }
+      const hong = (ly: string) => { m.loi++; (m.ma_loi ||= []).push(`${x.ky_hieu || ''} ${x.so_hd || ''}: ${ly}`.slice(0, 120)); };
+      if (!b64 || f.ErrorCode) { hong(f?.ErrorCode || 'MISA không trả file'); continue; }
+      try { if (await luuPdf('ra', x.ma, await b64Pdf(String(b64)))) m.luu++; else hong('lưu Storage lỗi'); } catch (e) { hong(String(e)); }
     }
   }
   return m;
 }
 async function xemHd(b: any, taiPdf: (ma: string) => Promise<Uint8Array | null>) {
   try {
-    const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay }) });
+    const q = await fetch(SB + '/rest/v1/rpc/kt_hd_xem', { method: 'POST', headers: sbH, body: JSON.stringify({ p_phien: b.phien, p_so_hd: String(b.so_hd || ''), p_hkd: String(b.hkd || ''), p_ngay: b.ngay || null, p_ma: b.ma || null }) });
     const hd = await q.json(); if (!q.ok) throw new Error(hd.message || 'Không có quyền');
     if (!hd || !hd.ma) throw new Error('Hoá đơn này không có mã trên MISA');
     const duong = `hd/${hd.chieu}/${String(hd.ma).replace(/[^A-Za-z0-9_-]/g, '_')}.pdf`;
-    let url = await kyLink(duong);
+    // 03/11: bản lưu sẵn (kt_hd_pdf) của CẢ 2 chiều ký link tại đây; HĐ vào chưa có bản lưu → trả thieu để trang gọi kt-meinvoice-bot. Monsieur Claude
+    let url = hd.pdf === false ? null : await kyLink(duong);
+    if (!url && hd.chieu !== 'ra') return traJ({ thieu: hd.chieu, hd });
     if (!url) {
       const pdf = await taiPdf(String(hd.ma));
       if (!pdf) throw new Error('MISA chưa trả được bản hoá đơn, thử lại sau ít phút');
@@ -102,7 +108,7 @@ async function pdfRaMot(ma: string) {
   const A = { ...H, Authorization: 'Bearer ' + t.Data };
   const j = await goi(MI + '/invoice/Download?downloadDataType=Pdf&invoiceWithCode=true', { method: 'POST', headers: A, body: JSON.stringify([ma]) });
   const f = ((doc(j.Data) || []) as any[]).find(k => String(k.TransactionID) === ma), b64 = f ? (f.Data || f.data) : null;
-  return b64 && !f.ErrorCode ? Uint8Array.from(atob(String(b64)), c => c.charCodeAt(0)) : null;
+  return b64 && !f.ErrorCode ? await b64Pdf(String(b64)) : null;
 }
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
