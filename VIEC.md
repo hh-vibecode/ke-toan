@@ -149,6 +149,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 - **Phát sinh còn trên sheet cũ: kéo tạm vào, gắn thẻ "Kéo từ sheet cũ"**, kế toán điền dần (anh chốt 08/10).
 - **Hạn chế nhập tay tối đa**: cái gì chọn được thì danh sách chọn, cái gì kéo được thì kéo tự động (anh chốt 05/10).
 - **MENU TRÁI 7 nghiệp vụ** (anh chốt 12/10, thay menu ngang Xero): bấm nghiệp vụ → mở thẳng màn thao tác, mục con xổ dưới; chuông / tài khoản ở dải trên. Phần còn lại giữ theme XERO (anh chốt 05/10): dải tiêu đề trang trắng, tab trạng thái gạch chân, ô tài khoản (số dư sổ sách / sao kê / Đối soát), Tiền vào và ra, Chi phải trả, Công nợ phải thu theo tuổi nợ, ngăn kéo bên phải. **Font vẫn Montserrat.** KHÔNG giống GG Sheet.
+- **Xuất Excel có 2 nơi — thêm / đổi cột phải sửa CẢ HAI** (anh 05/11/2026, sau lỗi VIEC 274): (1) nút Xuất Excel trên từng danh sách (phiếu thu, phiếu chi, hoá đơn…); (2) trang Xuất dữ liệu — file "Du-lieu-ke-toan" nhiều sheet (XU_LAY trong index.html), đây là file anh / kế toán hay dùng. Test bằng cách chạy XU_LAY của sheet đó, không chỉ nút danh sách.
 
 ## 4. PHỤ THUỘC CHÉO (cần app khác làm — nhờ anh chuyển lời)
 
