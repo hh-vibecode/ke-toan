@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.330';
-const APP_VERSION='05/11/2026 19:34';
+const APP_SO='1.331';
+const APP_VERSION='05/11/2026 21:16';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5051,10 +5051,10 @@ function hhTinh(d,ms){
       cach=(p.cs==='si'&&dt<moc?'doanh thu '+fmtTr(dt)+' '+cd:'doanh thu '+fmtTr(dt)+' → '+cd)+' → tỷ lệ '+(Math.round(tl*1e4)/100).toLocaleString('vi-VN')+'% × thực thu '+fmtTr(thu)}
     const x={m,p,dt,thu,hh,tl,moc,ht,cach:cach||'—',nv:onl?[]:[...new Set(H.map(h=>h.nv))],H,dsDT:onl?[]:dsBan(m,i)};SA.push(x);
     const o=onl?ng(p.ten,'vh',p.vt||'Hỗ trợ vận hành'):ng(p.ten,'sales','Sales online');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,onl?'Đơn online':'Bán',thu>0?hh*h.thu/thu:0))}));
-  // A2. Sales Admin / CSKH (cs 'ht_ds', QC-VH03-18): phạm vi = người hưởng sales trong cấu hình (pv); doanh số = thực thu (đã trừ VAT 599) của phạm vi trong tháng
+  // A2. Sales Admin / CSKH (cs 'ht_ds', QC-VH03-18): phạm vi = người hưởng sales trong cấu hình (pv); mốc = doanh thu hoá đơn của phạm vi trong tháng, chung số với Nguyên (anh 05/11)
   ms.forEach(m=>CH.nguoi.forEach(p=>{if(p.cs!=='ht_ds'||(p.tu&&m<String(p.tu).slice(0,7)))return;const ds=SA.filter(x=>x.m===m&&(p.pv||[]).includes(x.p.ten));if(!ds.length)return;
-    const H=ds.flatMap(x=>x.H),thu=sumBy(ds,x=>x.thu),dt=sumBy(ds,x=>x.dt),hh=hhHtds(thu);
-    const x={m,p,dt,thu,hh,tl:null,moc:HH_HTDS[1][0],ht:false,cach:'thực thu phạm vi '+fmtTr(thu)+(hh?' → mức '+fmt(hh):' — dưới 300tr chưa thưởng'),nv:[...new Set(ds.flatMap(z=>z.nv))],H,dsDT:[]};SA.push(x);
+    const H=ds.flatMap(x=>x.H),thu=sumBy(ds,x=>x.thu),dt=sumBy(ds,x=>x.dt),hh=hhHtds(dt);
+    const x={m,p,dt,thu,hh,tl:null,moc:HH_HTDS[1][0],ht:false,cach:'doanh thu phạm vi '+fmtTr(dt)+(hh?' → mức '+fmt(hh):' — dưới 300tr chưa thưởng'),nv:[...new Set(ds.flatMap(z=>z.nv))],H,dsDT:[]};SA.push(x);
     const o=ng(p.ten,'sales',p.vt||'Sales Admin');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,'Hỗ trợ doanh số',thu>0?hh*h.thu/thu:0))}));
   // B. quỹ cửa hàng — khách trực tiếp theo nhóm sản phẩm, đơn sales online 1,5%; chia chức danh, nhân viên theo ngày công
   const TL={HT:{ql:.4,gs:.25,nv:.35},CT:{ql:.4,gs:0,nv:.6}},CHs=[];
@@ -5173,14 +5173,14 @@ const hhSp=h=>h.sp?`<div class="muted" style="font-size:11px;max-width:320px;whi
 const hhCach=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?['Tiền về trong tháng của đơn online (mọi cơ sở, gồm cọc) × '+((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% — '+(x.p.vt||'hỗ trợ vận hành').toLowerCase(),
     'Đơn online theo đúng báo cáo MKT: khách online (từng mua qua kênh online Facebook / Tiktok / Shopee / Website… hoặc chốt qua fanpage Pancake)',
     'và đơn trong 1 tháng tròn từ đơn đầu tiên, hoặc trong 30 ngày từ lần khách nhắn trang cuối',
-    'Không tính: đơn Shopee (anh 03/11), đơn mua lại (khách online quá các mốc trên), khách offline, khách vãng lai, đơn trước 1/6/2026'].join('\n'):x.p.cs==='ht_ds'?'Thưởng hỗ trợ doanh số (QC-VH03-18-2026): mức cố định theo thực thu (đã trừ VAT TK 599) của phạm vi '+(x.p.pv||[]).join(', ')+' trong tháng — 300tr 500k · 600tr 1tr · 900tr 1,5tr · 1,2 tỷ 2tr · 1,5 tỷ 2,5tr · từ 2 tỷ 3,5tr; 1 mức cao nhất / tháng':x.p.cs==='si'?'Mốc theo doanh thu hoá đơn trong tháng (dưới mốc không tính), giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales mảng buôn':'Mốc theo doanh thu hoá đơn trong tháng, giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales online lẻ'),
+    'Không tính: đơn Shopee (anh 03/11), đơn mua lại (khách online quá các mốc trên), khách offline, khách vãng lai, đơn trước 1/6/2026'].join('\n'):x.p.cs==='ht_ds'?'Thưởng hỗ trợ doanh số (QC-VH03-18-2026): mức cố định theo doanh thu hoá đơn (chung số với sales) của phạm vi '+(x.p.pv||[]).join(', ')+' trong tháng — 300tr 500k · 600tr 1tr · 900tr 1,5tr · 1,2 tỷ 2tr · 1,5 tỷ 2,5tr · từ 2 tỷ 3,5tr; 1 mức cao nhất / tháng':x.p.cs==='si'?'Mốc theo doanh thu hoá đơn trong tháng (dưới mốc không tính), giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales mảng buôn':'Mốc theo doanh thu hoá đơn trong tháng, giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales online lẻ'),
     ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='tl'?' (cố định theo biên bản họp cửa hàng)':x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
     ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
 // 02/11 anh: "ghi tóm tắt chính sách ngay dưới các vị trí ấy, để t xem m hiểu có đúng không" — 1 dòng dưới vị trí từng người, dòng nhóm ghi quỹ hình thành thế nào
 const HH_QUY={HT:'Quỹ = khách trực tiếp: nhóm biên cao 2%, biên thấp 0,8% · đơn sales online cửa hàng xử lý 1,5%',CT:'Quỹ = khách trực tiếp: mọi nhóm 2% · đơn sales online cửa hàng xử lý 1,5%'};
 // 02/11 anh: "tách riêng 1 cột logic tính hoa hồng, xuống dòng cho cân, không để dài" — mỗi ý 1 dòng ngắn
 const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online (báo cáo MKT)','Tháng đầu của khách / ≤ 30 ngày từ lần nhắn trang','Không tính đơn Shopee, đơn mua lại']
-    :x.p.cs==='ht_ds'?['Thưởng cố định theo bậc thực thu','Phạm vi: '+(x.p.pv||[]).join(', '),'Từ 300tr 500k · tối đa 3,5tr / tháng']
+    :x.p.cs==='ht_ds'?['Thưởng cố định theo bậc doanh thu','Phạm vi: '+(x.p.pv||[]).join(', '),'Từ 300tr 500k · tối đa 3,5tr / tháng']
     :x.p.cs==='si'?['Mốc theo doanh thu, đạt '+fmtTr(x.moc)+' mới tính','600tr đầu 1,5% · đến 1,2 tỷ 2% · trên 2,5%','Trả = thực thu × tỷ lệ bình quân']
     :['Mốc theo doanh thu, giật cấp phần vượt','Đến 150tr 1,5% · đến 200tr 1,8%','Đến 300tr 2% · trên 300tr 2,5%','Trả = thực thu × tỷ lệ bình quân']),
     ...o.chiaQuy.map(x=>Math.round(x.tl*100)+'% quỹ '+csTen3(x.cs)+(x.k==='tl'?' (biên bản họp)':x.k==='nv'?' × ngày công':x.tc>1?' ÷ '+x.tc+' người':'')),
@@ -5188,10 +5188,10 @@ const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.
 const hhTomTat=o=>hhCachDong(o).join(' · ');
 // 04/11/2026 anh: "sale có thêm phần doanh thu nữa, tính trên các mốc luôn, kê sẵn các mốc ra ở 1 bên kiểu chú thích" — để sales biết mình đạt tới đâu, còn bao nhiêu lên mốc
 const hhPt=t=>(t*100).toLocaleString('vi-VN')+'%';
-function hhHtdsHTML(x){const i=HH_HTDS.findIndex(([a],k)=>x.thu>=a&&(k===HH_HTDS.length-1||x.thu<HH_HTDS[k+1][0])),toi=HH_HTDS[i+1];
-  return `<div class="hh-moc"><div class="hh-moc-l"><div class="hh-moc-k"><div><span>Thực thu phạm vi${x.m?' · '+qtThg(x.m):''}</span><b>${fmt(x.thu)}</b></div><div><span>Mức thưởng</span><b>${x.hh?fmt(x.hh):'Chưa đạt 300tr'}</b></div><div><span>Doanh thu phạm vi (tham khảo)</span><b>${fmt(x.dt)}</b></div></div>
-    <div class="hh-moc-lg">Phạm vi: ${esc((x.p.pv||[]).join(', '))} · thực thu đã trừ VAT tiền về TK công ty 599 · QC-VH03-18-2026 áp từ ${esc(qtThg(String(x.p.tu||'2026-09').slice(0,7)))}</div>
-    <div class="hh-moc-g">${toi?`Còn <b>${fmt(toi[0]-x.thu)}</b> thực thu để lên mức ${fmt(toi[1])}`:'Đã ở mức cao nhất'}</div></div>
+function hhHtdsHTML(x){const i=HH_HTDS.findIndex(([a],k)=>x.dt>=a&&(k===HH_HTDS.length-1||x.dt<HH_HTDS[k+1][0])),toi=HH_HTDS[i+1];
+  return `<div class="hh-moc"><div class="hh-moc-l"><div class="hh-moc-k"><div><span>Doanh thu phạm vi${x.m?' · '+qtThg(x.m):''}</span><b>${fmt(x.dt)}</b></div><div><span>Mức thưởng</span><b>${x.hh?fmt(x.hh):'Chưa đạt 300tr'}</b></div><div><span>Thực thu phạm vi (tham khảo)</span><b>${fmt(x.thu)}</b></div></div>
+    <div class="hh-moc-lg">Phạm vi: ${esc((x.p.pv||[]).join(', '))} · mốc theo doanh thu hoá đơn, chung số với sales · QC-VH03-18-2026 áp từ ${esc(qtThg(String(x.p.tu||'2026-09').slice(0,7)))}</div>
+    <div class="hh-moc-g">${toi?`Còn <b>${fmt(toi[0]-x.dt)}</b> doanh thu để lên mức ${fmt(toi[1])}`:'Đã ở mức cao nhất'}</div></div>
     <div class="hh-moc-r"><div class="hh-moc-rh">Bậc thưởng hỗ trợ doanh số</div>${HH_HTDS.map(([a,t],k)=>`<div class="${k===i?'on':''}"><span>${k===0?'Dưới 300tr':k===HH_HTDS.length-1?'Từ '+fmtTr(a):fmtTr(a)+' – '+fmtTr(HH_HTDS[k+1][0])}</span><b>${t?fmt(t):'không thưởng'}</b></div>`).join('')}<div class="hh-moc-rg">1 mức cao nhất / tháng, không cộng dồn · tối đa 3.500.000</div></div></div>`}
 function hhMocHTML(x){const si=x.p.cs==='si',M=si?HH_MOC_SI:HH_MOC_LE,thu=+x.dt||0,chua=si&&thu<x.moc;   // thu = doanh thu xét mốc (04/11)
   const i=chua?-1:M.findIndex(([a,b])=>thu>=a&&thu<b),moc=si?[x.moc,...M.slice(1).map(m=>m[0]).filter(v=>v>x.moc)]:M.slice(1).map(m=>m[0]),toi=moc.find(v=>v>thu);
