@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.326';
-const APP_VERSION='05/11/2026 17:37';
+const APP_SO='1.327';
+const APP_VERSION='05/11/2026 17:39';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2203,8 +2203,7 @@ async function pageThu(){
   const nen=ds.filter(x=>theoNhom('thu',x)&&csOK(x)&&tkOK(x)),nen0=ds0.filter(x=>theoNhom('thu',x)&&csOK(x)&&tkOK(x));
   const tenL=x=>(lo(x.loai_id)||{}).ten||'',dt=x=>x.trang_thai==='da_duyet';
   // 05/11 anh: "tài khoản công ty 6599 cần có gắn hoá đơn ở tất cả khoản thu, gắn như chi" — trừ thu khác (lãi NH, hoàn tiền…) không có HĐ
-  const canHD=x=>TK_CAN_HD.test((tk(x.tai_khoan_id)||{}).ten||'')&&['Thu bán hàng','Thu công nợ','Thu đặt cọc'].includes(tenL(x));
-  const hdTT=x=>hdtGhep(x.id).some(h=>h.canh_bao)?'soat':hdtGhep(x.id).length?'da':!canHD(x)?'':hdtGoiY(x.id).length?'goi_y':'chua';
+  const canHD=thuCanHD,hdTT=thuHdTT;
   const loc={tq:x=>dt(x)&&canTQ(x.tai_khoan_id,x.ngay)&&!x.tq_nhan_luc,chua_hd:x=>dt(x)&&canHD(x)&&!hdtGhep(x.id).length,soat_hd:x=>hdtGhep(x.id).some(h=>h.canh_bao),tat_ca:x=>true,da_thu:dt,chua_thu:x=>x.trang_thai==='cho_duyet',kiot:x=>x.nguon==='kiot',tay:x=>x.nguon!=='kiot',
     l_ban:x=>dt(x)&&tenL(x)==='Thu bán hàng',l_no:x=>dt(x)&&tenL(x)==='Thu công nợ',l_coc:x=>dt(x)&&tenL(x)==='Thu đặt cọc',l_khac:x=>dt(x)&&!['Thu bán hàng','Thu công nợ','Thu đặt cọc'].includes(tenL(x))};
   const nhan={tat_ca:'Tất cả',da_thu:'Đã thu',chua_thu:'Chưa thu',kiot:'Từ Kiot',tay:'Nhập trên app',tq:'Chờ thủ quỹ nhận',chua_hd:'Chưa gắn HĐ',soat_hd:'Cần soát HĐ'};
@@ -2545,7 +2544,9 @@ async function xemHDMisa(bang,id,ma){
     if(!f)return toast('PDF hoá đơn chưa tải về — hệ thống tự tải mỗi đêm',true);
     const u=((await ctFn({viec:'xem',ids:[f.id]})).ds||[])[0];if(u&&u.url)window.open(u.url,'_blank');else toast('Không mở được file',true)}catch(e){toast(e.message,true)}
 }
-const TK_CAN_HD=/6599$/;   // tài khoản công ty phải gắn HĐ bán ra cho mọi phiếu thu bán hàng / công nợ / cọc (anh 05/11)
+const TK_CAN_HD=/6599$/;
+const thuCanHD=x=>TK_CAN_HD.test((tk(x.tai_khoan_id)||{}).ten||'')&&['Thu bán hàng','Thu công nợ','Thu đặt cọc'].includes((lo(x.loai_id)||{}).ten||'');
+const thuHdTT=x=>hdtGhep(x.id).some(h=>h.canh_bao)?'soat':hdtGhep(x.id).length?'da':!thuCanHD(x)?'':hdtGoiY(x.id).length?'goi_y':'chua';   // tài khoản công ty phải gắn HĐ bán ra cho mọi phiếu thu bán hàng / công nợ / cọc (anh 05/11)
 const thuHdPill=(x,t)=>{if(t==='soat')return pill('Cần soát','warn')+thuHdSo(x);if(t==='goi_y')return pill('Có HĐ gợi ý','info');if(t==='chua')return pill('Chưa gắn','bad');if(t!=='da')return '<span class="muted">–</span>';
   return pill('Đã gắn','ok')+thuHdSo(x)};
 const thuHdSo=x=>`<div style="font-size:11.5px;margin-top:3px;line-height:1.5">${hdtGhep(x.id).map(h=>`<span class="m-link" title="Bấm xem hoá đơn" onclick="event.stopPropagation();hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}','${esc(h.hd_ma)}','ra')">${esc((h.ky_hieu?h.ky_hieu+' · ':'')+soHD(h.so_hd))}</span>`).join('<br>')}</div>`;
@@ -6827,7 +6828,7 @@ async function napExcelJS(){if(EXCELJS_LIB)return EXCELJS_LIB;
   EXCELJS_LIB=window.ExcelJS;if(!EXCELJS_LIB)throw new Error('Không tải được thư viện Excel');return EXCELJS_LIB}
 const XU_PHAN=[
   {k:'chi',ten:'Phiếu chi',mo:'Phiếu chi trong kỳ (đã TT theo ngày thanh toán, chưa TT theo ngày đề nghị) + sheet tóm tắt theo tài khoản chi',quyen:()=>coXem('chi')},
-  {k:'thu',ten:'Phiếu thu',mo:'Ngày, loại thu, cơ sở, tài khoản nhận, số tiền, trạng thái, nguồn',quyen:()=>coXem('thu')},
+  {k:'thu',ten:'Phiếu thu',mo:'Ngày, loại thu, cơ sở, tài khoản nhận, số tiền, trạng thái, hoá đơn, nguồn',quyen:()=>coXem('thu')},
   {k:'dc',ten:'Điều chuyển tiền',mo:'Phiếu chuyển tiền giữa các tài khoản trong kỳ',quyen:()=>coXem('dieu_chuyen')},
   {k:'so_quy',ten:'Sổ quỹ & số dư tài khoản',mo:'Số dư đầu / cuối kỳ từng tài khoản + sổ quỹ theo ngày (thu, chi, điều chuyển, tồn)',quyen:()=>can('so_du')||can('so_quy')},
   {k:'tam_ung',ten:'Tạm ứng & hoàn ứng',mo:'Khoản ứng phát sinh / còn nợ trong kỳ + các lần hoàn ứng',quyen:()=>coXem('tam_ung')},
@@ -6881,7 +6882,7 @@ const xuTK=id=>(tk(id)||{}).ten||'',xuLo=id=>(lo(id)||{}).ten||'',xuDV=id=>(dv(i
 const xuSo=(p,id)=>p+String(id).padStart(6,'0');
 // Mỗi hàm trả mảng sheet: {ten, tieuDe, ghi?, cols:[[tiêu đề, hàm lấy giá trị, kiểu 'so'|'ngay'|'chu', {tong:false}]], rows, tong?, loc?, dong?(r)→{b,nen,le}, coDinhCot?}
 const XU_LAY={
-  chi:async(tu,den,x)=>{const ds=await rpc('kt_ds',{p_bang:'chi',p_tu:tu,p_den:den});
+  chi:async(tu,den,x)=>{const [ds,hv]=await Promise.all([rpc('kt_ds',{p_bang:'chi',p_tu:tu,p_den:den}),rpc('kt_hd_vao_goi_y',{}).catch(()=>null)]);if(hv)S.cache.hdv=hv;
     const ng=c=>c.trang_thai==='da_tt'&&c.ngay_tt?c.ngay_tt:c.ngay_de_nghi,tc=c=>c.trang_thai==='tu_choi'||c.trang_thai==='tu_choi_tt';
     const l=ds.filter(c=>{const d=ng(c);return !!d&&d>=tu&&d<=den})
       .filter(c=>x.chi_tt==='da_tt'?c.trang_thai==='da_tt':x.chi_tt==='ca_tu_choi'?true:!tc(c))
@@ -6894,14 +6895,15 @@ const XU_LAY={
     return [{ten:'Phiếu chi',tieuDe:'PHIẾU CHI',ghi,rows:l,cols:[['Số phiếu',c=>maPC(c.id)],['Ngày',ng,'ngay'],['Ngày đề nghị',c=>c.ngay_de_nghi,'ngay'],['Ngày thanh toán',c=>c.ngay_tt,'ngay'],
         ['Người đề nghị',c=>c.nguoi_de_nghi],['Bộ phận',c=>xuDV(c.bo_phan_id)],['Nội dung',c=>c.noi_dung],['Loại chi',c=>xuLo(c.loai_id)],['Tài khoản chi',c=>xuTK(c.tai_khoan_id)],
         ['Số tiền',c=>c.so_tien,'so'],['Trạng thái',c=>(TT_CHI[c.trang_thai]||[c.trang_thai])[0]],['Người thụ hưởng',c=>c.thu_huong_ten],['Số tài khoản nhận',c=>c.thu_huong_stk],['Ngân hàng nhận',c=>c.thu_huong_nh],
-        ['Hoá đơn đỏ',c=>c.co_hd_do?(c.hd_do_nhan?'Đã nhận':'Chưa nhận'):''],['Ghi chú',c=>c.ghi_chu]]},
+        ['Hoá đơn đỏ',c=>c.co_hd_do?(c.hd_do_nhan?'Đã nhận':'Chưa nhận'):''],['Số hoá đơn',c=>soHDPhieu(hdvGhep(c.id),c.so_hd_do)],['Ghi chú',c=>c.ghi_chu]]},
       {ten:'PC theo tài khoản',tieuDe:'PHIẾU CHI — TÓM TẮT THEO TÀI KHOẢN CHI',ghi,rows:Object.values(g).sort((a,b)=>b.t-a.t),
         cols:[['Tài khoản chi',o=>o.k?xuTK(o.k):'(Chưa chọn tài khoản)'],['Loại',o=>o.k?LTK[(tk(o.k)||{}).loai]||'Khác':''],['Số phiếu',o=>o.n,'so'],['Tổng tiền',o=>o.t,'so'],
           ['Số phiếu đã TT',o=>o.ntt,'so'],['Đã thanh toán',o=>o.tt,'so'],['Tỷ trọng',o=>o.t,'pct']]}]},
-  thu:async(tu,den)=>{const ds=(await rpc('kt_ds',{p_bang:'thu',p_tu:tu,p_den:den})).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
+  thu:async(tu,den)=>{const [d0,ht]=await Promise.all([rpc('kt_ds',{p_bang:'thu',p_tu:tu,p_den:den}),rpc('kt_hd_thu_ds',{}).catch(()=>null)]);if(ht)S.cache.hdt=ht;
+    const ds=d0.sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
     const TT={da_duyet:'Đã thu',cho_duyet:'Chưa thu',tu_choi:'Từ chối'},NG={kiot:'KiotViet',tay:'Nhập trên app',sheet_cu:'Sheet cũ'};
     return [{ten:'Phiếu thu',tieuDe:'PHIẾU THU',rows:ds,cols:[['Số phiếu',t=>xuSo('PT',t.id)],['Ngày',t=>t.ngay,'ngay'],['Nội dung',t=>t.noi_dung],['Loại thu',t=>xuLo(t.loai_id)],
-      ['Cơ sở / bộ phận',t=>xuDV(t.don_vi_id)],['Tài khoản nhận',t=>xuTK(t.tai_khoan_id)],['Số tiền',t=>t.so_tien,'so'],['Trạng thái',t=>TT[t.trang_thai]||t.trang_thai],['Nguồn',t=>NG[t.nguon]||t.nguon],['Ghi chú',t=>t.ghi_chu]]}]},
+      ['Cơ sở / bộ phận',t=>xuDV(t.don_vi_id)],['Tài khoản nhận',t=>xuTK(t.tai_khoan_id)],['Số tiền',t=>t.so_tien,'so'],['Trạng thái',t=>TT[t.trang_thai]||t.trang_thai],['Hoá đơn',t=>({da:'Đã gắn',soat:'Cần soát',goi_y:'Có HĐ gợi ý',chua:'Chưa gắn'})[thuHdTT(t)]||''],['Số hoá đơn',t=>soHDPhieu(hdtGhep(t.id))],['Cảnh báo HĐ',t=>[...new Set(hdtGhep(t.id).map(h=>h.canh_bao).filter(Boolean))].join(' · ')],['Nguồn',t=>NG[t.nguon]||t.nguon],['Ghi chú',t=>t.ghi_chu]]}]},
   dc:async(tu,den)=>{const ds=(await rpc('kt_ds',{p_bang:'dieu_chuyen',p_tu:tu,p_den:den})).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
     return [{ten:'Điều chuyển',tieuDe:'ĐIỀU CHUYỂN TIỀN GIỮA CÁC TÀI KHOẢN',rows:ds,cols:[['Số phiếu',d=>xuSo('DC',d.id)],['Ngày',d=>d.ngay,'ngay'],['Từ tài khoản',d=>xuTK(d.tk_di_id)],['Đến tài khoản',d=>xuTK(d.tk_nhan_id)],
       ['Số tiền',d=>d.so_tien,'so'],['Nội dung',d=>d.noi_dung],['Xác nhận',d=>d.da_xac_nhan?'Đã xác nhận':'Chưa xác nhận'],['Người xác nhận',d=>d.xac_nhan_boi],['Ghi chú',d=>d.ghi_chu]]}]},
