@@ -75,23 +75,7 @@ begin
     values (u.ho_ten, 'kt_thu', case when p_bo then 'bo_ghep_hd_ra' else 'ghep_hd_ra_tay' end, jsonb_build_object('thu_id', p_thu, 'hd', p_hd));
 end $f$;
 
--- tìm HĐ: bán ra hiện cả HĐ đã gắn phiếu khác (trả nhiều lần) — kèm số phiếu đã gắn + tiền đã nối
-create or replace function public.kt_tim_hd(p_phien text, p_chieu text, p_q text, p_tien numeric default null) returns jsonb
-  language plpgsql stable security definer set search_path = public as $f$
-declare q text := lower(kt_bo_dau(trim(coalesce(p_q, '')))); qs text := ltrim(regexp_replace(coalesce(p_q, ''), '\D', '', 'g'), '0');
-begin
-  perform kt_chan(p_phien, case when p_chieu = 'ra' then 'thu' else 'chi' end);
-  if length(q) < 2 and qs = '' then return '[]'; end if;
-  return (select coalesce(jsonb_agg(to_jsonb(z)), '[]') from (
-    select case when p_chieu = 'ra' then t.ky_hieu || '-' || t.so_hd else t.ma_ngoai end hd_ma, t.so_hd, t.ky_hieu, t.ngay, t.nguoi_mua ncc, t.nguoi_mua, t.mst, t.tong,
-           case when p_chieu = 'ra' then (select count(*) from kt_thu_hd g where g.hd_ma = t.ky_hieu || '-' || t.so_hd) end so_phieu,
-           case when p_chieu = 'ra' then (select sum(x.so_tien) from kt_thu_hd g join kt_thu x on x.id = g.thu_id where g.hd_ma = t.ky_hieu || '-' || t.so_hd) end da_noi
-      from kt_thue_hd t
-     where (case when p_chieu = 'ra' then t.nguon like 'meinvoice:%'
-                 else t.nguon like 'misabot:%' and t.ma_ngoai is not null and not exists (select 1 from kt_chi_hd g where g.hd_ma = t.ma_ngoai) end)
-       and ((qs <> '' and (ltrim(t.so_hd, '0') = qs or t.mst like qs || '%')) or (length(q) >= 2 and lower(kt_bo_dau(coalesce(t.nguoi_mua, ''))) like '%' || q || '%'))
-     order by abs(t.tong - coalesce(p_tien, t.tong)), t.ngay desc limit 15) z);
-end $f$;
+-- kt_tim_hd: bản mới (cả phiếu chi nhiều–nhiều) ở supabase-schema-kt-chi-nhieu-hd.sql
 
 -- đối chiếu từng HĐ bán ra công ty ↔ phiếu thu đã gắn: nhóm = HĐ + mọi HĐ chung phiếu với nó (1 phiếu trả nhiều HĐ) → so tổng HĐ nhóm với tổng phiếu nhóm
 create or replace function public.kt_hd_ra_doi_chieu(p_phien text, p_tu date, p_den date) returns jsonb

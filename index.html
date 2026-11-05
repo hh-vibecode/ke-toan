@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.327';
-const APP_VERSION='05/11/2026 17:39';
+const APP_SO='1.328';
+const APP_VERSION='05/11/2026 17:54';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2527,15 +2527,19 @@ const hdNut=(t,f,c)=>`<button class="hdv-n2 ${c||''}" onclick="${f}">${t}</butto
 function hdvHtml(x){
   const g=coGhi('chi'),dg=hdvGhep(x.id),gy=dg.length?[]:hdvGoiY(x.id);
   // 23/10 anh: 1 ô khai số hoá đơn — mặc định số đã gắn / số gợi ý (phiếu cần HĐ); đúng thì Lưu dùng luôn, sai thì kế toán gõ lại (gõ → hiện HĐ MISA khớp)
-  const goc=x.so_hd_do||(dg[0]?dg[0].so_hd:'')||'',mac=goc||(x.co_hd_do&&gy[0]?gy[0].so_hd||'':'');
-  const o=g?`<div class="hdv-lb" id="pc-sohd-w0" style="${x.co_hd_do?'':'display:none'}">Số hoá đơn</div><div class="hdv-tim" id="pc-sohd-w" style="${x.co_hd_do?'':'display:none'}"><input class="m-in" id="pc-sohd" data-goc="${esc(goc)}" value="${esc(mac)}" placeholder="Số hoá đơn" oninput="hdTim(this,'vao',${x.id},${+x.so_tien||0})"><div class="hdv-kq"></div></div>${mac&&mac!==goc?'<div class="hdv-n muted">Số gợi ý — đúng thì bấm Lưu</div>':''}`
+  // 05/11 anh: "hoá đơn thu chi đều cho nhập được nhiều hoá đơn" — ô nhận nhiều số cách dấu phẩy; mặc định = số khai + mọi HĐ đang gắn
+  const so0=t=>((String(t||'').match(/(\d+)\D*$/)||[])[1]||'').replace(/^0+/,''),tok=String(x.so_hd_do||'').split(/[,;]/).map(t=>t.trim()).filter(Boolean);
+  dg.forEach(h=>{if(!tok.some(t=>so0(t)===so0(h.so_hd)))tok.push(soHD(h.so_hd))});
+  const thieu=tok.filter(t=>!dg.some(h=>so0(h.so_hd)===so0(t)));
+  const goc=tok.join(', '),mac=goc||(x.co_hd_do&&gy[0]?gy[0].so_hd||'':'');
+  const o=g?`<div class="hdv-lb" id="pc-sohd-w0" style="${x.co_hd_do?'':'display:none'}">Số hoá đơn</div><div class="hdv-tim" id="pc-sohd-w" style="${x.co_hd_do?'':'display:none'}"><input class="m-in" id="pc-sohd" data-goc="${esc(goc)}" value="${esc(mac)}" placeholder="Số hoá đơn — nhiều số cách dấu phẩy" oninput="hdTim(this,'vao',${x.id},${+x.so_tien||0})"><div class="hdv-kq"></div></div>${mac&&mac!==goc?'<div class="hdv-n muted">Số gợi ý — đúng thì bấm Lưu</div>':''}`
     :goc?`<div class="hdv-lb">Số hoá đơn</div><div><b>${esc(goc)}</b></div>`:'';
   if(!o&&!dg.length&&!gy.length)return '';
   if(dg.length)hdAm();
   return `<div class="hdv">${o}${dg.length?ctHD('chi',x.id):''}${dg.map(h=>hdThe(h,h.ncc,
       hdNut('Xem',`hdXem('${esc(h.so_hd)}','CTY','${String(h.ngay_hd||h.ngay||'').slice(0,10)}','${esc(h.hd_ma)}','vao')`)+(g?hdNut('✕',`ghepHD(${x.id},'${esc(h.hd_ma)}',true)`,'bo'):''))).join('')}
     ${gy.length?`<div class="hdv-lb">Hoá đơn MISA có thể khớp</div>`+gy.slice(0,3).map(h=>hdThe(h,h.ncc,g?hdNut('✓ Đúng',`ghepHD(${x.id},'${esc(h.hd_ma)}')`):'')).join(''):''}
-    ${x.so_hd_do&&!dg.length?'<div class="hdv-n muted">Số khai tay — chưa thấy HĐ này trên MISA</div>':''}</div>`;
+    ${thieu.length?`<div class="hdv-n muted">Số khai tay ${esc(thieu.join(', '))} — chưa thấy trên MISA</div>`:''}</div>`;
 }
 // mở PDF hoá đơn MISA đã tải về chứng từ phiếu (tên file "HĐ {ký hiệu} số {số} (MISA).pdf"); chưa tải (job chạy đêm) thì báo
 async function xemHDMisa(bang,id,ma){
@@ -2567,8 +2571,8 @@ function hdtHtml(x){
 // 23/10 kế toán: "HĐ đã xuất mà chưa nối được với app thì làm gì để nối?" → gõ số HĐ / MST / tên người bán (mua) → bấm ✓ Gắn
 const hdTimO=(chieu,id,tien)=>`<div class="hdv-tim"><input class="m-in" placeholder="Tìm HĐ MISA: số HĐ, MST hoặc tên" oninput="hdTim(this,'${chieu}',${id},${+tien||0})"><div class="hdv-kq"></div></div>`;
 let hdTimT=0;
-function hdTim(el,chieu,id,tien){clearTimeout(hdTimT);const kq=el.nextElementSibling,q=el.value.trim();if(q.length<2){kq.innerHTML='';return}
-  hdTimT=setTimeout(async()=>{try{const ds=await rpc('kt_tim_hd',{p_chieu:chieu,p_q:q,p_tien:tien});if(el.value.trim()!==q)return;
+function hdTim(el,chieu,id,tien){clearTimeout(hdTimT);const kq=el.nextElementSibling,q=el.value.split(/[,;]/).pop().trim();if(q.length<2){kq.innerHTML='';return}
+  hdTimT=setTimeout(async()=>{try{const ds=await rpc('kt_tim_hd',{p_chieu:chieu,p_q:q,p_tien:tien});if(el.value.split(/[,;]/).pop().trim()!==q)return;
     kq.innerHTML=ds.length?ds.slice(0,6).map(h=>hdThe({...h,ly_do:h.so_phieu?'đã gắn '+h.so_phieu+' phiếu · '+fmt(h.da_noi):''},h.ncc,hdNut('✓ Gắn',chieu==='ra'?`ghepHDThu(${id},'${esc(h.hd_ma)}')`:`ghepHD(${id},'${esc(h.hd_ma)}')`))).join(''):'<div class="muted" style="font-size:12px;margin-top:6px">Không thấy hoá đơn khớp — HĐ mới phát hành thì lượt kéo kế tiếp (00:25 / 12:25) mới có</div>'}catch(e){kq.innerHTML=`<div class="neg-t" style="font-size:12px">${esc(e.message)}</div>`}},350)}
 async function ghepHDThu(thu,hd,bo){
   if(bo&&!confirm('Bỏ gắn hoá đơn này khỏi phiếu thu?'))return;
@@ -4164,7 +4168,7 @@ async function luuPhieu(id,tt){const x=S.cache.chi.find(c=>c.id===id);if(!x)retu
     // 23/10 anh: ô Số hoá đơn — khác số đang có (kể cả số gợi ý điền sẵn) → lưu; thấy đúng 1 HĐ MISA cùng số thì gắn luôn
     const sh=$('#pc-sohd'),shv=sh?sh.value.trim():'';
     if(sh&&shv!==(sh.dataset.goc||'')&&!(hd&&hd.value==='khong'&&shv)){const r=await rpc('kt_dat_so_hd',{p_id:id,p_so:shv});x.so_hd_do=shv||null;if(shv){x.co_hd_do=true;x.hd_do_nhan=true}
-      viec.push(shv?(r.gan?'số hoá đơn (đã gắn HĐ MISA)':'số hoá đơn (khai tay)'):'bỏ số hoá đơn')}
+      viec.push(shv?(r.gan?'số hoá đơn (gắn '+(r.n||1)+' HĐ MISA'+(r.khong_thay?', '+r.khong_thay+' số chưa thấy trên MISA':'')+')':'số hoá đơn (khai tay)'):'bỏ số hoá đơn')}
     // 21/10 (admin kế toán): sửa ngày thanh toán phiếu đã chi (trừ tiền sai ngày → lệch quỹ cuối ngày)
     const ntt=$('#pc-ngay-tt');if(ntt&&ntt.value&&ntt.value!==(x.ngay_tt||'')){await rpc('kt_doi_ngay_tt',{p_id:id,p_ngay:ntt.value});x.ngay_tt=ntt.value;viec.push('ngày thanh toán')}
     const tkSel=$('#doi-tk')||(x.trang_thai==='cho_tt'?$('#ftt select[name=tai_khoan_id]'):null);
@@ -6528,7 +6532,7 @@ const LOGIC2=[
  ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 và 12:25), HĐ mua từ MISA Xử lý hoá đơn (00:35 và 12:35) — 2 lần / ngày (anh 03/11).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
  ['thue','Ghép HĐ mua','Mọi phiếu chi đã trả từ 01/01 (trừ chi cá nhân) ↔ HĐ đầu vào MISA: số tiền lệch ≤ 1.000đ, ngày HĐ từ 30 ngày trước → 15 ngày sau ngày trả. Tự gắn khi 1 phiếu ↔ 1 HĐ duy nhất VÀ khớp STK người nhận (học từ lần gắn trước) / tên người nhận ≥ 50% / tên trong nội dung ≥ 80%. 1 lần trả nhiều HĐ cùng người bán: tổng HĐ = số tiền → gắn cả nhóm.','Chỉ khớp số tiền, không khớp tên / STK → không gợi ý. Không thấy → ô "Tìm HĐ MISA" (số HĐ / MST / tên) trong khung Hoá đơn đỏ.','23/10'],
  ['thue','Ghép HĐ bán ra','Phiếu thu ↔ HĐ bán ra meInvoice (05/11). Tự gắn theo thứ tự: (1) nội dung / ghi chú phiếu ghi số HĐ ("HD 315", "hđ số 3 ngày 8/1") → gắn dù số tiền khác (cọc + trả nốt, 1 phiếu nhiều HĐ); HĐ ngày từ 45 ngày trước → 45 ngày sau ngày thu, có ngày đi kèm thì phải = ngày HĐ, số trùng nhiều ký hiệu không phân biệt được → gợi ý; bỏ "Tổng HD …", "VAT= …" và mã Kiot HD0xxxxx; (2) phiếu không ghi số HĐ: HĐ đỏ = đúng 1 hoá đơn Kiot cùng số tiền (±1.000, 2 chiều duy nhất, người mua chung chung hoặc tên khớp ≥ 50%) → gắn mọi phiếu thu trả hoá đơn Kiot đó (bảng chia phiếu Kiot); (3) số tiền ±1.000 + tên khách ≥ 80%, 1 ↔ 1. Kế toán bỏ gắn thì không tự gắn lại. 1 HĐ gắn được nhiều phiếu, 1 phiếu nhiều HĐ. Tự gắn mà có dấu hiệu sai vẫn gắn nhưng ghi Cần soát (anh 05/11): HĐ đang gắn bị thu thừa và có HĐ chưa nối nào đúng bằng tiền phiếu → "có thể ghi nhầm số HĐ"; HĐ chỉ gắn phiếu trả riêng nó mà tổng phiếu > HĐ → "HĐ đã thu thừa …". Gắn tay = đã xác nhận, không cảnh báo.','Chạy sau lượt kéo MISA (00:35 / 12:35), gợi ý lưu sẵn (kt_thu_hd_goi_y) — trang không dò lại. Hoá đơn đầu ra: cột Phiếu thu Đủ / Thu thiếu / Thu thừa / Chưa nối / Không cần (HĐ ≤ 0) — 1 phiếu trả nhiều HĐ thì so theo tổng nhóm; bấm xem phiếu đã nối, lý do, gợi ý ✓ Đúng. Phiếu thu tài khoản 6599 (bán hàng / công nợ / cọc) phải gắn HĐ: cột Hoá đơn + tab Chưa gắn HĐ + Excel cột Hoá đơn / Số hoá đơn; ô tìm + ✓ Gắn luôn hiện trong phiếu. HĐ khó để kế toán nối tay.','05/11'],
- ['thue','Số hoá đơn khai tay','Ô "Số hoá đơn" trong khung Hoá đơn đỏ: điền sẵn số đã gắn / số gợi ý (phiếu cần HĐ). Bấm Lưu → lưu số + đánh dấu đã nhận HĐ; thấy đúng 1 HĐ MISA cùng số chưa gắn phiếu khác (ưu tiên lệch tiền ≤ 1.000đ) thì gắn luôn, thay HĐ cũ.','Không thấy trên MISA → giữ số khai tay. Xoá trống = bỏ số khai tay.','23/10'],
+ ['thue','Số hoá đơn khai tay','Ô "Số hoá đơn" phiếu chi (05/11 anh: "thu chi đều nhập được nhiều hoá đơn"): nhiều số cách dấu phẩy ("415, C26TYY 3284"); điền sẵn số khai + mọi HĐ đang gắn. Bấm Lưu → mỗi số: số HĐ = nhóm số cuối, phần trước là ký hiệu; HĐ MISA cùng số (đã gắn phiếu khác VẪN được — 1 HĐ trả nhiều đợt) — nhiều HĐ cùng số thì lấy HĐ đúng tiền phiếu ±1.000, không có thì chỉ nhận khi ±60 ngày còn đúng 1 HĐ; HĐ đang gắn mà số không còn trong ô thì bỏ gắn. Ô tìm đọc số đang gõ sau dấu phẩy cuối, kết quả ghi "đã gắn n phiếu".','Số không thấy trên MISA → giữ khai tay, ghi "Số khai tay … chưa thấy trên MISA". Xoá trống = bỏ số khai tay. Job tự ghép vẫn chỉ ghép HĐ chưa gắn phiếu nào; phiếu thu cũng nhiều–nhiều (dòng Ghép HĐ bán ra).','05/11'],
  ['thue','PDF hoá đơn MISA','HĐ đầu vào đã gắn phiếu chi (MISA Xử lý HĐ) + HĐ bán ra đã gắn phiếu thu (meInvoice /invoice/Download theo mã tra cứu) → tải PDF vào chứng từ phiếu, hiện nhỏ ngay dưới ô Số hoá đơn (ghi "HĐ đỏ"), không lặp ở ô ảnh khác. Ô Số hoá đơn chỉ hiện khi chọn Cần hoá đơn.','Chạy kèm job kéo HĐ 00:35; HĐ gắn tay trong ngày có PDF sau đêm.','23/10'],
  ['bao_cao','Khoản định kỳ P&L','P&L → tab Khoản định kỳ: thiết lập 1 lần (loại chi + mục con, số tiền / tháng, phân bổ, từ – đến tháng). Luôn tính: cộng mỗi tháng (thuê nhà không chi tiền…). Ước tính: P&L lấy số LỚN HƠN giữa ước tính và phiếu chi thật cùng mục (cả cây mục con); "Chốt số thật" tháng đó → chỉ lấy phiếu thật.','CHỈ trang P&L — không phiếu chi, sổ quỹ, số dư, dòng tiền, Tổng quan, ngân sách. Chỉ từ T9/2026. Ô có số định kỳ có dấu ●; bấm ô thấy dòng [Định kỳ]. Tab P&L chi tiết bỏ (26/10).','26/10'],
  ['bao_cao','P&L — bấm ô xem phiếu','Từ T9: bấm ô số 1 tháng của dòng chi phí → danh sách phiếu chi tạo nên số đó (cùng nguồn kt_v_chi_ht nên tổng = ô), bấm phiếu mở popup.','T1–T8 số lấy theo 4 file P&L → không có phiếu để xem.','23/10'],
