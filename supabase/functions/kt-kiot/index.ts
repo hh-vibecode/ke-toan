@@ -300,15 +300,21 @@ Deno.serve(async req => {
       const nay = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 7), thang: string[] = [];
       for (const l of (body.thu_hd.lui || [0])) { const t = new Date(nay + '-01T00:00:00Z'); t.setUTCMonth(t.getUTCMonth() - Number(l)); const m = t.toISOString().slice(0, 7); if (m >= '2026-01') thang.push(m); }
       kq.thu_hd = { thang, so_hd: 0 };
-      for (const m of thang) {
+      // 05/11/2026: Kiot 504 lúc 00:48 (lượt đêm tháng 8–11) làm hỏng CẢ lượt → giờ từng tháng riêng: tháng lỗi để cuối thử lại 1 lần sau 20 giây,
+      // vẫn lỗi mới báo (keo_kiot_loi, ghi rõ tháng nào); các tháng khác vẫn ghi. — Monsieur Claude
+      const motThang = async (m: string) => {
         const s = new Date(m + '-01T00:00:00Z'); s.setUTCMonth(s.getUTCMonth() + 1);
         const ds = (await kiotHet('invoices', { fromPurchaseDate: m + '-01', toPurchaseDate: s.toISOString().slice(0, 10), includePayment: 'true' })).filter((x: any) => String(x.purchaseDate).slice(0, 7) === m);
         await ghi('kt_kiot_hd_thu', ds.map((x: any) => ({ id: x.id, ma: x.code, tong_thu: n0(x.totalPayment), keo_luc: new Date().toISOString(),
           ds: (x.payments || []).filter((p: any) => p.status === 0).map((p: any) => ({ ma: p.code, tien: n0(p.amount), ngay: String(p.transDate).slice(0, 10), tk: p.bankAccount ?? null, pt: p.method ?? null })) })));
         kq.thu_hd.so_hd += ds.length;
-      }
+      };
+      let hong: string[] = [];
+      for (const m of thang) { try { await motThang(m); } catch (_) { hong.push(m); } }
+      if (hong.length && Date.now() - batDau < 120e3) { await new Promise(r => setTimeout(r, 20e3)); const lai = hong; hong = []; for (const m of lai) { try { await motThang(m); } catch (e) { hong.push(m); kq.thu_hd.loi = String(e); } } }
+      if (hong.length) kq.thu_hd.thang_loi = hong;
       kq.giay = Math.round((Date.now() - batDau) / 1000);
-      await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'keo_thu_hd', du_lieu: kq });
+      await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: hong.length ? 'keo_kiot_loi' : 'keo_thu_hd', du_lieu: hong.length ? { loi: 'Thu theo hoá đơn: tháng ' + hong.join(', ') + ' — ' + (kq.thu_hd.loi || ''), da_xong: kq } : kq });
       return tra(kq);
     }
     const dayDu: string[] = body.day_du || [];
