@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.328';
-const APP_VERSION='05/11/2026 17:54';
+const APP_SO='1.329';
+const APP_VERSION='05/11/2026 19:31';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4952,7 +4952,11 @@ async function pageBCCs(){const el=$('#page');el.innerHTML='<div class="m-empty"
 // • Cửa hàng OFFLINE (Hiền Thủy, Chánh Tâm) — chính sách hoa hồng cửa hàng: đơn khách đến trực tiếp (người bán không phải sales online) → quỹ theo nhóm sản phẩm
 //   (Hiền Thủy biên cao 2% / biên thấp 0,8%; Chánh Tâm 2%); đơn sales online cửa hàng xử lý → quỹ vận hành 1,5%. Chia: QL 40% · GS 25% · NV 35% (Chánh Tâm QL 40% · NV 60%).
 // • Mọi số tính trên THỰC THU (khách đã trả trên hoá đơn, trừ tiền hoàn khi trả hàng). — Monsieur Claude
-const HH_CS={le:'Sales online lẻ (CS-VH04-16)',si:'Sales online mảng buôn (CS-VH04-13)'};
+const HH_CS={le:'Sales online lẻ (CS-VH04-16)',si:'Sales online mảng buôn (CS-VH04-13)',ht_ds:'Sales Admin / CSKH — thưởng hỗ trợ doanh số (QC-VH03-18)'};
+// 05/11/2026 anh: "bổ sung chính sách hoa hồng cho nhân sự Oanh Bùi" + QC-VH03-18-2026 "Quy chế thưởng hỗ trợ doanh số" (Sales Admin / CSKH, ban hành 01/09/2026):
+// thưởng CỐ ĐỊNH theo bậc doanh số thực thu không gồm VAT (= thực thu đã trừ VAT TK 599) của phạm vi phụ trách / tháng, 1 mức cao nhất, tối đa 3,5tr. — Monsieur Claude
+const HH_HTDS=[[0,0],[300e6,5e5],[600e6,1e6],[900e6,15e5],[1.2e9,2e6],[1.5e9,25e5],[2e9,35e5]];
+const hhHtds=thu=>(HH_HTDS.filter(([a])=>thu>=a).pop()||[0,0])[1];
 // 31/10 anh: "thêm Nguyễn Hoàng Hải, nhận 1% từ doanh thu online thực tế trong tháng" + "vị trí hỗ trợ vận hành" → người cs 'online' (tl = tỷ lệ) hưởng
 // thực thu MỌI hoá đơn online trong tháng (cờ on = kênh bán Kiot, cùng luật Tổng quan / P&L), trả hàng trừ theo đơn gốc
 const hhCsTen=p=>p.cs==='online'?(p.vt||'Hỗ trợ vận hành')+' — '+((+p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online theo báo cáo MKT':HH_CS[p.cs]||p.cs;
@@ -4999,11 +5003,13 @@ const hhNgs=ds=>[...new Set((ds||[]).map(c=>hhNg(c.ngay)))].join(', ');
 const hhCocTxt=h=>{if(hhTraTruoc(h))return 'trả trước · hàng đi '+hhNg(h.ngay_hd);if(!(+h.coc>0))return '';
   const tra=sumBy(h.tra_ds||[],c=>+c.tien),r=['cọc trước '+fmt(h.coc)+((h.coc_ds||[]).length?' ngày '+hhNgs(h.coc_ds):'')];
   if(tra>0)r.push('trả nốt '+fmt(tra)+' ngày '+hhNgs(h.tra_ds));if(+h.con>0)r.push((tra>0?'còn nợ ':'chưa trả nốt ')+fmt(h.con));return r.join('\n')};
+// 05/11: dòng có tiền về TK 599 ghi phần VAT đã trừ
+const hhVatTxt=h=>+h.vat>0?`<div class="muted" style="font-size:11px;white-space:nowrap">đã trừ VAT TK 599 ${fmt(h.vat)}</div>`:'';
 const hhKiot=h=>h.la_tra?`<a href="${KIOT_MAN}Returns?Code=${encodeURIComponent(h.ma_tra||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma_tra||'Trả hàng')} ↗</a><div class="muted" style="font-size:11px">trả của ${esc(h.ma||'')}</div>`
   // 31/10: dòng cọc TTDH (tính ở tháng nhận cọc) · hoá đơn của đơn có cọc ghi phần cọc đã trừ
-  :h.la_coc?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">cọc đơn ${esc(h.ma_don||'')}</div>`
-  :h.la_phieu?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">phiếu chưa có hoá đơn</div>`
-  :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:nowrap">${esc(hhCocTxt(h)).replace(/\n/g,'<br>')}</div>`:''}`;
+  :h.la_coc?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">cọc đơn ${esc(h.ma_don||'')}</div>${hhVatTxt(h)}`
+  :h.la_phieu?`<span>${esc(h.ma||'')}</span><div class="muted" style="font-size:11px">phiếu chưa có hoá đơn</div>${hhVatTxt(h)}`
+  :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:nowrap">${esc(hhCocTxt(h)).replace(/\n/g,'<br>')}</div>`:''}${hhVatTxt(h)}`;
 // 02/11 anh "có thực sự check note không": đọc ghi chú TỪNG DÒNG (trước gộp 1 dòng nên chữ dòng sau dính vào tên), nhận cả kiểu
 // "Người đóng hàng 1 :", "Người: đóng hàng:", tên viết thường; bỏ phần trong ngoặc; viết tắt "Tên ĐH / GH" giữ như cũ. — Monsieur Claude
 function hhDocDG(gc){const ds={dong:[],giao:[]},hoa=w=>w.charAt(0).toUpperCase()+w.slice(1);
@@ -5017,7 +5023,7 @@ function hhTinh(d,ms){
   const CH=Object.assign({nguoi:[],nhom:{},cua_hang:{},kho:[],ten_tat:{},cong:{}},d.cau_hinh||{});
   const kiotCua={};CH.nguoi.forEach((p,i)=>(p.kiot||[]).forEach(k=>kiotCua[k]=i));
   const muc=nh=>CH.nhom[nh]||'thap',cg=(m,ten)=>{const v=((CH.cong||{})[m]||{})[ten];return v==null||v===''?26:+v};
-  const HD=(d.hd||[]).filter(h=>ms.includes(h.thang)).map(h=>({...h,tong:+h.tong,tra:+h.tra||0,thu:+h.thu,coc:+h.coc||0,thu_dg:h.thu_dg!=null?+h.thu_dg:+h.thu,dt:(+h.tong)-(+h.tra||0)}));
+  const HD=(d.hd||[]).filter(h=>ms.includes(h.thang)).map(h=>({...h,tong:+h.tong,tra:+h.tra||0,thu:+h.thu-(+h.vat||0),coc:+h.coc||0,thu_dg:(h.thu_dg!=null?+h.thu_dg:+h.thu)-(+h.vat_dg||0),vat:+h.vat||0,dt:(+h.tong)-(+h.tra||0)}));   // 05/11 anh: tiền về TK công ty 599 trừ VAT (bước riêng, SQL tính vat / vat_dg)
   // 03/11 anh (ảnh HD060153 cọc 15,6tr 14/10 + trả nốt 17tr 23/10: "phải tính tổng 32tr6 chứ sao lại 17tr, tất cả phát sinh tháng 10"): tiền vẫn đủ nhưng tách 2 dòng
   // → cọc và hoá đơn CÙNG THÁNG, cùng người bán / chi nhánh / cờ online → gộp vào dòng hoá đơn (thực thu = cọc + trả nốt), bỏ dòng cọc riêng. Tổng không đổi. — Monsieur Claude
   {const gop=new Set();HD.forEach(h=>{if(h.la_coc||h.la_tra||h.la_phieu||!h.ma_don||!(h.coc>0))return;
@@ -5043,6 +5049,11 @@ function hhTinh(d,ms){
       cach=(p.cs==='si'&&dt<moc?'doanh thu '+fmtTr(dt)+' '+cd:'doanh thu '+fmtTr(dt)+' → '+cd)+' → tỷ lệ '+(Math.round(tl*1e4)/100).toLocaleString('vi-VN')+'% × thực thu '+fmtTr(thu)}
     const x={m,p,dt,thu,hh,tl,moc,ht,cach:cach||'—',nv:onl?[]:[...new Set(H.map(h=>h.nv))],H,dsDT:onl?[]:dsBan(m,i)};SA.push(x);
     const o=onl?ng(p.ten,'vh',p.vt||'Hỗ trợ vận hành'):ng(p.ten,'sales','Sales online');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,onl?'Đơn online':'Bán',thu>0?hh*h.thu/thu:0))}));
+  // A2. Sales Admin / CSKH (cs 'ht_ds', QC-VH03-18): phạm vi = người hưởng sales trong cấu hình (pv); doanh số = thực thu (đã trừ VAT 599) của phạm vi trong tháng
+  ms.forEach(m=>CH.nguoi.forEach(p=>{if(p.cs!=='ht_ds'||(p.tu&&m<String(p.tu).slice(0,7)))return;const ds=SA.filter(x=>x.m===m&&(p.pv||[]).includes(x.p.ten));if(!ds.length)return;
+    const H=ds.flatMap(x=>x.H),thu=sumBy(ds,x=>x.thu),dt=sumBy(ds,x=>x.dt),hh=hhHtds(thu);
+    const x={m,p,dt,thu,hh,tl:null,moc:HH_HTDS[1][0],ht:false,cach:'thực thu phạm vi '+fmtTr(thu)+(hh?' → mức '+fmt(hh):' — dưới 300tr chưa thưởng'),nv:[...new Set(ds.flatMap(z=>z.nv))],H,dsDT:[]};SA.push(x);
+    const o=ng(p.ten,'sales',p.vt||'Sales Admin');o.sales+=hh;o.saleKy.push(x);H.forEach(h=>thamGia(o,h,'Hỗ trợ doanh số',thu>0?hh*h.thu/thu:0))}));
   // B. quỹ cửa hàng — khách trực tiếp theo nhóm sản phẩm, đơn sales online 1,5%; chia chức danh, nhân viên theo ngày công
   const TL={HT:{ql:.4,gs:.25,nv:.35},CT:{ql:.4,gs:0,nv:.6}},CHs=[];
   ms.forEach(m=>['HT','CT'].forEach(cs=>{const H=HD.filter(h=>h.thang===m&&csCuaCN(h.cn)===cs);if(!H.length)return;
@@ -5111,7 +5122,7 @@ async function pageBCHoaHong(){const el=$('#page');el.innerHTML='<div class="m-e
     +`<div class="m-kpis m-k3">${the('ns','teal','Tổng hoa hồng',fmt(tNG),NGs.filter(o=>o.tong).length+' nhân sự có hoa hồng')}${qtK('info','Online',fmt(tSA),SA.length+' người × tháng')}${the('ch','ok','Cửa hàng offline',fmt(tCH),'quỹ cửa hàng + đóng gói / giao')}</div>`
     +hhLocBar(K)+`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div class="m-seg bc-tabs" style="margin:0">${HH_TABS.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.f.bc_hoa_hong_tab='${k}';render()">${t}</button>`).join('')}</div><span style="margin-left:auto"></span>${g?`<button class="m-btn out" onclick="hhMaQL()">Mã tra cứu</button>`:''}</div>`
     +(tab==='ch'?tabCH:tabNS)
-    +`<div class="muted bc-ghi">Thực thu = tiền về trong tháng theo sổ quỹ Kiot, không phân biệt hoá đơn tháng nào, trừ tiền hoàn khi trả hàng; không tính khoản trả bằng điểm. Tiền cọc đơn đặt (TTDH) tính ở tháng nhận cọc. Đóng gói / giao tính trên tiền về; phần đã cọc tính khi hàng đi. Chưa tính: thưởng Top Sales, thưởng target tháng / năm.</div>`;
+    +`<div class="muted bc-ghi">Thực thu = tiền về trong tháng theo sổ quỹ Kiot, không phân biệt hoá đơn tháng nào, trừ tiền hoàn khi trả hàng; không tính khoản trả bằng điểm. Tiền về TK công ty 599 đã trừ VAT 8% (đèn điện thờ / chuông mõ 10%)${(()=>{const v=sumBy(K.HD||[],h=>+h.vat||0);return v?' — kỳ này trừ '+fmt(v):''})()}. Tiền cọc đơn đặt (TTDH) tính ở tháng nhận cọc. Đóng gói / giao tính trên tiền về; phần đã cọc tính khi hàng đi. Chưa tính: thưởng Top Sales, thưởng target tháng / năm.</div>`;
 }
 // 04/11/2026 anh: "mỗi nhân sự trong bảng hoa hồng 1 mã … 1 ô riêng để check hoa hồng bên dưới chỗ đăng nhập app, mỗi mã gắn với dữ liệu 1 người"
 // Quản trị tạo / đổi / xoá mã ở đây (quyền sửa P&L); nhân sự nhập mã ở ô Tra cứu hoa hồng dưới khung Đăng nhập → Edge kt-hoa-hong-ma chỉ trả số của người đó.
@@ -5160,13 +5171,14 @@ const hhSp=h=>h.sp?`<div class="muted" style="font-size:11px;max-width:320px;whi
 const hhCach=o=>[...new Set([...o.saleKy.map(x=>x.p.cs==='online'?['Tiền về trong tháng của đơn online (mọi cơ sở, gồm cọc) × '+((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% — '+(x.p.vt||'hỗ trợ vận hành').toLowerCase(),
     'Đơn online theo đúng báo cáo MKT: khách online (từng mua qua kênh online Facebook / Tiktok / Shopee / Website… hoặc chốt qua fanpage Pancake)',
     'và đơn trong 1 tháng tròn từ đơn đầu tiên, hoặc trong 30 ngày từ lần khách nhắn trang cuối',
-    'Không tính: đơn Shopee (anh 03/11), đơn mua lại (khách online quá các mốc trên), khách offline, khách vãng lai, đơn trước 1/6/2026'].join('\n'):x.p.cs==='si'?'Mốc theo doanh thu hoá đơn trong tháng (dưới mốc không tính), giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales mảng buôn':'Mốc theo doanh thu hoá đơn trong tháng, giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales online lẻ'),
+    'Không tính: đơn Shopee (anh 03/11), đơn mua lại (khách online quá các mốc trên), khách offline, khách vãng lai, đơn trước 1/6/2026'].join('\n'):x.p.cs==='ht_ds'?'Thưởng hỗ trợ doanh số (QC-VH03-18-2026): mức cố định theo thực thu (đã trừ VAT TK 599) của phạm vi '+(x.p.pv||[]).join(', ')+' trong tháng — 300tr 500k · 600tr 1tr · 900tr 1,5tr · 1,2 tỷ 2tr · 1,5 tỷ 2,5tr · từ 2 tỷ 3,5tr; 1 mức cao nhất / tháng':x.p.cs==='si'?'Mốc theo doanh thu hoá đơn trong tháng (dưới mốc không tính), giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales mảng buôn':'Mốc theo doanh thu hoá đơn trong tháng, giật cấp ra tỷ lệ bình quân → hoa hồng = thực thu × tỷ lệ đó — sales online lẻ'),
     ...o.chiaQuy.map(x=>`Quỹ ${csTen3(x.cs)} × ${Math.round(x.tl*100)}% ${x.vt.toLowerCase()}${x.k==='tl'?' (cố định theo biên bản họp cửa hàng)':x.k==='nv'?' × công người này / tổng công nhóm':x.tc>1?' ÷ '+x.tc+' người':''}`),
     ...(o.dong+o.giao?['Đóng gói / giao hàng: thực thu đơn × 0,25% (nhiều người chia đều)']:[])])];
 // 02/11 anh: "ghi tóm tắt chính sách ngay dưới các vị trí ấy, để t xem m hiểu có đúng không" — 1 dòng dưới vị trí từng người, dòng nhóm ghi quỹ hình thành thế nào
 const HH_QUY={HT:'Quỹ = khách trực tiếp: nhóm biên cao 2%, biên thấp 0,8% · đơn sales online cửa hàng xử lý 1,5%',CT:'Quỹ = khách trực tiếp: mọi nhóm 2% · đơn sales online cửa hàng xử lý 1,5%'};
 // 02/11 anh: "tách riêng 1 cột logic tính hoa hồng, xuống dòng cho cân, không để dài" — mỗi ý 1 dòng ngắn
 const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online (báo cáo MKT)','Tháng đầu của khách / ≤ 30 ngày từ lần nhắn trang','Không tính đơn Shopee, đơn mua lại']
+    :x.p.cs==='ht_ds'?['Thưởng cố định theo bậc thực thu','Phạm vi: '+(x.p.pv||[]).join(', '),'Từ 300tr 500k · tối đa 3,5tr / tháng']
     :x.p.cs==='si'?['Mốc theo doanh thu, đạt '+fmtTr(x.moc)+' mới tính','600tr đầu 1,5% · đến 1,2 tỷ 2% · trên 2,5%','Trả = thực thu × tỷ lệ bình quân']
     :['Mốc theo doanh thu, giật cấp phần vượt','Đến 150tr 1,5% · đến 200tr 1,8%','Đến 300tr 2% · trên 300tr 2,5%','Trả = thực thu × tỷ lệ bình quân']),
     ...o.chiaQuy.map(x=>Math.round(x.tl*100)+'% quỹ '+csTen3(x.cs)+(x.k==='tl'?' (biên bản họp)':x.k==='nv'?' × ngày công':x.tc>1?' ÷ '+x.tc+' người':'')),
@@ -5174,6 +5186,11 @@ const hhCachDong=o=>[...new Set([...o.saleKy.flatMap(x=>x.p.cs==='online'?[((+x.
 const hhTomTat=o=>hhCachDong(o).join(' · ');
 // 04/11/2026 anh: "sale có thêm phần doanh thu nữa, tính trên các mốc luôn, kê sẵn các mốc ra ở 1 bên kiểu chú thích" — để sales biết mình đạt tới đâu, còn bao nhiêu lên mốc
 const hhPt=t=>(t*100).toLocaleString('vi-VN')+'%';
+function hhHtdsHTML(x){const i=HH_HTDS.findIndex(([a],k)=>x.thu>=a&&(k===HH_HTDS.length-1||x.thu<HH_HTDS[k+1][0])),toi=HH_HTDS[i+1];
+  return `<div class="hh-moc"><div class="hh-moc-l"><div class="hh-moc-k"><div><span>Thực thu phạm vi${x.m?' · '+qtThg(x.m):''}</span><b>${fmt(x.thu)}</b></div><div><span>Mức thưởng</span><b>${x.hh?fmt(x.hh):'Chưa đạt 300tr'}</b></div><div><span>Doanh thu phạm vi (tham khảo)</span><b>${fmt(x.dt)}</b></div></div>
+    <div class="hh-moc-lg">Phạm vi: ${esc((x.p.pv||[]).join(', '))} · thực thu đã trừ VAT tiền về TK công ty 599 · QC-VH03-18-2026 áp từ ${esc(qtThg(String(x.p.tu||'2026-09').slice(0,7)))}</div>
+    <div class="hh-moc-g">${toi?`Còn <b>${fmt(toi[0]-x.thu)}</b> thực thu để lên mức ${fmt(toi[1])}`:'Đã ở mức cao nhất'}</div></div>
+    <div class="hh-moc-r"><div class="hh-moc-rh">Bậc thưởng hỗ trợ doanh số</div>${HH_HTDS.map(([a,t],k)=>`<div class="${k===i?'on':''}"><span>${k===0?'Dưới 300tr':k===HH_HTDS.length-1?'Từ '+fmtTr(a):fmtTr(a)+' – '+fmtTr(HH_HTDS[k+1][0])}</span><b>${t?fmt(t):'không thưởng'}</b></div>`).join('')}<div class="hh-moc-rg">1 mức cao nhất / tháng, không cộng dồn · tối đa 3.500.000</div></div></div>`}
 function hhMocHTML(x){const si=x.p.cs==='si',M=si?HH_MOC_SI:HH_MOC_LE,thu=+x.dt||0,chua=si&&thu<x.moc;   // thu = doanh thu xét mốc (04/11)
   const i=chua?-1:M.findIndex(([a,b])=>thu>=a&&thu<b),moc=si?[x.moc,...M.slice(1).map(m=>m[0]).filter(v=>v>x.moc)]:M.slice(1).map(m=>m[0]),toi=moc.find(v=>v>thu);
   const tlToi=toi==null?null:chua?M[0][2]:(M.find(([a])=>a===toi)||[])[2],max=Math.max(thu,moc[moc.length-1])*1.12,pc=v=>Math.min(100,v/max*100).toFixed(2)+'%';
@@ -5203,7 +5220,7 @@ function hhCT(ten,che){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten),T=!
   const kq=[[saleBan.length?'Hoa hồng bán hàng':'Hoa hồng online',o.sales],['Quỹ cửa hàng',o.quy],['Đóng gói · giao',o.dong+o.giao]].filter(x=>x[1]);
   let dau=(T?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="muted" style="font-size:12.5px">Tháng</span><select class="m-in" style="width:auto;min-width:130px" onchange="hhTraXem(this.value)">${hhTraThang().map(m=>`<option value="${m}" ${m===T.thang?'selected':''}>${qtThg(m)}</option>`).join('')}</select>${T.thang===homNay().slice(0,7)?pill('Tháng đang chạy — số tạm tính','warn'):''}</div>`:'')+`<div class="bc-k" style="grid-template-columns:repeat(${kq.length+1},1fr)"><div><span>Tổng hoa hồng</span><b>${fmt(o.tong)}</b></div>${kq.map(([a,b])=>`<div><span>${a}</span><b>${fmt(b)}</b></div>`).join('')}</div>`;
   // 28/10 anh: "trình bày dài thế, ghi công thức ra là được, không cần số"
-  dau+=o.saleKy.filter(x=>x.p.cs!=='online').map(hhMocHTML).join('');
+  dau+=o.saleKy.filter(x=>x.p.cs!=='online').map(x=>x.p.cs==='ht_ds'?hhHtdsHTML(x):hhMocHTML(x)).join('');
   const cach=hhCach(o).filter(c=>!saleBan.length||!/^Mốc theo doanh thu/.test(c));if(o.ds.some(x=>+x.h.coc>0||hhTraTruoc(x.h)))cach.push('Cọc / trả trước: tính bán hàng ở tháng nhận tiền, tính đóng gói / giao ở tháng hàng đi');
   if(cach.length)dau+=`<div class="muted" style="font-size:12.5px;line-height:1.7;margin:2px 0 10px">${cach.map(c=>esc(c).replace(/\n/g,'<br>')).join('<br>')}</div>`;
   if(dsDT.length)dau+=`<div class="m-seg" style="width:max-content;margin-bottom:10px"><button class="${che==='thu'?'on':''}" onclick="hhCT(${esc(JSON.stringify(ten))},'thu')">Đơn tính thực thu — trả hoa hồng (${o.ds.length})</button><button class="${che==='dt'?'on':''}" onclick="hhCT(${esc(JSON.stringify(ten))},'dt')">Phiếu tính doanh thu — xét mốc (${dsDT.length})</button></div>`;
@@ -5215,7 +5232,7 @@ function hhCT(ten,che){const K=S.cache.hh_kq,o=K&&K.NGs.find(x=>x.ten===ten),T=!
   S.cache.hh_pop={tieu:`${esc(ten)} <span class="badge" style="vertical-align:middle">${esc(T?qtThg(T.thang):bcKy().ten)} · ${o.ds.length} đơn tham gia</span>`,dau,trang:1,rows:o.ds,
     cols:[['Ngày','nw'],['Số HĐ','nw'],['Khách · mặt hàng','ten'],['Cơ sở','nw'],['Vai trò','nw'],['Thực thu','num'],['Hoa hồng','num']],
     dong:x=>`<tr><td class="nw">${fmtD(x.h.ngay)}</td><td class="nw">${hhKiot(x.h)}</td><td class="ten">${esc(x.h.khach||'')}${hhSp(x.h)}</td><td class="nw">${esc(csTen3(csCuaCN(x.h.cn))||x.h.cn)}</td>
-      <td class="nw" style="font-size:12px">${esc(x.vai.join(' · '))}</td><td class="num ${x.h.thu+x.h.coc-(x.h.coc_trong||0)<x.h.dt&&!hhTraTruoc(x.h)?'neg-t':''}" title="${x.h.thu+x.h.coc-(x.h.coc_trong||0)<x.h.dt&&!hhTraTruoc(x.h)?'Khách chưa trả đủ — phần chưa thu chưa tính':''}">${fmt(x.h.thu)}${x.vai.some(v=>/^(Đóng gói|Giao hàng)/.test(v))&&Math.round(x.h.thu_dg)!==Math.round(x.h.thu)?`<div class="muted" style="font-size:11px">tính đóng / giao ${fmt(x.h.thu_dg)}</div>`:''}</td><td class="num">${x.tien?fmt(Math.round(x.tien)):x.vai.includes('Bán')&&o.quy?'<span class="muted" style="font-size:11px">qua quỹ</span>':'–'}</td></tr>`,
+      <td class="nw" style="font-size:12px">${esc(x.vai.join(' · '))}</td><td class="num ${x.h.thu+(x.h.vat||0)+x.h.coc-(x.h.coc_trong||0)<x.h.dt&&!hhTraTruoc(x.h)?'neg-t':''}" title="${x.h.thu+(x.h.vat||0)+x.h.coc-(x.h.coc_trong||0)<x.h.dt&&!hhTraTruoc(x.h)?'Khách chưa trả đủ — phần chưa thu chưa tính':''}">${fmt(x.h.thu)}${x.vai.some(v=>/^(Đóng gói|Giao hàng)/.test(v))&&Math.round(x.h.thu_dg)!==Math.round(x.h.thu)?`<div class="muted" style="font-size:11px">tính đóng / giao ${fmt(x.h.thu_dg)}</div>`:''}</td><td class="num">${x.tien?fmt(Math.round(x.tien)):x.vai.includes('Bán')&&o.quy?'<span class="muted" style="font-size:11px">qua quỹ</span>':'–'}</td></tr>`,
     tong:`<tr class="tong"><td colspan="5"><b>Tổng ${o.ds.length} đơn</b></td><td class="num"><b>${fmt(sumBy(o.ds,x=>x.h.thu))}</b></td><td class="num"><b>${fmt(Math.round(sumBy(o.ds,x=>x.tien)))}</b></td></tr>`};
   hhPopup()}
 // bấm 1 dòng quỹ cửa hàng → các đơn tạo nên số thực thu đó
@@ -6995,7 +7012,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
     cols:[['Nhân sự',o=>o.ten,'chu',{w:26}],['Đơn đóng gói',o=>soViec(o,'Đóng gói'),'so',{w:9}],['Tiền đóng gói',o=>o.dong,'so',{w:13}],['Đơn giao',o=>soViec(o,'Giao hàng'),'so',{w:9}],['Tiền giao',o=>o.giao,'so',{w:13}],['Cộng',o=>o.dong+o.giao,'so',{w:13}]]};
   const ts=[['Sales online lẻ (CS-VH04-16)','Thực thu × giật cấp: đến 150tr 1,5% · 150–200tr 1,8% · 200–300tr 2% · trên 300tr 2,5%'],
     ['Sales online mảng buôn (CS-VH04-13)','Dưới mốc 600tr: 0 · 600tr đầu 1,5% · 600tr–1,2 tỷ 2% · trên 1,2 tỷ 2,5% (thời gian hỗ trợ sales mới: hạ mốc)'],
-    ...CH.nguoi.map(p=>['Người hưởng: '+p.ten,hhCsTen(p)+(p.kiot&&p.kiot.length?' · doanh thu Kiot của: '+p.kiot.join(', '):'')+(p.ho_tro&&p.ho_tro.tu?' · hỗ trợ '+fmtD(p.ho_tro.tu)+'–'+fmtD(p.ho_tro.den)+', mốc '+fmtTr(+p.ho_tro.moc||0):'')]),
+    ...CH.nguoi.map(p=>['Người hưởng: '+p.ten,hhCsTen(p)+(p.pv?' · phạm vi: '+p.pv.join(', ')+(p.tu?' · từ '+qtThg(String(p.tu).slice(0,7)):''):'')+(p.kiot&&p.kiot.length?' · doanh thu Kiot của: '+p.kiot.join(', '):'')+(p.ho_tro&&p.ho_tro.tu?' · hỗ trợ '+fmtD(p.ho_tro.tu)+'–'+fmtD(p.ho_tro.den)+', mốc '+fmtTr(+p.ho_tro.moc||0):'')]),
     ['Quỹ cửa hàng — khách trực tiếp',csTen3('HT')+': nhóm biên cao 2%, biên thấp 0,8% · '+csTen3('CT')+': mọi nhóm 2%'],
     ['Quỹ cửa hàng — đơn sales online cửa hàng xử lý','1,5% thực thu'],
     ['Chia quỹ '+csTen3('HT'),'Quản lý 40% · Giám sát 25% · Nhân viên 35%'+(((CH.cua_hang.HT||{}).nv_tl||{}).tu&&ms.some(m=>m>=CH.cua_hang.HT.nv_tl.tu)?' — từ '+qtThg(CH.cua_hang.HT.nv_tl.tu)+' cố định theo biên bản họp: '+Object.entries(CH.cua_hang.HT.nv_tl.ds).map(([n,t])=>n+' '+Math.round(t*100)+'%').join(' · '):' (chia theo ngày công)')],['Chia quỹ '+csTen3('CT'),'Quản lý 40% · Nhân viên 60% (chia theo ngày công)'],
@@ -7003,6 +7020,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
     ['Ngày công','Mặc định 26 ngày / tháng'+(Object.keys(CH.cong||{}).filter(m=>ms.includes(m)).length?' · đã sửa: '+ms.map(m=>Object.entries((CH.cong||{})[m]||{}).map(([n,c])=>n+' '+c+' ('+qtThg(m)+')').join(', ')).filter(Boolean).join(', '):'')],
     ['Đóng gói / giao hàng','0,25% thực thu đơn cửa hàng + Kho Shidai, nhiều người chia đều · người kho: '+((CH.kho||[]).join(', ')||'—')],
     ...Object.entries(CH.nhom||{}).sort((a,b)=>a[0].localeCompare(b[0],'vi')).map(([k,v])=>['Nhóm hàng: '+k,HH_NHOM[v]||v]),
+    ['Trừ VAT TK 599','Tiền khách trả vào TK VCB công ty 599 trừ VAT 8%; phần hàng đèn điện thờ / chuông mõ 10% (cùng luật P&L) — áp cho mọi hoa hồng: sales, quỹ cửa hàng, đóng gói / giao, online'],
     ['Thực thu','Tiền về trong tháng theo sổ quỹ Kiot, không phân biệt hoá đơn tháng nào, trừ tiền hoàn khi trả hàng; không tính khoản trả bằng điểm. Phiếu chưa đánh hoá đơn: ghép hoá đơn còn nợ của khách, không có thì theo hoá đơn gần nhất'],
     ['Tiền cọc (TTDH)','Tính hoa hồng ngay tháng nhận cọc (đơn chưa huỷ) · đóng gói / giao: phần cọc tính khi hàng đi, tiền về sau tính ở tháng tiền về'],
     ['Online / offline','Theo kênh bán trên hoá đơn Kiot (trống thì kênh đơn đặt hàng): bán trực tiếp / Khác / trống / Chùa Vẻn = offline'],
@@ -7013,7 +7031,7 @@ async function xuHH(tu,den,ms,loc){const d=await rpc('kt_bc_hoa_hong',{p_tu:tu,p
   const shDon={ten:'Đơn từng người',tieuDe:'CÁC ĐƠN TÍNH HOA HỒNG — TỪNG NGƯỜI',phu,ghi:'"qua quỹ" = đơn người đó bán, hưởng qua quỹ cửa hàng (xem sheet Quỹ cửa hàng)',rows:don,
     cols:[['Nhân sự',r=>r.o.ten,'chu',{w:22}],['Ngày',r=>r.x.h.ngay,'ngay',{w:10}],['Số HĐ',r=>r.x.h.la_tra?(r.x.h.ma_tra||'Trả hàng')+' (trả của '+r.x.h.ma+')':r.x.h.la_coc?r.x.h.ma+' (cọc đơn '+r.x.h.ma_don+')':r.x.h.ma+(hhCocTxt(r.x.h)?' ('+hhCocTxt(r.x.h).replace(/\n/g,'; ')+')':''),'chu',{w:20}],
       ['Khách hàng',r=>r.x.h.khach||'','chu',{w:24}],['Cơ sở',r=>csTen3(csCuaCN(r.x.h.cn))||r.x.h.cn,'chu',{w:11}],['Vai trò',r=>r.x.vai.join(' · ')+(!r.x.tien&&r.x.vai.includes('Bán')&&r.o.quy?' (qua quỹ)':''),'chu',{w:16}],
-      ['Thực thu',r=>r.x.h.thu,'so',{w:13}],['Hoa hồng',r=>r.x.tien?Math.round(r.x.tien):null,'so',{w:12}]]};
+      ['VAT 599 đã trừ',r=>r.x.h.vat||null,'so',{w:11}],['Thực thu',r=>r.x.h.thu,'so',{w:13}],['Hoa hồng',r=>r.x.tien?Math.round(r.x.tien):null,'so',{w:12}]]};
   return [shNS,shCach,shOn,shQ,shDG,shTS,shDon]}
 async function xuatHoaHong(){const ky=bcKy(),loc={bp:S.f.hh_bp||'',ng:S.f.hh_ng||''};toast('Đang tạo file Excel hoa hồng...');
   try{const E=await napExcelJS(),wb=new E.Workbook();wb.creator='App kế toán';wb.created=new Date();
