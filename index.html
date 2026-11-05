@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.325';
-const APP_VERSION='05/11/2026 17:32';
+const APP_SO='1.326';
+const APP_VERSION='05/11/2026 17:37';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4204,7 +4204,10 @@ async function doiTTChi(id,tt){
 async function pageDC(){
   // ĐIỀU CHUYỂN TIỀN — giao diện mới (14/10/2026): thẻ số · tab · lọc · bảng (nút xác nhận ngay trên dòng) + khung chi tiết khi bấm
   const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const ds=await rpc('kt_ds',{p_bang:'dieu_chuyen',p_tu:S.tu,p_den:S.den});S.cache.dc=ds;
+  // 05/11 (CTM004104): phiếu vào két thủ quỹ CHƯA nhận của kỳ trước (≤ 90 ngày) vẫn hiện ở kỳ đang xem — chưa nhận thì chưa tính vào két, không được khuất
+  const t90=new Date(new Date(S.tu+'T00:00:00Z').getTime()-90*864e5).toISOString().slice(0,10),truoc=new Date(new Date(S.tu+'T00:00:00Z').getTime()-864e5).toISOString().slice(0,10);
+  const [ds1,dsT]=await Promise.all([rpc('kt_ds',{p_bang:'dieu_chuyen',p_tu:S.tu,p_den:S.den}),rpc('kt_ds',{p_bang:'dieu_chuyen',p_tu:t90,p_den:truoc}).catch(()=>[])]);
+  const ds=[...dsT.filter(x=>vaoKet(x)&&!x.tq_nhan_luc&&!x.da_xac_nhan&&String(x.tao_luc||'')>='2026-10-20'),...ds1];S.cache.dc=ds;
   const f=S.f,tab=f.dc_tab||'tat_ca',q=(f.dc_q||'').toLowerCase();
   const tkOK=x=>locTK().length===LOC_TK.length||locTK().includes(tkNhom(x.tk_di_id))||locTK().includes(tkNhom(x.tk_nhan_id));
   const nen=ds.filter(x=>theoNhom('dc',x)&&tkOK(x)),loc={tat_ca:x=>true,chua:x=>!x.da_xac_nhan,roi:x=>x.da_xac_nhan,tq:x=>vaoKet(x)&&!x.da_xac_nhan};
@@ -4219,7 +4222,7 @@ async function pageDC(){
   const cols=[['Ngày',x=>x.ngay],['Số phiếu',x=>'DC'+String(x.id).padStart(6,'0')],['Nội dung',x=>x.noi_dung],['TK đi',x=>(tk(x.tk_di_id)||{}).ten||''],['TK nhận',x=>(tk(x.tk_nhan_id)||{}).ten||''],['Số tiền',x=>x.so_tien],['Xác nhận',x=>x.da_xac_nhan?'Đã xác nhận':'Chưa']];
   S.cache.dc_xuat=()=>xuatCSV('dieu-chuyen-'+S.tu+'_'+S.den,cols,l);
   const xn=coGhi('dieu_chuyen');
-  el.innerHTML=`${nhomSeg('dc',ds.filter(tkOK),'dc_tr')}<div class="m-kpis m-k3">${the('accent','dc','Tổng điều chuyển trong kỳ',fmt(tien(nen)),nen.length+' lần · không tính vào thu / chi','tat_ca')}
+  el.innerHTML=`${nhomSeg('dc',ds.filter(tkOK),'dc_tr')}<div class="m-kpis m-k3">${the('accent','dc','Tổng điều chuyển trong kỳ',fmt(tien(nen.filter(x=>x.ngay>=S.tu))),nen.filter(x=>x.ngay>=S.tu).length+' lần · không tính vào thu / chi','tat_ca')}
       ${the('warn','cho','Chưa xác nhận',fmt(tien(nen.filter(loc.chua))),nen.filter(loc.chua).length+' lần chờ kế toán xác nhận','chua')}
       ${the('ok','ok','Đã xác nhận',fmt(tien(nen.filter(loc.roi))),nen.filter(loc.roi).length+' lần','roi')}</div>
     <div class="m-split rong ${chon?'co':''}"><div style="min-width:0">
@@ -6443,7 +6446,7 @@ const LOGIC2=[
  ['chung','Lọc cơ sở','Chỉ 1 ô lọc cơ sở ở thanh trên (cạnh ô kỳ), tick chọn 1 hoặc nhiều cơ sở cùng lúc; áp dụng cho mọi trang. Bỏ ô cơ sở trong từng trang và ở cột lọc bên trái.','Bỏ tick hết = Tất cả cơ sở. Bấm tên cơ sở trên dòng phiếu chi vẫn lọc nhanh theo cơ sở đó.','19/10'],
  ['chung','Người đang trong app','Thanh trên cạnh chuông: avatar con vật của những ai đang mở app (rê chuột xem tên + trang đang xem). Mỗi tài khoản 1 con vật cố định, không trùng người khác (đến 30 tài khoản); 1 người mở nhiều máy chỉ hiện 1 icon. Ảnh con vật lấy từ app MKT.','Mỗi trình duyệt 30 giây báo danh 1 lần (kt_bao_danh, bảng kt_dang_xem riêng app kế toán); quá 90 giây không báo = đã thoát; đăng xuất = rời ngay. Lúc Xem như không báo danh.','19/10 · 02/11'],
  ['thu_chi','Huỷ "Đã chi tiền"','Phiếu đã bấm Đã chi tiền nhầm (vd chưa duyệt lệnh ngân hàng): người xác nhận (kế toán có quyền xác nhận) hoặc giám đốc bấm "↩ Huỷ đã chi" ở chân cửa sổ phiếu → về Chờ chi tiền.','Không phải tạo lại phiếu; tiền không còn trừ tài khoản cho tới khi bấm Đã chi tiền lại; chuông báo người chi; nhật ký ghi lại.','20/10'],
- ['thu_chi','Nộp két từ Kiot (quầy → két)','Mỗi lần cửa hàng nộp doanh thu tiền mặt trên Kiot (cặp phiếu Chuyển rút CTM… chi tiền mặt quầy + TTD_CTM… thu vào Két) → app tự tạo điều chuyển "Nộp két" TIỀN MẶT QUẦY → KÉT TIỀN MẶT, 15 phút / lần. Phiếu Kiot bị huỷ → app ẩn theo.','Đã có điều chuyển quầy → két cùng số tiền, lệch ≤ 4 ngày (từ file dòng tiền / nhập tay) thì chỉ gắn mã Kiot, không tạo trùng. Thủ quỹ up ảnh chứng từ nộp tiền vào chính phiếu điều chuyển đó; kế toán xem ảnh rồi bấm Xác nhận.','19/10'],
+ ['thu_chi','Nộp két từ Kiot (quầy → két)','Mỗi lần cửa hàng nộp doanh thu tiền mặt trên Kiot (cặp phiếu Chuyển rút CTM… chi tiền mặt quầy + TTD_CTM… thu vào Két) → app tự tạo điều chuyển "Nộp két" TIỀN MẶT QUẦY → KÉT TIỀN MẶT, 15 phút / lần. Phiếu Kiot bị huỷ → app ẩn theo. Kiot sửa ngày phiếu sau khi app đã tạo (vd CTM004104 31/10 → 03/11) mà thủ quỹ chưa nhận → ngày điều chuyển đổi theo Kiot (05/11); trang Điều chuyển hiện cả phiếu vào két chờ thủ quỹ nhận của kỳ trước (≤ 90 ngày, không tính vào tổng kỳ).','Đã có điều chuyển quầy → két cùng số tiền, lệch ≤ 4 ngày (từ file dòng tiền / nhập tay) thì chỉ gắn mã Kiot, không tạo trùng. Thủ quỹ up ảnh chứng từ nộp tiền vào chính phiếu điều chuyển đó; kế toán xem ảnh rồi bấm Xác nhận.','19/10'],
  ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
  ['thu_chi','Chuyển khoản TK công ty: lập lệnh → duyệt lệnh','Thủ quỹ lập lệnh trên ngân hàng, up ảnh lệnh (UNC), bấm "✓ Đã lập lệnh" → chuông báo kế toán. Kế toán duyệt lệnh trên ngân hàng xong bấm "✓ Đã duyệt lệnh" (ngày thanh toán mặc định hôm duyệt). Tab Cần chú ý: Chờ duyệt lệnh.','Chỉ khi Đã duyệt lệnh phiếu mới thành Đã thanh toán và trừ số dư — hết lệch khi lập lệnh hôm trước, duyệt hôm sau. Két tiền mặt vẫn bấm Đã chi tiền như cũ.','20/10'],
  ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Kế toán 27/10: điều chuyển vào két CHƯA bấm nhận thì chưa tính vào đâu (không trừ TK đi, không cộng két, không vào sổ quỹ ngày); bấm nhận mới tính cả 2 bên, ngày = ngày nhận. Áp phiếu tạo từ 20/10.','27/10'],
