@@ -101,7 +101,7 @@ begin
   return (with h as (select ky_hieu || '-' || so_hd ma, so_hd, ky_hieu, ngay, nguoi_mua, tong from kt_thue_hd
                       where nguon like 'meinvoice:%' and so_hd is not null),
                hk as (select * from h where ngay between p_tu and p_den),
-               g as (select g.hd_ma, g.thu_id, g.cach, g.ly_do, x.ngay, x.so_tien, x.noi_dung, x.ma_nguon from kt_thu_hd g join kt_thu x on x.id = g.thu_id and not x.da_xoa),
+               g as (select g.hd_ma, g.thu_id, g.cach, g.ly_do, g.canh_bao, x.ngay, x.so_tien, x.noi_dung, x.ma_nguon from kt_thu_hd g join kt_thu x on x.id = g.thu_id and not x.da_xoa),
                -- nhóm: các HĐ cùng phiếu với HĐ này
                nh as (select hk.ma, (select array_agg(distinct g2.hd_ma) from g g1 join g g2 on g2.thu_id = g1.thu_id where g1.hd_ma = hk.ma) hds from hk),
                gy as (select u.hd_ma, jsonb_agg(jsonb_build_object('thu_id', u.thu_id, 'ly_do', u.ly_do, 'so_tien', x.so_tien, 'ngay', x.ngay, 'nd', left(x.noi_dung, 120)) order by u.diem desc) ds
@@ -111,7 +111,7 @@ begin
                          and h.ngay between (k.ngay at time zone 'Asia/Ho_Chi_Minh')::date - 5 and (k.ngay at time zone 'Asia/Ho_Chi_Minh')::date + 45
                        where h.ngay between p_tu and p_den group by 1)
           select coalesce(jsonb_agg(jsonb_build_object('ma', hk.ma, 'so_hd', hk.so_hd, 'ky_hieu', hk.ky_hieu, 'ngay', hk.ngay, 'nguoi_mua', hk.nguoi_mua, 'tong', hk.tong,
-                   'phieu', (select coalesce(jsonb_agg(jsonb_build_object('thu_id', g.thu_id, 'ngay', g.ngay, 'so_tien', g.so_tien, 'nd', left(g.noi_dung, 120), 'cach', g.cach, 'ly_do', g.ly_do,
+                   'phieu', (select coalesce(jsonb_agg(jsonb_build_object('thu_id', g.thu_id, 'ngay', g.ngay, 'so_tien', g.so_tien, 'nd', left(g.noi_dung, 120), 'cach', g.cach, 'ly_do', g.ly_do, 'canh_bao', g.canh_bao,
                                'chung', (select count(*) from g g3 where g3.thu_id = g.thu_id)) order by g.ngay), '[]') from g where g.hd_ma = hk.ma),
                    'nhom_hd', coalesce(array_length(nh.hds, 1), 0),
                    'tong_hd_nhom', (select sum(h2.tong) from h h2 where h2.ma = any(nh.hds)),
@@ -121,6 +121,36 @@ begin
 end $f$;
 revoke all on function public.kt_hd_ra_doi_chieu(text, date, date) from public;
 grant execute on function public.kt_hd_ra_doi_chieu(text, date, date) to anon, authenticated;
+
+-- 05/11 anh: "gắn nhưng thấy sai vẫn phải note lại" — cặp TỰ GẮN có dấu hiệu sai thì vẫn gắn (theo ghi chú kế toán) nhưng ghi canh_bao:
+--  (a) HĐ đang gắn bị THU THỪA (tổng phiếu > HĐ) và có HĐ khác CHƯA NỐI phiếu nào đúng bằng tiền phiếu ±1.000 trong ±45 ngày → "có thể ghi nhầm số HĐ, HĐ x cùng số tiền"
+--  (c) HĐ chỉ gắn phiếu trả riêng nó mà tổng phiếu > HĐ → "HĐ đã thu thừa x qua n phiếu — kiểm lại số HĐ ghi trên phiếu"
+--  (tên người mua khác khách trên phiếu KHÔNG báo: thử 05/11 ra 51 cặp đều đúng — thu riêng VAT, trả 1 phần, HKD đứng tên chủ)
+-- Cặp kế toán gắn tay = đã xác nhận → không cảnh báo. Tính lại mỗi lượt job.
+alter table kt_thu_hd add column if not exists canh_bao text;
+create or replace function public.kt_thu_hd_canh_bao() returns int language plpgsql security definer set search_path = public as $f$
+declare n int;
+begin
+  with x as (select g.thu_id, g.hd_ma, t.so_tien, t.ngay, coalesce(t.noi_dung, '') || ' ' || coalesce(t.ghi_chu, '') nd, h.nguoi_mua,
+                    (select sum(g2.tong) from kt_thu_hd g2 where g2.thu_id = g.thu_id) tong_hd, h.tong hd_tong,
+                    (select sum(t2.so_tien) from kt_thu_hd g2 join kt_thu t2 on t2.id = g2.thu_id and not t2.da_xoa where g2.hd_ma = g.hd_ma) thu_hd,
+                    (select count(*) from kt_thu_hd g2 where g2.thu_id = g.thu_id) n_hd,
+                    (select count(*) from kt_thu_hd g2 where g2.hd_ma = g.hd_ma) n_phieu,
+                    (select bool_and((select count(*) from kt_thu_hd g4 where g4.thu_id = g2.thu_id) = 1) from kt_thu_hd g2 where g2.hd_ma = g.hd_ma) don
+               from kt_thu_hd g join kt_thu t on t.id = g.thu_id join kt_thue_hd h on h.nguon like 'meinvoice:%' and h.ky_hieu || '-' || h.so_hd = g.hd_ma
+              where g.cach = 'tu_dong'),
+       c as (select x.thu_id, x.hd_ma, concat_ws(' · ',
+               case when abs(x.so_tien - x.tong_hd) > 1000 and x.thu_hd > x.hd_tong + 1000 then (select 'có thể ghi nhầm số HĐ: HĐ ' || h2.ky_hieu || ' số ' || ltrim(h2.so_hd, '0') || ' ngày ' || to_char(h2.ngay, 'DD/MM') || ' đúng bằng tiền phiếu'
+                    from kt_thue_hd h2 where h2.nguon like 'meinvoice:%' and h2.so_hd is not null and abs(h2.tong - x.so_tien) <= 1000 and h2.ngay between x.ngay - 45 and x.ngay + 45
+                     and not exists (select 1 from kt_thu_hd g3 where g3.hd_ma = h2.ky_hieu || '-' || h2.so_hd)
+                     order by abs(h2.ngay - x.ngay) limit 1) end,
+               case when x.don and x.thu_hd > x.hd_tong + 1000 then 'HĐ đã thu thừa ' || replace(to_char(x.thu_hd - x.hd_tong, 'FM999G999G999G999'), ',', '.') || ' qua ' || x.n_phieu || ' phiếu — kiểm lại số HĐ ghi trên phiếu' end) cb from x)
+  update kt_thu_hd g set canh_bao = nullif(c.cb, '') from c where c.thu_id = g.thu_id and c.hd_ma = g.hd_ma and g.canh_bao is distinct from nullif(c.cb, '');
+  get diagnostics n = row_count;
+  update kt_thu_hd set canh_bao = null where cach <> 'tu_dong' and canh_bao is not null;
+  return n;
+end $f$;
+revoke all on function public.kt_thu_hd_canh_bao() from anon, authenticated, public;
 
 create or replace function public.kt_ghep_hd_thu(p_ghi boolean default true) returns int language plpgsql security definer set search_path = public as $f$
 declare n int := 0;
@@ -138,6 +168,7 @@ begin
       select distinct on (thu_id, hd_ma) thu_id, hd_ma, so_hd, ky_hieu, ngay_hd, nguoi_mua, mst, tong, diem, ly_do from _kt_u u
        where not u.chac
        order by thu_id, hd_ma, diem desc;
+    perform kt_thu_hd_canh_bao();
     if n > 0 then insert into kt_nhat_ky (nguoi, bang, hanh_dong, du_lieu) values ('Hệ thống', 'kt_thu', 'ghep_hd_ra', jsonb_build_object('so_phieu', n)); end if;
   else select count(*) into n from _kt_u u where u.chac;
   end if;
