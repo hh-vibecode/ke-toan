@@ -1,3 +1,4 @@
+-- 06/11/2026 chạy lại (v1.334) sau khi bản supabase-schema-kt-hoa-hong-tra-hang-vat.sql bỏ ra — anh chốt: "tất cả các khoản DOANH THU và THỰC THU của toàn bộ hoá đơn đổ về tài khoản 599 là KHÔNG BAO GỒM VAT hết".
 -- 06/11/2026 kế toán: "phần doanh thu tính đạt mốc cũng là doanh thu chưa VAT" + "phần VAT bao giờ cũng tách riêng, không được tính vào bất cứ phần nào".
 -- dt_sale thêm 'vat' từng dòng: hoá đơn = giá trị × (phần khách trả vào TK 599 / giá trị, mọi ngày, gồm cọc TTDH của đơn; tối đa 1) × kt_vat_tl;
 -- phiếu đặt = min(tiền 599 của đơn (cọc TTDH + hoá đơn của đơn), giá trị đơn) × tỷ lệ VAT hoá đơn đầu (chưa có HĐ → 8%); trả hàng = −giá trị trả × phần 599 HĐ gốc × tỷ lệ.
