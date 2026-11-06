@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.334';
-const APP_VERSION='06/11/2026 14:47';
+const APP_SO='1.335';
+const APP_VERSION='06/11/2026 15:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4955,8 +4955,6 @@ async function pageBCCs(){const el=$('#page');el.innerHTML='<div class="m-empty"
 const HH_CS={le:'Sales online lẻ (CS-VH04-16)',si:'Sales online mảng buôn (CS-VH04-13)',ht_ds:'Sales Admin / CSKH — thưởng hỗ trợ doanh số (QC-VH03-18)'};
 // 05/11/2026 anh: "bổ sung chính sách hoa hồng cho nhân sự Oanh Bùi" + QC-VH03-18-2026 "Quy chế thưởng hỗ trợ doanh số" (Sales Admin / CSKH, ban hành 01/09/2026):
 // thưởng CỐ ĐỊNH theo bậc doanh số thực thu không gồm VAT (= thực thu đã trừ VAT TK 599) của phạm vi phụ trách / tháng, 1 mức cao nhất, tối đa 3,5tr. — Monsieur Claude
-const HH_HTDS=[[0,0],[300e6,5e5],[600e6,1e6],[900e6,15e5],[1.2e9,2e6],[1.5e9,25e5],[2e9,35e5]];
-const hhHtds=thu=>(HH_HTDS.filter(([a])=>thu>=a).pop()||[0,0])[1];
 // 31/10 anh: "thêm Nguyễn Hoàng Hải, nhận 1% từ doanh thu online thực tế trong tháng" + "vị trí hỗ trợ vận hành" → người cs 'online' (tl = tỷ lệ) hưởng
 // thực thu MỌI hoá đơn online trong tháng (cờ on = kênh bán Kiot, cùng luật Tổng quan / P&L), trả hàng trừ theo đơn gốc
 const hhCsTen=p=>p.cs==='online'?(p.vt||'Hỗ trợ vận hành')+' — '+((+p.tl||0)*100).toLocaleString('vi-VN')+'% tiền về đơn online theo báo cáo MKT':HH_CS[p.cs]||p.cs;
@@ -4981,6 +4979,9 @@ function hhDon(tieu,ds,ten){S.cache.hh_pop={tieu:`${tieu} <span class="badge" st
 function hhSaDS(i,k){const K=S.cache.hh_kq,x=K&&K.SA[i];if(!x)return;const [,dk,v,ten]=HH_COT[k];
   hhDon(`${esc(x.p.ten)} · ${ten.toLowerCase()} · ${qtThg(x.m)}`,x.H.filter(dk).map(h=>({h,v:v(h)})).filter(r=>Math.round(r.v)!==0),ten)}
 // <hh-tinh-chung> — 04/11/2026: Edge kt-hoa-hong-ma (nhân sự tra cứu bằng mã) chạy ĐÚNG đoạn code từ đây tới dấu đóng + sumBy, CS3, csCuaCN.
+// 06/11: bảng thưởng hỗ trợ doanh số phải nằm TRONG đoạn dùng chung — Edge kt-hoa-hong-ma (tra cứu theo mã) chỉ chạy đoạn này (lỗi 05/11–06/11: hhHtds is not defined)
+const HH_HTDS=[[0,0],[300e6,5e5],[600e6,1e6],[900e6,15e5],[1.2e9,2e6],[1.5e9,25e5],[2e9,35e5]];
+const hhHtds=thu=>(HH_HTDS.filter(([a])=>thu>=a).pop()||[0,0])[1];
 // Trong khối chỉ để định nghĩa (không gọi hàm ngoài khối lúc nạp). Sửa cách tính hoa hồng ở đây là trang Hoa hồng và tra cứu theo mã cùng đổi. — Monsieur Claude
 const hhTl=(x,t)=>[Math.round(x*t),fmtTr(x)+' × '+(t*100).toLocaleString('vi-VN')+'%'];
 const HH_NHOM={cao:'Biên cao — 2%',thap:'Biên thấp — 0,8%',khong:'Không tính'};

@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     if (!o) return traJ({ ten, thang, o: null });
     // chỉ phần hiển thị cần: bỏ danh sách đơn + cấu hình của người khác (saleKy.H, chiaQuy.dsc)
     const ra = { ten: o.ten, bp: o.bp, vt: [...o.vt], sales: o.sales, quy: o.quy, dong: o.dong, giao: o.giao, tong: o.tong, cong: o.cong, soDon: o.soDon,
-      saleKy: o.saleKy.map((x: any) => ({ m: x.m, dt: x.dt, thu: x.thu, hh: x.hh, ht: x.ht, tl: x.tl, moc: x.moc, cach: x.cach, dsDT: x.dsDT || [], p: { ten: x.p.ten, cs: x.p.cs, tl: x.p.tl, vt: x.p.vt, kiot: x.p.kiot, ho_tro: x.p.ho_tro } })),
+      saleKy: o.saleKy.map((x: any) => ({ m: x.m, dt: x.dt, thu: x.thu, hh: x.hh, ht: x.ht, tl: x.tl, moc: x.moc, cach: x.cach, dsDT: x.dsDT || [], p: { ten: x.p.ten, cs: x.p.cs, tl: x.p.tl, vt: x.p.vt, kiot: x.p.kiot, ho_tro: x.p.ho_tro, pv: x.p.pv, tu: x.p.tu } })),
       chiaQuy: o.chiaQuy.map((x: any) => ({ m: x.m, cs: x.cs, vt: x.vt, tl: x.tl, q: x.q, phan: x.phan, c: x.c, tc: x.tc, k: x.k, tien: x.tien })),
       ds: o.ds.map((x: any) => ({ h: { ...x.h, gc: undefined, nh: undefined }, vai: x.vai, tien: x.tien })) };
     return traJ({ ten, thang, o: ra });
