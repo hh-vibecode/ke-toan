@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.335';
-const APP_VERSION='06/11/2026 15:08';
+const APP_SO='1.336';
+const APP_VERSION='06/11/2026 15:19';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5015,7 +5015,11 @@ const hhKiot=h=>h.la_tra?`<a href="${KIOT_MAN}Returns?Code=${encodeURIComponent(
   :`<a href="${KIOT_MAN}Invoices?Code=${encodeURIComponent(h.ma||'')}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(h.ma||'')} ↗</a>${hhCocTxt(h)?`<div class="muted" style="font-size:11px;white-space:nowrap">${esc(hhCocTxt(h)).replace(/\n/g,'<br>')}</div>`:''}${hhVatTxt(h)}`;
 // 02/11 anh "có thực sự check note không": đọc ghi chú TỪNG DÒNG (trước gộp 1 dòng nên chữ dòng sau dính vào tên), nhận cả kiểu
 // "Người đóng hàng 1 :", "Người: đóng hàng:", tên viết thường; bỏ phần trong ngoặc; viết tắt "Tên ĐH / GH" giữ như cũ. — Monsieur Claude
-function hhDocDG(gc){const ds={dong:[],giao:[]},hoa=w=>w.charAt(0).toUpperCase()+w.slice(1);
+// 06/11 anh "sao có 2 Hoà": ghi chú Kiot gõ dấu kiểu cũ "Hoà" (dấu trên a) ≠ "Hòa" (dấu trên o) → 2 người. Quy về 1 kiểu: NFC + oà/oá/oả/oã/oạ, oè…, uỳ/uý… ở CUỐI âm tiết
+// chuyển dấu lên nguyên âm đầu (Hoà→Hòa, Thuý→Thúy); "Hoàng", "Toàn" (có phụ âm cuối) giữ nguyên. — Monsieur Claude
+const HH_DAU={'à':'̀','á':'́','ả':'̉','ã':'̃','ạ':'̣','è':'̀','é':'́','ẻ':'̉','ẽ':'̃','ẹ':'̣','ỳ':'̀','ý':'́','ỷ':'̉','ỹ':'̃','ỵ':'̣'};
+const hhTenChuan=n=>String(n||'').normalize('NFC').replace(/([oOuU])([àáảãạèéẻẽẹỳýỷỹỵ])(?![\p{L}])/gu,(m,v,c)=>(v+HH_DAU[c]).normalize('NFC')+c.normalize('NFD')[0]);
+function hhDocDG(gc){const ds={dong:[],giao:[]},hoa=w=>w.charAt(0).toUpperCase()+w.slice(1);gc=hhTenChuan(gc);
   for(const dong of String(gc||'').split(/\r?\n|\s+(?=\d+\.\s*Người)/i)){const mm=dong.match(/Người\s*:?\s*(đóng|giao)\s*hàng\s*\d*\s*:\s*(.+)$/i);if(!mm)continue;
     mm[2].replace(/\(.*?\)/g,' ').split(/\s*[+,&;]\s*|\s+và\s+/).map(n=>n.trim()).filter(Boolean)
       .forEach(n=>ds[/đóng/i.test(mm[1])?'dong':'giao'].push(/\d|:/.test(n)||n.split(/\s+/).length>5?n:n.split(/\s+/).map(hoa).join(' ')))}
