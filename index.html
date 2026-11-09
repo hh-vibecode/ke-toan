@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.343';
-const APP_VERSION='09/11/2026 11:47';
+const APP_SO='1.344';
+const APP_VERSION='09/11/2026 12:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4793,7 +4793,7 @@ const thgVN=t=>t?'T'+(+t.slice(5))+'/'+t.slice(0,4):'';
 async function plDinhKy(el,ky){
   const [ds,th]=await Promise.all([rpc('kt_pl_dinh_ky_ds'),rpc('kt_pl_dinh_ky_thang',{p_tu:ky.tu.slice(0,7),p_den:ky.den.slice(0,7)})]);S.cache.pl_dkds=ds;
   const g=coGhi('pl'),lo=id=>(S.dm.loai.find(l=>l.id===id)||{}),loT=x=>esc((lo(x.loai_id).ten||'')+(x.loai_con_id?' › '+(lo(x.loai_con_id).ten||''):''));
-  const pbT=x=>(x.phan_bo||[]).length?(x.phan_bo||[]).map(p=>esc((DV_CP.find(d=>d[0]===+p.don_vi_id)||[0,'#'+p.don_vi_id])[1].split(' — ')[0])+' '+fmt(p.so_tien)).join(' · '):'<span class="muted">Chung</span>';
+  const pbT=x=>x.phan_bo_ds?'<span class="badge">% doanh số từng tháng</span>':(x.phan_bo||[]).length?(x.phan_bo||[]).map(p=>esc((DV_CP.find(d=>d[0]===+p.don_vi_id)||[0,'#'+p.don_vi_id])[1].split(' — ')[0])+' '+fmt(p.so_tien)).join(' · '):'<span class="muted">Chung</span>';
   // tháng × khoản (gộp các dòng đơn vị)
   const TH={};th.forEach(r=>{const k=r.id+'|'+r.thang;TH[k]=TH[k]||{...r,tien:0};TH[k].tien+=+r.tien||0});const thL=Object.values(TH).filter(r=>r.kieu==='uoc_tinh').sort((a,b)=>a.thang<b.thang?1:-1);
   el.innerHTML=head('Báo cáo kết quả kinh doanh (P&L) <span class="badge" style="vertical-align:middle">'+esc(ky.ten)+'</span>','<span class="badge">Khoản định kỳ chỉ cộng vào P&L — không phiếu chi, không trừ tiền</span>')+bcBar(PL_TABS,'dk')
@@ -4820,30 +4820,33 @@ function formDinhKy(id){const x=(S.cache.pl_dkds||[]).find(t=>t.id===id)||{tu_th
       <label><span>Từ tháng${BB}</span><input type="month" name="tu_thang" min="${PL_APP_TU}" value="${x.tu_thang}"></label>
       <label><span>Đến tháng</span><input type="month" name="den_thang" value="${x.den_thang||''}"></label>
       <div class="full"><div class="ht-lbl ht-row">Phân bổ cho đơn vị<span class="ht-chia">Đã chia <b id="dk-pbt"></b></span></div>
-        <div class="ht-nhanh"><span>Chia nhanh:</span><button type="button" class="ht-lk" onclick="dkChia('cty')">Toàn công ty</button><button type="button" class="ht-lk" onclick="dkChia('deu3')">Đều HT / CT / SD</button><button type="button" class="ht-lk" onclick="dkChia('ds')">% doanh số tháng trước</button><button type="button" class="ht-lk" onclick="dkChia('xoa')">Để chung</button></div>
+        <div class="ht-nhanh"><span>Chia nhanh:</span><button type="button" class="ht-lk" onclick="dkChia('cty')">Toàn công ty</button><button type="button" class="ht-lk" onclick="dkChia('deu3')">Đều HT / CT / SD</button><button type="button" class="ht-lk" onclick="dkChia('ds')">% doanh số từng tháng</button><button type="button" class="ht-lk" onclick="dkChia('xoa')">Để chung</button></div>
+        <div id="dk-ds-n" class="muted" style="display:none;font-size:12px;margin:2px 0 6px">Mỗi tháng tự chia Hiền Thủy / Chánh Tâm / BP Sales Sỉ theo doanh thu thuần Kiot của chính tháng đó (tháng đang chạy tính tới hôm nay)</div>
         <div class="pbf">${DV_CP.map(([i,t])=>`<label><span>${t}</span>${moneyIn('dpb_'+i,pb[i]||'','oninput="fmtMoney(this);dkTong()"')}</label>`).join('')}</div></div>
       <label class="full"><span>Ghi chú</span><input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
     </div>
     <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuDinhKy(${id||'null'})">Lưu</button></div>`);
-  setTimeout(()=>{dkCon(x.loai_con_id);dkTong()},0)}
+  setTimeout(()=>{dkCon(x.loai_con_id);dkDsMode(!!x.phan_bo_ds);dkTong()},0)}
 function dkCon(cu){const f=$('#f');if(!f)return;const s=f.querySelector('[name=loai_id]'),c=f.querySelector('[name=loai_con_id]'),ds=conOpt(s.value);
   c.innerHTML=opts(ds,cu??c.value,'— cả nhóm —');$('#dk-con-w').style.display=ds.length?'':'none'}
 // 09/11 kế toán (mục 2): "chi phí định kỳ hơi khó dùng" — chia phân bổ 1 bấm (như phiếu chi) thay vì gõ tay từng ô
-async function dkChia(cach){const f=$('#f');if(!f)return;const t=so(f.querySelector('[name=so_tien]').value)||0;if(!t&&cach!=='xoa')return toast('Nhập số tiền mỗi tháng trước',true);
-  let w={};if(cach==='cty')w={1:1};else if(cach==='deu3')w={2:1,3:1,4:1};
-  else if(cach==='ds'){const [yy,mm]=homNay().slice(0,7).split('-').map(Number),m=mm===1?(yy-1)+'-12':yy+'-'+String(mm-1).padStart(2,'0'),d=await rpc('kt_dt_thang_cs',{p_thang:m}),cn={2:'Đồ thờ Hiền Thủy',3:'Đồ Thờ Chánh Tâm',4:'Tổng kho sỉ Shidai'};
-    for(const [i,c] of Object.entries(cn)){const k=Object.keys(d).find(z=>z.toLowerCase()===c.toLowerCase());w[i]=Math.max(0,+(d[k]||0))}if(!Object.values(w).some(v=>v))return toast('Tháng trước chưa có doanh số Kiot',true)}
-  const tw=Object.values(w).reduce((a,c)=>a+c,0),ids=Object.keys(w).filter(i=>w[i]);let con=t;
+// 09/11 anh: "chia theo doanh số tháng này chứ, sao lại tháng trước" → "% doanh số từng tháng": không điền số cố định; mỗi tháng SQL tự chia
+// HT / CT / BP Sales Sỉ theo doanh thu thuần Kiot của chính tháng đó (tháng đang chạy = tới hôm nay) — kt_pl_dinh_ky_thang (phan_bo_ds)
+function dkDsMode(on){const f=$('#f');if(!f)return;f.dataset.ds=on?'1':'';DV_CP.forEach(([i])=>{const e=f.querySelector('[name=dpb_'+i+']');if(e){if(on)e.value='';e.disabled=on}});
+  const n=$('#dk-ds-n');if(n)n.style.display=on?'':'none';dkTong()}
+function dkChia(cach){const f=$('#f');if(!f)return;if(cach==='ds')return dkDsMode(true);dkDsMode(false);
+  const t=so(f.querySelector('[name=so_tien]').value)||0;if(!t&&cach!=='xoa')return toast('Nhập số tiền mỗi tháng trước',true);
+  const w=cach==='cty'?{1:1}:cach==='deu3'?{2:1,3:1,4:1}:{};const tw=Object.values(w).reduce((a,c)=>a+c,0),ids=Object.keys(w).filter(i=>w[i]);let con=t;
   DV_CP.forEach(([i])=>{const e=f.querySelector('[name=dpb_'+i+']');if(e)e.value=''});
   ids.forEach((i,k)=>{const v=k===ids.length-1?con:Math.round(t*w[i]/tw);con-=v;const e=f.querySelector('[name=dpb_'+i+']');if(e){e.value=v;fmtMoney(e)}});dkTong()}
-function dkTong(){const f=$('#f');if(!f)return;const t=so(f.querySelector('[name=so_tien]').value)||0,s=sumBy(DV_CP,([i])=>so(f.querySelector('[name=dpb_'+i+']').value)||0),e=$('#dk-pbt');
+function dkTong(){const f=$('#f');if(!f)return;if(f.dataset.ds){const e=$('#dk-pbt');if(e){e.textContent='theo % doanh số từng tháng';e.className='pos-t'}return}const t=so(f.querySelector('[name=so_tien]').value)||0,s=sumBy(DV_CP,([i])=>so(f.querySelector('[name=dpb_'+i+']').value)||0),e=$('#dk-pbt');
   if(e){e.textContent=fmt(s)+' / '+fmt(t);e.className=s&&Math.abs(s-t)>1?'neg-t':'pos-t'}}
 async function luuDinhKy(id){const f=$('#f'),v=n=>(f.querySelector('[name='+n+']').value||'').trim(),t=so(v('so_tien'));
-  const pb=DV_CP.map(([i])=>({don_vi_id:i,so_tien:so(v('dpb_'+i))||0})).filter(p=>p.so_tien);
+  const ds=!!f.dataset.ds,pb=ds?[]:DV_CP.map(([i])=>({don_vi_id:i,so_tien:so(v('dpb_'+i))||0})).filter(p=>p.so_tien);
   const thieu=[v('ten').length<2&&'tên khoản',!v('loai_id')&&'loại chi',!t&&'số tiền',!v('tu_thang')&&'từ tháng'].filter(Boolean);
   if(thieu.length)return alert('Còn thiếu: '+thieu.join(', '));
   if(pb.length&&Math.abs(sumBy(pb,p=>p.so_tien)-t)>1)return alert('Tổng phân bổ phải bằng '+fmt(t));
-  await save('kt_pl_dinh_ky_luu',{p:{id,ten:v('ten'),kieu:v('kieu'),loai_id:+v('loai_id'),loai_con_id:+v('loai_con_id')||null,so_tien:t,tu_thang:v('tu_thang'),den_thang:v('den_thang')||null,phan_bo:pb,ghi_chu:v('ghi_chu')}},'Đã lưu khoản định kỳ');render()}
+  await save('kt_pl_dinh_ky_luu',{p:{id,ten:v('ten'),kieu:v('kieu'),loai_id:+v('loai_id'),loai_con_id:+v('loai_con_id')||null,so_tien:t,tu_thang:v('tu_thang'),den_thang:v('den_thang')||null,phan_bo:pb,phan_bo_ds:ds,ghi_chu:v('ghi_chu')}},'Đã lưu khoản định kỳ');render()}
 async function xoaDinhKy(id){if(!confirm('Xoá khoản định kỳ này? P&L các tháng sẽ bỏ số này.'))return;await save('kt_pl_dinh_ky_xoa',{p_id:id},'Đã xoá');render()}
 async function chotDinhKy(id,thang,bo){if(!bo&&!confirm(`Chốt ${thgVN(thang)}: P&L chỉ lấy phiếu chi thật, bỏ phần ước tính?`))return;await save('kt_pl_dinh_ky_chot',{p_id:id,p_thang:thang,p_bo:!!bo},bo?'Đã bỏ chốt':'Đã chốt số thật');render()}
 // mở phiếu chi ngay trên trang P&L (không chuyển trang): nạp phiếu quanh tháng đó vào bộ nhớ rồi mở popup như trang Phiếu chi
@@ -6634,7 +6637,7 @@ const LOGIC2=[
  ['thue','Ghép HĐ bán ra','Phiếu thu ↔ HĐ bán ra meInvoice (05/11). Tự gắn theo thứ tự: (1) nội dung / ghi chú phiếu ghi số HĐ ("HD 315", "hđ số 3 ngày 8/1") → gắn dù số tiền khác (cọc + trả nốt, 1 phiếu nhiều HĐ); HĐ ngày từ 45 ngày trước → 45 ngày sau ngày thu, có ngày đi kèm thì phải = ngày HĐ, số trùng nhiều ký hiệu không phân biệt được → gợi ý; bỏ "Tổng HD …", "VAT= …" và mã Kiot HD0xxxxx; (2) phiếu không ghi số HĐ: HĐ đỏ = đúng 1 hoá đơn Kiot cùng số tiền (±1.000, 2 chiều duy nhất, người mua chung chung hoặc tên khớp ≥ 50%) → gắn mọi phiếu thu trả hoá đơn Kiot đó (bảng chia phiếu Kiot); (3) số tiền ±1.000 + tên khách ≥ 80%, 1 ↔ 1. Kế toán bỏ gắn thì không tự gắn lại. 1 HĐ gắn được nhiều phiếu, 1 phiếu nhiều HĐ. Tự gắn mà có dấu hiệu sai vẫn gắn nhưng ghi Cần soát (anh 05/11): HĐ đang gắn bị thu thừa và có HĐ chưa nối nào đúng bằng tiền phiếu → "có thể ghi nhầm số HĐ"; HĐ chỉ gắn phiếu trả riêng nó mà tổng phiếu > HĐ → "HĐ đã thu thừa …". Gắn tay = đã xác nhận, không cảnh báo.','Chạy sau lượt kéo MISA (00:35 / 12:35), gợi ý lưu sẵn (kt_thu_hd_goi_y) — trang không dò lại. Hoá đơn đầu ra: cột Phiếu thu Đủ / Thu thiếu / Thu thừa / Chưa nối / Không cần (HĐ ≤ 0) — 1 phiếu trả nhiều HĐ thì so theo tổng nhóm; bấm xem phiếu đã nối, lý do, gợi ý ✓ Đúng. Phiếu thu tài khoản 6599 (bán hàng / công nợ / cọc) phải gắn HĐ: cột Hoá đơn + tab Chưa gắn HĐ + Excel cột Hoá đơn / Số hoá đơn; ô tìm + ✓ Gắn luôn hiện trong phiếu. HĐ khó để kế toán nối tay.','05/11'],
  ['thue','Số hoá đơn khai tay','Ô "Số hoá đơn" phiếu chi (05/11 anh: "thu chi đều nhập được nhiều hoá đơn"): nhiều số cách dấu phẩy ("415, C26TYY 3284"); điền sẵn số khai + mọi HĐ đang gắn. Bấm Lưu → mỗi số: số HĐ = nhóm số cuối, phần trước là ký hiệu; HĐ MISA cùng số (đã gắn phiếu khác VẪN được — 1 HĐ trả nhiều đợt) — nhiều HĐ cùng số thì lấy HĐ đúng tiền phiếu ±1.000, không có thì chỉ nhận khi ±60 ngày còn đúng 1 HĐ; HĐ đang gắn mà số không còn trong ô thì bỏ gắn. Ô tìm đọc số đang gõ sau dấu phẩy cuối, kết quả ghi "đã gắn n phiếu".','Số không thấy trên MISA → giữ khai tay, ghi "Số khai tay … chưa thấy trên MISA". Xoá trống = bỏ số khai tay. Job tự ghép vẫn chỉ ghép HĐ chưa gắn phiếu nào; phiếu thu cũng nhiều–nhiều (dòng Ghép HĐ bán ra).','05/11'],
  ['thue','PDF hoá đơn MISA','HĐ đầu vào đã gắn phiếu chi (MISA Xử lý HĐ) + HĐ bán ra đã gắn phiếu thu (meInvoice /invoice/Download theo mã tra cứu) → tải PDF vào chứng từ phiếu, hiện nhỏ ngay dưới ô Số hoá đơn (ghi "HĐ đỏ"), không lặp ở ô ảnh khác. Ô Số hoá đơn chỉ hiện khi chọn Cần hoá đơn.','Chạy kèm job kéo HĐ 00:35; HĐ gắn tay trong ngày có PDF sau đêm.','23/10'],
- ['bao_cao','Khoản định kỳ P&L','P&L → tab Khoản định kỳ: thiết lập 1 lần (loại chi + mục con, số tiền / tháng, phân bổ, từ – đến tháng). Luôn tính: cộng mỗi tháng (thuê nhà không chi tiền…). Ước tính: P&L lấy số LỚN HƠN giữa ước tính và phiếu chi thật cùng mục (cả cây mục con); "Chốt số thật" tháng đó → chỉ lấy phiếu thật.','CHỈ trang P&L — không phiếu chi, sổ quỹ, số dư, dòng tiền, Tổng quan, ngân sách. Chỉ từ T9/2026. Ô có số định kỳ có dấu ●; bấm ô thấy dòng [Định kỳ]. Tab P&L chi tiết bỏ (26/10).','26/10 · 09/11'],
+ ['bao_cao','Khoản định kỳ P&L','P&L → tab Khoản định kỳ: thiết lập 1 lần (loại chi + mục con, số tiền / tháng, phân bổ, từ – đến tháng). Luôn tính: cộng mỗi tháng (thuê nhà không chi tiền…). Ước tính: P&L lấy số LỚN HƠN giữa ước tính và phiếu chi thật cùng mục (cả cây mục con); "Chốt số thật" tháng đó → chỉ lấy phiếu thật.','CHỈ trang P&L — không phiếu chi, sổ quỹ, số dư, dòng tiền, Tổng quan, ngân sách. Chỉ từ T9/2026. Ô có số định kỳ có dấu ●; bấm ô thấy dòng [Định kỳ]. Tab P&L chi tiết bỏ (26/10). Phân bổ: số cố định từng đơn vị, hoặc "% doanh số từng tháng" (mỗi tháng tự chia HT / CT / BP Sales Sỉ theo doanh thu thuần Kiot chính tháng đó, tháng đang chạy tới hôm nay; chưa có doanh thu → chung). Phần lẻ làm tròn dồn dòng cuối — tổng phần chia = đúng số khoản.','26/10 · 09/11'],
  ['bao_cao','P&L — bấm ô xem phiếu','Từ T9: bấm ô số 1 tháng của dòng chi phí → danh sách phiếu chi tạo nên số đó (cùng nguồn kt_v_chi_ht nên tổng = ô), bấm phiếu mở popup.','T1–T8 số lấy theo 4 file P&L → không có phiếu để xem.','23/10'],
   ['bao_cao','P&L — khung tháng (09/11)','Mọi màn dùng chung plTinh (P&L, Tổng quan, Hiệu quả cơ sở) tính trên CÙNG khung tháng: tháng nằm trọn trong kỳ + tháng đang chạy (khi kỳ chứa hôm nay), BỎ tháng chưa tới. Khoản định kỳ tháng đang chạy = số tiền × số ngày đã qua / số ngày của tháng (ước tính: max(phần đã qua − phiếu thật, 0)); tháng chưa tới = 0.','Trước 09/11: P&L năm cộng cả tháng chưa tới + trọn định kỳ tháng đang chạy, Tổng quan bỏ hẳn tháng đang chạy → P&L năm lỗ hơn Tổng quan nhiều (kế toán mục 8).','09/11'],
   ['bao_cao','P&L — thuế (mã 10)','Nhóm loại chi mã 10 (và mục con) = THUẾ: không nằm trong chi phí vận hành; dòng "10 Thuế" sau Lợi nhuận trước thuế = phiếu chi nhóm này (từ T9) + thuế T1–T8 theo file P&L; Lợi nhuận ròng = trước thuế − thuế. Tổng quan, Hiệu quả cơ sở, tab So sánh cơ sở trừ y như vậy (cả thuế phần chung).','Kế toán 09/11 (mục 7): nhóm thuế tạo 03/11 không có mã nên P&L xếp ngoài 1–9 — đã gán mã 10.','09/11'],
