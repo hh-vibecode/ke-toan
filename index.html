@@ -1108,8 +1108,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.345';
-const APP_VERSION='09/11/2026 12:36';
+const APP_SO='1.346';
+const APP_VERSION='09/11/2026 13:04';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1307,7 +1307,7 @@ async function dnForm(){
       <label class="dn-tt"><span>Người / đơn vị thụ hưởng${BB}</span><input name="thu_huong_ten" maxlength="150"></label>
       <label class="dn-ck"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-dn-nh" maxlength="100"><datalist id="dl-dn-nh">${NGAN_HANG.map(x=>`<option value="${x}">`).join('')}</datalist></label>
       <label class="dn-ck"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" maxlength="30"></label>
-      <label class="dn-ck full"><span>Nội dung chuyển khoản</span><input name="noi_dung_ck" maxlength="16" placeholder="Số phiếu chi tự thêm ở đầu — gõ thêm nội dung"></label>
+      <label class="dn-ck full"><span>Nội dung chuyển khoản</span><input name="noi_dung_ck" maxlength="500" placeholder="Số phiếu chi tự thêm ở đầu — gõ thêm nội dung"></label>
       <div class="dn-ck full" id="dn-qr" style="font-size:11.5px;margin-top:-4px"></div>
       <div class="sec" style="grid-column:1/-1;margin:12px 0 0">3. Hồ sơ & ghi chú</div>
       <div class="full"><div class="dn-l">Hồ sơ đính kèm <b class="bb">*</b> <span class="muted" id="dn-l14"></span></div>
@@ -2876,11 +2876,17 @@ async function napQR(){if(QR_LIB)return QR_LIB;await new Promise((ok,loi)=>{cons
 // 23/10 kế toán: "bước 3 nếu không hiển thị được QR thì cứ hiện thông tin text bình thường" (STK sai / không nhận ra ngân hàng / chưa có STK)
 const qrTxt=(x,nd)=>`<div class="m-st">Thông tin chuyển khoản</div><div class="m-kv"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')||'—'}</div><div>Số tài khoản</div><div><b>${esc(x.thu_huong_stk||'')||'—'}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')||'—'}</div>`
   +`<div>Số tiền</div><div><b>${fmt(x.so_tien)}</b></div><div>Nội dung CK</div><div>${ndCkO(x,nd)}</div></div>`;
+// 09/11 anh: "cho phép xoá cả mã phiếu chi, không giới hạn số ký tự" — sửa ở khung QR = nội dung đầy đủ (mặc định có số phiếu, xoá được) lưu nd_ck_tron;
+// phiếu chưa sửa tự do: số phiếu PCxxxxxx + phần gõ thêm (hoặc nội dung chi) như cũ. Không dấu, chỉ chữ / số / khoảng trắng (ngân hàng nhận). — Monsieur Claude
+const ndSach=t=>boDau(String(t||'')).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+function ndCk(x){const so='PC'+String(x.id).padStart(6,'0'),thm=String(x.noi_dung_ck||'').trim();
+  if(x.nd_ck_tron&&thm)return ndSach(thm);
+  return ndSach(so+' '+(thm&&!thm.toUpperCase().startsWith(so)?thm:thm.slice(so.length)||ndChi(x)))}
 function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');
   const bin=binNH(x.thu_huong_nh),so='PC'+String(x.id).padStart(6,'0');
-  const thm=String(x.noi_dung_ck||'').trim(),nd=boDau(so+' '+(thm&&!thm.toUpperCase().startsWith(so)?thm:thm.slice(so.length)||ndChi(x))).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,25);   // 22/10 anh: số phiếu chi tự có + nội dung người làm phiếu điền thêm; luôn gài vào mã
+  const nd=ndCk(x);   // 22/10 anh: số phiếu chi tự có + nội dung người làm phiếu điền thêm; luôn gài vào mã
   if(!stk||!/^\d{6,20}$/.test(stk)||!bin)return `<div id="qrw-${x.id}">${qrTxt(x,nd)}</div>`;
-  setTimeout(async()=>{const o=document.getElementById('qr-'+x.id);if(!o)return;try{const Q=await napQR(),q=Q(0,'M');q.addData(vietQR(bin,stk,x.so_tien,nd));q.make();
+  setTimeout(async()=>{const o=document.getElementById('qr-'+x.id);if(!o)return;try{const Q=await napQR(),q=Q(0,'M');q.addData(vietQR(bin,stk,x.so_tien,nd.slice(0,95)));q.make();
     o.innerHTML=`<img src="${q.createDataURL(4,8)}" alt="QR" style="width:168px;height:168px;image-rendering:pixelated;border:1px solid var(--border);border-radius:8px">`}catch(e){o.textContent=e.message}},0);
   return `<div id="qrw-${x.id}"><div class="m-st">Mã QR chuyển khoản</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div id="qr-${x.id}" style="width:170px;height:170px;flex:none;padding:0" class="m-empty">Đang tạo…</div>
     <div class="m-kv" style="flex:1;min-width:200px"><div>Ngân hàng</div><div>${esc(x.thu_huong_nh||'')}</div><div>Số tài khoản</div><div><b>${esc(stk)}</b></div><div>Người nhận</div><div>${esc(x.thu_huong_ten||'')}</div>
@@ -2889,15 +2895,15 @@ function qrChi(x){const stk=String(x.thu_huong_stk||'').replace(/[\s.\-]/g,'');
 // lưu vào phiếu (kt_sua_nd_ck), chỉ vẽ lại khung QR → mã mới, không mất ô đang điền dở ở phần khác. Monsieur Claude
 const ndCkSua=x=>['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&(coGhi('chi')||can('chi_tt')||chiDuyet()||chiGD()||(x.tao_boi===S.toi.ho_ten&&x.trang_thai==='cho_duyet'));
 function ndCkO(x,nd,chep){const so='PC'+String(x.id).padStart(6,'0'),b='height:24px;padding:0 8px';
-  if(S.f.nd_sua===x.id)return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><b style="margin-right:auto">${so}</b><button class="m-btn" style="${b}" title="Lưu" onclick="luuNdCk(${x.id})">✓</button><button class="m-btn out" style="${b}" title="Huỷ" onclick="suaNdCk(${x.id},0)">✕</button></div>
-    <input id="ndck-${x.id}" class="m-in" style="height:28px;width:100%;min-width:0;margin-top:4px" maxlength="${24-so.length}" value="${esc(nd.slice(so.length+1))}" placeholder="Để trống = nội dung chi"
+  if(S.f.nd_sua===x.id)return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><span class="muted" style="margin-right:auto;font-size:12px">Sửa toàn bộ nội dung</span><button class="m-btn" style="${b}" title="Lưu" onclick="luuNdCk(${x.id})">✓</button><button class="m-btn out" style="${b}" title="Huỷ" onclick="suaNdCk(${x.id},0)">✕</button></div>
+    <input id="ndck-${x.id}" class="m-in" style="height:28px;width:100%;min-width:0;margin-top:4px" value="${esc(nd)}" placeholder="Để trống = số phiếu + nội dung chi"
       onkeydown="if(event.key==='Enter')luuNdCk(${x.id});else if(event.key==='Escape'){event.stopPropagation();suaNdCk(${x.id},0)}">
-    <div class="muted" style="font-size:11px">Số phiếu tự có ở đầu · gõ thêm tối đa ${24-so.length} ký tự, không dấu · Enter để lưu</div>`;
-  return esc(nd)+(chep?` <button class="m-btn out" style="${b}" onclick="navigator.clipboard.writeText(${esc(JSON.stringify(nd))}).then(()=>toast('Đã chép nội dung — dán vào ô nội dung khi chuyển'),()=>toast('Không chép được — gõ tay'))">Chép</button>`:'')
+    <div class="muted" style="font-size:11px">Sửa / xoá tuỳ ý, kể cả số phiếu · tự bỏ dấu · Enter để lưu</div>`;
+  return esc(nd)+(nd.length>25?`<div class="muted" style="font-size:11px">${nd.length} ký tự — app ngân hàng cắt bớt khi quét QR thì bấm Chép để dán đủ</div>`:'')+(chep?` <button class="m-btn out" style="${b}" onclick="navigator.clipboard.writeText(${esc(JSON.stringify(nd))}).then(()=>toast('Đã chép nội dung — dán vào ô nội dung khi chuyển'),()=>toast('Không chép được — gõ tay'))">Chép</button>`:'')
     +(ndCkSua(x)?` <button class="m-btn out" style="${b}" title="Sửa nội dung chuyển khoản" onclick="suaNdCk(${x.id},1)">${IC_SUA} Sửa</button>`:'')}
 async function luuNdCk(id){const x=S.cache.chi.find(c=>c.id===id),i=document.getElementById('ndck-'+id);if(!x||!i)return;
-  const v=boDau(i.value).replace(/[^A-Za-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().slice(0,i.maxLength);
-  try{x.noi_dung_ck=await rpc('kt_sua_nd_ck',{p_id:id,p_nd:v});toast(v?'Đã lưu nội dung chuyển khoản — mã QR đã cập nhật':'Đã bỏ phần gõ thêm — dùng số phiếu + nội dung chi');suaNdCk(id,0)}catch(e){alert(e.message)}}
+  const v=ndSach(i.value);
+  try{x.noi_dung_ck=await rpc('kt_sua_nd_ck',{p_id:id,p_nd:v,p_tron:true});x.nd_ck_tron=!!v;toast(v?'Đã lưu nội dung chuyển khoản — mã QR đã cập nhật':'Đã bỏ nội dung sửa — dùng số phiếu + nội dung chi');suaNdCk(id,0)}catch(e){alert(e.message)}}
 function suaNdCk(id,bat){const x=S.cache.chi.find(c=>c.id===id),w=document.getElementById('qrw-'+id);S.f.nd_sua=bat?id:null;if(!x)return;if(!w)return xemChi(id);
   w.outerHTML=qrChi(x);if(bat){const i=document.getElementById('ndck-'+id);if(i){i.focus();i.select()}}}
 
@@ -3816,7 +3822,7 @@ function formChi(id,tu){S.f.chi_form_id=id||null;
       <label class="nhan"><span>Người thụ hưởng${BB}</span><input name="thu_huong_ten" list="dl-th" value="${esc(x.thu_huong_ten||'')}" onchange="dienThuHuong(this.value)"></label>
       <label class="chi-ck nhan"><span>Ngân hàng thụ hưởng${BB}</span><input name="thu_huong_nh" list="dl-nh" value="${esc(x.thu_huong_nh||'')}"></label>
       <label class="chi-ck nhan"><span>Số tài khoản thụ hưởng${BB}</span><input name="thu_huong_stk" inputmode="numeric" value="${esc(x.thu_huong_stk||'')}"></label>
-      <label class="chi-ck full nhan">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="25" placeholder="Số phiếu chi tự thêm ở đầu — gõ thêm nội dung" value="${esc(x.noi_dung_ck||'')}"></label>
+      <label class="chi-ck full nhan">Nội dung chuyển khoản<input name="noi_dung_ck" maxlength="500" placeholder="${x.nd_ck_tron?'Nội dung chuyển khoản':'Số phiếu chi tự thêm ở đầu — gõ thêm nội dung'}" value="${esc(x.noi_dung_ck||'')}"></label>
       ${SEC('3. Hồ sơ & ghi chú')}
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
     </div>
@@ -6542,7 +6548,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hiển thị','Nhà cung cấp = người bán trên HĐ đã ghép → thụ hưởng (nếu khác người đề nghị) → đối tác Kiot.','Thụ hưởng = người đề nghị → "Hoàn cho NV".','15/10'],
  ['thu_chi','Phiếu chi — hiển thị','Cột Loại chi tách riêng; phiếu Kiot chưa phân loại hiện nhóm Kiot.','','15/10'],
  ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],
- ['thu_chi','Phiếu chi — sửa nội dung CK','Khung mã QR có nút Sửa cạnh Chép: sửa phần gõ thêm sau số phiếu (số phiếu PCxxxxxx giữ nguyên, tổng ≤25 ký tự, tự bỏ dấu), lưu vào phiếu, mã tạo lại. Để trống = số phiếu + nội dung chi.','Người đề nghị (khi chờ duyệt), thủ quỹ, kế toán, GĐ. Phiếu đã chi tiền thì khoá. Ghi nhật ký cũ → mới.','26/10'],
+ ['thu_chi','Phiếu chi — sửa nội dung CK','Khung mã QR có nút Sửa cạnh Chép: sửa TOÀN BỘ nội dung (mặc định có số phiếu PCxxxxxx, xoá / sửa tuỳ ý, không giới hạn ký tự, tự bỏ dấu — 09/11 anh), lưu vào phiếu, mã tạo lại. Để trống = số phiếu + nội dung chi.','Người đề nghị (khi chờ duyệt), thủ quỹ, kế toán, GĐ. Phiếu đã chi tiền thì khoá. Ghi nhật ký cũ → mới.','26/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: chỉ ở Đối soát lỗi (phiếu đã thanh toán chưa thấy trên Kiot).','16/10'],
  ['chung','Tự kiểm Supabase','Job kt-kiem-he-thong 09:00 ngày 15 + ngày cuối tháng: đo dữ liệu, kho chứng từ, nhật ký, lịch chạy lỗi, kéo Kiot, khoá RLS / quyền anon → chuông cho Supreme (luôn có tóm tắt, có vấn đề ghi rõ cảnh báo).','Gói Pro: cảnh báo khi dữ liệu > 4 GB, kho > 50 GB, tăng > 5 GB kho / 1 GB dữ liệu giữa 2 lần kiểm, có bảng tắt RLS. Băng thông không đo được từ SQL — xem Dashboard.','16/10'],
@@ -6555,7 +6561,7 @@ const LOGIC2=[
  ['thu_chi','Huỷ "Đã chi tiền"','Phiếu đã bấm Đã chi tiền nhầm (vd chưa duyệt lệnh ngân hàng): người xác nhận (kế toán có quyền xác nhận) hoặc giám đốc bấm "↩ Huỷ đã chi" ở chân cửa sổ phiếu → về Chờ chi tiền.','Không phải tạo lại phiếu; tiền không còn trừ tài khoản cho tới khi bấm Đã chi tiền lại; chuông báo người chi; nhật ký ghi lại.','20/10'],
  ['thu_chi','Nộp két từ Kiot (quầy → két)','Mỗi lần cửa hàng nộp doanh thu tiền mặt trên Kiot (cặp phiếu Chuyển rút CTM… chi tiền mặt quầy + TTD_CTM… thu vào Két) → app tự tạo điều chuyển "Nộp két" TIỀN MẶT QUẦY → KÉT TIỀN MẶT, 15 phút / lần. Phiếu Kiot bị huỷ → app ẩn theo. Kiot sửa ngày phiếu sau khi app đã tạo (vd CTM004104 31/10 → 03/11) mà thủ quỹ chưa nhận → ngày điều chuyển đổi theo Kiot (05/11); trang Điều chuyển hiện cả phiếu vào két chờ thủ quỹ nhận của kỳ trước (≤ 90 ngày, không tính vào tổng kỳ).','Đã có điều chuyển quầy → két cùng số tiền, lệch ≤ 4 ngày (từ file dòng tiền / nhập tay) thì chỉ gắn mã Kiot, không tạo trùng. Thủ quỹ up ảnh chứng từ nộp tiền vào chính phiếu điều chuyển đó; kế toán xem ảnh rồi bấm Xác nhận.','19/10'],
  ['thu_chi','Nộp tiền mặt quầy vào ngân hàng (09/11)','Cặp phiếu Kiot Chuyển/Rút CTM… + TTD_CTM… thu vào tài khoản NGÂN HÀNG (đã nối mã Kiot) → điều chuyển "Nộp tiền mặt vào <tài khoản>" từ Tiền mặt quầy → tài khoản đó, kế toán xác nhận như điều chuyển thường. Két giữ cách cũ.','Trước 09/11 chỉ nhận cặp vào két, cặp vào ngân hàng bị bỏ qua (CTM004117 Hiền Thủy 07/11).','09/11'],
- ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
+ ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (không giới hạn — 09/11; mã QR chứa tối đa 95 ký tự theo chuẩn VietQR, quá 25 ký tự ghi nhắc bấm Chép vì vài app ngân hàng cắt bớt khi quét). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
  ['thu_chi','Chuyển khoản TK công ty: lập lệnh → duyệt lệnh','Thủ quỹ lập lệnh trên ngân hàng, up ảnh lệnh (UNC), bấm "✓ Đã lập lệnh" → chuông báo kế toán. Kế toán duyệt lệnh trên ngân hàng xong bấm "✓ Đã duyệt lệnh" (ngày thanh toán mặc định hôm duyệt). Tab Cần chú ý: Chờ duyệt lệnh.','Chỉ khi Đã duyệt lệnh phiếu mới thành Đã thanh toán và trừ số dư — hết lệch khi lập lệnh hôm trước, duyệt hôm sau. Két tiền mặt vẫn bấm Đã chi tiền như cũ.','20/10'],
  ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Kế toán 27/10: điều chuyển vào két CHƯA bấm nhận thì chưa tính vào đâu (không trừ TK đi, không cộng két, không vào sổ quỹ ngày); bấm nhận mới tính cả 2 bên, ngày = ngày nhận. Áp phiếu tạo từ 20/10.','27/10'],
  ['thu_chi','Ai bấm Đã nhận tiền vào két (09/11)','Thủ quỹ (chi_tt) + Supreme + Admin + giám đốc (chi_gd) đều bấm được "✓ Đã nhận tiền" (điều chuyển vào két, phiếu thu tiền mặt chờ nhận) — SQL kt_xn_ket. Nhãn sau khi nhận: "Đã nhận tiền" + tên người bấm.','Anh 09/11: "giám đốc và admin đều nhìn được và bấm xác nhận" — thay luật 20/10 (chỉ thủ quỹ).','09/11'],
