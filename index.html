@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.341';
-const APP_VERSION='09/11/2026 10:09';
+const APP_SO='1.342';
+const APP_VERSION='09/11/2026 11:01';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2321,7 +2321,7 @@ function xemThu(id){const x=(S.cache.thu||[]).find(t=>t.id===id);if(!x)return fo
     {ten:tq?'Nhận tiền':'Thu tiền',tt:!daThu?'dang':tq&&!x.tq_nhan_luc?'dang':'xong',nhan:!daThu?'Chưa thu':tq&&!x.tq_nhan_luc?'Chờ thủ quỹ nhận':'Đã thu',ai:x.tq_nhan_boi||'',luc:x.tq_nhan_luc||'',
       noi:pcThe('Tiền về',`<div class="pc-g">${pcO('Tài khoản nhận',esc(t.ten||''))}${pcO('Hình thức',t.loai==='tien_mat'?'Tiền mặt':'Chuyển khoản')}${tq?pcO('Thủ quỹ',x.tq_nhan_luc?`Đã nhận · ${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}`:'<span class="neg-t">Chưa xác nhận nhận tiền</span>'):''}</div>`)+pcThe('Hoá đơn bán ra (MISA)',hdtHtml(x))}];
   const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordThu(${id})">Xuất phiếu Word</button>${nutLoi('thu',id,so)}${coGhi('thu')?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('thu',${id}${kiot?`,'Xoá phiếu thu kéo từ Kiot khỏi app? Lần kéo Kiot sau không thêm lại phiếu này (vẫn còn trong nhật ký).'`:''})">Xoá</button>`:''}<span style="margin-left:auto"></span>
-    ${tq&&!x.tq_nhan_luc&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('thu',${id})">✓ Đã nhận tiền</button>`:''}`;
+    ${tq&&!x.tq_nhan_luc&&laXNKet()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('thu',${id})">✓ Đã nhận tiền</button>`:''}`;
   const hs4T=!kiot&&(coXem('ncc_noi')||coGhi('thu'));if(hs4T&&tt[1])tt[1].noi+=hs4Html('thu',id);
   pcMo(so,`${pill('Phiếu thu','ok')}${daThu?pill('Đã thu','ok'):pill('Chưa thu','warn')}${kiot?pill('Từ Kiot','info'):''}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'thu',id,nut);if(hs4T)setTimeout(()=>veHS4('thu',id),0)}
 function xemDC(id){const x=(S.cache.dc||[]).find(d=>d.id===id);if(!x)return formDC(id);
@@ -2330,10 +2330,10 @@ function xemDC(id){const x=(S.cache.dc||[]).find(d=>d.id===id);if(!x)return form
         ${pcO('Số tiền','<b>'+fmt(x.so_tien)+'</b>')}${pcO('Ngày',fmtD(x.ngay)+(x.ngay_goc&&x.ngay_goc!==x.ngay?` <span class="muted">· phiếu lập ${fmtD(x.ngay_goc)}</span>`:''))}${pcO('Từ tài khoản',esc(di.ten||''))}${pcO('Sang tài khoản',esc(nh.ten||''))}
         ${x.khong_hach_toan?pcO('Hạch toán','<span class="muted">Không hạch toán</span>'):''}${x.ghi_chu?pcO('Ghi chú',esc(x.ghi_chu),1):''}</div>`,g?`<button class="m-btn out" style="height:30px" onclick="closeModal();formDC(${id})">${IC_SUA} Chỉnh sửa</button>`:'')+pcThe('Chứng từ đính kèm',ctBox('dieu_chuyen',id,g).replace(/<div class="sec"[^>]*>[^<]*<\/div>/,''))},
     {ten:ket?'Nhận tiền':'Xác nhận',tt:x.da_xac_nhan?'xong':'dang',nhan:x.da_xac_nhan?(ket?'Đã nhận tiền':'Đã xác nhận'):(ket?'Chờ thủ quỹ nhận':'Chờ xác nhận'),ai:x.xac_nhan_boi||'',luc:x.xac_nhan_luc||'',
-      noi:pcThe(ket?'Tiền vào két':'Xác nhận',`<div class="pc-g">${pcO('Trạng thái',x.da_xac_nhan?`${ket?'Thủ quỹ đã nhận':'Kế toán đã xác nhận'} · ${esc(x.xac_nhan_boi||'')} ${fmtDT(x.xac_nhan_luc)}`:`<span class="neg-t">${ket?'Thủ quỹ chưa bấm Đã nhận tiền':'Kế toán chưa xác nhận'}</span>`,1)}</div>`)}];
+      noi:pcThe(ket?'Tiền vào két':'Xác nhận',`<div class="pc-g">${pcO('Trạng thái',x.da_xac_nhan?`${ket?'Đã nhận tiền':'Kế toán đã xác nhận'} · ${esc(x.xac_nhan_boi||'')} ${fmtDT(x.xac_nhan_luc)}`:`<span class="neg-t">${ket?'Thủ quỹ chưa bấm Đã nhận tiền':'Kế toán chưa xác nhận'}</span>`,1)}</div>`)}];
   const nut=`<button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn out" onclick="xuatWordDC(${id})">Xuất phiếu Word</button>${nutLoi('dieu_chuyen',id,so)}${g?`<button class="m-btn" style="color:var(--bad)" onclick="closeModal();xoa('dieu_chuyen',${id})">Xoá</button>`:''}<span style="margin-left:auto"></span>
-    ${ket&&!x.da_xac_nhan&&laTQ()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('dieu_chuyen',${id})">✓ Đã nhận tiền</button>`:''}${!ket&&!x.da_xac_nhan&&g?`<button class="m-btn duyet" title="Mở form, tick Kế toán đã xác nhận rồi Lưu" onclick="closeModal();formDC(${id})">✓ Xác nhận</button>`:''}`;
-  pcMo(so,`${pill('Điều chuyển','info')}${x.da_xac_nhan?pill(ket?'Thủ quỹ đã nhận':'Đã xác nhận','ok'):pill(ket?'Chờ thủ quỹ nhận':'Chưa xác nhận','warn')}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'dieu_chuyen',id,nut)}
+    ${ket&&!x.da_xac_nhan&&laXNKet()?`<button class="m-btn duyet" onclick="closeModal();tqNhan('dieu_chuyen',${id})">✓ Đã nhận tiền</button>`:''}${!ket&&!x.da_xac_nhan&&g?`<button class="m-btn duyet" title="Mở form, tick Kế toán đã xác nhận rồi Lưu" onclick="closeModal();formDC(${id})">✓ Xác nhận</button>`:''}`;
+  pcMo(so,`${pill('Điều chuyển','info')}${x.da_xac_nhan?pill(ket?'Đã nhận tiền':'Đã xác nhận','ok'):pill(ket?'Chờ thủ quỹ nhận':'Chưa xác nhận','warn')}${x.khong_hach_toan?pill('Không hạch toán',''):''}`,x.so_tien,pcRail(tt),'dieu_chuyen',id,nut)}
 function dongThuCT(){if($('#modal')){closeModal();return}S.f.thu_chon=null;const p=$('#thu-ct');if(p){p.innerHTML='';p.closest('.m-split').classList.remove('co')}document.querySelectorAll('.m-t tr.on').forEach(r=>r.classList.remove('on'))}
 // Kiểu sổ quỹ: gom theo ngày, mỗi ngày 1 tiêu đề kèm tổng tiền
 function soQuy(list,ngay,row,trong){if(!list.length)return `<div class="card"><div class="empty">${trong}</div></div>`;
@@ -2497,6 +2497,8 @@ const soNgay=t=>t?Math.max(0,Math.floor((Date.now()-new Date(t))/864e5)):null;
 const htChi=x=>!x.tai_khoan_id?'':tkNhom(x.tai_khoan_id)==='tien_mat'?'tm':'ck',htPill=x=>{const h=htChi(x),t=(tk(x.tai_khoan_id)||{}).ten||'';return !h?pill('Chưa chọn TK','warn'):h==='tm'?pill('Tiền mặt · '+String(t).split(' - ')[0],'warn'):pill('Chuyển khoản · '+String(t).split(' - ')[0],'info')};
 // 20/10 anh: tiền vào KÉT chỉ người tick vai Thủ quỹ xác nhận (Admin không bấm được; Supreme giữ để gỡ) — khớp kt_la_thu_quy trên máy chủ
 const laTQ=()=>!!S.toi&&(S.toi.vi_tri==='supreme'||(S.toi.quyen||[]).includes('chi_tt'));
+// 09/11 anh: "giám đốc và admin đều nhìn được và bấm xác nhận" — bước Đã nhận tiền vào két: thủ quỹ + Supreme + Admin + GĐ (chi_gd) (SQL kt_xn_ket)
+const laXNKet=()=>laTQ()||(!!S.toi&&(S.toi.vi_tri==='admin'||(S.toi.quyen||[]).includes('chi_gd')));
 const tkTQ=x=>!!(tk(x.tai_khoan_id)||{}).thu_quy_chi, chiTQ=()=>can('chi_tt'), chiTien=x=>tkTQ(x)?chiTQ():chiGD()||!!(S.toi&&S.toi.toan_quyen);   // 26/10 GĐ: TK cá nhân — GĐ chuyển xong, Admin (kế toán) up ảnh + bấm Đã chi tiền
 const aiChi=x=>!x.tai_khoan_id?'Thủ quỹ / Giám đốc':tkTQ(x)?'Thủ quỹ':'Giám đốc';
 function luongChi(x){
@@ -2661,7 +2663,7 @@ async function lapLenh(id,huy){const x=S.cache.chi.find(c=>c.id===id);if(!x)retu
 // 20/10 (kế toán): thủ quỹ xác nhận đã nhận tiền vào két (thu / điều chuyển từ 20/10)
 const vaoKet=x=>{const t=tk(x.tk_nhan_id)||{};return t.loai==='tien_mat'&&!!t.thu_quy_chi};   // 20/10 anh: điều chuyển vào két chỉ thủ quỹ xác nhận
 const canTQ=(tkId,ngay)=>{const t=tk(tkId)||{};return t.loai==='tien_mat'&&!!t.thu_quy_chi&&String(ngay||'')>='2026-10-20'};
-const tqO=(bang,x)=>x.tq_nhan_luc?`<span title="${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}">${pill('Thủ quỹ đã nhận','ok')}</span>`:laTQ()&&!xnDoc()?`<button class="m-btn pri" style="height:26px;font-size:11.5px" onclick="event.stopPropagation();tqNhan('${bang}',${x.id})">✓ Đã nhận tiền</button>`:pill('Chờ thủ quỹ nhận','warn');
+const tqO=(bang,x)=>x.tq_nhan_luc?`<span title="${esc(x.tq_nhan_boi||'')} ${fmtDT(x.tq_nhan_luc)}">${pill('Đã nhận tiền','ok')}<div class="muted" style="font-size:11px;margin-top:2px">${esc(x.tq_nhan_boi||'')}</div></span>`:laXNKet()&&!xnDoc()?`<button class="m-btn pri" style="height:26px;font-size:11.5px" onclick="event.stopPropagation();tqNhan('${bang}',${x.id})">✓ Đã nhận tiền</button>`:pill('Chờ thủ quỹ nhận','warn');
 async function tqNhan(bang,id){if(!confirm('Xác nhận đã nhận đủ tiền mặt vào két?'))return;try{await rpc('kt_tq_nhan',{p_bang:bang,p_id:id});toast('Đã xác nhận nhận tiền');S.cache={};await render()}catch(e){alert(e.message)}}
 // 20/10 anh: tách giao dịch cá nhân (không hạch toán) sang nhóm riêng — không lẫn với thu chi công ty
 const laCN=(k,x)=>!!(k==='chi'?x.ca_nhan:x.khong_hach_toan);
@@ -4272,7 +4274,7 @@ function formDC(id){
       ${htSel(x,!id)}
       <label class="full">Nội dung<input name="noi_dung" value="${esc(x.noi_dung||'')}"></label>
       <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
-      ${id?`<label class="full chk"><input type="checkbox" name="da_xac_nhan" ${x.da_xac_nhan?'checked':''} ${vaoKet(x)&&!laTQ()?'disabled title="Tiền vào két: thủ quỹ bấm Đã nhận tiền"':''}> Kế toán đã xác nhận${x.xac_nhan_boi?' ('+esc(x.xac_nhan_boi)+' '+fmtDT(x.xac_nhan_luc)+')':''}</label>`:''}
+      ${id?`<label class="full chk"><input type="checkbox" name="da_xac_nhan" ${x.da_xac_nhan?'checked':''} ${vaoKet(x)&&!laXNKet()?'disabled title="Tiền vào két: thủ quỹ bấm Đã nhận tiền"':''}> Kế toán đã xác nhận${x.xac_nhan_boi?' ('+esc(x.xac_nhan_boi)+' '+fmtDT(x.xac_nhan_luc)+')':''}</label>`:''}
     </div>
     ${x.tao_boi?`<div class="muted" style="font-size:11px;margin-top:8px">Tạo: ${esc(x.tao_boi)} ${fmtDT(x.tao_luc)}${x.sua_boi?' · Sửa: '+esc(x.sua_boi)+' '+fmtDT(x.sua_luc):''}</div>`:''}
     ${ctBox('dieu_chuyen',id,g)}${id?hdKhung('dieu_chuyen',id):''}</div>
@@ -6530,6 +6532,7 @@ const LOGIC2=[
  ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
  ['thu_chi','Chuyển khoản TK công ty: lập lệnh → duyệt lệnh','Thủ quỹ lập lệnh trên ngân hàng, up ảnh lệnh (UNC), bấm "✓ Đã lập lệnh" → chuông báo kế toán. Kế toán duyệt lệnh trên ngân hàng xong bấm "✓ Đã duyệt lệnh" (ngày thanh toán mặc định hôm duyệt). Tab Cần chú ý: Chờ duyệt lệnh.','Chỉ khi Đã duyệt lệnh phiếu mới thành Đã thanh toán và trừ số dư — hết lệch khi lập lệnh hôm trước, duyệt hôm sau. Két tiền mặt vẫn bấm Đã chi tiền như cũ.','20/10'],
  ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Kế toán 27/10: điều chuyển vào két CHƯA bấm nhận thì chưa tính vào đâu (không trừ TK đi, không cộng két, không vào sổ quỹ ngày); bấm nhận mới tính cả 2 bên, ngày = ngày nhận. Áp phiếu tạo từ 20/10.','27/10'],
+ ['thu_chi','Ai bấm Đã nhận tiền vào két (09/11)','Thủ quỹ (chi_tt) + Supreme + Admin + giám đốc (chi_gd) đều bấm được "✓ Đã nhận tiền" (điều chuyển vào két, phiếu thu tiền mặt chờ nhận) — SQL kt_xn_ket. Nhãn sau khi nhận: "Đã nhận tiền" + tên người bấm.','Anh 09/11: "giám đốc và admin đều nhìn được và bấm xác nhận" — thay luật 20/10 (chỉ thủ quỹ).','09/11'],
  ['thu_chi','Khoản tài khoản tự trừ','Phí ngân hàng, phí vận chuyển / COD… (tài khoản tự trừ): tạo phiếu chi, tick "Đã thanh toán luôn" (quyền tự chi). Bỏ nút "+ Khoản tự trừ" riêng (21/10).','','21/10'],
  ['thu_chi','Sửa ngày thanh toán phiếu đã chi','Người có quyền sửa Chi mở phiếu đã chi → đổi ô Ngày thanh toán → Lưu (vd ngân hàng trừ tiền khác ngày ghi trên phiếu, lệch quỹ cuối ngày).','Tháng đã khoá sổ không đổi được. Nhật ký ghi ngày cũ → ngày mới.','21/10'],
  ['thu_chi','Kế toán tự chi không cần duyệt','Tài khoản có quyền "Chi — tự chi không cần duyệt" tạo phiếu chi tick "Đã thanh toán luôn" (vd phiếu cân tài khoản cuối ngày).','Mỗi phiếu tự chi có chuông báo giám đốc; vẫn nhắc Thiếu ảnh giao dịch.','20/10'],
