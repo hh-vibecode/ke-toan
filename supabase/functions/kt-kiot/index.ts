@@ -198,6 +198,10 @@ async function doiChieuThang(m: string, nguoi: string) {
   const dhK = (await kiotHet('orders', { fromPurchaseDate: tu, toPurchaseDate: den })).filter(x => trong(x.purchaseDate));
   const db2 = await rpcJ('kt_kiot_dc_db2', { p_tu: tu, p_den: den });   // sq: [id, trạng thái, tiền, là thu, chi nhánh, mã] · nh / dh: [id, trạng thái, tổng, chi nhánh, mã]
   const s = soMa(sqK, db2.sq || [], x => Math.abs(Math.round(x.amount))), n = soMa(nhK, db2.nh || [], x => Math.round(x.total)), dd = soMa(dhK, db2.dh || [], x => Math.round(x.total));
+  // 09/11 anh: đơn đặt bị xoá chỉ quan tâm khi khách đã cọc / trả — đơn không tiền (báo giá) ghi riêng thua_bo, không tính lệch, không báo
+  let dhBo: any[] = [];
+  if (dd.thua.length) { const coTien: string[] = await rpcJ('kt_kiot_dh_co_tien', { p_ma: dd.thua.map((r: any) => r[r.length - 1]) }) || [];
+    dhBo = dd.thua.filter((r: any) => !coTien.includes(r[r.length - 1])); dd.thua = dd.thua.filter((r: any) => coTien.includes(r[r.length - 1])); }
   const sqTien = (ds: any[], thu: boolean) => ds.filter(x => String(x.status) === '0' && (x.amount > 0) === thu).reduce((t, x) => t + Math.abs(Math.round(x.amount)), 0);
   const sqTienA = (ds: any[], thu: boolean) => ds.filter((r: any) => String(r[1]) === '0' && !!r[3] === thu).reduce((t: number, r: any) => t + Number(r[2]), 0);
   const tong = (ds: any[], f: (x: any) => number) => ds.reduce((t, x) => t + f(x), 0);
@@ -211,7 +215,7 @@ async function doiChieuThang(m: string, nguoi: string) {
   const them2 = {
     sq: { ...nhom({ ...s, k: sqK.length }, db2.sq || [], sqTien(sqK, true), sqTienA(db2.sq || [], true)), chi_kiot: sqTien(sqK, false), chi_app: sqTienA(db2.sq || [], false) },
     nh: nhom({ ...n, k: nhK.length }, db2.nh || [], tong(nhK.filter(x => x.status === 3), x => Math.round(x.total)), tong((db2.nh || []).filter((r: any) => Number(r[1]) === 3), (r: any) => Number(r[2]))),
-    dh: nhom({ ...dd, k: dhK.length }, db2.dh || [], tong(dhK, x => Math.round(x.total)), tong(db2.dh || [], (r: any) => Number(r[2]))) };
+    dh: { ...nhom({ ...dd, k: dhK.length }, db2.dh || [], tong(dhK, x => Math.round(x.total)), tong(db2.dh || [], (r: any) => Number(r[2]))), ...(dhBo.length ? { thua_bo: ma(dhBo) } : {}) } };
   const so_lech = h.thieu.length + h.thua.length + h.lech.length + t.thieu.length + t.thua.length + t.lech.length + lech2;
   // tự ghi bù phiếu thiếu / lệch (đúng như lần kéo đầy đủ) — phiếu app thừa KHÔNG xoá, chỉ báo
   const suaH = [...h.thieu, ...h.lech], suaT = [...t.thieu, ...t.lech];
