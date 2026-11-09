@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.342';
-const APP_VERSION='09/11/2026 11:01';
+const APP_SO='1.343';
+const APP_VERSION='09/11/2026 11:47';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1898,7 +1898,7 @@ async function pageTongQuan(){
   const C1=cs(bh,bK),C0=cs(bh0,bK0);
   // 04/11: KQKD toàn công ty + theo cơ sở = đúng số P&L (plTinh): doanh thu thuần đã trừ VAT 599, chi phí gồm khoản định kỳ + lãi vay chia theo doanh thu cơ sở
   const kyT=(a,z)=>({tu:a,den:z,ms:dsThang(a.slice(0,7),z.slice(0,7)).filter(m=>a<=m+'-01'&&z>=cuoiThang(m))});
-  const [P1,P0]=await Promise.all([plTinh(kyT(S.tu,S.den),null,true),plTinh(kyT(tu0,den0),null,true)]);
+  const [P1,P0]=await Promise.all([plTinh(kyT(S.tu,S.den),null,true),plTinh(kyT(tu0,den0),null,true)]);S.cache.tq_cp={P:P1,ky:{...kyT(S.tu,S.den),ms:P1.ms,ten:fmtD(S.tu)+' – '+fmtD(S.den)},csSel};
   const csP=P=>{const sm=o=>Object.values(o||{}).reduce((a,v)=>a+v,0),cpK=new Set(P.CPD.map(n=>n[0])),cpCua=c=>Object.entries(P.cpCS).filter(([k])=>k.split('|')[0]===c&&cpK.has(k.split('|')[1])).reduce((a,[,o])=>a+sm(o),0);
     const rows=P.csDS.map(key=>{const dt=sm(P.dtCS[key]),gv=sm(P.gvCS[key]),cp=cpCua(key),thue=sm(P.thueCS[key]);return {key,ten:csTen3(key),dtg:sm(P.dtgCS[key]),tra:sm(P.traCS[key]),vat:sm(P.vatCS[key]),dt,gv,lg:dt-gv,cp,thue,ln:dt-gv-cp-thue}});
     return {rows,chung:cpCua('chung'),chungThue:sm(P.thueCS.chung)}};
@@ -1918,7 +1918,7 @@ async function pageTongQuan(){
       ${the('accent','dt','Doanh thu thuần',K1.dt,K0.dt,true,'Tỷ lệ trả hàng: ',pct(K1.tra,K1.dtg),"document.querySelector('.tq2-r2').scrollIntoView({behavior:'smooth'})")}
       ${the('warn','gv','Giá vốn hàng bán',K1.gv,K0.gv,false,'Tỷ lệ giá vốn: ',pct(K1.gv,K1.dt),"document.querySelector('.tq2-r2').scrollIntoView({behavior:'smooth'})")}
       ${the('ok','lg','Lợi nhuận gộp',K1.lg,K0.lg,true,'Biên lợi nhuận gộp: ',pct(K1.lg,K1.dt),coXem('pl')?"go('pl')":'')}
-      ${the('vio','cp',HT?'Chi phí hoạt động (hạch toán)':'Chi phí hoạt động',K1.cp,K0.cp,false,'Tỷ lệ chi phí HĐ/DT: ',pct(K1.cp,K1.dt),xnDuoc('cp')?`xemNhanh('cp','',${csSel&&csSel.length===1?`'${(CS3.find(x=>x[0]===csSel[0])||[])[2]}'`:'null'},'')`:'')}
+      ${the('vio','cp',HT?'Chi phí hoạt động (hạch toán)':'Chi phí hoạt động',K1.cp,K0.cp,false,'Tỷ lệ chi phí HĐ/DT: ',pct(K1.cp,K1.dt),'tqCPXem()')}
       ${the('teal','ln','Lợi nhuận sau chi phí (ước tính)',K1.ln,K0.ln,true,'Biên lợi nhuận: ',pct(K1.ln,K1.dt),coXem('pl')?"go('pl')":'')}</div></div>`,'tq2-1');
   const rows2=Q1.rows.filter(r=>!csSel||csSel.includes(r.key)),tg={dt:sumBy(rows2,r=>r.dt),gv:sumBy(rows2,r=>r.gv),lg:sumBy(rows2,r=>r.lg),cp:sumBy(rows2,r=>r.cp)+(csSel?0:Q1.chung),thue:sumBy(rows2,r=>r.thue||0)};tg.ln=tg.lg-tg.cp-tg.thue;
   const s2F=()=>sec(2,'info','Kết quả kinh doanh theo cơ sở',kyN,`<div class="scroll"><table class="m-t tq2-t"><tr><th>Cơ sở</th><th class="num" title="Doanh thu − trả hàng (như Kiot)">Doanh thu thuần</th><th class="num">Giá vốn</th><th class="num">Lợi nhuận gộp</th><th class="num" title="${HT?'Chi phí hạch toán: theo kỳ sử dụng dịch vụ / phân bổ của phiếu, không theo ngày chi tiền':'Theo ngày chi tiền'}">Chi phí HĐ${HT?'<div class="muted" style="font-size:10.5px;font-weight:400">hạch toán</div>':''}</th><th class="num">Lợi nhuận (ước tính)</th><th class="num">Biên LN</th><th class="num">${tN}</th><th class="num tq-coc-h" title="Đơn đặt trong kỳ đã có cọc, chưa xuất hoá đơn — doanh thu dự kiến">Đã cọc · chưa đi hàng</th></tr>
@@ -4614,6 +4614,26 @@ function pl18(rows,loaiDS){const nm=s=>boDau(String(s||'')).toLowerCase().replac
 // 04/11/2026 kế toán: "Kết quả kinh doanh toàn công ty (Tổng quan) không khớp P&L" — Tổng quan tự tính riêng (thiếu trừ VAT 599, lãi vay, khoản định kỳ;
 // giá vốn nguồn khác) → tách phần TÍNH của P&L ra plTinh(), Tổng quan + P&L dùng chung 1 cách tính. ky = {tu, den, ms: các tháng nằm trọn trong kỳ}. — Monsieur Claude
 const plThueIds=()=>{const L=S.dm.loai.filter(l=>l.nhom==='chi'),g=L.filter(l=>!l.cha_id&&String(l.ma||'')==='10').map(l=>l.id),r=new Set(g);let them=1;while(them){them=0;L.forEach(l=>{if(l.cha_id&&r.has(l.cha_id)&&!r.has(l.id)){r.add(l.id);them=1}})}return r};
+// 09/11 anh (ảnh thẻ Chi phí hoạt động T10 khác số trong popup): "không hiểu phần chi phí hoạt động, sao click trong có hơn trăm triệu" — thẻ = TỔNG CHI PHÍ P&L
+// (phiếu hạch toán + khoản định kỳ + lãi vay), popup cũ chỉ liệt kê phiếu chi theo ngày chi → lệch. Nay bấm thẻ = đúng các nhóm chi phí P&L cộng lại bằng số thẻ,
+// bấm nhóm → phiếu chi + khoản định kỳ (plCT, như P&L). Dùng chung kết quả plTinh của Tổng quan. — Monsieur Claude
+function tqCPXem(){const C=S.cache.tq_cp;if(!C)return;const {P,ky,csSel}=C,sm=o=>Object.values(o||{}).reduce((a,v)=>a+v,0);
+  const L=P.b.loai,cha=Object.fromEntries(L.map(l=>[l.id,l.cha_id])),goc=id=>{let x=+id;while(cha[x])x=cha[x];return x};
+  const cpK=new Set(P.CPD.map(n=>n[0])),okCs=c=>c==='chung'?!csSel:!csSel||csSel.includes(c);
+  const G={},dkG={};for(const [k,o] of Object.entries(P.cpCS)){const [c,id]=k.split('|');if(!cpK.has(id)||!okCs(c))continue;const g=id==='lai_vay'?'lai_vay':String(goc(id));G[g]=(G[g]||0)+sm(o)}
+  for(const x of P.dkt){if(!+x.tien||!ky.ms.includes(x.thang))continue;const c=x.dv?(csCuaDV(x.dv)||'chung'):'chung';if(!okCs(c))continue;const g=String(goc(x.loai));dkG[g]=(dkG[g]||0)+(+x.tien)}
+  const ten=g=>g==='lai_vay'?'Lãi vay & phí tài chính (chia theo doanh thu cơ sở)':(()=>{const l=(S.dm.loai.find(z=>z.id==g)||L.find(z=>z.id==g)||{});return (l.ma?l.ma+'. ':'')+(l.ten||'Loại #'+g)})();
+  const ds=Object.entries(G).filter(([,v])=>Math.round(v)).sort((a,b)=>{const ma=g=>g==='lai_vay'?99:+((S.dm.loai.find(z=>z.id==g)||{}).ma||98);return ma(a[0])-ma(b[0])}),tong=sumBy(ds,x=>x[1]),dk=sumBy(Object.values(dkG),v=>v);
+  const cay=id=>[+id,...L.filter(l=>l.cha_id==id).flatMap(c=>cay(c.id))];
+  S.cache.pl_ky=ky;S.cache.pl2=P.b;S.cache.pl_dk=P.dkt;S.cache.pl_t18=P.T18;S.cache.pl_dt=P.sumO(P.dtCS,P.csDS);S.cache.pl_cpd=P.CPD;
+  modal(`<h2>Chi phí hoạt động <span class="badge" style="vertical-align:middle">${esc(ky.ten)}${csSel?' · '+esc(csSel.map(csTen3).join(', ')):''}</span></h2>
+    <div class="bc-k" style="grid-template-columns:repeat(3,1fr)"><div><span>Tổng chi phí (như P&L)</span><b>${fmt(tong)}</b></div><div><span>Trong đó khoản định kỳ</span><b>${fmt(dk)}</b></div><div><span>Phiếu chi + lãi vay</span><b>${fmt(tong-dk)}</b></div></div>
+    <div class="m-st">Theo nhóm chi phí <span class="badge">bấm 1 nhóm xem phiếu chi + khoản định kỳ</span></div>
+    <div class="m-card"><table class="m-t"><tr><th>Nhóm</th><th class="num">Số tiền</th><th class="num">Gồm định kỳ</th><th class="num">Tỷ trọng</th></tr>
+      ${ds.map(([g,v])=>`<tr ${!coXem('pl')?'':g!=='lai_vay'?`class="click" onclick="closeModal();plCT('${cay(g).join(',')}',${JSON.stringify(ten(g)).replace(/"/g,'&quot;')},null${csSel&&csSel.length===1?",'"+csSel[0]+"'":''})"`:`class="click" onclick="closeModal();go('vay')"`}><td>${esc(ten(g))}</td><td class="num">${fmt(v)}</td><td class="num">${dkG[g]?fmt(dkG[g]):'<span class="muted">–</span>'}</td><td class="num">${pct(v,tong)}</td></tr>`).join('')}
+      <tr class="tong"><td><b>Tổng</b></td><td class="num"><b>${fmt(tong)}</b></td><td class="num"><b>${fmt(dk)}</b></td><td></td></tr></table></div>
+    <div class="muted" style="font-size:12.5px;margin-top:8px">Chi phí hạch toán theo tháng sử dụng / phân bổ (không theo ngày chi tiền) + khoản định kỳ P&L (lương ước tính, thuê nhà…; tháng đang chạy tính theo số ngày đã qua) + lãi vay. Thuế tách riêng sau lợi nhuận trước thuế.</div>
+    <div class="acts"><button class="btn" onclick="closeModal();go('pl')">Mở P&L</button><button class="btn" onclick="closeModal()">Đóng</button></div>`);const b=$('#modal>div');if(b){b.style.width='min(820px,96vw)';b.style.maxWidth='820px'}}
 async function plTinh(ky,sel,nhe){
   // 09/11 kế toán (mục 8): P&L năm lỗ hơn Tổng quan — P&L cộng cả tháng CHƯA TỚI + trọn định kỳ tháng đang chạy, Tổng quan bỏ hẳn tháng đang chạy.
   // Chung 1 khung tháng: tháng nằm trọn trong kỳ + tháng đang chạy (khi kỳ chứa nó, định kỳ tháng này tính theo số ngày đã qua — SQL), bỏ tháng chưa tới. — Monsieur Claude
@@ -6444,7 +6464,7 @@ const LOGIC2=[
  ['chi_so','Tổng quan · Doanh thu thuần','= TỔNG DOANH THU RÒNG của P&L: doanh thu − trả hàng − VAT tiền về TK công ty 599 (từ T9); T1–T8 theo 4 file P&L kế toán.','Cùng cách tính với P&L (dùng chung 1 hàm). Tỷ lệ trả hàng = trả hàng ÷ doanh thu.','04/11'],
  ['chi_so','Tổng quan · Giá vốn hàng bán','= Giá vốn hàng bán của P&L: giá vốn Kiot hàng đã bán − giá vốn hàng trả lại; T1–T8 theo file P&L.','Tỷ lệ giá vốn = giá vốn ÷ doanh thu thuần.','04/11'],
  ['chi_so','Tổng quan · Lợi nhuận gộp','Doanh thu thuần − giá vốn.','Biên lợi nhuận gộp = lợi nhuận gộp ÷ doanh thu thuần.','19/10'],
- ['chi_so','Tổng quan · Chi phí hoạt động (hạch toán)','= TỔNG CHI PHÍ của P&L: phiếu chi đã xác nhận (chờ chi + đã chi), trừ tạm ứng, trả gốc vay và phiếu \"không hạch toán\", ghi vào tháng phân bổ → tháng hạch toán ghi tay → tháng sử dụng dịch vụ; cộng khoản định kỳ (thuê nhà, lương ước tính…) và lãi vay chia theo doanh thu cơ sở; T1–T8 theo file P&L.','Chọn 1 cơ sở: chỉ phần chi phí phân bổ cho cơ sở đó, KHÔNG gồm chi phí chung công ty. Tỷ lệ chi phí = chi phí ÷ doanh thu thuần.','04/11'],
+ ['chi_so','Tổng quan · Chi phí hoạt động (hạch toán)','= TỔNG CHI PHÍ của P&L (bấm thẻ → các nhóm chi phí cộng lại đúng số thẻ, cột Gồm định kỳ; bấm nhóm → phiếu chi + khoản định kỳ y như P&L — 09/11): phiếu chi đã xác nhận (chờ chi + đã chi), trừ tạm ứng, trả gốc vay và phiếu \"không hạch toán\", ghi vào tháng phân bổ → tháng hạch toán ghi tay → tháng sử dụng dịch vụ; cộng khoản định kỳ (thuê nhà, lương ước tính…) và lãi vay chia theo doanh thu cơ sở; T1–T8 theo file P&L.','Chọn 1 cơ sở: chỉ phần chi phí phân bổ cho cơ sở đó, KHÔNG gồm chi phí chung công ty. Tỷ lệ chi phí = chi phí ÷ doanh thu thuần.','04/11'],
  ['chi_so','Tổng quan · Lợi nhuận sau chi phí (ước tính)','= LỢI NHUẬN RÒNG của P&L: lợi nhuận gộp − chi phí hoạt động − thuế (dòng thuế chỉ có ở file P&L T1–T8).','Tổng quan và P&L dùng chung 1 cách tính → luôn ra cùng số (trước 04/11 Tổng quan tính riêng, thiếu VAT 599, khoản định kỳ, lãi vay). Kỳ không trọn tháng: khoản định kỳ chỉ cộng tháng nằm trọn trong kỳ. Biên lợi nhuận = lợi nhuận ÷ doanh thu thuần.','04/11'],
  ['chi_so','Tổng quan · So với tháng trước','So với kỳ liền trước CÙNG ĐỘ DÀI (vd 1–19/10 so 1–19/9).','Mũi tên xanh = tốt (doanh thu / lợi nhuận tăng, chi phí / giá vốn giảm).','19/10'],
  ['chi_so','Tổng quan · Đã cọc · chưa đi hàng','Đơn đặt chưa hoàn thành / chưa huỷ có tiền cọc (trả trên đơn + trả trước của khách chia cho đơn cũ nhất trước).','Là doanh thu DỰ KIẾN, chưa nằm trong doanh thu. Báo giá không tiền không tính.','19/10'],
