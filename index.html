@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.336';
-const APP_VERSION='06/11/2026 15:19';
+const APP_SO='1.337';
+const APP_VERSION='09/11/2026 09:07';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -6317,7 +6317,7 @@ async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)
   if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='bao_loi'){S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');return}   // 24/10: báo lỗi → Log hệ thống, tab Báo lỗi
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
-  if(trang==='cd_kiot'){go('cd_kiot');return}
+  if(trang==='cd_kiot'){const m=x.loai==='kiot_lech'&&String(x.tieu_de||'').match(/T(\d{1,2})\/(\d{4})/);if(m){kiotLechXem(m[2]+'-'+m[1].padStart(2,'0'));return}go('cd_kiot');return}
   // thông báo gộp (vd nhiều đề xuất chi từ Kiot) → mở tab chờ kế toán kiểm, lọc nguồn Kiot
   if(!x.dong_id){if(trang==='chi'){S.f.chi_tt='cho_duyet';S.f.chi_nguon=x.loai==='chi_kiot'?'kiot':''}setKy('nam',true);go(trang);return}
   // mở trang + kỳ "Từ 1/9" để chắc chắn thấy phiếu, đợi danh sách tải xong rồi mở đúng phiếu
@@ -6594,6 +6594,7 @@ const LOGIC2=[
  ['kiot','Thu từ Kiot','Loại thu theo mã: TTHD = bán hàng · TTDH / nhóm đặt cọc = đặt cọc · TT = công nợ · còn lại = thu khác.','','09/10'],
  ['kiot','Thu từ Kiot','Phiếu tiền mặt luôn vào Két tiền mặt; chuyển khoản ghép theo cột "Bên Kiot" của tài khoản.','','09/10'],
  ['kiot','So khớp Kiot','23:50 mỗi đêm so lại tháng này + tháng trước: hoá đơn, trả hàng, sổ quỹ, phiếu nhập, đơn đặt — thiếu / lệch tự bù.','App thừa chỉ báo, không xoá.','15/10'],
+ ['kiot','So khớp Kiot','Phiếu app có mà Kiot không còn trong tháng (mọi nhóm: HĐ, trả hàng, đơn đặt, phiếu nhập, sổ quỹ) → hỏi Kiot từng phiếu theo id (≤ 10 / nhóm / lần so): "không còn tồn tại" = Kiot đã xoá, còn trả về = đổi ngày / trạng thái. Chuông "Doanh thu Tx lệch Kiot" ghi mã + tình trạng; bấm → bảng phiếu lệch (tình trạng, ngày, chi nhánh, người bán, khách / NCC, tiền, phiếu liên quan, link Kiot).','Kiot API không cho biết AI xoá — xem web Kiot: Thiết lập → Lịch sử thao tác. Sổ quỹ không hỏi được từng phiếu (ghi chưa rõ). Phiếu app thừa không tự xoá khỏi app.','09/11'],
  ['kiot','So khớp Kiot','So công nợ toàn bộ khách / NCC mỗi đêm; lệch ghi đè theo Kiot.','','15/10'],
  ['kiot','So khớp Kiot','Kéo đầy đủ hàng hoá 23:20 → so tồn kho trước khi ghi đè.','','14/10'],
  ['kiot','Cảnh báo','Chuông báo: kéo lỗi, quá 4 tiếng không kéo được, lịch so khớp không chạy, còn lệch không tự bù được.','Cùng vấn đề chỉ báo lại sau 12 tiếng.','14/10'],
@@ -7243,7 +7244,28 @@ function kiotXemThang(m){
         <td class="num">${fmt(dk)}</td><td class="num ${dk!==da?'neg-t':''}">${fmt(da)}</td><td class="num">${fmt(tk)} / ${fmt(ta)}</td><td class="num"><b>${fmt(dk-tk)}</b></td><td class="num ${dk-tk!==da-ta?'neg-t':''}"><b>${fmt(da-ta)}</b></td></tr>`}).join('')}</table></div>
     <div style="margin-top:12px;font-size:12.5px"><b>Hoá đơn</b>: Kiot ${fmt(q.hd.kiot)} phiếu (mọi trạng thái) · app ${fmt(q.hd.app)}${ma('App thiếu',q.hd.thieu)}${ma('App thừa (Kiot không còn trong tháng này)',q.hd.thua)}${ma('Lệch trạng thái / tiền',q.hd.lech)}
       <div style="margin-top:10px"><b>Trả hàng</b>: Kiot ${fmt(q.th.kiot)} phiếu · app ${fmt(q.th.app)}${ma('App thiếu',q.th.thieu)}${ma('App thừa',q.th.thua)}${ma('Lệch',q.th.lech)}</div></div>
-    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`)}
+    <div class="acts">${Object.keys(KT_NHOM).some(k=>q[k]&&((q[k].thua||[]).length+(q[k].thieu||[]).length+(q[k].lech||[]).length))?`<button class="btn pri" onclick="kiotLechXem('${m}')">Xem phiếu lệch</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button></div>`)}
+// 09/11 anh: "app báo có phiếu bị xoá ở Kiot trong T10 — phiếu nào, ai xoá; bấm thông báo hiện ra phiếu lệch luôn" — mọi nhóm (HĐ, trả hàng, đơn đặt,
+// phiếu nhập, sổ quỹ): app thừa (Kiot không còn: đã xoá / đổi ngày — Edge hỏi Kiot từng phiếu) · app thiếu / lệch (đã tự ghi bù). Chi tiết phiếu theo bản app đã kéo.
+const KT_NHOM={hd:['Hoá đơn','Invoices'],th:['Trả hàng','Returns'],dh:['Đơn đặt','Order'],nh:['Phiếu nhập','PurchaseOrder'],sq:['Sổ quỹ','CashFlow']};
+async function kiotLechXem(m){
+  modal('<h2>Phiếu lệch Kiot</h2><div class="m-empty">Đang tải...</div>');
+  try{if(!S.cache.kl)S.cache.kl=await rpc('kt_ds_keo_kiot');
+    const d=(S.cache.kl.thang||[]).find(x=>x.thang===m);if(!d)return modal('<h2>Phiếu lệch Kiot</h2><div class="m-empty">Chưa có lần so tháng này</div><div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>');
+    const q=d.ket_qua,ds=[];
+    Object.keys(KT_NHOM).forEach(k=>{const g=q[k];if(!g)return;const kt=Object.fromEntries((g.thua_kt||[]).map(z=>[z.ma,z]));
+      (g.thua||[]).forEach(ma=>{const z=kt[ma]||{};ds.push({k,ma,tt:z.tt==='xoa'?['Kiot đã xoá','bad']:z.tt==='doi'?['Kiot đổi sang '+(z.ngay?fmtD(z.ngay):'tháng khác'),'warn']:['Kiot không còn trong tháng','bad'],thua:1})});
+      (g.thieu||[]).forEach(ma=>ds.push({k,ma,tt:['App thiếu — đã tự bù','info']}));(g.lech||[]).forEach(ma=>ds.push({k,ma,tt:['Lệch — đã ghi lại theo Kiot','info']}))});
+    const ct=ds.length?await rpc('kt_kiot_phieu_ct',{p_ma:ds.map(x=>x.ma)}):[],C=Object.fromEntries(ct.map(c=>[c.nhom+'|'+c.ma,c]));
+    const coThua=ds.some(x=>x.thua);
+    modal(`<h2>Phiếu lệch Kiot · Tháng ${+m.slice(5)}/${m.slice(0,4)} ${pillDC(d)}</h2><div class="muted" style="margin-bottom:10px">Soát lúc ${fmtDT(d.luc)} · chi tiết theo bản app đã kéo về</div>
+      <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Loại</th><th>Mã phiếu</th><th class="c">Tình trạng</th><th>Ngày</th><th>Chi nhánh</th><th>Người bán</th><th>Khách / NCC</th><th class="num">Số tiền</th><th>Liên quan</th></tr>
+      ${ds.map(x=>{const c=C[x.k+'|'+x.ma]||{};return `<tr><td class="nw">${KT_NHOM[x.k][0]}</td><td class="nw">${x.tt[1]==='bad'&&/xoá/.test(x.tt[0])?esc(x.ma):`<a href="${KIOT_MAN}${KT_NHOM[x.k][1]}?Code=${encodeURIComponent(x.ma)}" target="_blank" rel="noopener">${esc(x.ma)} ↗</a>`}</td>
+        <td class="c nw">${pill(x.tt[0],x.tt[1])}</td><td class="nw">${c.ngay?fmtD(String(c.ngay).slice(0,10)):''}</td><td class="nw">${esc(c.chi_nhanh||'')}</td><td class="nw">${esc(c.nguoi||'')}</td>
+        <td class="ten">${esc(c.doi_tac||'')}</td><td class="num">${c.tong!=null?fmt(c.tong):''}</td><td class="nw">${esc(c.lien_quan||'')}</td></tr>`}).join('')||'<tr><td colspan="9" class="m-empty">Không có phiếu lệch</td></tr>'}</table></div></div>
+      ${coThua?'<div class="muted" style="font-size:12.5px;margin-top:8px">Ai xoá: Kiot không cho xem qua kết nối — xem trên web Kiot: Thiết lập → Lịch sử thao tác, tìm theo mã phiếu</div>':''}
+      <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`);const b=$('#modal>div');if(b){b.style.width='min(1100px,96vw)';b.style.maxWidth='1100px'}}
+  catch(e){modal('<h2>Phiếu lệch Kiot</h2><div class="m-empty neg">'+esc(e.message)+'</div><div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>')}}
 // Dải trạng thái trên các trang dùng số Kiot (kiểu dòng "Soát với Kiot" của app MKT/Sale): lần kéo gần nhất + kết quả so khớp
 async function kiotBanner(el){
   try{if(!S.cache.ktt||Date.now()-S.cache.ktt.t>3e5)S.cache.ktt={t:Date.now(),d:await rpc('kt_kiot_trang_thai')};}catch(e){return}

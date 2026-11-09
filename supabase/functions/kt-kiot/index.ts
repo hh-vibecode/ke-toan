@@ -61,6 +61,23 @@ async function kiotMot(duong: string) {   // 1 bản ghi (vd products/{id}); 404
   if (r.ok) return await r.json();
   throw new Error(`Kiot ${duong} lỗi ${r.status}`);
 }
+// 09/11/2026 anh ("phiếu bị xoá ở Kiot trong T10 — phiếu nào"): phiếu app có mà Kiot không trả trong tháng → hỏi Kiot theo id.
+// "không còn tồn tại" = ĐÃ XOÁ trên Kiot; còn trả về = đổi ngày / trạng thái (ghi ngày mới). Sổ quỹ không có API xem 1 phiếu → không rõ.
+// Kiot API không cho biết AI xoá (chỉ có ở Lịch sử thao tác trên web Kiot). Tối đa 10 phiếu / nhóm / lần so.
+async function kiemThua(ds: any[], duong: string | null, ngay: (x: any) => string) {
+  const out: any[] = [];
+  for (const r of ds.slice(0, 10)) {
+    const id = r[0], ma = r[r.length - 1];
+    if (!duong) { out.push({ ma, tt: 'khong_ro' }); continue; }
+    try {
+      const res = await kf(`https://public.kiotapi.com/${duong}/${id}`, { headers: { Retailer: Deno.env.get('KT_KIOT_RETAILER')!, Authorization: 'Bearer ' + tok } });
+      const t = await res.text();
+      if (res.ok) { const x = JSON.parse(t); out.push({ ma, tt: 'doi', ngay: String(ngay(x) || '').slice(0, 10), trang_thai: x.statusValue ?? x.status }); }
+      else out.push({ ma, tt: res.status === 404 || /không còn tồn tại|not exist/i.test(t) ? 'xoa' : 'khong_ro' });
+    } catch (_) { out.push({ ma, tt: 'khong_ro' }); }
+  }
+  return out;
+}
 const sbH = { apikey: SK, Authorization: 'Bearer ' + SK, 'Content-Type': 'application/json' };
 const sb = (duong: string, body: unknown, prefer = 'return=minimal') => fetch(SB + '/rest/v1/' + duong, { method: 'POST', headers: { ...sbH, Prefer: prefer }, body: JSON.stringify(body) });
 async function ghi(bang: string, rows0: any[]) {
@@ -201,8 +218,12 @@ async function doiChieuThang(m: string, nguoi: string) {
   if (suaH.length) await ghi('kt_kiot_hoa_don', suaH.map(LOAI.hoa_don.doi));
   if (suaT.length) await ghi('kt_kiot_tra_hang', suaT.map(LOAI.tra_hang.doi));
   if (suaH.length) await rpcJ('kt_tinh_gia_von', { p_tat_ca: false });
-  const ket_qua = { tu, den, kiot, app, hd: { kiot: hdK.length, app: (db.hd || []).length, thieu: ma(h.thieu), thua: ma(h.thua), lech: ma(h.lech) },
-    th: { kiot: thK.length, app: (db.th || []).length, thieu: ma(t.thieu), thua: ma(t.thua), lech: ma(t.lech) }, ...them2 };
+  const kt = async (ds: any[], duong: string | null, ngay: (x: any) => string) => ds.length ? { thua_kt: await kiemThua(ds, duong, ngay) } : {};
+  Object.assign(them2.sq, await kt(s.thua, null, x => x.transDate));
+  Object.assign(them2.nh, await kt(n.thua, 'purchaseorders', x => x.purchaseDate));
+  Object.assign(them2.dh, await kt(dd.thua, 'orders', x => x.purchaseDate));
+  const ket_qua = { tu, den, kiot, app, hd: { kiot: hdK.length, app: (db.hd || []).length, thieu: ma(h.thieu), thua: ma(h.thua), lech: ma(h.lech), ...(await kt(h.thua, 'invoices', x => x.purchaseDate)) },
+    th: { kiot: thK.length, app: (db.th || []).length, thieu: ma(t.thieu), thua: ma(t.thua), lech: ma(t.lech), ...(await kt(t.thua, 'returns', x => x.returnDate)) }, ...them2 };
   await sb('kt_kiot_doi_chieu', { nguoi, loai: 'thang', thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length + sua2, ket_qua });
   return { thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length + sua2 };
 }
