@@ -1107,8 +1107,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.340';
-const APP_VERSION='09/11/2026 09:53';
+const APP_SO='1.341';
+const APP_VERSION='09/11/2026 10:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1318,6 +1318,12 @@ async function dnForm(){
     <div class="err" id="dn-err"></div>
     <div class="acts"><button class="btn pri" id="dn-gui" onclick="dnGui()">Gửi đề nghị</button></div>`;
   dnLoai(DN.loai);
+  if(DN.lamLai){const r=DN.lamLai;DN.lamLai=null;if(r.loai_dn&&r.loai_dn!==DN.loai)dnLoai(r.loai_dn);
+    ['nguoi_de_nghi','noi_dung','ngay_su_dung','han_tt','thu_huong_ten','thu_huong_nh','thu_huong_stk','noi_dung_ck'].forEach(k=>{const e=$('#dn [name='+k+']');if(e&&r[k]!=null)e.value=r[k]});
+    const bp=$('#dn [name=bo_phan_id]');if(bp&&r.bo_phan_id&&[...bp.options].some(o=>o.value==r.bo_phan_id))bp.value=r.bo_phan_id;
+    const st=$('#dn [name=so_tien]');if(st&&r.so_tien){st.value=Math.round(r.so_tien);fmtMoney(st)}
+    const hd=$('#dn [name=co_hd_do]');if(hd&&r.co_hd_do!=null){hd.value=String(r.co_hd_do);dnHD();const hv=$('#dn [name=hd_ve]');if(hv&&r.hd_ve)hv.value=r.hd_ve}
+    const tit=$('#dn-tit');if(tit)tit.insertAdjacentHTML('afterend','<div class="muted" style="font-size:12.5px">Điền sẵn từ phiếu #'+r.id+' vừa huỷ — sửa lại, chọn lại hồ sơ rồi gửi</div>')}
   const dz=$('#dn-drop');dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');dnThemFile(e.dataTransfer.files)};
   document.onpaste=e=>{if(!$('#dn'))return;const f=[...(e.clipboardData||{}).files||[]];if(f.length)dnThemFile(f)};
@@ -1438,7 +1444,8 @@ async function dnXem(ma){
     ${x.trang_thai==='da_tt'?`<div class="dn-l" style="margin-top:14px" id="dn-bill-l">Bill chuyển khoản</div><div id="dn-bill" class="dn-bill"><span class="muted">Đang tải...</span></div>`:''}
     ${x.con_tai_len?`<div class="dn-l" style="margin-top:12px">Tải thêm hồ sơ <span class="muted">(trong 3 giờ sau khi gửi)</span></div>
       <label class="dn-drop">+ Chọn ảnh / PDF / Excel / Word<input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="dnBoSung('${ma}',this.files)"></label><div id="dn-files"></div>`:''}
-    <div class="acts" style="justify-content:center"><button class="btn" onclick="dnXem('${ma}')">Tải lại</button><button class="btn pri" onclick="history.replaceState(null,'',location.pathname+'#de-nghi');dnForm()">Gửi phiếu mới</button></div>`;
+    <div class="acts" style="justify-content:center">${x.huy_duoc?`<button class="btn bad" onclick="dnHuy('${ma}')" title="Kế toán chưa kiểm — huỷ phiếu này, form gửi mới điền sẵn nội dung cũ để sửa và gửi lại">Huỷ phiếu để làm lại</button>`:''}<button class="btn" onclick="dnXem('${ma}')">Tải lại</button><button class="btn pri" onclick="history.replaceState(null,'',location.pathname+'#de-nghi');dnForm()">Gửi phiếu mới</button></div>
+    ${x.huy_duoc?'':`<div class="muted" style="font-size:12px;text-align:center;margin-top:6px">${/tu_choi|da_tt/.test(x.trang_thai)?'':'Kế toán đã kiểm phiếu — muốn huỷ hoặc sửa thì nhắn kế toán'}</div>`}`;
   if(x.trang_thai==='da_tt')dnBill(ma)}
 // 26/10 anh: "khi xử lý xong họ thấy được bill chuyển khoản bước cuối cùng" — phiếu Đã thanh toán: ảnh giao dịch (UNC / phiếu chi ký nhận) qua mã bí mật, link 5 phút
 async function dnBill(ma){const el=$('#dn-bill');if(!el)return;
@@ -1447,6 +1454,12 @@ async function dnBill(ma){const el=$('#dn-bill');if(!el)return;
     el.innerHTML=ds.map(f=>/^image\//.test(f.mime||'')?`<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" alt="Bill chuyển khoản"></a>`
       :`<a class="dn-bill-f" href="${esc(f.url)}" target="_blank" rel="noopener">Xem bill (PDF)</a>`).join('')||'<span class="muted">Kế toán chưa đính kèm bill chuyển khoản</span>'}
   catch(e){el.innerHTML=`<span class="neg-t">${esc(e.message)}</span>`}}
+// 09/11 anh: "có chỗ cho huỷ phiếu của nhân sự bên ngoài chưa — nhiều khi người ta muốn làm lại". Chỉ khi kế toán chưa kiểm; huỷ xong mở form gửi mới điền sẵn (hồ sơ phải chọn lại). — Monsieur Claude
+async function dnHuy(ma){const ly=prompt('Huỷ phiếu này để làm lại? Ghi lý do (không bắt buộc):','');if(ly===null)return;
+  try{const r=await rpc('kt_huy_de_nghi',{p_ma:ma,p_ly_do:ly},true);
+    try{localStorage.setItem('kt_dn_ds',JSON.stringify(dnDa().filter(x=>x.ma!==ma)))}catch(e){}
+    DN.lamLai=r;toast('Đã huỷ phiếu #'+r.id+' — sửa lại và gửi phiếu mới');history.replaceState(null,'',location.pathname+'#de-nghi');dnForm()}
+  catch(e){alert(e.message)}}
 async function dnBoSung(ma,list){DN.files=[];dnThemFile(list);DN.gui=true;dnVeFile();const loi=await dnTaiFile(ma,DN.files,i=>'dn-tt-'+i);DN.gui=false;
   if(loi.length)alert('Chưa tải được: '+loi.join('; '));setTimeout(()=>dnXem(ma),1200)}
 async function login(){
@@ -6467,6 +6480,7 @@ const LOGIC2=[
  ['thu_chi','Vay — phân loại & lọc','Mỗi khoản vay: bên vay (công ty / cá nhân), kỳ hạn (ngắn ≤ 12 tháng / trung dài > 12 tháng), tài sản đảm bảo (có — ghi tài sản / tín chấp / chưa nhập). Trang Vay lọc theo ngân hàng · bên vay · kỳ hạn · TSĐB; thẻ số + lịch trả theo bộ lọc.','Phân loại sẵn 26/10: tên có "cá nhân" → cá nhân; đáo hạn > 12 tháng → trung dài; hạn mức / khế ước không ngày đáo hạn → ngắn. TSĐB chưa có dữ liệu — kế toán nhập ở ✏ Sửa khoản vay.','26/10'],
  ['cong_no','Lịch thanh toán định kỳ','Thu chi & Ngân quỹ → Lịch thanh toán → tab Định kỳ (tab Đến hạn trả: khoản trả 1 lần): mỗi khoản có chu kỳ (tháng / quý / 6 tháng / năm), khung hạn kỳ tới, người nhận + STK, số dự kiến. 08:00 mỗi ngày (lịch kt-nhac-lich-tt) chuông cho Supreme + kế toán: trước hạn N ngày (mặc định 3) và khi quá hạn — mỗi mốc 1 lần / kỳ. ✓ Đã thanh toán → ghi lần trả, dời sang kỳ sau. Tạo phiếu → form đề nghị điền sẵn.','Không lưu mật khẩu đăng nhập (EVN…). Nạp 9 khoản từ file LỊCH THANH TOÁN CÁC KHOẢN CỐ ĐỊNH THT 26/10.','26/10'],
  ['thu_chi','Người gửi phiếu theo dõi (không tài khoản)','Gửi xong có link riêng #phieu=<mã bí mật>; máy đã gửi nhớ 500 phiếu gần nhất ("Phiếu đã gửi từ máy này" hiện 5, nút Xem tất cả: đủ danh sách + trạng thái, tìm kiếm, tổng tiền — 05/11). Trang theo dõi: 4 bước Kế toán kiểm → Giám đốc xác nhận → Chờ thanh toán → Đã thanh toán. Đã thanh toán → hiện "Bill chuyển khoản" (chi tiền mặt: "Phiếu chi ký nhận") = ảnh kế toán đính ở ô Ảnh giao dịch của Bước 3 – Chi tiền.','Link xem ảnh sống 5 phút, cấp qua mã phiếu (kt_bill_phieu + Edge kt-chung-tu bill_phieu) — không xem được hồ sơ khác.','26/10'],
+ ['thu_chi','Người đề nghị tự huỷ phiếu (09/11)','Trang theo dõi phiếu (link đề nghị, mã bí mật): nút "Huỷ phiếu để làm lại" khi phiếu còn Chờ kế toán kiểm (chưa ai kiểm). Huỷ = xoá mềm + ghi chú lý do + nhật ký tu_huy_de_nghi; form gửi mới điền sẵn nội dung cũ (chọn lại hồ sơ).','Kế toán đã kiểm → không huỷ được, nhắn kế toán.','09/11'],
  ['thu_chi','Phiếu đề nghị','Mọi phiếu (trừ tạm ứng) bắt buộc chọn hoá đơn xuất về: Công ty / HKD Hiền Thủy / HKD Chánh Tâm — ô riêng, không liên quan ô Hoá đơn đỏ (hoá đơn trắng cũng chọn).','Kế toán + anh 16/10.','16/10'],
  ['thu_chi','Tạm ứng','Phiếu đề nghị tick TẠM ỨNG → tự tạo dòng ở Tạm ứng & hoàn ứng; từ chối / xoá / bỏ tick → tự gỡ (nếu chưa hoàn). Tạm ứng không tính chi phí.','Không bắt chọn đơn vị chịu chi phí / hoá đơn — quyết toán khi hoàn ứng. Vẫn là tiền ra ở Dòng tiền.','16/10'],
  ['thu_chi','Phiếu trang chủ','2 lựa chọn: Đề nghị thanh toán | Tạm ứng & hoàn ứng (bên trong: Xin tạm ứng / Hoàn ứng = trả lại tiền đã ứng).','Hoàn ứng không chi tiền, không là chi phí.','16/10'],
@@ -6512,6 +6526,7 @@ const LOGIC2=[
  ['chung','Người đang trong app','Thanh trên cạnh chuông: avatar con vật của những ai đang mở app (rê chuột xem tên + trang đang xem). Mỗi tài khoản 1 con vật cố định, không trùng người khác (đến 30 tài khoản); 1 người mở nhiều máy chỉ hiện 1 icon. Ảnh con vật lấy từ app MKT.','Mỗi trình duyệt 30 giây báo danh 1 lần (kt_bao_danh, bảng kt_dang_xem riêng app kế toán); quá 90 giây không báo = đã thoát; đăng xuất = rời ngay. Lúc Xem như không báo danh.','19/10 · 02/11'],
  ['thu_chi','Huỷ "Đã chi tiền"','Phiếu đã bấm Đã chi tiền nhầm (vd chưa duyệt lệnh ngân hàng): người xác nhận (kế toán có quyền xác nhận) hoặc giám đốc bấm "↩ Huỷ đã chi" ở chân cửa sổ phiếu → về Chờ chi tiền.','Không phải tạo lại phiếu; tiền không còn trừ tài khoản cho tới khi bấm Đã chi tiền lại; chuông báo người chi; nhật ký ghi lại.','20/10'],
  ['thu_chi','Nộp két từ Kiot (quầy → két)','Mỗi lần cửa hàng nộp doanh thu tiền mặt trên Kiot (cặp phiếu Chuyển rút CTM… chi tiền mặt quầy + TTD_CTM… thu vào Két) → app tự tạo điều chuyển "Nộp két" TIỀN MẶT QUẦY → KÉT TIỀN MẶT, 15 phút / lần. Phiếu Kiot bị huỷ → app ẩn theo. Kiot sửa ngày phiếu sau khi app đã tạo (vd CTM004104 31/10 → 03/11) mà thủ quỹ chưa nhận → ngày điều chuyển đổi theo Kiot (05/11); trang Điều chuyển hiện cả phiếu vào két chờ thủ quỹ nhận của kỳ trước (≤ 90 ngày, không tính vào tổng kỳ).','Đã có điều chuyển quầy → két cùng số tiền, lệch ≤ 4 ngày (từ file dòng tiền / nhập tay) thì chỉ gắn mã Kiot, không tạo trùng. Thủ quỹ up ảnh chứng từ nộp tiền vào chính phiếu điều chuyển đó; kế toán xem ảnh rồi bấm Xác nhận.','19/10'],
+ ['thu_chi','Nộp tiền mặt quầy vào ngân hàng (09/11)','Cặp phiếu Kiot Chuyển/Rút CTM… + TTD_CTM… thu vào tài khoản NGÂN HÀNG (đã nối mã Kiot) → điều chuyển "Nộp tiền mặt vào <tài khoản>" từ Tiền mặt quầy → tài khoản đó, kế toán xác nhận như điều chuyển thường. Két giữ cách cũ.','Trước 09/11 chỉ nhận cặp vào két, cặp vào ngân hàng bị bỏ qua (CTM004117 Hiền Thủy 07/11).','09/11'],
  ['thu_chi','Nội dung chuyển khoản','Người làm phiếu (link công khai hoặc trên app) điền ô Nội dung chuyển khoản (tối đa 25 ký tự). Mã QR trên phiếu gài sẵn nội dung đó; để trống thì gài số phiếu + nội dung chi.','Quét QR: app ngân hàng điền sẵn nội dung, người chuyển vẫn sửa được. App ngân hàng nào khoá ô nội dung thì bấm "Bỏ nội dung khỏi mã" dưới mã QR.','20/10'],
  ['thu_chi','Chuyển khoản TK công ty: lập lệnh → duyệt lệnh','Thủ quỹ lập lệnh trên ngân hàng, up ảnh lệnh (UNC), bấm "✓ Đã lập lệnh" → chuông báo kế toán. Kế toán duyệt lệnh trên ngân hàng xong bấm "✓ Đã duyệt lệnh" (ngày thanh toán mặc định hôm duyệt). Tab Cần chú ý: Chờ duyệt lệnh.','Chỉ khi Đã duyệt lệnh phiếu mới thành Đã thanh toán và trừ số dư — hết lệch khi lập lệnh hôm trước, duyệt hôm sau. Két tiền mặt vẫn bấm Đã chi tiền như cũ.','20/10'],
  ['thu_chi','Thủ quỹ xác nhận nhận tiền vào két','Phiếu thu / điều chuyển vào két: thủ quỹ bấm "✓ Đã nhận tiền" khi nhận đủ tiền mặt (tab Chờ thủ quỹ nhận ở Phiếu thu, Điều chuyển). Điều chuyển vào két (vd quỹ cửa hàng → két): thủ quỹ nhận = xác nhận; tài khoản admin kế toán không bấm xác nhận được.','Kế toán 27/10: điều chuyển vào két CHƯA bấm nhận thì chưa tính vào đâu (không trừ TK đi, không cộng két, không vào sổ quỹ ngày); bấm nhận mới tính cả 2 bên, ngày = ngày nhận. Áp phiếu tạo từ 20/10.','27/10'],
