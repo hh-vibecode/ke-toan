@@ -1136,8 +1136,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.358';
-const APP_VERSION='10/11/2026 11:44';
+const APP_SO='1.359';
+const APP_VERSION='10/11/2026 14:36';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2710,7 +2710,7 @@ function nutNhanh(x){const dy=chiDuyet(),gd=chiGD(),t=x.trang_thai,b=(tt,nhan,cl
 const coCT=x=>+x.so_ct>0||(x.chung_tu||[]).some(u=>/^https?:/.test(u))||/Tách từ PC\d{6}/.test(x.ghi_chu||'');   // 24/10: phiếu tách dùng chứng từ phiếu gốc   // file trên app hoặc link Drive cũ (anh 16/10: không kéo được ảnh thì gắn link)
 async function duyetNhanh(id,tt,im){
   const x=S.cache.chi.find(c=>c.id===id);if(!x)return false;
-  if((tt==='cho_gd'||(tt==='cho_tt'&&x.trang_thai==='cho_duyet'))&&!coCT(x)){const m='Phiếu '+('PC'+String(x.id).padStart(6,'0'))+' chưa có chứng từ đi kèm — đính kèm hoá đơn / báo giá / ảnh trước khi duyệt';if(im)throw new Error(m);alert(m);return false}
+  // 10/11/2026 anh: "bỏ quy tắc này đi, cho duyệt bình thường" — không chặn duyệt khi phiếu chưa có chứng từ (vẫn hiện ở dải Cần chú ý → Thiếu chứng từ). — Monsieur Claude
   if(tt==='cho_tt'&&['cho_duyet','cho_gd'].includes(x.trang_thai)&&!x.tai_khoan_id){if(im)throw new Error('chưa chọn tài khoản đi tiền');xemChi(x.id);toast('Chọn tài khoản đi tiền rồi bấm Xác nhận');return false}
   if(!im&&(tt==='tu_choi'||tt==='cho_duyet')&&!confirm(`${tt==='tu_choi'?'Từ chối':'Trả lại kế toán'} phiếu ${'PC'+String(x.id).padStart(6,'0')} · ${fmt(x.so_tien)} đ?`))return false;
   const o={...x};delete o.tao_luc;delete o.sua_luc;delete o.duyet_luc;o.trang_thai=tt;
@@ -4243,7 +4243,6 @@ function hienChiCT(id,html){const m=modal(`<div class="pc">${html}</div>`);m.cla
 function dongChiCT(){S.f.chi_chon=null;S.f.nd_sua=null;closeModal()}
 async function doiTTChi(id,tt){
   const x=S.cache.chi.find(c=>c.id===id);
-  if((tt==='cho_gd'||(tt==='cho_tt'&&x.trang_thai==='cho_duyet'))&&!coCT(x))return alert('Phiếu chưa có chứng từ đi kèm — đính kèm hoá đơn / báo giá / ảnh trước khi duyệt');
   const o={...x};delete o.tao_luc;delete o.sua_luc;delete o.duyet_luc;
   const ftt=$('#ftt');if(ftt)Object.assign(o,formData(ftt));
   const fhd=$('#fhd');if(fhd)Object.assign(o,formData(fhd));
@@ -6692,7 +6691,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hoá đơn đỏ theo HKD','Thủ quỹ theo dõi thủ công hoá đơn đỏ xuất về 2 HKD: thấy mọi phiếu ĐÃ CHI có cần hoá đơn, sửa được "Hoá đơn xuất về" + Đã nhận / ngày nhận trong cửa sổ phiếu.','Thẻ "Chưa nhận HĐ" chia theo HKD Hiền Thủy / HKD Chánh Tâm / Công ty / Chưa ghi xuất về (bấm để lọc); bộ lọc "HĐ xuất về" trên danh sách.','19/10'],
  ['thu_chi','Phiếu chi — thiếu ảnh giao dịch','Phiếu ĐÃ CHI từ 01/09/2026 chưa có ảnh giao dịch (file "UNC…" up ở ô Ảnh giao dịch, hoặc link UNC cũ từ sheet).','Nhắc admin up đủ: dải "Cần chú ý" → Thiếu ảnh giao dịch (theo tháng đang chọn) + Tổng quan → Cảnh báo & công việc cần xử lý (đếm từ 01/09).','19/10'],
  ['thu_chi','Phiếu chi — duyệt','Giám đốc / Supreme bấm Duyệt là qua luôn bước kế toán kiểm + giám đốc duyệt (cả 2 bước ghi tên người bấm) → Chờ thanh toán.','Kế toán chỉ kiểm lượt 1, không tự duyệt lượt 2 (không có quyền giám đốc). Duyệt thẳng vẫn cần có chứng từ.','16/10'],
- ['thu_chi','Phiếu chi — duyệt','Phiếu chưa có chứng từ đi kèm thì kế toán chưa kiểm được (lượt 1).','Dải "Cần chú ý" → Thiếu chứng từ. Chứng từ cũ trên Drive đã kéo về app.','16/10'],
+ ['thu_chi','Phiếu chi — duyệt','Duyệt được cả khi phiếu chưa có chứng từ đi kèm (anh 10/11 bỏ quy tắc chặn). Phiếu thiếu chứng từ vẫn hiện ở dải "Cần chú ý" → Thiếu chứng từ để bổ sung sau.','16/10 kế toán: chưa có chứng từ thì chưa duyệt → 10/11 anh: "bỏ quy tắc này đi, cho duyệt bình thường".','16/10 · 10/11'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu app đã đánh 4A cùng số tiền, lệch ≤ 5 ngày → ghép, không tạo mới; trùng nghi ngờ → nhãn "Nghi trùng".','','08/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu Kiot bị huỷ → phiếu app chưa thanh toán tự chuyển Từ chối.','','08/10'],
  ['thu_chi','Quỹ ngoài cửa hàng','Phiếu Kiot chi bằng Quỹ ngoài KHÔNG tạo đề xuất chi.','Tránh tính 2 lần với phiếu hoàn quỹ.','15/10'],
@@ -7289,6 +7288,58 @@ async function xuatDuLieu(btn){const x=xuSt(),tu=x.tu,den=x.den;
     toast(loi.length?'Đã xuất file — '+loi.length+' phần lỗi: '+loi.join(' · '):'Đã xuất '+(muc.length)+' sheet dữ liệu')}
   catch(e){toast('Không xuất được: '+e.message)}
   finally{btn.disabled=false;btn.innerHTML=nhan}}
+// 10/11/2026 anh: "tạo 1 log so khớp 3 bên app MKT, Kiot, app kế toán — mở link đưa MKT check định kỳ" + "sửa lại cái đối chiếu Kiot".
+// Bảng theo mẫu báo cáo (Đối chiếu sao kê): mỗi tháng KIOT (lần so khớp gần nhất) · APP KẾ TOÁN · APP MKT — số HĐ, doanh thu HĐ, số đơn đặt;
+// ô khác Kiot tô đỏ; bấm tháng = mã lệch giữa 2 app. Dữ liệu kt_dc3_xem (trong app) / kt_dc3_cong_khai (link #doi-chieu=…). — Monsieur Claude
+const DC3_HD={1:'Hoàn thành',2:'Đã huỷ',3:'Đang xử lý',5:'Không giao được'},DC3_DH={1:'Phiếu tạm',2:'Đang giao',3:'Hoàn thành',4:'Đã huỷ',5:'Đã xác nhận'};
+const DC3_K=['so_hd','tien_hd','so_dh','tien_dh'],DC3_TEN={so_hd:'Số HĐ',tien_hd:'Doanh thu HĐ',so_dh:'Số đơn đặt',tien_dh:'Tiền đơn đặt'};
+const DC3_SO=['so_hd','tien_hd','so_dh'];
+function dc3KQ(x){const K=x.kiot,bo=K?(K.bo||[]).length:0,kh=(a,b,kb)=>DC3_SO.filter(k=>Math.round((+a[k]||0)+(kb&&k==='so_dh'?bo:0))!==Math.round(+b[k]||0));
+  const kA=K?kh(K,x.kt,1):[],kB=K?kh(K,x.mkt,1):[],xoa=K?(K.thua||[]):[],ok=!!K&&!kA.length&&!kB.length&&!x.so_lech&&!xoa.length,cho=!ok&&!!K&&!x.so_lech&&!xoa.length&&!kh(x.kt,x.mkt).length;return {kA,kB,ok,cho,xoa}}
+function dc3Html(D,sua){S.dc3D=D;
+  const o=(v,K,k,cho)=>{const l=!cho&&K&&Math.round((+K[k]||0)+(k==='so_dh'?(K.bo||[]).length:0))!==Math.round(+v[k]||0);return `<td class="num${l?' neg-t':''}">${l?'<b>'+fmt(v[k])+'</b>':fmt(v[k])}</td>`};
+  const rows=D.thang.map(x=>{const r=dc3KQ(x),K=x.kiot;
+    const kq=!K?pill('Chưa soát Kiot',''):r.ok?pill('Khớp 3 bên','ok'):r.cho?pill('Chờ soát lại Kiot','warn'):pill([r.xoa.length?'Kiot đã xoá '+r.xoa.length+' phiếu':r.kA.length?'Kế toán lệch Kiot':'',x.so_lech?x.so_lech+' mã lệch MKT':r.kB.length&&!r.xoa.length?'MKT lệch Kiot':''].filter(Boolean).join(' · '),'bad');
+    return `<tr class="click" onclick="dc3Xem('${x.m}')"><td class="sk-s"><b>Tháng ${+x.m.slice(5)}/${x.m.slice(0,4)}</b></td>
+      ${K?`<td class="num">${fmt(K.so_hd)}</td><td class="num">${fmt(K.tien_hd)}</td><td class="num">${fmt(K.so_dh)}</td>`:'<td class="c muted" colspan="3">chưa soát</td>'}
+      ${o(x.kt,K,'so_hd',r.cho)}${o(x.kt,K,'tien_hd',r.cho)}${o(x.kt,K,'so_dh',r.cho)}${o(x.mkt,K,'so_hd',r.cho)}${o(x.mkt,K,'tien_hd',r.cho)}${o(x.mkt,K,'so_dh',r.cho)}
+      <td class="c">${kq}</td><td><div class="sk-2"><div>${K?fmtDT(K.luc):'–'}</div>${K&&K.so_sua?`<div class="muted">đã tự bù ${K.so_sua} phiếu</div>`:''}</div></td></tr>`}).join('');
+  return `<div class="scroll"><table class="m-t sk-t"><colgroup><col style="width:108px"><col span="9"><col style="width:176px"><col style="width:132px"></colgroup>
+    <tr class="sk-nh"><th rowspan="2">Tháng</th><th colspan="3" class="sk-c">Kiot</th><th colspan="3" class="sk-a">App kế toán</th><th colspan="3" class="sk-b">App MKT</th><th rowspan="2">Kết quả</th><th rowspan="2">Soát Kiot lúc</th></tr>
+    <tr class="sk-cot">${['sk-c2','sk-a2','sk-b2'].map(c=>`<th class="num ${c}">Số HĐ</th><th class="num ${c}">Doanh thu HĐ</th><th class="num ${c}">Số đơn đặt</th>`).join('')}</tr>
+    ${rows||'<tr><td colspan="12" class="m-empty">Chưa có dữ liệu</td></tr>'}</table></div>`}
+function dc3Sec(D,sua){const ok=D.thang.filter(x=>dc3KQ(x).ok).length,ml=sumBy(D.thang,x=>x.so_lech);
+  return `<div class="sec" style="flex-wrap:wrap">So khớp 3 bên · Kiot – App kế toán – App MKT <span class="badge">${ok} / ${D.thang.length} tháng khớp</span>${ml?`<span class="badge" style="color:var(--bad)">${ml} mã lệch giữa 2 app</span>`:''}<span class="badge">HĐ hoàn thành + đang xử lý · đơn đặt mọi trạng thái</span>
+    <span style="margin-left:auto">${sua?`<button class="m-btn" onclick="dc3Link()">${D.token?'Link online · đang bật':'Tạo link online'}</button>`:''}</span></div><div class="card" style="padding:0">${dc3Html(D,sua)}</div>`}
+function dc3Xem(m){const D=S.dc3D,x=D&&D.thang.find(z=>z.m===m);if(!x)return;const r=dc3KQ(x),K=x.kiot;
+  const tt=(l,v)=>v==null?'':(l==='hd'?DC3_HD:DC3_DH)[v]||('Trạng thái '+v);
+  const ben=z=>z.a_tt==null?'App kế toán chưa có':z.b_tt==null?'App MKT chưa có':z.a_tt!==z.b_tt?'Khác trạng thái':'Khác số tiền';
+  const so=K?`<div class="m-st">So với Kiot <span class="badge">soát ${fmtDT(K.luc)}</span></div><div class="card" style="padding:0"><table class="m-t"><tr><th>Chỉ số</th><th class="num">Kiot</th><th class="num">App kế toán</th><th class="num">App MKT</th></tr>
+      ${DC3_K.map(k=>{const a=Math.round(+x.kt[k]||0)!==Math.round(+K[k]||0),b=Math.round(+x.mkt[k]||0)!==Math.round(+K[k]||0);return `<tr><td>${DC3_TEN[k]}</td><td class="num">${fmt(K[k])}</td><td class="num${a?' neg-t':''}">${fmt(x.kt[k])}</td><td class="num${b?' neg-t':''}">${fmt(x.mkt[k])}</td></tr>`}).join('')}</table></div>`:'<div class="muted">Tháng này chưa soát với Kiot</div>';
+  const ds=x.lech||[];
+  modal(`<h2>Tháng ${+m.slice(5)}/${m.slice(0,4)} ${!K?pill('Chưa soát Kiot',''):r.ok?pill('Khớp 3 bên','ok'):r.cho?pill('Chờ soát lại Kiot','warn'):pill('Có lệch','bad')}</h2>${r.cho?'<div class="muted" style="margin:-4px 0 8px">2 app khớp nhau; số Kiot là lúc soát, sau đó Kiot có phát sinh — lần soát đêm sẽ cập nhật</div>':''}${so}
+    ${K&&(K.bo||[]).length?`<div class="m-st">Đơn báo giá (không tiền) đã xoá trên Kiot · app còn giữ, không tính lệch <span class="badge">${K.bo.length} đơn</span></div><div class="card muted" style="padding:10px 12px">${K.bo.map(esc).join(' · ')}</div>`:''}
+    ${r.xoa.length?`<div class="m-st">Kiot không còn (đã xoá / đổi mã) nhưng app còn giữ <span class="badge">${r.xoa.length} phiếu</span></div><div class="card" style="padding:10px 12px">${r.xoa.map(c=>`<b>${esc(c)}</b>`).join(' · ')}</div>`:''}
+    <div class="m-st">Mã lệch giữa app kế toán và app MKT <span class="badge">${fmt(x.so_lech)} mã${x.so_lech>ds.length?' · hiện '+ds.length:''}</span></div>
+    <div class="card" style="padding:0"><table class="m-t"><tr><th>Loại</th><th>Mã</th><th>App kế toán</th><th class="num">Tiền</th><th>App MKT</th><th class="num">Tiền</th><th>Lệch</th></tr>
+      ${ds.map(z=>`<tr><td>${z.loai==='hd'?'Hoá đơn':'Đơn đặt'}</td><td class="nw"><b>${esc(z.ma)}</b></td><td>${z.a_tt==null?'<span class="muted">không có</span>':tt(z.loai,z.a_tt)}</td><td class="num">${z.a_tien!=null?fmt(z.a_tien):''}</td>
+        <td>${z.b_tt==null?'<span class="muted">không có</span>':tt(z.loai,z.b_tt)}</td><td class="num">${z.b_tien!=null?fmt(z.b_tien):''}</td><td>${pill(ben(z),'bad')}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Hai app khớp từng mã</td></tr>'}</table></div>
+    <div class="acts">${S.cache&&S.cache.kl&&K?`<button class="m-btn" onclick="closeModal();kiotXemThang('${m}')">Chi tiết Kiot ↔ app kế toán</button>`:''}<button class="m-btn" onclick="closeModal()">Đóng</button></div>`);
+  const b=$('#modal>div');if(b){b.style.maxWidth='900px';b.style.width='min(900px,96vw)'}}
+async function dc3Link(){const D=S.dc3D,url=D.token?location.origin+location.pathname+'#doi-chieu='+D.token:'';
+  modal2(`<h2>Link online · so khớp 3 bên</h2>${url?`<div class="lhd-f" style="grid-template-columns:minmax(0,1fr)"><label><span>Ai có link đều xem được (không cần đăng nhập, chỉ xem) · bật bởi ${esc(D.token_boi||'')} · ${fmtDT(D.token_luc)}</span>
+      <input class="m-in" readonly value="${esc(url)}" onclick="this.select()"></label></div>`:'<div class="muted">Chưa có link. Tạo link để gửi bên MKT xem định kỳ — số liệu tính lại mỗi lần mở link.</div>'}
+    <div class="acts">${url?`<button class="m-btn bad" onclick="dc3LinkDoi(false)">Tắt link</button><span style="margin-right:auto"></span><button class="m-btn" onclick="navigator.clipboard.writeText('${url}').then(()=>toast('Đã chép link'))">Chép link</button>`:'<span style="margin-right:auto"></span>'}
+      <button class="m-btn" onclick="dong2()">Đóng</button>${url?'':'<button class="m-btn pri" onclick="dc3LinkDoi(true)">Tạo link</button>'}</div>`,560)}
+async function dc3LinkDoi(bat){if(!bat&&!confirm('Tắt link? Người đang giữ link sẽ không xem được nữa.'))return;
+  try{const t=await rpc('kt_dc3_link',{p_bat:bat});S.dc3D.token=t;S.dc3D.token_boi=(S.toi||{}).ho_ten;S.dc3D.token_luc=new Date().toISOString();dong2();toast(bat?'Đã tạo link':'Đã tắt link');render();if(bat)setTimeout(dc3Link,600)}catch(e){alert(e.message)}}
+// trang xem online (không đăng nhập): #doi-chieu=<mã>
+async function dc3CongKhai(tok){$('#app').innerHTML='<div class="sk-pub"><div class="m-empty">Đang tải...</div></div>';
+  try{const D=await rpc('kt_dc3_cong_khai',{p_token:tok},true);const ok=D.thang.filter(x=>dc3KQ(x).ok).length,ml=sumBy(D.thang,x=>x.so_lech);
+    $('#app').innerHTML=`<div class="sk-pub"><div class="sk-pub-h"><div><b>TÂN HƯNG THỊNH</b><span>Log so khớp dữ liệu Kiot – App kế toán – App MKT</span></div><button class="m-btn" onclick="dc3CongKhai('${tok}')">Tải lại</button></div>
+      <section class="tq2"><div class="tq2-h" style="flex-wrap:wrap"><b class="nw">So khớp 3 bên theo tháng</b><span class="badge">${ok} / ${D.thang.length} tháng khớp</span>${ml?`<span class="badge" style="color:var(--bad)">${ml} mã lệch giữa 2 app</span>`:''}<span class="badge">HĐ hoàn thành + đang xử lý · đơn đặt mọi trạng thái</span><span class="muted" style="margin-left:auto">Cập nhật ${fmtDT(D.luc)} · bấm 1 tháng xem mã lệch</span></div>
+      ${dc3Html(D,false)}</section></div>`}
+  catch(e){$('#app').innerHTML=`<div class="sk-pub"><div class="m-empty">${esc(e.message)}</div></div>`}}
 async function pageKiotLog(){
   const el=$('#page'),sua=heThong();
   // 21/10 anh: trang đổi tên "Nhật ký so khớp" — tab Kiot + tab File dòng tiền (chuyển từ Sổ quỹ)
@@ -7296,7 +7347,7 @@ async function pageKiotLog(){
   if(S.f.nk_tab==='pnl'){el.innerHTML='<div class="empty">Đang tải...</div>';const h=await dcpHtml();el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+nkSeg+h;return}
   if(S.f.nk_tab==='dcf'){el.innerHTML='<div class="empty">Đang tải...</div>';const h=await dcfHtml();el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+nkSeg+h;return}
   el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>')+'<div class="empty">Đang tải...</div>';
-  const r=await rpc('kt_ds_keo_kiot');S.cache.kl=r;
+  const [r,d3]=await Promise.all([rpc('kt_ds_keo_kiot'),rpc('kt_dc3_xem').catch(()=>null)]);S.cache.kl=r;
   const nut=(t,on,cls='')=>sua?`<button class="btn ${cls}" onclick="${on}">${t}</button>`:'';
   const top=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">Cài đặt · Hệ thống</span>',
     nut('▶ Kéo ngay',"kiotChay(this,{})",'pri')+' '+nut('So lại 2 tháng gần nhất',"kiotChay(this,{doi_chieu:{}})")+' '+nut('So lại cả năm',"kiotSoNam(this)")+' '+nut('So tồn ngay',"kiotChay(this,{day_du:['hang']},'Kéo đầy đủ hàng hoá + so tồn mất khoảng 1,5 phút. Chạy?')"));
@@ -7348,7 +7399,7 @@ async function pageKiotLog(){
       ${r.ton.map(t=>{const gk=sumBy(Object.values(t.ket_qua.kiot||{}),v=>+(v.gt||0)),ga=sumBy(Object.values(t.ket_qua.app||{}),v=>+(v.gt||0));
         return `<tr><td class="nw">${fmtDT(t.luc)}</td><td class="nw muted">${esc(t.nguoi||'')}</td><td class="num">${fmt(t.so_lech)}</td><td class="num">${tien(t.ket_qua.dv_phu)}</td><td class="num">${tien(gk-ga)}</td><td>${t.khop?pill('Khớp','ok'):pill('Đã ghi đè theo Kiot','info')}</td></tr>`}).join('')}</table></div>`:'';
   const dvPhu=ton&&ton.ket_qua.dv_phu?`<span class="badge" style="background:var(--warn-bg);color:var(--warn);white-space:normal">Lần so này app còn cộng trùng đơn vị quy đổi: ${fmt(ton.ket_qua.dv_phu)} — đã sửa 14/10</span>`:'';
-  el.innerHTML=top+nkSeg+kp+bang+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS;
+  el.innerHTML=top+nkSeg+kp+(d3?dc3Sec(d3,sua):bang)+bang2+bang3+`<div class="sec" style="flex-wrap:wrap">So khớp tồn kho với Kiot <span class="badge">${ton?'lần gần nhất '+fmtDT(ton.luc):'chưa so'}</span>${dvPhu}</div>`+tonH+tonLS;
 }
 // 22/10 anh: dung lượng / lượt dùng Supabase chụp 23:55 mỗi ngày + thông tin máy chủ đang thuê (gói Pro: CSDL 8 GB, kho tệp 100 GB, băng thông 250 GB / tháng)
 const fmtGB=b=>b==null?'—':(+b>=1024**3?(b/1024**3).toFixed(2).replace('.',',')+' GB':Math.round(b/1024**2)+' MB');
@@ -7800,6 +7851,7 @@ async function xuSaoKe(tu,den){const ds=(await rpc('kt_sao_ke_ds')).filter(x=>x.
 // ── Khởi động ──────────────────────────────────────────────────────────────
 try{const th=localStorage.getItem('kt_theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
 (async()=>{const skTok=(location.hash.match(/^#sao-ke=([0-9a-f]{30,64})$/)||[])[1];if(skTok)return skCongKhai(skTok);
+  const dcTok=(location.hash.match(/^#doi-chieu=([0-9a-f]{30,64})$/)||[])[1];if(dcTok)return dc3CongKhai(dcTok);
   let p=null;try{p=sessionStorage.getItem('kt_phien')||localStorage.getItem('kt_phien')}catch(e){}
   if(!p)return renderGate();S.phien=p;try{await boot()}catch(e){if(S.phien)renderGate(e.message)}})();
 document.addEventListener('click',()=>{const d=$('.tb-dd.open');if(d)d.classList.remove('open')});

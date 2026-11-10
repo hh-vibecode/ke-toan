@@ -21,7 +21,7 @@
 // Cảnh báo (14/10/2026): cuối mỗi lần chạy gọi kt_canh_bao_kiot() → lỗi / lệch báo vào chuông app (kèm lịch kt-kiot-canh-bao mỗi giờ).
 // Secrets (tiền tố KT_): KT_KIOT_CLIENT_ID, KT_KIOT_CLIENT_SECRET, KT_KIOT_RETAILER, KT_CRON_KEY. Monsieur Claude
 const SB = Deno.env.get('SUPABASE_URL')!, SK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const MOC = '2026-09-01', SO_NGAY = 10;
+const MOC = '2026-09-01', SO_NGAY = 10, NAM = '2026-01-01';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type, apikey, authorization, x-kt-cron', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 const MAI = () => new Date(Date.now() + 31 * 3600e3).toISOString().slice(0, 10);   // ngày mai giờ VN — Kiot cần đủ cặp từ / đến ngày
 let tok = '';
@@ -313,6 +313,12 @@ Deno.serve(async req => {
     if (body.doi_chieu) {   // so khớp theo tháng (mặc định tháng này + tháng trước)
       const nay = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 7), d = new Date(nay + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() - 1);
       const ds: string[] = (body.doi_chieu.thang || [d.toISOString().slice(0, 7), nay]).filter((m: string) => /^\d{4}-\d{2}$/.test(m)).slice(0, 3);
+      // 10/11/2026 (anh: "sửa lại cái đối chiếu Kiot"): lịch đêm soát thêm XOAY VÒNG 1 tháng cũ của năm (mỗi đêm 1 tháng, ~10 đêm hết vòng)
+      // → số Kiot các tháng cũ trong log so khớp 3 bên luôn mới; phiếu Kiot sửa / huỷ / lập lùi ngày tháng cũ được bù. Monsieur Claude
+      if (!body.doi_chieu.thang && nguoi === 'Kiot (tự kéo)') {
+        const cu: string[] = []; for (let m = '2026-01'; m < ds[0]; m = thangSau(m)) cu.push(m);
+        if (cu.length) ds.unshift(cu[Math.floor(Date.now() / 864e5) % cu.length]);
+      }
       kq.doi_chieu = [];
       for (const m of ds) kq.doi_chieu.push(await doiChieuThang(m, nguoi));
       if (nguoi === 'Kiot (tự kéo)' || body.doi_chieu.cong_no) kq.cong_no = await doiChieuCongNo(nguoi);   // lịch đêm 23:50 hoặc bấm có cong_no
@@ -353,7 +359,9 @@ Deno.serve(async req => {
       const L = LOAI[k]; const moc = dayDu.includes(k) ? null : await mocSua(L.bang);
       const tham = { ...L.tham, ...(moc ? { lastModifiedFrom: moc } : (L.dayDu ? L.dayDu(TU, DEN) : {})) };
       let ds = await kiotHet(L.duong, tham);
-      if (L.moc) ds = ds.filter(x => L.moc!(x, TU));
+      // 10/11/2026: kéo PHẦN SỬA (moc) lọc theo đầu năm 2026, không theo MOC 01/09 — trước đây HĐ / đơn ngày bán trước 01/09 mà Kiot
+      // sửa / huỷ / lập lùi ngày bị bỏ qua (so với app MKT: thiếu HD060208 · HD060454 · HD060455, HD057206 · HD057426 vẫn "hoàn thành"). Monsieur Claude
+      if (L.moc) ds = ds.filter(x => L.moc!(x, moc && !khoang ? NAM : TU));
       if (k === 'hang' && !moc && !body.tu) kq.so_ton = await doiChieuTon(ds, nguoi);   // kéo đầy đủ hàng → so tồn trước khi ghi đè
       await ghi(L.bang, ds.map(L.doi));
       kq[k] = { kieu: moc ? 'phan_sua' : 'day_du', so_dong: ds.length };
