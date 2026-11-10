@@ -51,18 +51,29 @@ async function layDs(refs: string[]) {
 const xoaNhap = async (ref: string) => misa(`/invoiceweb/delete?invoiceWithCode=true&refid=${encodeURIComponent(ref)}`, { method: 'DELETE', headers: await dauA() });
 const gioVN = (d?: string) => (d ? d + 'T00:00:00' : new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 19)) + '+07:00';
 
+// 10/11/2026 anh: "chuyển hết thông tin phiếu nháp của mình sang luôn, tiết kiệm time cho kế toán đỡ phải làm 2 lần" → nháp MISA mang đủ:
+// ký hiệu + ngày, người mua (đơn kt_thue_don.mua: MST, tên đơn vị, địa chỉ, họ tên, SĐT, email, CCCD, hình thức TT, TK + tên ngân hàng),
+// từng dòng mã hàng · tên · ĐVT · SL · đơn giá · thành tiền · THUẾ SUẤT RIÊNG DÒNG (theo nhóm / chọn tay) · tiền thuế; dòng ghi chú (tc 4). — Monsieur Claude
 function hoaDon(d: any, mau: any, ref: string, nguoi: string) {
-  const ts = d.thue_suat == null ? null : +d.thue_suat, vr = ts == null ? -1 : Math.round(ts * 100);
-  const dong = (d.dong || []) as any[]; if (!dong.length) throw new Error('Đơn chưa có dòng hàng');
-  const ct = dong.map((x, i) => { const tien = Math.round(+x.thanh_tien || (+x.sl * +x.don_gia)), thue = ts == null ? 0 : Math.round(tien * ts);
-    return { InventoryItemType: 0, InventoryItemCode: x.ma, Description: x.ten || x.ma, UnitName: x.dvt || '', Quantity: +x.sl, UnitPrice: +x.don_gia,
-      AmountOC: tien, Amount: tien, DiscountRate: 0, DiscountAmountOC: 0, DiscountAmount: 0, VATRate: vr, VATAmountOC: thue, VATAmount: thue, SortOrder: i + 1, SortOrderView: i + 1 }; });
-  const hang = ct.reduce((a, x) => a + x.AmountOC, 0), thueDon = ts == null ? 0 : Math.round(hang * ts);
-  const le = thueDon - ct.reduce((a, x) => a + x.VATAmountOC, 0);   // làm tròn từng dòng → dồn phần lẻ vào dòng cuối cho tổng thuế = thuế đơn
-  if (le) { const c = ct[ct.length - 1]; c.VATAmountOC += le; c.VATAmount += le; }
+  const m = d.mua || {}, tsDon = d.thue_suat == null ? null : +d.thue_suat;
+  const dong = ((d.dong || []) as any[]).filter(x => String(x.ten || x.ma || '').trim()); if (!dong.filter(x => +x.tc !== 4).length) throw new Error('Đơn chưa có dòng hàng');
+  const vrOf = (r: any) => r == null ? -1 : Math.round(+r * 100);
+  let stt = 0;
+  const ct = dong.map((x, i) => {
+    if (+x.tc === 4) return { InventoryItemType: 3, Description: String(x.ten || '').trim(), SortOrder: i + 1, SortOrderView: null, UnitName: '', Quantity: 0, UnitPrice: 0,
+      AmountOC: 0, Amount: 0, DiscountRate: 0, DiscountAmountOC: 0, DiscountAmount: 0, VATRate: null, VATAmountOC: 0, VATAmount: 0 };
+    const r = x.ts !== undefined ? x.ts : tsDon, tien = Math.round(+x.thanh_tien || (+x.sl * +x.don_gia)), thue = r == null ? 0 : Math.round(tien * +r);
+    return { InventoryItemType: 0, InventoryItemCode: x.ma || undefined, Description: x.ten || x.ma, UnitName: x.dvt || '', Quantity: +x.sl, UnitPrice: +x.don_gia,
+      AmountOC: tien, Amount: tien, DiscountRate: 0, DiscountAmountOC: 0, DiscountAmount: 0, VATRate: vrOf(r), VATAmountOC: thue, VATAmount: thue, SortOrder: i + 1, SortOrderView: ++stt };
+  });
+  const hh = ct.filter(x => x.InventoryItemType === 0), hang = hh.reduce((a, x) => a + x.AmountOC, 0), thueDon = hh.reduce((a, x) => a + x.VATAmountOC, 0);
+  const cccd = String(m.cccd || '').replace(/\D/g, '');
   return { RefID: ref, InvoiceTemplateID: mau.id, InvSeries: mau.ky_hieu_goc, InvDate: gioVN(String(d.ngay).slice(0, 10)), EInvoiceStatus: 1,
-    AccountObjectName: d.khach || undefined, AccountObjectTaxCode: d.mst || undefined, PaymentMethod: 'TM/CK', CurrencyCode: 'VND', CurrencyID: 'VND',
-    DiscountRate: 0, ExchangeRate: 1, VATRate: vr, TotalSaleAmountOC: hang, TotalSaleAmount: hang, TotalDiscountAmountOC: 0, TotalDiscountAmount: 0,
+    AccountObjectTaxCode: m.mst || d.mst || undefined, AccountObjectName: m.ten_dv || d.khach || undefined, AccountObjectAddress: m.dia_chi || undefined,
+    ContactName: m.nguoi_mua || undefined, ReceiverName: m.nguoi_mua || undefined, ReceiverMobile: m.sdt || undefined, ReceiverEmail: m.email || undefined,
+    CitizenIDNumber: cccd.length === 12 ? cccd : undefined, AccountObjectBankAccount: m.tk_nh || undefined, AccountObjectBankName: m.ten_nh || undefined,
+    PaymentMethod: m.httt || 'TM/CK', CurrencyCode: 'VND', CurrencyID: 'VND',
+    DiscountRate: 0, ExchangeRate: 1, VATRate: hh.length ? hh[0].VATRate : -1, TotalSaleAmountOC: hang, TotalSaleAmount: hang, TotalDiscountAmountOC: 0, TotalDiscountAmount: 0,
     TotalVATAmountOC: thueDon, TotalVATAmount: thueDon, TotalAmountOC: hang + thueDon, TotalAmount: hang + thueDon,
     CreatedDate: gioVN(), ModifiedDate: gioVN(), CreatedBy: nguoi, ModifiedBy: nguoi, InvoiceDetails: ct };
 }
