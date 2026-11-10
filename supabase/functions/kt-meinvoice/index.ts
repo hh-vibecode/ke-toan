@@ -67,6 +67,32 @@ async function luuPdf(chieu: string, ma: string, pdf: Uint8Array) {
   await fetch(SB + '/rest/v1/kt_hd_pdf?on_conflict=ma', { method: 'POST', headers: { ...sbH, Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ ma, chieu, duong, kich_thuoc: pdf.length }) });
   return true;
 }
+// 10/11/2026 kế toán: "tồn file đến hết T9 — cần trừ tồn của toàn bộ HĐ đã xuất từ T10 đến giờ" → tải XML HĐ bán ra công ty
+// (POST /invoice/Download?downloadDataType=Xml), tách dòng hàng <HHDVu> (mã MHHDVu · tên · ĐVT · SL · đơn giá · thành tiền · thuế suất)
+// → kt_thue_hd_dong (kt_thue_lap_nguon trừ tồn sổ sách). Mỗi HĐ lấy 1 lần; lỗi thử lại sau 6 giờ. Body {"xml":true} = chỉ chạy bước này. — Monsieur Claude
+const tagX = (s: string, t: string) => { const m = s.match(new RegExp('<' + t + '>([\\s\\S]*?)</' + t + '>')); return m ? m[1].trim() : ''; };
+const txtX = (s: string) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+const docXml = (xml: string) => [...xml.matchAll(/<HHDVu>([\s\S]*?)<\/HHDVu>/g)].map((m, i) => { const b = m[1];
+  return { stt: i + 1, tc: +tagX(b, 'TChat') || 1, ma: txtX(tagX(b, 'MHHDVu')), ten: txtX(tagX(b, 'THHDVu')), dvt: txtX(tagX(b, 'DVTinh')),
+    sl: +tagX(b, 'SLuong') || 0, dg: +tagX(b, 'DGia') || 0, tt: +tagX(b, 'ThTien') || 0, ts: tagX(b, 'TSuat') }; });
+async function taiXmlRa(A: any, batDau: number) {
+  const r = await sb('rpc/kt_thue_hd_can_xml', { p_tu: '2026-10-01', p_n: 300 }, 'return=representation');
+  const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0, dong: 0 };
+  for (let i = 0; i < ds.length && Date.now() - batDau < 100e3; i += 10) {
+    const nhom = ds.slice(i, i + 10); let kq: any[] = [];
+    try { const j = await goi(MI + '/invoice/Download?downloadDataType=Xml&invoiceWithCode=true', { method: 'POST', headers: A, body: JSON.stringify(nhom.map(x => x.ma)) }); kq = (doc(j.Data) || []) as any[]; }
+    catch (e) { m.loi += nhom.length; m.loi_cuoi = String(e).slice(0, 160); continue; }
+    for (const x of nhom) {
+      const f = kq.find(k => String(k.TransactionID) === String(x.ma)); let xml = f ? String(f.Data || f.data || '') : '';
+      if (!xml || f.ErrorCode) { await sb('rpc/kt_thue_hd_luu_dong', { p_ma: x.ma, p_ds: [], p_loi: String(f?.ErrorCode || 'MISA không trả XML') }); m.loi++; continue; }
+      if (!xml.trimStart().startsWith('<')) xml = new TextDecoder().decode(new Uint8Array(await (await fetch('data:text/xml;base64,' + xml)).arrayBuffer()));
+      const dong = docXml(xml);
+      const rr = await sb('rpc/kt_thue_hd_luu_dong', { p_ma: x.ma, p_ds: dong, p_loi: dong.length ? null : 'XML không có dòng hàng' });
+      if (rr.ok && dong.length) { m.luu++; m.dong += dong.length; } else m.loi++;
+    }
+  }
+  return m;
+}
 async function taiPdfXem(A: any, batDau: number) {
   const r = await sb('rpc/kt_hd_can_pdf_xem', { p_chieu: 'ra', p_n: 90 }, 'return=representation');
   const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0 };
@@ -121,6 +147,7 @@ Deno.serve(async req => {
     const t = await goi(MI + '/invoice/token', { method: 'POST', headers: H, body: JSON.stringify({
       taxcode: Deno.env.get('KT_MEINVOICE_MST'), username: Deno.env.get('KT_MEINVOICE_USER'), password: Deno.env.get('KT_MEINVOICE_PASS') }) });
     const A = { ...H, Authorization: 'Bearer ' + t.Data };
+    if (body.xml) { kq.xml = await taiXmlRa(A, batDau); kq.giay = Math.round((Date.now() - batDau) / 1000); return Response.json(kq); }
     if (body.pdf_xem) {   // chỉ tải sẵn PDF hoá đơn ra (lịch kt-hd-pdf-ra mỗi giờ)
       kq.pdf_xem = await taiPdfXem(A, batDau); kq.giay = Math.round((Date.now() - batDau) / 1000);
       if (kq.pdf_xem.can) await sb('kt_nhat_ky', { nguoi: 'meInvoice (tự kéo)', bang: 'kt_hd_pdf', hanh_dong: 'tai_pdf_hd_ra', du_lieu: kq });
@@ -150,6 +177,7 @@ Deno.serve(async req => {
       kq.thang[th] = await r.json();
     }
     kq.pdf = await taiPdfRa(A, +body.n || 15, batDau);
+    kq.xml = await taiXmlRa(A, batDau);
     kq.giay = Math.round((Date.now() - batDau) / 1000);
     await sb('kt_nhat_ky', { nguoi: 'meInvoice (tự kéo)', bang: 'kt_thue_hd', hanh_dong: 'keo_meinvoice', du_lieu: kq });
     return Response.json(kq);
