@@ -1154,8 +1154,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.365';
-const APP_VERSION='10/11/2026 15:57';
+const APP_SO='1.366';
+const APP_VERSION='10/11/2026 17:06';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -2439,6 +2439,24 @@ async function moKQLoi(id){modal('<h2>Lỗi đã báo</h2><div class="m-empty">�
 async function xuLyLoi(id,xong){const g=xong?prompt('Ghi chú xử lý (có thể để trống):',''):'';if(g===null)return;try{await rpc('kt_bao_loi_xu_ly',{p_id:id,p_xong:xong,p_ghi:g||''});toast(xong?'Đã đánh dấu xử lý':'Đã mở lại');render()}catch(e){alert(e.message)}}
 // 24/10 kế toán: "tách phiếu thanh toán lương riêng và hoa hồng riêng để hạch toán đúng khoản" — kt_tach_chi: phần tách sang phiếu mới (loại chi riêng),
 // phiếu gốc giữ phần còn lại; phân bổ chia theo tỷ lệ; cùng trạng thái / tài khoản / ngày → số dư không đổi
+// 10/11 anh: "DNTT lương / BHXH chia theo cơ sở, ~50% chi từ khoản vay, 50% từ két tiền mặt — làm sao không phải tách hơn 10 phiếu nhỏ".
+// 1 DNTT chia nhiều cơ sở (đã có); "Chi từ nhiều nguồn": nhập số tiền từng tài khoản → kt_chia_nguon_chi tự tách mỗi tài khoản 1 phiếu chi
+// (sổ quỹ từng TK cần), chia cơ sở theo tỷ lệ, chứng từ ở phiếu gốc. — Monsieur Claude
+function chiaNguon(id){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;const h=Math.floor(+x.so_tien/2);
+  const dong=(tk,v)=>`<div class="cn-r" style="display:grid;grid-template-columns:minmax(0,1fr) 170px 34px;gap:8px;margin-bottom:8px"><select class="m-in" name="cn_tk">${opts(tkOn(),tk,'— tài khoản —')}</select>${moneyIn('cn_tien',v,'oninput="fmtMoney(this);cnTinh('+x.so_tien+')"')}<button class="m-btn sm bad" title="Bỏ dòng" onclick="this.parentNode.remove();cnTinh(${x.so_tien})">✕</button></div>`;
+  window._cnDong=dong;
+  modal(`<h2>Chi từ nhiều nguồn · PC${String(id).padStart(6,'0')} · ${fmt(x.so_tien)} <span class="badge" style="vertical-align:middle">mỗi tài khoản 1 phiếu · chia cơ sở theo tỷ lệ</span></h2>
+    <div id="cn-ds">${dong(x.tai_khoan_id,x.so_tien-h)}${dong('',h)}</div>
+    <div style="display:flex;gap:8px;align-items:center"><button class="m-btn sm" onclick="$('#cn-ds').insertAdjacentHTML('beforeend',_cnDong('',''));cnTinh(${x.so_tien})">+ Thêm nguồn</button><button class="m-btn sm" onclick="cnDeu(${x.so_tien})">Chia đều</button><span id="cn-con" style="margin-left:auto;font-size:13px"></span></div>
+    <div class="acts"><button class="m-btn" onclick="closeModal()">Đóng</button><button class="m-btn pri" onclick="luuChiaNguon(${id})">Chia phiếu</button></div>`);
+  setTimeout(()=>{$$('#cn-ds [name=cn_tien]').forEach(e=>fmtMoney(e));cnTinh(x.so_tien)},0)}
+function cnTinh(t){const s=sumBy($$('#cn-ds [name=cn_tien]'),e=>so(e.value)||0),e=$('#cn-con');if(e)e.innerHTML=t-s?`<span class="neg-t">Còn lệch ${fmt(t-s)}</span>`:'<span class="pos-t">Tổng khớp số tiền phiếu</span>'}
+function cnDeu(t){const ds=$$('#cn-ds [name=cn_tien]'),n=ds.length;if(!n)return;const m=Math.floor(t/n);ds.forEach((e,i)=>{e.value=i===0?t-m*(n-1):m;fmtMoney(e)});cnTinh(t)}
+async function luuChiaNguon(id){const x=S.cache.chi.find(c=>c.id===id),ds=$$('#cn-ds .cn-r').map(r=>({tk:+r.querySelector('[name=cn_tk]').value||0,so_tien:so(r.querySelector('[name=cn_tien]').value)||0}));
+  if(ds.length<2)return alert('Cần ít nhất 2 nguồn tiền');if(ds.some(d=>!d.tk||!(d.so_tien>0)))return alert('Mỗi dòng chọn tài khoản và số tiền > 0');
+  if(sumBy(ds,d=>d.so_tien)!==+x.so_tien)return alert('Tổng các nguồn phải bằng '+fmt(x.so_tien));
+  if(!confirm('Chia phiếu thành '+ds.length+' phiếu theo '+ds.length+' tài khoản?'))return;
+  try{const r=await rpc('kt_chia_nguon_chi',{p_id:id,p_ds:ds});closeModal();toast('Đã chia thành '+(1+r.moi.length)+' phiếu: PC'+[id,...r.moi].map(v=>String(v).padStart(6,'0')).join(', PC'));S.cache={};await render();xemChi(id)}catch(e){alert(e.message)}}
 function tachPhieu(id){const x=S.cache.chi.find(c=>c.id===id);if(!x)return;
   modal(`<h2>Tách phiếu PC${String(id).padStart(6,'0')} · ${fmt(x.so_tien)}</h2><div class="form" id="ftach">
     <label><span>Số tiền tách sang phiếu mới${BB}</span>${moneyIn('tien','','oninput="fmtMoney(this);tachTinh('+x.so_tien+')"')}</label>
@@ -4009,7 +4027,7 @@ function xemChi(id){
   const ct=the('',ctBox('chi',x.id,chiCT(x))+(goc?`<div class="pc-drive"><span class="m-link" onclick="moPhieu('PC',${+goc})">Chứng từ ở phiếu gốc PC${goc}</span></div>`:'')+(drive.length?`<div class="pc-drive">${drive.map((u,i)=>`<a class="m-link" href="${esc(u)}" target="_blank" rel="noopener">Hồ sơ gốc trên Drive ${drive.length>1?i+1:''}</a>`).join('')}</div>`:''));
   const lsO=hdKhung('chi',id);   // 19/10: dùng khung Hoạt động chung (có @nhắc tên, Nhắc việc)
   // ── chân: nút xử lý
-  const nut=[`<button class="m-btn" onclick="dongChiCT()">Đóng</button>`,(dy||gd||hdG||(x.trang_thai==='cho_tt'&&chiTien(x)))?`<button class="m-btn pri" title="Lưu mọi thay đổi trong phiếu" onclick="luuPhieu(${id},null)">Lưu</button>`:'',dy&&!tuChoi(x)&&!x.la_tam_ung&&x.loai_dn!=='hoan_ung'&&+x.so_tien>1?`<button class="m-btn out" title="Tách 1 phần số tiền sang phiếu mới (vd lương / hoa hồng) để hạch toán đúng khoản" onclick="tachPhieu(${id})">Tách phiếu</button>`:'','<span style="margin-left:auto"></span>',
+  const nut=[`<button class="m-btn" onclick="dongChiCT()">Đóng</button>`,(dy||gd||hdG||(x.trang_thai==='cho_tt'&&chiTien(x)))?`<button class="m-btn pri" title="Lưu mọi thay đổi trong phiếu" onclick="luuPhieu(${id},null)">Lưu</button>`:'',dy&&!tuChoi(x)&&!x.la_tam_ung&&x.loai_dn!=='hoan_ung'&&+x.so_tien>1?`<button class="m-btn out" title="Tách 1 phần số tiền sang phiếu mới (vd lương / hoa hồng) để hạch toán đúng khoản" onclick="tachPhieu(${id})">Tách phiếu</button>`:'',dy&&['cho_duyet','cho_gd','cho_tt'].includes(x.trang_thai)&&!x.la_tam_ung&&x.loai_dn!=='hoan_ung'&&+x.so_tien>1?`<button class="m-btn out" title="Chi 1 phiếu từ nhiều tài khoản (vd 50% tài khoản vay, 50% két tiền mặt) — app tự tách mỗi tài khoản 1 phiếu, giữ chia cơ sở theo tỷ lệ" onclick="chiaNguon(${id})">Chi từ nhiều nguồn</button>`:'','<span style="margin-left:auto"></span>',
     x.trang_thai==='cho_tt'&&gd?`<button class="m-btn mo" title="Giám đốc lùi bước: phiếu về Chờ xác nhận" onclick="if(confirm('Lùi phiếu về Chờ xác nhận?'))luuPhieu(${id},'cho_duyet')">↩ Lùi về chờ xác nhận</button>`:'',
     x.trang_thai==='da_tt'&&(dy||gd)?`<button class="m-btn mo" title="Chi nhầm / chưa duyệt lệnh: đưa phiếu về Chờ chi tiền, không phải tạo lại" onclick="if(confirm('Huỷ trạng thái Đã chi tiền, đưa phiếu về Chờ chi tiền?'))luuPhieu(${id},'cho_tt')">↩ Huỷ đã chi</button>`:'',
     ['cho_duyet','cho_gd'].includes(x.trang_thai)&&(dy||gd)?`<button class="m-btn tuchoi" onclick="luuPhieu(${id},'tu_choi')">✕ Từ chối</button><button class="m-btn duyet" onclick="luuPhieu(${id},'cho_tt')">✓ Xác nhận</button>`:'',
@@ -6778,6 +6796,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hoá đơn đỏ theo HKD','Thủ quỹ theo dõi thủ công hoá đơn đỏ xuất về 2 HKD: thấy mọi phiếu ĐÃ CHI có cần hoá đơn, sửa được "Hoá đơn xuất về" + Đã nhận / ngày nhận trong cửa sổ phiếu.','Thẻ "Chưa nhận HĐ" chia theo HKD Hiền Thủy / HKD Chánh Tâm / Công ty / Chưa ghi xuất về (bấm để lọc); bộ lọc "HĐ xuất về" trên danh sách.','19/10'],
  ['thu_chi','Phiếu chi — thiếu ảnh giao dịch','Phiếu ĐÃ CHI từ 01/09/2026 chưa có ảnh giao dịch (file "UNC…" up ở ô Ảnh giao dịch, hoặc link UNC cũ từ sheet).','Nhắc admin up đủ: dải "Cần chú ý" → Thiếu ảnh giao dịch (theo tháng đang chọn) + Tổng quan → Cảnh báo & công việc cần xử lý (đếm từ 01/09).','19/10'],
  ['thu_chi','Phiếu chi — duyệt','Giám đốc / Supreme bấm Duyệt là qua luôn bước kế toán kiểm + giám đốc duyệt (cả 2 bước ghi tên người bấm) → Chờ thanh toán.','Kế toán chỉ kiểm lượt 1, không tự duyệt lượt 2 (không có quyền giám đốc). Duyệt thẳng vẫn cần có chứng từ.','16/10'],
+ ['thu_chi','Phiếu chi — chi từ nhiều nguồn (10/11)','1 phiếu đề nghị (lương, BHXH…) chia nhiều cơ sở ngay trên phiếu (tick nhiều đơn vị, nhập số từng cơ sở). Khi chi từ nhiều tài khoản (vd tài khoản vay + két tiền mặt): nút "Chi từ nhiều nguồn" (kế toán, phiếu chưa chi) → nhập số tiền từng tài khoản → app tách mỗi tài khoản 1 phiếu chi (dòng đầu giữ phiếu gốc), chia cơ sở / tháng theo tỷ lệ, chứng từ giữ ở phiếu gốc; phiếu đang Chờ chi tiền thì báo thủ quỹ / giám đốc như đổi tài khoản tay.','Anh 10/11: lương / BHXH chia cơ sở + 50% vay / 50% két — không làm hơn 10 phiếu nhỏ. Mỗi tài khoản 1 phiếu là bắt buộc để sổ quỹ / số dư từng tài khoản đúng.','10/11'],
  ['thu_chi','Phiếu chi — duyệt','Duyệt được cả khi phiếu chưa có chứng từ đi kèm (anh 10/11 bỏ quy tắc chặn). Phiếu thiếu chứng từ vẫn hiện ở dải "Cần chú ý" → Thiếu chứng từ để bổ sung sau.','16/10 kế toán: chưa có chứng từ thì chưa duyệt → 10/11 anh: "bỏ quy tắc này đi, cho duyệt bình thường".','16/10 · 10/11'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu app đã đánh 4A cùng số tiền, lệch ≤ 5 ngày → ghép, không tạo mới; trùng nghi ngờ → nhãn "Nghi trùng".','','08/10'],
  ['thu_chi','Phiếu chi — từ Kiot','Phiếu Kiot bị huỷ → phiếu app chưa thanh toán tự chuyển Từ chối.','','08/10'],
