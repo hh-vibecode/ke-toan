@@ -42,7 +42,10 @@ function hang(rows, tu) { return Object.keys(rows).map(Number).filter(n => n >= 
 (async () => {
   const nguon = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'nguon-3tshop.local.json'), 'utf8'));
   const tong = { xnt: 0, ra: 0, vao: 0 };
+  // 10/11/2026: chạy riêng nguồn khớp mẫu (vd 'ky=2026-10' hoặc 'CT:2026-10') — các nguồn khác giữ nguyên dữ liệu
+  const LOC = process.argv[3] || '';
   for (const ng of nguon) {
+    if (LOC && !(LOC.startsWith('ky=') ? ng.ky === LOC.slice(3) : (ng.hkd + ':' + (ng.ky || 'tong')) === LOC)) continue;
     if (!ng.drive && !ng.xuat_ban) { console.log(`- ${ng.hkd} ${ng.ky || ''}: BỎ QUA — ${ng.ten}`); continue; }
     let x; try { x = docXlsx(await taiVe(ng)); } catch (e) { console.log(`- ${ng.hkd} ${ng.ky || ''}: LỖI tải — ${e.message}`); continue; }
     const key = ng.hkd + ':' + (ng.ky || 'tong'); const xnt = [], hd = [];
@@ -50,7 +53,13 @@ function hang(rows, tu) { return Object.keys(rows).map(Number).filter(n => n >= 
       const t1 = x.tab('XNT_QUY'); if (t1) { const gop = {};
         for (const r of hang(x.load(t1), 4)) { const ma = chu(r.B); if (!ma || /^mã/i.test(ma)) continue;
           const g = gop[ma] = gop[ma] || { hkd: ng.hkd, ky: ng.ky, ma, ten: chu(r.C), chung_loai: chu(r.D), dvt: chu(r.E), gia_nhap: so(r.F), dau_sl: 0, dau_tien: 0, nhap_sl: 0, nhap_tien: 0, xuat_sl: 0, xuat_tien: 0, cuoi_sl: 0, cuoi_tien: 0, nguon: key };
-          [['dau_sl', 'G'], ['dau_tien', 'H'], ['nhap_sl', 'I'], ['nhap_tien', 'J'], ['xuat_sl', 'K'], ['xuat_tien', 'L'], ['cuoi_sl', 'M'], ['cuoi_tien', 'N']].forEach(([k, c]) => g[k] += so(r[c]) || 0); }
+          // 10/11/2026: file CT quý 4 có 98 mã 2 dòng — dòng thứ 2 là dòng lỗi cuối bảng (tồn đầu 0, giá #DIV/0!, nhập / xuất của CẢ mã lặp lại,
+          // tồn cuối âm) → cộng 2 dòng làm nhập / xuất gấp đôi. Nay: tồn đầu cộng các dòng; nhập / xuất lấy 1 lần (lớn nhất); tồn cuối = đầu + nhập − xuất. Monsieur Claude
+          g.so_dong = (g.so_dong || 0) + 1; if (g.gia_nhap == null) g.gia_nhap = so(r.F); if (!g.chung_loai) g.chung_loai = chu(r.D);
+          g.dau_sl += so(r.G) || 0; g.dau_tien += so(r.H) || 0; g.cuoi_goc = (g.cuoi_goc || 0) + (so(r.N) || 0);
+          [['nhap_sl', 'I'], ['nhap_tien', 'J'], ['xuat_sl', 'K'], ['xuat_tien', 'L']].forEach(([k, c]) => { g[k] = Math.max(g[k], so(r[c]) || 0); }); }
+        for (const g of Object.values(gop)) { g.cuoi_sl = Math.round((g.dau_sl + g.nhap_sl - g.xuat_sl) * 1000) / 1000;
+          g.cuoi_tien = g.so_dong > 1 ? Math.round(g.cuoi_sl * (g.gia_nhap || 0)) : g.cuoi_goc; if (g.so_dong > 1) tong.trung = (tong.trung || 0) + 1; delete g.so_dong; delete g.cuoi_goc; }
         xnt.push(...Object.values(gop)); }
       const t2 = x.tab('HD_XUAT'); if (t2) hd.push(...docHD(x.load(t2), { hkd: ng.hkd, chieu: 'ra', nguon: key + ':HD_XUAT' }));
       const t3 = x.tab('HD_NHAP'); if (t3) hd.push(...docHD(x.load(t3), { hkd: ng.hkd, chieu: 'vao', nguon: key + ':HD_NHAP' }));
