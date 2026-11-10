@@ -90,6 +90,9 @@ Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   let b: any = {}; try { b = await req.json(); } catch (_) { /* rỗng */ }
   try {
+    // 10/11/2026 anh "bịt hẳn vào": Edge kt-meinvoice cuối mỗi lượt kéo HĐ gọi {viec:'kiem'} bằng khoá lịch (x-kt-cron) → ghi số HĐ nháp đã phát hành ngay. Monsieur Claude
+    if (b.viec === 'kiem' && req.headers.get('x-kt-cron') && req.headers.get('x-kt-cron') === Deno.env.get('KT_CRON_KEY'))
+      return traJ(await kiem(await rpc('kt_thue_don_misa_cho', {}) || []));
     const id = ['day', 'xoa'].includes(b.viec) ? +b.id : null;
     const L = await rpc('kt_thue_don_misa_lay', { p_phien: String(b.phien || ''), p_id: id });
     if (b.viec === 'mau') return traJ({ mau: await mauDs() });

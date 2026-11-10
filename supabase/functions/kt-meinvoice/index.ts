@@ -75,6 +75,12 @@ const txtX = (s: string) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replac
 const docXml = (xml: string) => [...xml.matchAll(/<HHDVu>([\s\S]*?)<\/HHDVu>/g)].map((m, i) => { const b = m[1];
   return { stt: i + 1, tc: +tagX(b, 'TChat') || 1, ma: txtX(tagX(b, 'MHHDVu')), ten: txtX(tagX(b, 'THHDVu')), dvt: txtX(tagX(b, 'DVTinh')),
     sl: +tagX(b, 'SLuong') || 0, dg: +tagX(b, 'DGia') || 0, tt: +tagX(b, 'ThTien') || 0, ts: tagX(b, 'TSuat') }; });
+// 10/11/2026 anh "bịt hẳn vào": sau khi kéo HĐ + dòng hàng, hỏi luôn kt-meinvoice-nhap {viec:'kiem'} → nháp app đã phát hành chuyển "Đã xuất HĐ"
+// trong CÙNG lượt (không chờ người mở trang) → tồn sổ sách không trừ 2 lần (đơn app + HĐ MISA). Monsieur Claude
+async function kiemNhap() {
+  try { const r = await fetch(SB + '/functions/v1/kt-meinvoice-nhap', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-kt-cron': Deno.env.get('KT_CRON_KEY')! }, body: JSON.stringify({ viec: 'kiem' }) });
+    return await r.json(); } catch (e) { return { loi: String(e) }; }
+}
 async function taiXmlRa(A: any, batDau: number) {
   const r = await sb('rpc/kt_thue_hd_can_xml', { p_tu: '2026-10-01', p_n: 300 }, 'return=representation');
   const ds = r.ok ? await r.json() as any[] : []; const m: any = { can: ds.length, luu: 0, loi: 0, dong: 0 };
@@ -147,7 +153,7 @@ Deno.serve(async req => {
     const t = await goi(MI + '/invoice/token', { method: 'POST', headers: H, body: JSON.stringify({
       taxcode: Deno.env.get('KT_MEINVOICE_MST'), username: Deno.env.get('KT_MEINVOICE_USER'), password: Deno.env.get('KT_MEINVOICE_PASS') }) });
     const A = { ...H, Authorization: 'Bearer ' + t.Data };
-    if (body.xml) { kq.xml = await taiXmlRa(A, batDau); kq.giay = Math.round((Date.now() - batDau) / 1000); return Response.json(kq); }
+    if (body.xml) { kq.xml = await taiXmlRa(A, batDau); kq.nhap = await kiemNhap(); kq.giay = Math.round((Date.now() - batDau) / 1000); return Response.json(kq); }
     if (body.pdf_xem) {   // chỉ tải sẵn PDF hoá đơn ra (lịch kt-hd-pdf-ra mỗi giờ)
       kq.pdf_xem = await taiPdfXem(A, batDau); kq.giay = Math.round((Date.now() - batDau) / 1000);
       if (kq.pdf_xem.can) await sb('kt_nhat_ky', { nguoi: 'meInvoice (tự kéo)', bang: 'kt_hd_pdf', hanh_dong: 'tai_pdf_hd_ra', du_lieu: kq });
@@ -178,6 +184,7 @@ Deno.serve(async req => {
     }
     kq.pdf = await taiPdfRa(A, +body.n || 15, batDau);
     kq.xml = await taiXmlRa(A, batDau);
+    kq.nhap = await kiemNhap();
     kq.giay = Math.round((Date.now() - batDau) / 1000);
     await sb('kt_nhat_ky', { nguoi: 'meInvoice (tự kéo)', bang: 'kt_thue_hd', hanh_dong: 'keo_meinvoice', du_lieu: kq });
     return Response.json(kq);
