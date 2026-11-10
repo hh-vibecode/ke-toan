@@ -587,14 +587,19 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .lhd-bar{height:6px;border-radius:3px;background:var(--bg2);overflow:hidden;margin:0 0 12px}.lhd-bar>i{display:block;height:100%}
 .lhd-m .lhd-t .m-in{height:28px;width:100px}.lhd-m .lhd-t .m-in.sl{width:64px}.lhd-m .m-t td.ten{min-width:0}.lhd-m .lhd-2d{max-width:none}
 @media(max-width:900px){.lhd-2c{grid-template-columns:minmax(0,1fr)}.lhd-m .lhd-f{grid-template-columns:minmax(0,1fr)}}
-/* Đối chiếu sao kê (10/11): 3 khối Phiếu thu / chi · Hoá đơn đỏ · Sao kê ngân hàng — màu tiêu đề riêng + vạch đậm ngăn khối */
-.sk-t{font-size:12.5px;width:max-content;min-width:100%}.sk-t td,.sk-t th{padding:7px 8px}.sk-t th{vertical-align:middle}.sk-t .sk-a{background:rgba(46,160,67,.13)!important}.sk-t .sk-b{background:rgba(230,126,34,.14)!important}.sk-t .sk-c{background:rgba(52,120,246,.12)!important}
-.sk-t .sk-s{border-left:2px solid var(--text2)!important}.sk-t td{vertical-align:top}
-.sk-nd{width:280px;min-width:280px;max-width:280px;white-space:normal;word-break:break-word}.sk-ten{width:160px;min-width:160px;max-width:160px;white-space:normal}
-.sk-cl{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.sk-gc{width:230px;min-width:230px;max-width:230px;white-space:normal;line-height:1.45}.sk-ph{white-space:nowrap;line-height:1.5}
-.modal.sk-m>div{max-width:1080px}.sk-k{grid-template-columns:repeat(3,minmax(0,1fr))!important}@media(max-width:600px){.sk-k b{font-size:13px}.sk-k span{font-size:10.5px}}.sk-info{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;font-size:13px;margin:0 2px 10px}
+/* Đối chiếu sao kê (10/11): bảng đều — 1 nền tiêu đề, ô tối đa 2 dòng, khối ngăn vạch mảnh; thẻ = bộ lọc */
+.sk-t{table-layout:fixed;width:100%;min-width:1180px;font-size:12.5px}.sk-t th,.sk-t td{padding:8px 10px;vertical-align:middle}
+.sk-t tr.sk-nh th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:7px 10px 3px;border-bottom:none}
+.sk-t .sk-s{border-left:1px solid var(--border)}.sk-t td{height:52px}
+.sk-2{line-height:1.4;overflow:hidden}.sk-2>div{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}.sk-2>div+div{-webkit-line-clamp:1;font-size:11.5px}
+.sk-2:has(>div+div)>div:first-child{-webkit-line-clamp:1}
+.sk-d{display:inline-block;min-width:24px;font-size:10.5px;color:var(--muted);font-weight:600;margin-right:4px}
+.sk-th{cursor:pointer;border:1px solid transparent;transition:border-color .12s,background .12s}.sk-th:hover{border-color:var(--border)}.sk-th.on{border-color:var(--accent);background:var(--surface)!important}
+.sk-loc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 8px}.sk-loc input{margin-left:auto;width:320px;max-width:100%}
+.sk-info{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;font-size:13px;margin:0 2px 10px}
 .sk-pub{max-width:1600px;margin:0 auto;padding:16px}.sk-pub-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .sk-pub-h b{display:block;font-size:16px;letter-spacing:.04em}.sk-pub-h span{font-size:12.5px;color:var(--muted)}
+.modal.sk-m>div{max-width:1080px}.sk-k{grid-template-columns:repeat(3,minmax(0,1fr))!important}@media(max-width:600px){.sk-k b{font-size:13px}.sk-k span{font-size:10.5px}}
 @media(max-width:1250px){.lhd-g{grid-template-columns:minmax(0,1fr)}}@media(max-width:760px){.lhd-f{grid-template-columns:repeat(2,minmax(0,1fr))}}
 table.m-t th.num,table.m-t td.num{text-align:right;white-space:nowrap}table.m-t th.c,table.m-t td.c{text-align:center}
 table.m-t tr.click{cursor:pointer}table.m-t tr.click:hover td{background:var(--bg2)}table.m-t tr.on td{background:var(--sel-bg)}
@@ -1124,8 +1129,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.352';
-const APP_VERSION='10/11/2026 10:21';
+const APP_SO='1.353';
+const APP_VERSION='10/11/2026 11:01';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -7595,23 +7600,35 @@ function skKQ(D){const L=skGhep(D),k=D.ky,tt=k.thong_tin||{};
   const dem=x=>rows.filter(r=>r.tt===x).length;
   return {v:1,tk:k.tk,chu_tk:tt.chu_tk||'',so_tk:tt.so_tk||'',ngan_hang:tt.ngan_hang||'',tu:k.tu,den:k.den,dau_ky:k.dau_ky!=null?+k.dau_ky:null,cuoi_ky:k.cuoi_ky!=null?+k.cuoi_ky:null,
     rows,tom_tat:{n:rows.length,co_hd:dem('co_hd'),chua_hd:dem('chua_hd'),khong_can:dem('khong_can'),chua_khop:dem('chua_khop'),tong_no:sumBy(rows,r=>r.no),tong_co:sumBy(rows,r=>r.co)}}}
-// 3 khối tách riêng (anh 10/11: "phiếu thu/chi – hoá đơn đỏ – sao kê, sao kê ra ngoài cùng bên phải, chia rõ 3 phần, form xuất ra cũng vậy")
-function skBangHtml(kq,tab,sua){const l=kq.rows.filter(r=>tab==='tat_ca'||r.tt===tab);
-  const hd=(h,dau)=>`<td class="nw${dau?' sk-s':''}">${String(h.so||'').split(', ').map(esc).join('<br>')}</td><td class="nw">${String(h.ngay||'').split(', ').map(esc).join('<br>')}</td><td class="sk-ten" title="${esc(h.ten||'')}">${esc(h.ten||'')}</td>`;
-  return `<div class="scroll"><table class="m-t sk-t"><tr><th rowspan="3" class="num">STT</th><th colspan="2" class="c sk-a sk-s">Phiếu thu / chi</th><th colspan="6" class="c sk-b sk-s">Hoá đơn đỏ</th><th colspan="5" class="c sk-c sk-s">Sao kê ngân hàng</th></tr>
-    <tr><th rowspan="2" class="sk-a sk-s">Số phiếu</th><th rowspan="2" class="sk-a">Diễn giải</th><th colspan="3" class="c sk-b sk-s">Đầu vào</th><th colspan="3" class="c sk-b">Đầu ra</th>
-      <th rowspan="2" class="sk-c sk-s">Ngày GD / Số CT</th><th rowspan="2" class="num sk-c">Ghi nợ</th><th rowspan="2" class="num sk-c">Ghi có</th><th rowspan="2" class="num sk-c">Số dư</th><th rowspan="2" class="sk-c">Nội dung chi tiết</th></tr>
-    <tr><th class="sk-b sk-s">Số HĐ</th><th class="sk-b">Ngày</th><th class="sk-b">Công ty</th><th class="sk-b">Số HĐ</th><th class="sk-b">Ngày</th><th class="sk-b">Công ty</th></tr>
-    ${l.map(r=>`<tr${sua?` class="click" title="Bấm để xem phiếu khớp / sửa" onclick="skSua(${r.id})"`:''}><td class="num">${r.stt??''}</td>
-      <td class="sk-ph sk-s">${(r.phieu||[]).map(p=>sua&&SK_PH[p.k]?`<span class="m-link" onclick="event.stopPropagation();moPhieu('${SK_PH[p.k]}',${p.id})">${p.so}</span>`:esc(p.so)).join('<br>')||'<span class="muted">–</span>'}</td>
-      <td class="sk-gc">${r.tt!=='co_hd'&&r.tt!=='khong_can'?pill(SK_TT[r.tt][0],SK_TT[r.tt][1])+' ':''}${r.tay?pill('Sửa tay','info')+' ':''}<span title="${esc(r.gc)}">${esc(r.gc)}</span></td>
-      ${hd(r.vao,1)}${hd(r.ra)}
-      <td class="nw sk-s">${fmtD(r.ngay)}${r.so_ct?`<div class="muted" style="font-size:11.5px">${esc(r.so_ct)}</div>`:''}</td><td class="num neg-t">${r.no?fmt(r.no):''}</td><td class="num pos-t">${r.co?fmt(r.co):''}</td><td class="num">${r.so_du!=null?fmt(r.so_du):''}</td><td class="sk-nd" title="${esc(r.nd)}"><div class="sk-cl">${esc(r.nd)}</div></td></tr>`).join('')||'<tr><td colspan="14" class="m-empty">Không có dòng nào</td></tr>'}
-    <tr class="tong"><td></td><td colspan="2" class="sk-s"></td><td colspan="6" class="sk-s"></td><td class="sk-s"><b>Tổng</b></td><td class="num"><b>${fmt(sumBy(l,r=>r.no))}</b></td><td class="num"><b>${fmt(sumBy(l,r=>r.co))}</b></td><td colspan="2"></td></tr></table></div>`}
-function skTheHtml(kq){const t=kq.tom_tat;return `<div class="bc-k sk-k"><div><span>Tổng ghi có</span><b class="pos-t">${fmt(t.tong_co)}</b></div><div><span>Tổng ghi nợ</span><b class="neg-t">${fmt(t.tong_no)}</b></div><div><span>Số dư cuối kỳ</span><b>${kq.cuoi_ky!=null?fmt(kq.cuoi_ky):'–'}</b></div></div>
-  <div class="bc-k sk-k" style="margin-top:0"><div><span>Giao dịch có hoá đơn</span><b>${fmt(t.co_hd)} / ${fmt(t.n)}</b></div><div><span>Chưa có hoá đơn</span><b class="${t.chua_hd?'neg-t':''}">${fmt(t.chua_hd)}</b></div><div><span>Không cần hoá đơn</span><b>${fmt(t.khong_can)}</b></div></div>`}
-function skTabHtml(kq,tab,on){const t=kq.tom_tat;return `<div class="m-seg" style="margin-bottom:10px">${[['tat_ca','Tất cả',t.n],['co_hd','Có HĐ',t.co_hd],['chua_hd','Chưa có HĐ',t.chua_hd],['khong_can','Không cần HĐ',t.khong_can],['chua_khop','Chưa khớp app',t.chua_khop]]
-  .filter(x=>x[0]!=='chua_khop'||x[2]).map(([k,n,c])=>`<button class="${tab===k?'on':''}" onclick="${on}('${k}')">${n} (${fmt(c)})</button>`).join('')}</div>`}
+// 10/11 anh (ảnh bảng): "thẻ gắn thành filter, click vô là lọc" + "trình bày lại bảng, khó nhìn, bôi đen phải đều — không đều được thì xử lý cách khác".
+// Bảng gọn 9 cột vừa 1 màn (không cuộn ngang): mỗi khối 2–4 cột, MỌI ô tối đa 2 dòng (dòng cao bằng nhau), 1 nền tiêu đề chung, khối ngăn bằng vạch mảnh,
+// không tô nền / in đậm riêng ô nào; tình trạng HĐ hiện ngay ô Số HĐ. Thẻ = bộ lọc (bấm lại để bỏ). — Monsieur Claude
+const skVe=()=>S.skPub?skPubVe():render();
+function skLocDong(kq){const f=S.f,q=String(f.sk_q||'').toLowerCase().trim();
+  return kq.rows.filter(r=>(!f.sk_chieu||(f.sk_chieu==='co'?r.co:r.no))&&(!f.sk_tt||(f.sk_tt==='chua'?r.tt==='chua_hd'||r.tt==='chua_khop':r.tt===f.sk_tt))
+    &&(!q||[r.nd,r.gc,r.vao.so,r.ra.so,r.vao.ten,r.ra.ten,(r.phieu||[]).map(p=>p.so).join(' '),r.so_ct,String(r.no||r.co)].join(' ').toLowerCase().includes(q)))}
+function skLoc(k,v){S.f[k]=S.f[k]===v?'':v;skVe()}
+function skTheHtml(kq){const t=kq.tom_tat,f=S.f,th=(k,v,nhan,so,cls)=>`<div class="sk-th${f[k]===v?' on':''}" onclick="skLoc('${k}','${v}')"><span>${nhan}</span><b class="${cls||''}">${so}</b></div>`;
+  return `<div class="bc-k sk-k">${th('sk_chieu','co','Tổng ghi có',fmt(t.tong_co),'pos-t')}${th('sk_chieu','no','Tổng ghi nợ',fmt(t.tong_no),'neg-t')}
+      <div class="sk-th${!f.sk_chieu&&!f.sk_tt&&!f.sk_q?' on':''}" onclick="S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';skVe()"><span>Số dư cuối kỳ · tất cả ${fmt(t.n)} dòng</span><b>${kq.cuoi_ky!=null?fmt(kq.cuoi_ky):'–'}</b></div></div>
+    <div class="bc-k sk-k" style="margin-top:0">${th('sk_tt','co_hd','Có hoá đơn',fmt(t.co_hd)+' / '+fmt(t.n))}${th('sk_tt','chua','Chưa có hoá đơn'+(t.chua_khop?' · '+t.chua_khop+' chưa khớp app':''),fmt(t.chua_hd+t.chua_khop),t.chua_hd+t.chua_khop?'neg-t':'')}${th('sk_tt','khong_can','Không cần hoá đơn',fmt(t.khong_can))}</div>`}
+function skBangHtml(kq,sua){const f=S.f,l=skLocDong(kq),loc=[f.sk_chieu&&(f.sk_chieu==='co'?'Ghi có':'Ghi nợ'),f.sk_tt&&({co_hd:'Có hoá đơn',chua:'Chưa có hoá đơn',khong_can:'Không cần hoá đơn'})[f.sk_tt]].filter(Boolean);
+  const hai=(a,b,t)=>`<div class="sk-2"${t?` title="${esc(t)}"`:''}><div>${a}</div>${b?`<div class="muted">${b}</div>`:''}</div>`;
+  const hdO=r=>{const ds=[...(r.vao.so?[{d:'Vào',...r.vao}]:[]),...(r.ra.so?[{d:'Ra',...r.ra}]:[])];
+    if(!ds.length)return r.tt==='chua_hd'||r.tt==='chua_khop'?pill(SK_TT[r.tt][0],SK_TT[r.tt][1]):'<span class="muted">Không cần HĐ</span>';
+    const so=ds.flatMap(h=>String(h.so).split(', ').map(x=>({d:h.d,x}))),dau=so[0];
+    return hai(`<span class="sk-d">${dau.d}</span>${esc(dau.x)}${so.length>1?` <span class="muted">+${so.length-1}</span>`:''}`,esc(ds.map(h=>h.ngay).filter(Boolean).join(', ')),so.map(z=>z.d+' '+z.x).join('\n'))};
+  const phO=r=>{const p=r.phieu||[];if(!p.length)return '<span class="muted">–</span>';const a=p[0];
+    return `${sua&&SK_PH[a.k]?`<span class="m-link" onclick="event.stopPropagation();moPhieu('${SK_PH[a.k]}',${a.id})">${a.so}</span>`:esc(a.so)}${p.length>1?` <span class="muted" title="${esc(p.map(x=>x.so).join(', '))}">+${p.length-1}</span>`:''}`};
+  return `<div class="sk-loc"><span class="muted">${fmt(l.length)} / ${fmt(kq.rows.length)} dòng</span>${loc.map(x=>`<span class="m-pill click" onclick="S.f.sk_chieu='';S.f.sk_tt='';skVe()">${x} ✕</span>`).join('')}
+      <input id="sk-q" class="m-in" type="search" placeholder="Tìm số phiếu, số HĐ, công ty, nội dung, số tiền..." value="${esc(f.sk_q||'')}" oninput="clearTimeout(window._skq);const v=this.value;window._skq=setTimeout(()=>{S.f.sk_q=v;skVe();const i=$('#sk-q');if(i){i.focus();i.setSelectionRange(v.length,v.length)}},300)"></div>
+    <div class="scroll"><table class="m-t sk-t"><colgroup><col style="width:44px"><col style="width:112px"><col style="width:21%"><col style="width:158px"><col style="width:15%"><col style="width:132px"><col style="width:122px"><col style="width:118px"><col></colgroup>
+    <tr class="sk-nh"><th></th><th colspan="2" class="sk-s">Phiếu thu / chi</th><th colspan="2" class="sk-s">Hoá đơn đỏ</th><th colspan="4" class="sk-s">Sao kê ngân hàng</th></tr>
+    <tr><th class="num">STT</th><th class="sk-s">Số phiếu</th><th>Diễn giải</th><th class="sk-s">Số HĐ · ngày</th><th>Công ty</th><th class="sk-s">Ngày GD · số CT</th><th class="num">Số tiền</th><th class="num">Số dư</th><th>Nội dung chi tiết</th></tr>
+    ${l.map(r=>`<tr${sua?` class="click" onclick="skSua(${r.id})"`:''}><td class="num muted">${r.stt??''}</td><td class="sk-s">${phO(r)}</td><td>${hai(esc(String(r.gc).replace(/^Chưa (xuất HĐ|nhận HĐ đầu vào) — /,''))+(r.tay?' <span class="muted">(sửa tay)</span>':''),'',r.gc)}</td>
+      <td class="sk-s">${hdO(r)}</td><td>${hai(esc([r.vao.ten,r.ra.ten].filter(Boolean).join('; ')),'',[r.vao.ten,r.ra.ten].filter(Boolean).join('; '))}</td>
+      <td class="sk-s">${hai(fmtD(r.ngay),esc(r.so_ct))}</td><td class="num ${r.co?'pos-t':'neg-t'}">${r.co?'+'+fmt(r.co):'−'+fmt(r.no)}</td><td class="num">${r.so_du!=null?fmt(r.so_du):''}</td><td>${hai(esc(r.nd),'',r.nd)}</td></tr>`).join('')||'<tr><td colspan="9" class="m-empty">Không có dòng nào</td></tr>'}
+    <tr class="tong"><td></td><td colspan="2" class="sk-s">Tổng ${fmt(l.length)} dòng</td><td colspan="2" class="sk-s"></td><td class="sk-s"></td><td class="num">${(()=>{const c=sumBy(l,r=>r.co),n=sumBy(l,r=>r.no);return `<div class="pos-t">+${fmt(c)}</div><div class="neg-t">−${fmt(n)}</div>`})()}</td><td colspan="2"></td></tr></table></div>`}
 const skKyTxt=kq=>fmtD(kq.tu)+' – '+fmtD(kq.den);
 async function pageSaoKe(){const el=$('#page'),f=S.f,g=can('hoa_don_thue',true);
   if(!S.cache.sk_ds)el.innerHTML='<div class="m-empty">Đang tải...</div>';
@@ -7621,13 +7638,13 @@ async function pageSaoKe(){const el=$('#page'),f=S.f,g=can('hoa_don_thue',true);
   const id=ds.some(x=>x.id===f.sk_ky)?f.sk_ky:ds[0].id;f.sk_ky=id;
   const D=S.cache['sk_'+id]||await rpc('kt_sao_ke_lay',{p_ky:id});S.cache['sk_'+id]=D;const kq=skKQ(D);S.cache.sk_kq=kq;S.cache.sk_D=D;
   const js=JSON.stringify(kq);if(S.cache['sk_luu_'+id]!==js){S.cache['sk_luu_'+id]=js;rpc('kt_sao_ke_luu_kq',{p_ky:id,p_kq:kq}).catch(()=>{S.cache['sk_luu_'+id]=null})}
-  const tab=f.sk_tab&&(f.sk_tab!=='chua_khop'||kq.tom_tat.chua_khop)?f.sk_tab:'tat_ca',k=D.ky,lech=kq.dau_ky!=null&&kq.cuoi_ky!=null?Math.round(kq.dau_ky+kq.tom_tat.tong_co-kq.tom_tat.tong_no-kq.cuoi_ky):null;
-  const chon=`<select class="m-in" style="width:auto;max-width:100%" onchange="S.f.sk_ky=+this.value;S.f.sk_tab='tat_ca';render()">${ds.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${esc(x.tk)} · ${fmtD(x.tu)} – ${fmtD(x.den)}</option>`).join('')}</select>`;
+  const k=D.ky,lech=kq.dau_ky!=null&&kq.cuoi_ky!=null?Math.round(kq.dau_ky+kq.tom_tat.tong_co-kq.tom_tat.tong_no-kq.cuoi_ky):null;
+  const chon=`<select class="m-in" style="width:auto;max-width:100%" onchange="S.f.sk_ky=+this.value;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';render()">${ds.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${esc(x.tk)} · ${fmtD(x.tu)} – ${fmtD(x.den)}</option>`).join('')}</select>`;
   el.innerHTML=`<section class="tq2"><div class="tq2-h" style="flex-wrap:wrap;row-gap:8px"><b class="nw">Đối chiếu sao kê</b><span class="badge">${esc(k.tk)}${kq.so_tk&&!String(k.tk).includes(kq.so_tk)?' · '+esc(kq.so_tk):''}</span>
-      <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${chon}<button class="m-btn out" onclick="skExcel(S.cache.sk_kq)">${IC_XLS} Excel</button><button class="m-btn" onclick="skLink()">Link online${k.token?' · đang bật':''}</button>${nut}</span></div>
+      <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;min-width:0;max-width:100%">${chon}<button class="m-btn out" onclick="skExcel(S.cache.sk_kq)">${IC_XLS} Excel</button><button class="m-btn" onclick="skLink()">Link online${k.token?' · đang bật':''}</button>${nut}</span></div>
     <div class="sk-info"><span>Chủ tài khoản: <b>${esc(kq.chu_tk||'–')}</b></span><span>Kỳ: <b>${skKyTxt(kq)}</b></span><span>Số dư đầu kỳ: <b>${kq.dau_ky!=null?fmt(kq.dau_ky):'–'}</b></span>
       <span>${lech===null?'':lech?pill('Số dư lệch '+fmt(lech),'bad'):pill('Khớp số dư sao kê','ok')}</span><span class="muted">Nạp ${fmtDT(k.nap_luc)} · ${esc(k.nap_boi||'')}</span></div>
-    ${skTheHtml(kq)}${skTabHtml(kq,tab,"S.f.sk_tab=")}${skBangHtml(kq,tab,true)}</section>`.replace(/onclick="S\.f\.sk_tab=\('([a-z_]+)'\)"/g,`onclick="S.f.sk_tab='$1';render()"`)}
+    ${skTheHtml(kq)}${skBangHtml(kq,true)}</section>`}
 // sửa tay 1 dòng: xem phiếu app đã khớp + HĐ, ghi đè Số HĐ / ngày / thông tin cty / ghi chú
 function skSua(id){const D=S.cache.sk_D,kq=S.cache.sk_kq,r=kq.rows.find(x=>x.id===id),s=skGhep(D).find(x=>x.id===id),g=can('hoa_don_thue',true),dis=g?'':' disabled';if(!r)return;
   const PH={thu:'PT',chi:'PC',dc:'DC'},t=(D.dong.find(x=>x.id===id)||{}).tay||{};
@@ -7707,7 +7724,7 @@ function skNapVe(){const {file,T}=S.cache.sk_nap,ds=S.cache.sk_ds||[];
 async function skNap(){const {file,T}=S.cache.sk_nap,ch=T.filter(t=>t.chon);if(!ch.length)return alert('Chưa chọn tab nào');if(ch.some(t=>!t.tk_id))return alert('Chọn tài khoản trên app cho tab đã tick');
   const b=$('#sk-nap');b.disabled=true;b.textContent='Đang nạp...';let id=null;
   try{for(const t of ch)id=await rpc('kt_sao_ke_nap',{p_ky:{tk_id:t.tk_id,tu:t.tu,den:t.den,dau_ky:t.dau,cuoi_ky:t.cuoi,thong_tin:t.thong_tin,ten_file:file+(T.length>1?' · tab '+t.ten:'')},p_dong:t.dong});
-    closeModal();S.cache={};S.f.sk_ky=id;S.f.sk_tab='tat_ca';toast('Đã nạp '+ch.length+' tài khoản');render()}catch(e){b.disabled=false;b.textContent='Nạp';alert(e.message)}}
+    closeModal();S.cache={};S.f.sk_ky=id;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';toast('Đã nạp '+ch.length+' tài khoản');render()}catch(e){b.disabled=false;b.textContent='Nạp';alert(e.message)}}
 // Excel: cùng 3 khối như màn hình — PHIẾU THU / CHI · HOÁ ĐƠN ĐỎ (đầu vào, đầu ra) · SAO KÊ NGÂN HÀNG (ngoài cùng bên phải)
 async function skExcel(kq){if(!kq)return;toast('Đang tạo file Excel...');
   try{const E=await napExcelJS(),wb=new E.Workbook();wb.creator='App kế toán';wb.created=new Date();
@@ -7750,13 +7767,12 @@ async function skExcel(kq){if(!kq)return;toast('Đang tạo file Excel...');
   catch(e){toast('Không xuất được: '+e.message)}}
 // trang xem online (không đăng nhập): #sao-ke=<mã>
 async function skCongKhai(tok){$('#app').innerHTML='<div class="sk-pub"><div class="m-empty">Đang tải...</div></div>';
-  try{S.skPub=await rpc('kt_sao_ke_xem',{p_token:tok},true);S.f.sk_tab=S.f.sk_tab||'tat_ca';skPubVe()}catch(e){$('#app').innerHTML=`<div class="sk-pub"><div class="m-empty">${esc(e.message)}</div></div>`}}
-function skPubVe(){const kq=S.skPub,tab=S.f.sk_tab||'tat_ca';
+  try{S.skPub=await rpc('kt_sao_ke_xem',{p_token:tok},true);skPubVe()}catch(e){$('#app').innerHTML=`<div class="sk-pub"><div class="m-empty">${esc(e.message)}</div></div>`}}
+function skPubVe(){const kq=S.skPub;
   $('#app').innerHTML=`<div class="sk-pub"><div class="sk-pub-h"><div><b>TÂN HƯNG THỊNH</b><span>Đối chiếu sao kê — hoá đơn</span></div><button class="m-btn out" onclick="skExcel(S.skPub)">${IC_XLS} Tải Excel</button></div>
     <section class="tq2"><div class="tq2-h" style="flex-wrap:wrap"><b class="nw">Sao kê tài khoản</b><span class="badge">${esc(kq.tk||'')}${kq.so_tk&&!String(kq.tk||'').includes(kq.so_tk)?' · '+esc(kq.so_tk):''}</span></div>
     <div class="sk-info"><span>Chủ tài khoản: <b>${esc(kq.chu_tk||'–')}</b></span><span>Kỳ: <b>${skKyTxt(kq)}</b></span><span>Số dư đầu kỳ: <b>${kq.dau_ky!=null?fmt(kq.dau_ky):'–'}</b></span><span class="muted">Cập nhật ${fmtDT(kq.luc)}</span></div>
-    ${skTheHtml(kq)}${skTabHtml(kq,tab,'skPubTab')}${skBangHtml(kq,tab,false)}</section></div>`}
-function skPubTab(k){S.f.sk_tab=k;skPubVe()}
+    ${skTheHtml(kq)}${skBangHtml(kq,false)}</section></div>`}
 // Xuất dữ liệu: mỗi kỳ sao kê nằm trong khoảng ngày = 1 sheet (cột phẳng)
 async function xuSaoKe(tu,den){const ds=(await rpc('kt_sao_ke_ds')).filter(x=>x.den>=tu&&x.tu<=den),out=[];
   for(const x of ds){const kq=skKQ(await rpc('kt_sao_ke_lay',{p_ky:x.id}));
