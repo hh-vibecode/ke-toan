@@ -1136,8 +1136,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.357';
-const APP_VERSION='10/11/2026 11:39';
+const APP_SO='1.358';
+const APP_VERSION='10/11/2026 11:44';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -7563,6 +7563,7 @@ new MutationObserver(ganMat).observe(document.body,{childList:true,subtree:true}
 // cùng ngày rồi ±3 ngày; (2) nhiều phiếu cùng ngày ±1 cộng lại = 1 dòng (vd COD Nhất Tín: tiền thu − phí); (3) nhiều dòng = 1 phiếu (vd nộp 2 lần,
 // app ghi 1 phiếu). HĐ lấy từ phiếu: thu → HĐ bán ra đã gắn, chi → HĐ mua vào đã gắn (hoặc số HĐ kế toán gõ). Kế toán sửa tay từng dòng.
 // Kết quả lưu lại (kt_sao_ke_luu_kq) → link online (#sao-ke=…) hiện đúng bảng này, không cần đăng nhập. — Monsieur Claude
+// <sk-tinh-chung> — Edge kt-sao-ke lấy nguyên đoạn này để tự tính lại báo cáo hằng ngày: hàm dùng ở đây phải nằm TRONG đoạn (trừ sumBy, fmt, fmtD, soHD)
 const SK_TT={co_hd:['Có HĐ','ok'],chua_hd:['Chưa có HĐ','warn'],khong_can:['Không cần HĐ',''],chua_khop:['Chưa khớp app','bad']};
 const skNg=(a,b)=>Math.round(Math.abs(new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/864e5);
 function skGhep(D){
@@ -7607,6 +7608,7 @@ function skKQ(D){const L=skGhep(D),k=D.ky,tt=k.thong_tin||{};
   const dem=x=>rows.filter(r=>r.tt===x).length;
   return {v:1,tk:k.tk,chu_tk:tt.chu_tk||'',so_tk:tt.so_tk||'',ngan_hang:tt.ngan_hang||'',tu:k.tu,den:k.den,dau_ky:k.dau_ky!=null?+k.dau_ky:null,cuoi_ky:k.cuoi_ky!=null?+k.cuoi_ky:null,
     rows,tom_tat:{n:rows.length,co_hd:dem('co_hd'),chua_hd:dem('chua_hd'),khong_can:dem('khong_can'),chua_khop:dem('chua_khop'),tong_no:sumBy(rows,r=>r.no),tong_co:sumBy(rows,r=>r.co)}}}
+// </sk-tinh-chung>
 // 10/11 anh (ảnh bảng): "thẻ gắn thành filter, click vô là lọc" + "trình bày lại bảng, khó nhìn, bôi đen phải đều — không đều được thì xử lý cách khác".
 // Bảng gọn 9 cột vừa 1 màn (không cuộn ngang): mỗi khối 2–4 cột, MỌI ô tối đa 2 dòng (dòng cao bằng nhau), 1 nền tiêu đề chung, khối ngăn bằng vạch mảnh,
 // không tô nền / in đậm riêng ô nào; tình trạng HĐ hiện ngay ô Số HĐ. Thẻ = bộ lọc (bấm lại để bỏ). — Monsieur Claude

@@ -36,11 +36,17 @@ begin
 end $$;
 
 -- 1 kỳ: dòng sao kê + phiếu trên app của tài khoản đó (kỳ ±5 ngày) kèm HĐ đã gắn — trang tự ghép
+-- 10/11: tách phần dữ liệu (không kiểm phiên, CHỈ service_role) để Edge kt-sao-ke tự tính lại báo cáo hằng ngày
 create or replace function public.kt_sao_ke_lay(p_phien text, p_ky bigint) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
-declare u kt_nguoi_dung; k kt_sao_ke_ky; a date; b date;
 begin
-  u := kt_chan(p_phien, 'hoa_don_thue');
+  perform kt_chan(p_phien, 'hoa_don_thue');
+  return kt_sao_ke_du_lieu(p_ky);
+end $$;
+create or replace function public.kt_sao_ke_du_lieu(p_ky bigint) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare k kt_sao_ke_ky; a date; b date;
+begin
   select * into k from kt_sao_ke_ky where id = p_ky;
   if k.id is null then raise exception 'Không có kỳ sao kê này'; end if;
   a := k.tu - 5; b := k.den + 5;
@@ -124,6 +130,14 @@ begin
   update kt_sao_ke_ky set ket_qua = p_kq, ket_qua_luc = now() where id = p_ky and ket_qua is distinct from p_kq;
 end $$;
 
+-- Edge kt-sao-ke (lịch kt-sao-ke 2 lần / ngày, sau giờ kéo HĐ MISA + ghép HĐ): lưu bảng tính lại — CHỈ service_role
+create or replace function public.kt_sao_ke_luu_kq_ht(p_ky bigint, p_kq jsonb) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  update kt_sao_ke_ky set ket_qua = p_kq, ket_qua_luc = now() where id = p_ky and ket_qua is distinct from p_kq;
+  return found;
+end $$;
+
 -- bật / tắt link xem online (không cần đăng nhập, chỉ xem + tải Excel)
 create or replace function public.kt_sao_ke_link(p_phien text, p_ky bigint, p_bat boolean) returns text
 language plpgsql security definer set search_path = public as $$
@@ -164,3 +178,7 @@ do $$ declare f text; begin
     execute 'revoke all on function public.' || f || ' from public';
     execute 'grant execute on function public.' || f || ' to anon, authenticated';
   end loop; end $$;
+revoke all on function public.kt_sao_ke_du_lieu(bigint) from public, anon, authenticated;
+revoke all on function public.kt_sao_ke_luu_kq_ht(bigint, jsonb) from public, anon, authenticated;
+grant execute on function public.kt_sao_ke_du_lieu(bigint) to service_role;
+grant execute on function public.kt_sao_ke_luu_kq_ht(bigint, jsonb) to service_role;
