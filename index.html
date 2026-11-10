@@ -1136,8 +1136,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.356';
-const APP_VERSION='10/11/2026 11:13';
+const APP_SO='1.357';
+const APP_VERSION='10/11/2026 11:39';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -7601,8 +7601,8 @@ function skKQ(D){const L=skGhep(D),k=D.ky,tt=k.thong_tin||{};
     const thieu=s.m.filter(a=>skCanHD(a)&&!(a.hd||[]).length&&!(a.k==='chi'&&a.so_tay)),cb=[...new Set(s.m.flatMap(a=>(a.hd||[]).map(h=>h.cb).filter(Boolean)))];
     const V=t.vao?{so:t.vao.so||'',ngay:t.vao.ngay||'',ten:t.vao.ten||''}:skHdGop(vao),R=t.ra?{so:t.ra.so||'',ngay:t.ra.ngay||'',ten:t.ra.ten||''}:skHdGop(ra);
     const coHD=!!(V.so||R.so),tt=coHD?'co_hd':!s.m.length?(t.gc?'khong_can':'chua_khop'):(s.m.some(skCanHD)?'chua_hd':'khong_can');
-    let gc=t.gc!=null&&t.gc!==''?t.gc:coHD?[s.cach==='gop'?skGiai(s):'',thieu.length&&!t.vao&&!t.ra?'còn '+thieu.length+' phiếu chưa gắn HĐ ('+fmt(sumBy(thieu,a=>a.vao||a.ra))+')':'',cb.length?'Cần soát: '+cb.join(' · '):''].filter(Boolean).join(' · ')
-      :tt==='chua_hd'?(s.m.some(a=>a.k==='thu')?'Chưa xuất HĐ — ':'Chưa nhận HĐ đầu vào — ')+skGiai(s):skGiai(s);
+    // 10/11 kế toán: "phần nội dung diễn giải lấy luôn từ nội dung phiếu thu phiếu chi" → diễn giải = nội dung phiếu (gộp nhiều phiếu: nối lại); kế toán sửa tay vẫn ưu tiên
+    let gc=t.gc!=null&&t.gc!==''?t.gc:!s.m.length?'Chưa có phiếu trên app khớp số tiền':[...new Set(s.m.map(a=>String(a.nd||'').trim()).filter(Boolean))].join('; ');
     return {id:s.id,stt:s.stt,ngay:s.ngay,so_ct:s.so_ct||'',ngay_hl:s.ngay_hl||'',no:s.no,co:s.co,so_du:s.so_du!=null?+s.so_du:null,nd:s.nd||'',phieu:s.m.map(a=>({so:skSoPhieu(a),k:a.k,id:a.id})),vao:V,ra:R,gc,tt,tay:!!s.tay,cach:s.cach}});
   const dem=x=>rows.filter(r=>r.tt===x).length;
   return {v:1,tk:k.tk,chu_tk:tt.chu_tk||'',so_tk:tt.so_tk||'',ngan_hang:tt.ngan_hang||'',tu:k.tu,den:k.den,dau_ky:k.dau_ky!=null?+k.dau_ky:null,cuoi_ky:k.cuoi_ky!=null?+k.cuoi_ky:null,
@@ -7665,7 +7665,7 @@ function skSua(id){const D=S.cache.sk_D,kq=S.cache.sk_kq,r=kq.rows.find(x=>x.id=
     <div class="muted" style="font-size:12px;margin:6px 0 12px">Gắn HĐ vào phiếu thu / chi trên app thì dòng này tự cập nhật. Ô dưới chỉ dùng khi cần ghi đè riêng cho báo cáo sao kê.</div>
     <div id="sk-f"><div class="tq2-h" style="padding:4px 0"><b>Hoá đơn khoản chi (đầu vào)</b></div><div class="lhd-f" style="grid-template-columns:2fr 1fr 3fr">${o('Số HĐ','vs',r.vao.so)}${o('Ngày','vn',r.vao.ngay)}${o('Thông tin công ty','vt',r.vao.ten)}</div>
       <div class="tq2-h" style="padding:4px 0"><b>Hoá đơn khoản thu (đầu ra)</b></div><div class="lhd-f" style="grid-template-columns:2fr 1fr 3fr">${o('Số HĐ','rs',r.ra.so)}${o('Ngày','rn',r.ra.ngay)}${o('Thông tin công ty','rt',r.ra.ten)}</div>
-      <div class="lhd-f" style="grid-template-columns:1fr;margin-top:8px">${o('Ghi chú','gc',r.gc)}</div></div>
+      <div class="lhd-f" style="grid-template-columns:1fr;margin-top:8px">${o('Diễn giải (mặc định = nội dung phiếu)','gc',r.gc)}</div></div>
     ${r.tay?`<div class="muted" style="font-size:12px;margin-top:6px">Đang sửa tay: ${esc((D.dong.find(x=>x.id===id)||{}).sua_boi||'')} · ${fmtDT((D.dong.find(x=>x.id===id)||{}).sua_luc)}</div>`:''}
     <div class="acts">${g&&r.tay?`<button class="m-btn" onclick="skLuuTay(${id},null)">Bỏ sửa tay (về tự ghép)</button>`:''}<span style="margin-right:auto"></span><button class="m-btn" onclick="closeModal()">Đóng</button>${g?`<button class="m-btn pri" onclick="skLuuTay(${id},1)">Lưu</button>`:''}</div>`)}
 async function skLuuTay(id,luu){let tay=null;
