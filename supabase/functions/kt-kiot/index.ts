@@ -228,6 +228,13 @@ async function doiChieuThang(m: string, nguoi: string) {
   Object.assign(them2.dh, await kt(dd.thua, 'orders', x => x.purchaseDate));
   const ket_qua = { tu, den, kiot, app, hd: { kiot: hdK.length, app: (db.hd || []).length, thieu: ma(h.thieu), thua: ma(h.thua), lech: ma(h.lech), ...(await kt(h.thua, 'invoices', x => x.purchaseDate)) },
     th: { kiot: thK.length, app: (db.th || []).length, thieu: ma(t.thieu), thua: ma(t.thua), lech: ma(t.lech), ...(await kt(t.thua, 'returns', x => x.returnDate)) }, ...them2 };
+  // 10/11/2026 (app MKT báo "kế toán còn giữ mã Kiot đã xoá"): phiếu app thừa mà Kiot trả 404 (đã xoá — kể cả đơn báo giá không tiền)
+  // → đánh dấu "Đã xoá trên Kiot" (đơn đặt = 4, hoá đơn = 2), giữ dòng; phiếu chỉ đổi ngày ('doi') không đụng. Monsieur Claude
+  const daXoa = (o: any) => ((o && o.thua_kt) || []).filter((z: any) => z.tt === 'xoa').map((z: any) => String(z.ma));
+  const boX = dhBo.length ? (await kiemThua(dhBo, 'orders', x => x.purchaseDate)).filter((z: any) => z.tt === 'xoa').map((z: any) => String(z.ma)) : [];
+  const dhX = [...daXoa(them2.dh), ...boX], hdX = daXoa(ket_qua.hd);
+  if (dhX.length) ket_qua.dh.da_danh_dau = await rpcJ('kt_kiot_danh_dau_xoa', { p_loai: 'dh', p_ma: dhX });
+  if (hdX.length) (ket_qua.hd as any).da_danh_dau = await rpcJ('kt_kiot_danh_dau_xoa', { p_loai: 'hd', p_ma: hdX });
   await sb('kt_kiot_doi_chieu', { nguoi, loai: 'thang', thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length + sua2, ket_qua });
   return { thang: m, khop: so_lech === 0, so_lech, so_sua: suaH.length + suaT.length + sua2 };
 }

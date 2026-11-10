@@ -1154,8 +1154,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.364';
-const APP_VERSION='10/11/2026 15:51';
+const APP_SO='1.365';
+const APP_VERSION='10/11/2026 15:57';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -7387,7 +7387,8 @@ function dc3KQ(x){const K=x.kiot,bo=K?(K.bo||[]).length:0,kh=(a,b,kb)=>DC3_SO.fi
 function dc3Html(D,sua){S.dc3D=D;
   const o=(v,K,k,cho)=>{const l=!cho&&K&&Math.round((+K[k]||0)+(k==='so_dh'?(K.bo||[]).length:0))!==Math.round(+v[k]||0);return `<td class="num${l?' neg-t':''}">${l?'<b>'+fmt(v[k])+'</b>':fmt(v[k])}</td>`};
   const rows=D.thang.map(x=>{const r=dc3KQ(x),K=x.kiot;
-    const kq=!K?pill('Chưa soát Kiot',''):r.ok?pill('Khớp 3 bên','ok'):r.cho?pill('Chờ soát lại Kiot','warn'):pill([r.xoa.length?'Kiot đã xoá '+r.xoa.length+' phiếu':r.kA.length?'Kế toán lệch Kiot':'',x.so_lech?x.so_lech+' mã lệch MKT':r.kB.length&&!r.xoa.length?'MKT lệch Kiot':''].filter(Boolean).join(' · '),'bad');
+    const mx=(x.lech||[]).filter(z=>z.a_xoa).length;
+    const kq=!K?pill('Chưa soát Kiot',''):r.ok?pill('Khớp 3 bên','ok'):r.cho?pill('Chờ soát lại Kiot','warn'):mx&&mx===x.so_lech&&!r.kA.length&&!r.xoa.length?pill('App MKT còn giữ '+mx+' mã Kiot đã xoá','warn'):pill([r.xoa.length?'Kiot đã xoá '+r.xoa.length+' phiếu':r.kA.length?'Kế toán lệch Kiot':'',x.so_lech?x.so_lech+' mã lệch MKT':r.kB.length&&!r.xoa.length?'MKT lệch Kiot':''].filter(Boolean).join(' · '),'bad');
     return `<tr class="click" onclick="dc3Xem('${x.m}')"><td class="sk-s"><b>Tháng ${+x.m.slice(5)}/${x.m.slice(0,4)}</b></td>
       ${K?`<td class="num">${fmt(K.so_hd)}</td><td class="num">${fmt(K.tien_hd)}</td><td class="num">${fmt(K.so_dh)}</td>`:'<td class="c muted" colspan="3">chưa soát</td>'}
       ${o(x.kt,K,'so_hd',r.cho)}${o(x.kt,K,'tien_hd',r.cho)}${o(x.kt,K,'so_dh',r.cho)}${o(x.mkt,K,'so_hd',r.cho)}${o(x.mkt,K,'tien_hd',r.cho)}${o(x.mkt,K,'so_dh',r.cho)}
@@ -7401,7 +7402,7 @@ function dc3Sec(D,sua){const ok=D.thang.filter(x=>dc3KQ(x).ok).length,ml=sumBy(D
     <span style="margin-left:auto">${sua?`<button class="m-btn" onclick="dc3Link()">${D.token?'Link online · đang bật':'Tạo link online'}</button>`:''}</span></div><div class="card" style="padding:0">${dc3Html(D,sua)}</div>`}
 function dc3Xem(m){const D=S.dc3D,x=D&&D.thang.find(z=>z.m===m);if(!x)return;const r=dc3KQ(x),K=x.kiot;
   const tt=(l,v)=>v==null?'':(l==='hd'?DC3_HD:DC3_DH)[v]||('Trạng thái '+v);
-  const ben=z=>z.a_tt==null?'App kế toán chưa có':z.b_tt==null?'App MKT chưa có':z.a_tt!==z.b_tt?'Khác trạng thái':'Khác số tiền';
+  const ben=z=>z.a_xoa?'Kiot đã xoá — app MKT còn giữ':z.a_tt==null?'App kế toán chưa có':z.b_tt==null?'App MKT chưa có':z.a_tt!==z.b_tt?'Khác trạng thái':'Khác số tiền';
   const so=K?`<div class="m-st">So với Kiot <span class="badge">soát ${fmtDT(K.luc)}</span></div><div class="card" style="padding:0"><table class="m-t"><tr><th>Chỉ số</th><th class="num">Kiot</th><th class="num">App kế toán</th><th class="num">App MKT</th></tr>
       ${DC3_K.map(k=>{const a=Math.round(+x.kt[k]||0)!==Math.round(+K[k]||0),b=Math.round(+x.mkt[k]||0)!==Math.round(+K[k]||0);return `<tr><td>${DC3_TEN[k]}</td><td class="num">${fmt(K[k])}</td><td class="num${a?' neg-t':''}">${fmt(x.kt[k])}</td><td class="num${b?' neg-t':''}">${fmt(x.mkt[k])}</td></tr>`}).join('')}</table></div>`:'<div class="muted">Tháng này chưa soát với Kiot</div>';
   const ds=x.lech||[];
@@ -7410,7 +7411,7 @@ function dc3Xem(m){const D=S.dc3D,x=D&&D.thang.find(z=>z.m===m);if(!x)return;con
     ${r.xoa.length?`<div class="m-st">Kiot không còn (đã xoá / đổi mã) nhưng app còn giữ <span class="badge">${r.xoa.length} phiếu</span></div><div class="card" style="padding:10px 12px">${r.xoa.map(c=>`<b>${esc(c)}</b>`).join(' · ')}</div>`:''}
     <div class="m-st">Mã lệch giữa app kế toán và app MKT <span class="badge">${fmt(x.so_lech)} mã${x.so_lech>ds.length?' · hiện '+ds.length:''}</span></div>
     <div class="card" style="padding:0"><table class="m-t"><tr><th>Loại</th><th>Mã</th><th>App kế toán</th><th class="num">Tiền</th><th>App MKT</th><th class="num">Tiền</th><th>Lệch</th></tr>
-      ${ds.map(z=>`<tr><td>${z.loai==='hd'?'Hoá đơn':'Đơn đặt'}</td><td class="nw"><b>${esc(z.ma)}</b></td><td>${z.a_tt==null?'<span class="muted">không có</span>':tt(z.loai,z.a_tt)}</td><td class="num">${z.a_tien!=null?fmt(z.a_tien):''}</td>
+      ${ds.map(z=>`<tr><td>${z.loai==='hd'?'Hoá đơn':'Đơn đặt'}</td><td class="nw"><b>${esc(z.ma)}</b></td><td>${z.a_xoa?'<span class="muted">Đã xoá trên Kiot</span>':z.a_tt==null?'<span class="muted">không có</span>':tt(z.loai,z.a_tt)}</td><td class="num">${z.a_tien!=null?fmt(z.a_tien):''}</td>
         <td>${z.b_tt==null?'<span class="muted">không có</span>':tt(z.loai,z.b_tt)}</td><td class="num">${z.b_tien!=null?fmt(z.b_tien):''}</td><td>${pill(ben(z),'bad')}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Hai app khớp từng mã</td></tr>'}</table></div>
     <div class="acts">${S.cache&&S.cache.kl&&K?`<button class="m-btn" onclick="closeModal();kiotXemThang('${m}')">Chi tiết Kiot ↔ app kế toán</button>`:''}<button class="m-btn" onclick="closeModal()">Đóng</button></div>`);
   const b=$('#modal>div');if(b){b.style.maxWidth='900px';b.style.width='min(900px,96vw)'}}
