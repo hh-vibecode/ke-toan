@@ -606,7 +606,7 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .lhd-m .lhd-t .m-in{height:28px;width:100px}.lhd-m .lhd-t .m-in.sl{width:64px}.lhd-m .m-t td.ten{min-width:0}.lhd-m .lhd-2d{max-width:none}
 @media(max-width:900px){.lhd-2c{grid-template-columns:minmax(0,1fr)}.lhd-m .lhd-f{grid-template-columns:minmax(0,1fr)}}
 /* Đối chiếu sao kê (10/11): bảng đều — 1 nền tiêu đề, ô tối đa 2 dòng, khối ngăn vạch mảnh; thẻ = bộ lọc */
-.sk-t{table-layout:fixed;width:100%;min-width:1180px;font-size:12.5px}.sk-t th,.sk-t td{padding:8px 10px;vertical-align:middle}
+.sk-t{table-layout:fixed;width:100%;min-width:1260px;font-size:12.5px}.sk-t th,.sk-t td{padding:8px 10px;vertical-align:middle}
 .sk-t tr.sk-nh th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;padding:8px 10px;border-bottom:none;text-align:center}
 .sk-t th.sk-a{background:rgba(46,160,67,.24)!important;color:#1e6b34}.sk-t th.sk-a2{background:rgba(46,160,67,.09)!important}
 .sk-t th.sk-b{background:rgba(230,126,34,.26)!important;color:#9a4a0b}.sk-t th.sk-b2{background:rgba(230,126,34,.09)!important}
@@ -1154,8 +1154,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.366';
-const APP_VERSION='10/11/2026 17:06';
+const APP_SO='1.367';
+const APP_VERSION='11/11/2026 09:17';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -7785,18 +7785,20 @@ function skBangHtml(kq,sua){const f=S.f,l=skLocDong(kq),loc=[f.sk_chieu&&(f.sk_c
   const hdO=r=>{const ds=[...(r.vao.so?[{d:'Khoản chi',...r.vao}]:[]),...(r.ra.so?[{d:'Khoản thu',...r.ra}]:[])];
     if(!ds.length)return r.tt==='chua_hd'||r.tt==='chua_khop'?pill(SK_TT[r.tt][0],SK_TT[r.tt][1]):'<span class="muted">Không cần HĐ</span>';
     const so=ds.flatMap(h=>String(h.so).split(', ').map(x=>({d:h.d,x}))),dau=so[0];
-    return hai(`${esc(dau.x)}${so.length>1?` <span class="muted">+${so.length-1}</span>`:''}`,esc([...new Set(ds.map(h=>h.d))].join(' + ')+(ds.some(h=>h.ngay)?' · '+ds.map(h=>h.ngay).filter(Boolean).join(', '):'')),so.map(z=>z.d+': '+z.x).join('\n'))};
+    return hai(`${esc(dau.x)}${so.length>1?` <span class="muted">+${so.length-1}</span>`:''}`,esc([...new Set(ds.map(h=>h.d))].join(' + ')),so.map(z=>z.d+': '+z.x).join('\n'))};
+  // 11/11 kế toán: "bổ sung cột ngày hoá đơn ở phần hoá đơn đỏ" → ngày HĐ cột riêng
+  const ngHD=r=>{const n=[...new Set([r.vao.ngay,r.ra.ngay].filter(Boolean).join(', ').split(', ').filter(Boolean))];return n.length?hai(esc(n[0])+(n.length>1?` <span class="muted">+${n.length-1}</span>`:''),'',n.join(', ')):''};
   const phO=r=>{const p=r.phieu||[];if(!p.length)return '<span class="muted">–</span>';const a=p[0];
     return `${sua&&SK_PH[a.k]?`<span class="m-link" onclick="event.stopPropagation();moPhieu('${SK_PH[a.k]}',${a.id})">${a.so}</span>`:esc(a.so)}${p.length>1?` <span class="muted" title="${esc(p.map(x=>x.so).join(', '))}">+${p.length-1}</span>`:''}`};
   return `<div class="sk-loc"><span class="muted">${fmt(l.length)} / ${fmt(kq.rows.length)} dòng</span>${loc.map(x=>`<span class="m-pill click" onclick="S.f.sk_chieu='';S.f.sk_tt='';skVe()">${x} ✕</span>`).join('')}
       <input id="sk-q" class="m-in" type="search" placeholder="Tìm số phiếu, số HĐ, công ty, nội dung, số tiền..." value="${esc(f.sk_q||'')}" oninput="clearTimeout(window._skq);const v=this.value;window._skq=setTimeout(()=>{S.f.sk_q=v;skVe();const i=$('#sk-q');if(i){i.focus();i.setSelectionRange(v.length,v.length)}},300)"></div>
-    <div class="scroll"><table class="m-t sk-t"><colgroup><col style="width:44px"><col style="width:112px"><col style="width:21%"><col style="width:158px"><col style="width:15%"><col style="width:132px"><col style="width:122px"><col style="width:118px"><col></colgroup>
-    <tr class="sk-nh"><th rowspan="2" class="num">STT</th><th colspan="2" class="sk-s sk-a">Phiếu thu / chi</th><th colspan="2" class="sk-s sk-b">Hoá đơn đỏ</th><th colspan="4" class="sk-s sk-c">Sao kê ngân hàng</th></tr>
-    <tr class="sk-cot"><th class="sk-s sk-a2">Số phiếu</th><th class="sk-a2">Diễn giải</th><th class="sk-s sk-b2">Số HĐ · ngày</th><th class="sk-b2">Công ty</th><th class="sk-s sk-c2">Ngày GD · số CT</th><th class="num sk-c2">Số tiền</th><th class="num sk-c2">Số dư</th><th class="sk-c2">Nội dung chi tiết</th></tr>
+    <div class="scroll"><table class="m-t sk-t"><colgroup><col style="width:44px"><col style="width:112px"><col style="width:19%"><col style="width:142px"><col style="width:92px"><col style="width:14%"><col style="width:132px"><col style="width:122px"><col style="width:118px"><col></colgroup>
+    <tr class="sk-nh"><th rowspan="2" class="num">STT</th><th colspan="2" class="sk-s sk-a">Phiếu thu / chi</th><th colspan="3" class="sk-s sk-b">Hoá đơn đỏ</th><th colspan="4" class="sk-s sk-c">Sao kê ngân hàng</th></tr>
+    <tr class="sk-cot"><th class="sk-s sk-a2">Số phiếu</th><th class="sk-a2">Diễn giải</th><th class="sk-s sk-b2">Số HĐ</th><th class="sk-b2">Ngày HĐ</th><th class="sk-b2">Công ty</th><th class="sk-s sk-c2">Ngày GD · số CT</th><th class="num sk-c2">Số tiền</th><th class="num sk-c2">Số dư</th><th class="sk-c2">Nội dung chi tiết</th></tr>
     ${l.map(r=>`<tr${sua?` class="click" onclick="skSua(${r.id})"`:''}><td class="num muted">${r.stt??''}</td><td class="sk-s">${phO(r)}</td><td>${hai(esc(String(r.gc).replace(/^Chưa (xuất HĐ|nhận HĐ đầu vào) — /,''))+(r.tay?' <span class="muted">(sửa tay)</span>':''),'',r.gc)}</td>
-      <td class="sk-s">${hdO(r)}</td><td>${hai(esc([r.vao.ten,r.ra.ten].filter(Boolean).join('; ')),'',[r.vao.ten,r.ra.ten].filter(Boolean).join('; '))}</td>
-      <td class="sk-s">${hai(fmtD(r.ngay),esc(r.so_ct))}</td><td class="num ${r.co?'pos-t':'neg-t'}">${r.co?'+'+fmt(r.co):'−'+fmt(r.no)}</td><td class="num">${r.so_du!=null?fmt(r.so_du):''}</td><td>${hai(esc(r.nd),'',r.nd)}</td></tr>`).join('')||'<tr><td colspan="9" class="m-empty">Không có dòng nào</td></tr>'}
-    <tr class="tong"><td></td><td colspan="2" class="sk-s">Tổng ${fmt(l.length)} dòng</td><td colspan="2" class="sk-s"></td><td class="sk-s"></td><td class="num">${(()=>{const c=sumBy(l,r=>r.co),n=sumBy(l,r=>r.no);return `<div class="pos-t">+${fmt(c)}</div><div class="neg-t">−${fmt(n)}</div>`})()}</td><td colspan="2"></td></tr></table></div>`}
+      <td class="sk-s">${hdO(r)}</td><td class="nw">${ngHD(r)}</td><td>${hai(esc([r.vao.ten,r.ra.ten].filter(Boolean).join('; ')),'',[r.vao.ten,r.ra.ten].filter(Boolean).join('; '))}</td>
+      <td class="sk-s">${hai(fmtD(r.ngay),esc(r.so_ct))}</td><td class="num ${r.co?'pos-t':'neg-t'}">${r.co?'+'+fmt(r.co):'−'+fmt(r.no)}</td><td class="num">${r.so_du!=null?fmt(r.so_du):''}</td><td>${hai(esc(r.nd),'',r.nd)}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có dòng nào</td></tr>'}
+    <tr class="tong"><td></td><td colspan="2" class="sk-s">Tổng ${fmt(l.length)} dòng</td><td colspan="3" class="sk-s"></td><td class="sk-s"></td><td class="num">${(()=>{const c=sumBy(l,r=>r.co),n=sumBy(l,r=>r.no);return `<div class="pos-t">+${fmt(c)}</div><div class="neg-t">−${fmt(n)}</div>`})()}</td><td colspan="2"></td></tr></table></div>`}
 const skKyTxt=kq=>fmtD(kq.tu)+' – '+fmtD(kq.den);
 async function pageSaoKe(){const el=$('#page'),f=S.f,g=can('hoa_don_thue',true);
   if(!S.cache.sk_ds)el.innerHTML='<div class="m-empty">Đang tải...</div>';
@@ -7897,41 +7899,42 @@ async function skNap(){const {file,T}=S.cache.sk_nap,ch=T.filter(t=>t.chon);if(!
 // viền ngoài đậm, tiêu đề chữ đậm kẻ đủ viền đen, đậm dưới tiêu đề, căn giữa; thân bảng kẻ mảnh nhạt; ô hiện ĐỦ nội dung (xuống dòng, không cắt). — Monsieur Claude
 async function skExcel(kq){if(!kq)return;toast('Đang tạo file Excel...');
   try{const E=await napExcelJS(),wb=new E.Workbook();wb.creator='App kế toán';wb.created=new Date();
-    const H1=7,H2=8,N=9,ws=wb.addWorksheet(xuTenSheet(wb,'Sao kê '+(kq.so_tk||kq.tk||'')),{views:[{state:'frozen',ySplit:H2,xSplit:0}]});
+    const H1=7,H2=8,N=10,ws=wb.addWorksheet(xuTenSheet(wb,'Sao kê '+(kq.so_tk||kq.tk||'')),{views:[{state:'frozen',ySplit:H2,xSplit:0}]});
     const NHAT={style:'thin',color:{argb:'FFD9D9D9'}},DEN={style:'thin',color:{argb:'FF000000'}},DAM={style:'thick',color:{argb:'FF000000'}},XANH='FF1F3864';
-    const KH=[{c1:2,c2:3,ten:'PHIẾU THU / CHI',dam:'FFC6E0B4',nen:'FFEBF4E5',chu:'FF1E6B34'},{c1:4,c2:5,ten:'HOÁ ĐƠN ĐỎ',dam:'FFF8CBAD',nen:'FFFDEEE4',chu:'FF9A4A0B'},{c1:6,c2:9,ten:'SAO KÊ NGÂN HÀNG',dam:'FFBDD7EE',nen:'FFEAF2FA',chu:'FF1F4FA8'}];
+    const KH=[{c1:2,c2:3,ten:'PHIẾU THU / CHI',dam:'FFC6E0B4',nen:'FFEBF4E5',chu:'FF1E6B34'},{c1:4,c2:6,ten:'HOÁ ĐƠN ĐỎ',dam:'FFF8CBAD',nen:'FFFDEEE4',chu:'FF9A4A0B'},{c1:7,c2:10,ten:'SAO KÊ NGÂN HÀNG',dam:'FFBDD7EE',nen:'FFEAF2FA',chu:'FF1F4FA8'}];
     const khoi=c=>KH.find(k=>c>=k.c1&&c<=k.c2);
-    [6,14,40,24,32,20,16,16,58].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    [6,14,40,20,12,30,20,16,16,58].forEach((w,i)=>ws.getColumn(i+1).width=w);
     const dat=(r,c,v,st)=>{const o=ws.getCell(r,c);o.value=v;if(st)Object.assign(o,st);return o};
     ws.mergeCells(1,1,1,N);dat(1,1,'ĐỐI CHIẾU PHIẾU THU / CHI — HOÁ ĐƠN ĐỎ — SAO KÊ NGÂN HÀNG',{font:{bold:true,size:15,color:{argb:XANH}},alignment:{horizontal:'center'}});ws.getRow(1).height=24;
     const tg=new Date(Date.now()+7*3600e3).toISOString(),info=[['Chủ tài khoản',kq.chu_tk||'','Kỳ',skKyTxt(kq)],['Số tài khoản',(kq.so_tk||'')+(kq.tk&&!String(kq.tk).includes(kq.so_tk||'§')?'  ('+kq.tk+')':''),'Số dư đầu kỳ',kq.dau_ky],
       ['Số dư cuối kỳ',kq.cuoi_ky,'Xuất lúc',tg.slice(11,16)+' '+fmtD(tg.slice(0,10))]];
-    info.forEach((d,i)=>{const r=3+i;ws.mergeCells(r,1,r,2);ws.mergeCells(r,3,r,4);ws.mergeCells(r,6,r,7);
+    info.forEach((d,i)=>{const r=3+i;ws.mergeCells(r,1,r,2);ws.mergeCells(r,3,r,5);ws.mergeCells(r,8,r,9);
       dat(r,1,d[0],{font:{bold:true,color:{argb:'FF595959'}}});const a=dat(r,3,d[1],{font:{bold:true}});if(typeof d[1]==='number'){a.numFmt='#,##0';a.alignment={horizontal:'left'}}
-      dat(r,5,d[2],{font:{bold:true,color:{argb:'FF595959'}},alignment:{horizontal:'right'}});const b=dat(r,6,d[3],{font:{bold:true}});if(typeof d[3]==='number'){b.numFmt='#,##0';b.alignment={horizontal:'left'}}});
+      dat(r,7,d[2],{font:{bold:true,color:{argb:'FF595959'}},alignment:{horizontal:'right'}});const b=dat(r,8,d[3],{font:{bold:true}});if(typeof d[3]==='number'){b.numFmt='#,##0';b.alignment={horizontal:'left'}}});
     // tiêu đề 2 hàng
     for(let r=H1;r<=H2;r++)for(let c=1;c<=N;c++){const k=khoi(c),o=ws.getCell(r,c);
       o.fill={type:'pattern',pattern:'solid',fgColor:{argb:c===1?'FFF2F2F2':r===H1?k.dam:k.nen}};o.font={bold:true,color:{argb:c>1&&r===H1?k.chu:'FF000000'},size:r===H1?11:10.5};
       o.alignment={horizontal:'center',vertical:'middle',wrapText:true};o.border={top:r===H1?DAM:DEN,bottom:r===H2?DAM:DEN,left:c===1?DAM:DEN,right:c===N?DAM:DEN}}
     ws.mergeCells(H1,1,H2,1);ws.getCell(H1,1).value='STT';KH.forEach(k=>{ws.mergeCells(H1,k.c1,H1,k.c2);ws.getCell(H1,k.c1).value=k.ten});
-    ['Số phiếu','Diễn giải','Số HĐ · ngày','Công ty','Ngày GD · số CT','Số tiền','Số dư','Nội dung chi tiết'].forEach((t,i)=>ws.getCell(H2,2+i).value=t);
+    ['Số phiếu','Diễn giải','Số HĐ','Ngày HĐ','Công ty','Ngày GD · số CT','Số tiền','Số dư','Nội dung chi tiết'].forEach((t,i)=>ws.getCell(H2,2+i).value=t);
     ws.getRow(H1).height=22;ws.getRow(H2).height=20;
     const hdTxt=r=>{const ds=[...(r.vao.so?[{d:'Khoản chi',...r.vao}]:[]),...(r.ra.so?[{d:'Khoản thu',...r.ra}]:[])];
       if(!ds.length)return r.tt==='chua_hd'||r.tt==='chua_khop'?SK_TT[r.tt][0]:'Không cần HĐ';
-      return ds.flatMap(h=>String(h.so).split(', ')).join('\n')+'\n'+[...new Set(ds.map(h=>h.d))].join(' + ')+(ds.some(h=>h.ngay)?' · '+ds.map(h=>h.ngay).filter(Boolean).join(', '):'')};
-    kq.rows.forEach(r=>{const row=ws.addRow([r.stt,(r.phieu||[]).map(p=>p.so).join('\n'),r.gc||'',hdTxt(r),[r.vao.ten,r.ra.ten].filter(Boolean).join('; '),
+      return ds.flatMap(h=>String(h.so).split(', ')).join('\n')+'\n'+[...new Set(ds.map(h=>h.d))].join(' + ')};
+    const ngTxt=r=>[...new Set([r.vao.ngay,r.ra.ngay].filter(Boolean).join(', ').split(', ').filter(Boolean))].join('\n');
+    kq.rows.forEach(r=>{const row=ws.addRow([r.stt,(r.phieu||[]).map(p=>p.so).join('\n'),r.gc||'',hdTxt(r),ngTxt(r),[r.vao.ten,r.ra.ten].filter(Boolean).join('; '),
         fmtD(r.ngay)+(r.so_ct?'\n'+r.so_ct:''),r.co?r.co:-r.no,r.so_du,r.nd]);
       for(let c=1;c<=N;c++){const o=row.getCell(c);o.border={top:NHAT,bottom:NHAT,left:c===1?DAM:NHAT,right:c===N?DAM:NHAT};
-        o.alignment={vertical:'middle',wrapText:true,horizontal:c===1?'center':c===7||c===8?'right':'left'};o.font={size:10.5}}
-      row.getCell(7).numFmt='[Color10]+#,##0;[Red]-#,##0';row.getCell(8).numFmt='#,##0';
+        o.alignment={vertical:'middle',wrapText:true,horizontal:c===1||c===5?'center':c===8||c===9?'right':'left'};o.font={size:10.5}}
+      row.getCell(8).numFmt='[Color10]+#,##0;[Red]-#,##0';row.getCell(9).numFmt='#,##0';
       if(r.tt==='chua_hd'||r.tt==='chua_khop'){const o=row.getCell(4);o.font={size:10.5,bold:true,color:{argb:r.tt==='chua_hd'?'FFC65911':'FFC00000'}};o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF2CC'}}}
       else if(!r.vao.so&&!r.ra.so)row.getCell(4).font={size:10.5,color:{argb:'FF808080'}}
       // Excel không tự giãn dòng cho file tạo bằng thư viện → tự tính số dòng chữ theo độ rộng cột
       let dong=1;for(let c=2;c<=N;c++){const w=ws.getColumn(c).width*1.15,v=String(row.getCell(c).value??'');dong=Math.max(dong,v.split('\n').reduce((n,t)=>n+Math.max(1,Math.ceil(t.length/w)),0))}
       row.height=Math.max(30,dong*14+6)});
-    const d1=H2+1,d2=H2+kq.rows.length,t=kq.tom_tat,tr=ws.addRow([`Tổng ${kq.rows.length} dòng`,'','','','','Chênh lệch (có − nợ)',{formula:`SUM(G${d1}:G${d2})`,result:t.tong_co-t.tong_no},'','']);ws.mergeCells(tr.number,1,tr.number,5);
-    for(let c=1;c<=N;c++){const o=tr.getCell(c);o.font={bold:true};o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF2F2F2'}};o.border={top:DEN,bottom:DAM,left:c===1?DAM:NHAT,right:c===N?DAM:NHAT};o.alignment={vertical:'middle',horizontal:c===7?'right':'left'}}
-    tr.getCell(7).numFmt='+#,##0;[Red]-#,##0';ws.addRow([]);
+    const d1=H2+1,d2=H2+kq.rows.length,t=kq.tom_tat,tr=ws.addRow([`Tổng ${kq.rows.length} dòng`,'','','','','','Chênh lệch (có − nợ)',{formula:`SUM(H${d1}:H${d2})`,result:t.tong_co-t.tong_no},'','']);ws.mergeCells(tr.number,1,tr.number,6);
+    for(let c=1;c<=N;c++){const o=tr.getCell(c);o.font={bold:true};o.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF2F2F2'}};o.border={top:DEN,bottom:DAM,left:c===1?DAM:NHAT,right:c===N?DAM:NHAT};o.alignment={vertical:'middle',horizontal:c===8?'right':'left'}}
+    tr.getCell(8).numFmt='+#,##0;[Red]-#,##0';ws.addRow([]);
     [['Tổng ghi có',t.tong_co],['Tổng ghi nợ',t.tong_no],['Số dư cuối kỳ',kq.cuoi_ky],['Có hoá đơn',t.co_hd],['Chưa có hoá đơn',t.chua_hd+t.chua_khop],['Không cần hoá đơn',t.khong_can]].forEach(([a,v])=>{
       const r=ws.addRow(['',a,'',v]);ws.mergeCells(r.number,2,r.number,3);r.getCell(2).font={bold:true};const o=r.getCell(4);o.numFmt='#,##0';o.font={bold:true};o.alignment={horizontal:'left'}});
     ws.autoFilter={from:{row:H2,column:1},to:{row:d2,column:N}};
