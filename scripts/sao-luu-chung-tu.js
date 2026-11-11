@@ -7,14 +7,16 @@ const fs = require('fs'), path = require('path'), os = require('os'), { execFile
 const { sql } = require('./sql'); const { docKhoa } = require('./khoa'); const K = docKhoa();
 const RC = path.join(process.env.USERPROFILE || os.homedir(), 'tools', 'rclone', 'rclone.exe');
 const REMOTE = process.argv[2] || 'ktdrive-ghi:', GIOI_HAN = +process.argv[3] || 0;
-const THU_MUC = 'Sao luu app ke toan/kt-chung-tu', BUCKET = 'kt-chung-tu', LO = 150;
+// 11/11 anh: lưu vào thư mục Drive "THT.Sao lưu chứng từ" (tech@tht-holding.com) + "đồng nhất cách chia dữ liệu với Supabase" → thư mục con = tên bucket,
+// bên trong giữ nguyên đường dẫn file Supabase (chi/<id>/…, thu/…, hd/ra/…). Remote ktdrive-ghi: (đăng nhập lại 11/11), trỏ gốc bằng --drive-root-folder-id.
+const GOC_DRIVE = process.env.KT_SL_GOC || '1TOdKYoSEO4aAlm3qJx1Sn3UUz2emLv3r', BUCKET = 'kt-chung-tu', THU_MUC = BUCKET, LO = 150;
 const TT = path.join(__dirname, '..', 'sao-luu-chung-tu.local.json');
 const J = x => '$kt$' + JSON.stringify(x) + '$kt$';
 (async () => {
   const bd = Date.now(), daCo = fs.existsSync(TT) ? JSON.parse(fs.readFileSync(TT, 'utf8')) : {};
   const ds = await sql(`select name, updated_at, (metadata->>'size')::bigint size from storage.objects where bucket_id = '${BUCKET}' order by name`);
   let can = ds.filter(f => daCo[f.name] !== f.updated_at + '|' + f.size); if (GIOI_HAN) can = can.slice(0, GIOI_HAN);
-  const kq = { remote: REMOTE, tong: ds.length, can: can.length, da_chep: 0, mb: 0, loi: 0, loi_cuoi: null };
+  const kq = { remote: REMOTE, goc: GOC_DRIVE, tong: ds.length, can: can.length, da_chep: 0, mb: 0, loi: 0, loi_cuoi: null };
   console.log(`Kho ${ds.length} file · cần chép ${can.length}`);
   for (let i = 0; i < can.length; i += LO) {
     const lo = can.slice(i, i + LO), tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ktsl-')), xong = [];
@@ -28,7 +30,7 @@ const J = x => '$kt$' + JSON.stringify(x) + '$kt$';
         } catch (e) { kq.loi++; kq.loi_cuoi = f.name + ': ' + String(e.message || e).slice(0, 120); }
       }
       if (xong.length) {
-        execFileSync(RC, ['copy', tmp, REMOTE + THU_MUC, '--transfers', '8', '--checksum', '--retries', '3', '-q'], { stdio: 'pipe', timeout: 30 * 60e3 });
+        execFileSync(RC, ['copy', tmp, REMOTE + THU_MUC, '--drive-root-folder-id', GOC_DRIVE, '--transfers', '8', '--checksum', '--retries', '3', '-q'], { stdio: 'pipe', timeout: 30 * 60e3 });
         for (const f of xong) daCo[f.name] = f.updated_at + '|' + f.size; kq.da_chep += xong.length;
         fs.writeFileSync(TT, JSON.stringify(daCo));
       }
