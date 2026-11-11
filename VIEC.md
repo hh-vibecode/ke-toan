@@ -73,6 +73,14 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 **13/10 — XEM NHANH (anh: nối các chỗ hay cần check, kiểu app MKT/Sale)**: hàm `kt_drill` (`supabase-schema-kt-drill.sql`, quyền theo trang tương ứng) + khung trượt bên phải có Quay lại / Xuất Excel. Nối: Tổng quan (thẻ KQKD → Bán hàng / Lãi lỗ / chi phí; dòng cơ sở = lọc cả trang; ô chi phí HĐ → phiếu chi phí; nhóm hàng → mặt hàng; khách → hoá đơn → mặt hàng; mặt hàng → tồn từng cơ sở + hoá đơn; tồn kho → hàng tồn > 6 tháng; số dư → Sổ quỹ; thu / chi → Phiếu thu / chi; công nợ đến hạn / quá hạn → Công nợ đã lọc; vay → Vay) · Công nợ (hoá đơn đang nợ → chi tiết HĐ) · Phiếu chi (tên NCC / cơ sở = lọc) · Hoá đơn & Thuế (thẻ → trang; đơn vị → kho sổ thuế; dòng HĐ → dòng hàng; mã sổ thuế → phát sinh; thẻ âm sổ → tab). Kiểm: mã sổ thuế HT Q3 khớp hoá đơn 274/274.
 
 ## 2. ĐANG NỢ (soát lại 23/10/2026 — Monsieur Claude)
+**5 spec anh gửi 11/11 (Đối soát GD · NCC trong nước v1.3 · NCC nước ngoài v1.5 · Định giá bán v1.0 · Trung tâm tài liệu v1.1) — còn nợ (Monsieur Claude):**
+- Đối soát GD (VIEC 325 đã có tab): Kiot ↔ sao kê theo từng phiếu (KV_UNMATCHED); nghi trùng / nhiều ứng viên (AMBIGUOUS); panel chi tiết + ghép / bỏ ghép tay + ghi chú xử lý + lịch sử; xuất Excel ngoại lệ; tự đổ số dư cuối sao kê vào "Thực tế"; trạng thái chốt quỹ cửa hàng tách khỏi xác minh sao kê; snapshot phiếu Kiot sửa / xoá sau chốt (đã có phần tự đánh dấu phiếu Kiot bị xoá). Cần kế toán nạp sao kê 4 TK còn thiếu (BIDV HT, BIDV CT, VCB DTMO, BIDV DTMO).
+- NCC nước ngoài GĐ1: kho báo giá (nhiều NCC / 1 mẫu, ảnh, lịch sử), PO + Excel 2 chiều, giao từng phần, đơn khách đặt riêng đã cọc. GĐ2: công nợ RMB, thanh toán hộ qua bên thứ 3, tỷ giá. GĐ3: chi phí nhập khẩu bên thứ 3 + phân bổ giá vốn (đã có Lô nhập khẩu). Cần anh: mẫu Excel PO đang dùng; mốc ghi công nợ; cách phân bổ phí / tỷ giá.
+- NCC trong nước: PO + Excel, ghép phiếu nhập Kiot, phí vận chuyển + đối chiếu giá mua gốc ↔ giá nhập Kiot, PR đề xuất mua + xem tồn 3 kho. Chờ anh xác nhận làm (03/11 anh chốt "đơn giản như Kiot").
+- Định giá bán: chờ anh cấp biên mục tiêu / tối thiểu theo nhóm × phân khúc × kênh, giá Kiot có VAT hay chưa, chiết khấu tối đa, người duyệt. Phụ thuộc giá vốn từ 2 phân hệ NCC → làm sau cùng.
+- Trung tâm tài liệu: app kế toán = Nhóm 01 + sao lưu (sao lưu XONG 11/11). Chờ anh duyệt 3 bổ sung Nhóm 01: ngày hiệu lực + cảnh báo hết hạn, nơi cất bản giấy gốc, hồ sơ pháp lý công ty không gắn NCC.
+- PR / đơn khách đặt riêng do Sale nhập → đề xuất form công khai hoặc đặt bên app MKT/Sale (chờ anh chọn).
+
 
 **Chờ kế toán / anh (Claude không tự làm được):**
 - Chứng từ 3 phiếu cũ **#649, #1384, #1463** — kế toán up tay (link Drive hỏng / không có quyền / là thư mục).
