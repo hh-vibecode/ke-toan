@@ -12,7 +12,16 @@ const REMOTE = process.argv[2] || 'ktdrive-ghi:', GIOI_HAN = +process.argv[3] ||
 const GOC_DRIVE = process.env.KT_SL_GOC || '1TOdKYoSEO4aAlm3qJx1Sn3UUz2emLv3r', BUCKET = 'kt-chung-tu', THU_MUC = BUCKET, LO = 150;
 const TT = path.join(__dirname, '..', 'sao-luu-chung-tu.local.json');
 const J = x => '$kt$' + JSON.stringify(x) + '$kt$';
+// Chống chạy trùng (lần chép đầu dài hơn 1 giờ, lịch 15:30 có thể bắt đầu khi lần trước chưa xong → 2 tiến trình cùng ghi một thư mục Drive
+// sinh file / thư mục trùng tên): có tiến trình khác đang chạy script này thì thoát luôn, không ghi nhật ký. — Monsieur Claude
+function dangChay() {
+  try {
+    const o = execFileSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process | ? { $_.Name -match '^(Code|node).exe$' -and $_.CommandLine -like '*sao-luu-chung-tu.js*' } | % { $_.ProcessId }"], { encoding: 'utf8', timeout: 60e3 });
+    return o.split(/s+/).filter(x => x && +x !== process.pid && +x !== process.ppid).length > 0;
+  } catch (_) { return false; }
+}
 (async () => {
+  if (dangChay()) { console.log('Đang có lần sao lưu khác chạy — bỏ qua lần này'); return; }
   const bd = Date.now(), daCo = fs.existsSync(TT) ? JSON.parse(fs.readFileSync(TT, 'utf8')) : {};
   const ds = await sql(`select name, updated_at, (metadata->>'size')::bigint size from storage.objects where bucket_id = '${BUCKET}' order by name`);
   let can = ds.filter(f => daCo[f.name] !== f.updated_at + '|' + f.size); if (GIOI_HAN) can = can.slice(0, GIOI_HAN);
