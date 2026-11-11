@@ -588,6 +588,7 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .hx-r{display:grid;grid-template-columns:148px minmax(0,1fr);align-items:center;gap:8px;min-height:34px}.hx-r>span{color:var(--text2);font-size:13px;white-space:nowrap}
 .hx-r>b{font-weight:600;font-size:13.5px}
 .hx-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 24px}.hx-2 .hx-r+.hx-r{grid-template-columns:100px minmax(0,1fr)}
+.hx-mst{display:flex;align-items:center;gap:10px;min-width:0}.hx-mst>span{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
 .hx-in{border:none;border-bottom:1px solid var(--border);border-radius:0;background:transparent;height:30px;padding:0 4px;width:100%;min-width:0;font:inherit;font-size:13.5px;color:var(--text)}
 .hx-in:focus{outline:none;border-bottom-color:var(--accent)}select.hx-in{cursor:pointer}
 .hx-sec{display:flex;align-items:center;gap:10px;margin:14px 0 6px;font-weight:700}
@@ -1154,8 +1155,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.367';
-const APP_VERSION='11/11/2026 09:17';
+const APP_SO='1.368';
+const APP_VERSION='11/11/2026 09:25';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -6155,7 +6156,7 @@ function lhdDsHtml(ds,g){const f=S.f,dv=f.lhd_dv||'',l=ds.filter(x=>!dv||x.hkd==
         <td class="c nw" onclick="event.stopPropagation()"><button class="m-btn sm" title="Sửa" onclick="lhdMo(${x.id})">✏</button>${!LHD_MISA||x.hkd!=='CTY'?` <button class="m-btn sm" onclick="lhdChep(${x.id})">Sao chép MISA</button>`:''}${g?` <button class="m-btn sm bad" title="Xoá" onclick="lhdXoa(${x.id})">✕</button>`:''}</td></tr>`).join('')||'<tr><td colspan="11" class="m-empty">Chưa có đơn nào — bấm "+ Đơn mới"</td></tr>'}</table></div>
     ${thanhTrang('ld',l.length,20,tr,'đơn')}</section>`}
 const lhdNg=()=>S.cache['lhd_'+S.f.lhd.hkd+'_'+(S.f.lhd.id||'')];
-async function lhdPop(){const d=S.f.lhd,k='lhd_'+d.hkd+'_'+(d.id||'');
+async function lhdPop(){S.f.lhd_mst_tt=null;const d=S.f.lhd,k='lhd_'+d.hkd+'_'+(d.id||'');
   if(!S.cache[k]){modal('<div class="m-empty">Đang tải tồn sổ sách...</div>');try{S.cache[k]=await rpc('kt_thue_lap_nguon',{p_hkd:d.hkd,p_bo_don:d.id||null})}catch(e){closeModal(1);return alert(e.message)}}
   const m=$('#modal');if(!m||!m.classList.contains('lhd-m')){modal('<div id="lhd-pop"></div>').classList.add('lhd-m')}lhdVe()}
 function lhdVe(){const o=$('#lhd-pop');if(!o)return;const sc=[...o.querySelectorAll('.lhd-cuon')].map(e=>e.scrollTop);o.innerHTML=lhdPopHtml();o.querySelectorAll('.lhd-cuon').forEach((e,i)=>e.scrollTop=sc[i]||0)}
@@ -6194,7 +6195,7 @@ function lhdPopHtml(){const d=S.f.lhd,ng=lhdNg(),g=can('hoa_don_thue',true),dis=
           ${r('Đơn vị bán hàng',`<b>${esc(ban.ten)}</b>`)}${ban.mst?r('Mã số thuế',`<b>${esc(ban.mst)}</b>`):''}${ban.dc?r('Địa chỉ',`<span style="font-size:13px">${esc(ban.dc)}</span>`):''}</div>
         <div class="hx-kh">${r('Ký hiệu',khO)}${r('Số',d.so_hd?`<b>${esc(d.so_hd)}</b>`:'<span class="muted">&lt;Chưa cấp số&gt;</span>')}</div></div>
       <div class="hx-sec">Người mua <span class="badge">để trống được — điền trên MISA trước khi phát hành</span></div>
-      ${r('MST / CCCD chủ hộ',inp('mst'))}${r('Tên đơn vị',inp('ten_dv'))}${r('Địa chỉ',inp('dia_chi'))}${r('Họ tên người mua',inp('nguoi_mua'))}
+      ${r('MST / CCCD chủ hộ',`<div class="hx-mst"><input class="hx-in" value="${esc(m.mst||'')}" placeholder="Gõ MST rồi Enter — tự điền tên, địa chỉ theo cơ quan thuế" onchange="lhdMua('mst',this.value);lhdTraMst()" onkeydown="if(event.key==='Enter')this.blur()"${dis}>${S.f.lhd_mst_tt?`<span class="${S.f.lhd_mst_tt[1]}">${esc(S.f.lhd_mst_tt[0])}</span>`:''}</div>`)}${r('Tên đơn vị',inp('ten_dv'))}${r('Địa chỉ',inp('dia_chi'))}${r('Họ tên người mua',inp('nguoi_mua'))}
       <div class="hx-2">${r('Số điện thoại',inp('sdt'))}${r('Email',inp('email'))}</div>${r('CCCD người mua',inp('cccd'))}
       ${r('Hình thức TT',`<select class="hx-in" onchange="lhdMua('httt',this.value)"${dis}>${['TM/CK','TM','CK'].map(k=>`<option ${k===(m.httt||'TM/CK')?'selected':''}>${k}</option>`).join('')}</select>`)}
       <div class="hx-2">${r('TK ngân hàng',inp('tk_nh'))}${r('Tên ngân hàng',inp('ten_nh'))}</div>
@@ -6255,6 +6256,17 @@ function lhdDongTay(ghi){S.f.lhd.dong.push(ghi?{ma:'',ten:'',tc:4,sl:0,don_gia:0
   setTimeout(()=>{const ds=document.querySelectorAll('#lhd-pop .hx-t input.hx-ten');if(ds.length)ds[ds.length-1].focus()},30)}
 function lhdSuaT(i,k,v){const x=S.f.lhd.dong[i];if(k==='ts'){if(v==='nhom')delete x.ts_tay;else x.ts_tay=v==='kct'?null:+v;return lhdVe()}x[k]=v}
 function lhdMua(k,v){const d=S.f.lhd;d.mua=d.mua||{};d.mua[k]=String(v||'').trim()}
+// 11/11 kế toán: "đánh MST vào thì hệ thống tự lấy thông tin trên trang thuế về fill người mua" → Edge kt-mst (VietQR — dữ liệu cơ quan thuế, lưu đệm 30 ngày).
+// Điền Tên đơn vị + Địa chỉ (ghi đè — gõ MST là muốn lấy theo MST); họ tên người mua / SĐT / email để kế toán điền. — Monsieur Claude
+async function lhdTraMst(){const d=S.f.lhd,mst=String((d.mua||{}).mst||'').replace(/\s/g,'');
+  if(!mst){S.f.lhd_mst_tt=null;return lhdVe()}
+  if(!/^(\d{10}(-\d{3})?|\d{12})$/.test(mst)){S.f.lhd_mst_tt=['MST 10 số / 12 số — chưa tra','muted'];return lhdVe()}
+  S.f.lhd_mst_tt=['Đang tra MST…','muted'];lhdVe();
+  try{const r=await (await fetch(SB_URL+'/functions/v1/kt-mst',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phien:S.phien,mst})})).json();
+    if(S.f.lhd!==d||String((d.mua||{}).mst||'').replace(/\s/g,'')!==mst)return;   // đã đổi đơn / đổi MST trong lúc tra
+    if(r.loi){S.f.lhd_mst_tt=[r.loi,'neg-t'];return lhdVe()}
+    d.mua.ten_dv=r.ten||'';d.mua.dia_chi=r.dia_chi||'';S.f.lhd_mst_tt=['✓ Đã điền theo cơ quan thuế','pos-t'];lhdVe()}
+  catch(e){S.f.lhd_mst_tt=['Không tra được: '+e.message,'neg-t'];lhdVe()}}
 function lhdSua(i,k,v){const x=S.f.lhd.dong[i];x[k]=k==='sl'?lhdSo(v):Number(String(v).trim().replace(/\./g,'').replace(',','.'))||0;if(k==='don_gia')x.tay=1;lhdVe()}
 function lhdKhop(){const d=S.f.lhd,t=lhdTinh(d);const hh=d.dong.filter(y=>y.tc!==4&&(+y.sl||0)>0);if(!hh.length)return;
   let tot=null;for(const x of [...hh].sort((p,q)=>((+p.sl===1)?0:1)-((+q.sl===1)?0:1)||q.thanh_tien-p.thanh_tien)){const r=x.ts||0,sl=+x.sl||1,con=t.can-(t.tong-x.thanh_tien-x.tien_thue);
