@@ -1155,8 +1155,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.368';
-const APP_VERSION='11/11/2026 09:25';
+const APP_SO='1.369';
+const APP_VERSION='11/11/2026 14:22';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -6173,7 +6173,7 @@ function lhdPopHtml(){const d=S.f.lhd,ng=lhdNg(),g=can('hoa_don_thue',true),dis=
       <div><span>Đơn vị</span><select class="hx-in" style="font-weight:700" onchange="lhdDoiDV(this.value)"${dis}>${DV_THUE.map(([h,tt])=>`<option value="${h}" ${h===d.hkd?'selected':''}>${tt}</option>`).join('')}</select></div>
       <div><span>Giá trị cần lập (đã gồm thuế)</span><input class="hx-in num" style="font-weight:700;text-align:right" id="lhd-gt" value="${d.gia_tri?fmt(d.gia_tri):''}" placeholder="vd: 10tr" onchange="S.f.lhd.gia_tri=lhdSo(this.value);lhdVe()"${dis}></div>
       <div><span>Đã chọn (tổng thanh toán)</span><b>${fmt(t.tong)}</b></div>
-      <div><span>${!t.can?'Chưa nhập giá trị':thieu>0?'Còn thiếu':thieu<0?'Vượt':'Đã khớp'}</span>${t.can?`<b class="${thieu<0?'neg-t':thieu>0?'':'pos-t'}">${fmt(Math.abs(thieu))}</b>`:'<b class="muted">–</b>'}</div></div>
+      <div><span>${!t.can?'Chưa nhập giá trị':thieu>0?'Còn thiếu (trước thuế)':thieu<0?'Vượt (trước thuế)':'Đã khớp'}</span>${t.can?(()=>{const r=t.hang?t.thue/t.hang:(t.ts||0.08),v=Math.round(Math.abs(thieu)/(1+r));return `<b class="${thieu<0?'neg-t':thieu>0?'':'pos-t'}">${fmt(v)}</b>${thieu?`<span style="font-size:11px;margin-top:2px">gồm thuế ${fmt(Math.abs(thieu))}</span>`:''}`})():'<b class="muted">–</b>'}</div></div>
     <div class="lhd-bar"><i style="width:${t.can?Math.min(100,t.tong/t.can*100):0}%;background:var(--${mau})"></i></div>`;
   if(!ng.ky)return dau+`<div class="m-empty">Chưa có tồn sổ thuế của ${esc(dvThueTen(d.hkd))} — nạp file ở trang Kho sổ thuế trước.</div><div class="acts"><button class="m-btn" onclick="closeModal()">Đóng</button></div>`;
   const {ung,sl:de,gia}=lhdDeXuat(ng,d,t),byMa={},daCo={};ng.ds.forEach(x=>byMa[x.ma]=x);d.dong.forEach(x=>{if(x.ma)daCo[x.ma]=(daCo[x.ma]||0)+(+x.sl||0)});
