@@ -13,8 +13,10 @@ create table if not exists public.kt_po (
   trang_thai text not null default 'nhap' check (trang_thai in ('nhap', 'da_gui', 'dang_giao', 'da_nhan', 'huy')),
   dong jsonb not null default '[]',          -- [{ma_tht, ma_ncc, anh, ten, mau, kt, quy_cach, dvt, sl, don_gia, ghi_chu, sl_nhan}]
   khach jsonb,                                -- đơn khách đặt riêng gắn vào PO: [{ten, sdt, ma_don, coc, hen_giao}]
+  chi_ids jsonb not null default '[]',        -- 12/11: thanh toán PO = phiếu chi thật trên app (thay ô đặt cọc gõ tay)
   ghi_chu text, la_mau boolean not null default false,
   tao_boi text, tao_luc timestamptz not null default now(), sua_boi text, sua_luc timestamptz, da_xoa boolean not null default false);
+alter table public.kt_po add column if not exists chi_ids jsonb not null default '[]';
 alter table public.kt_po enable row level security;
 revoke all on public.kt_po from anon, authenticated;
 
@@ -24,7 +26,10 @@ begin
   perform kt_chan(p_phien, 'ncc');
   return jsonb_build_object(
     'po', coalesce((select jsonb_agg(to_jsonb(p) - 'da_xoa' order by p.ngay desc, p.id desc) from kt_po p where not p.da_xoa), '[]'),
-    'ben_mua', (select gia_tri from kt_cai_dat where khoa = 'po_ben_mua'));
+    'ben_mua', (select gia_tri from kt_cai_dat where khoa = 'po_ben_mua'),
+    -- phiếu chi đã gắn vào PO (số tiền VND, trạng thái thật trên Thu chi)
+    'chi', coalesce((select jsonb_object_agg(c.id, jsonb_build_object('ngay', coalesce(c.ngay_tt, c.ngay_de_nghi), 'so_tien', c.so_tien, 'tt', c.trang_thai, 'nd', c.noi_dung, 'th', c.thu_huong_ten))
+      from kt_chi c where not c.da_xoa and c.id in (select (e)::bigint from kt_po p, jsonb_array_elements_text(p.chi_ids) e where not p.da_xoa)), '{}'));
 end $$;
 
 create or replace function public.kt_po_luu(p_phien text, p_dong jsonb) returns bigint
@@ -41,12 +46,13 @@ begin
       coalesce(nullif(p_dong->>'tien_te', ''), 'VND'), nullif(p_dong->>'ty_gia', '')::numeric, p_dong->>'noi_giao', nullif(p_dong->>'ngay_giao', '')::date,
       nullif(p_dong->>'vat', '')::numeric, nullif(p_dong->>'dat_coc', '')::numeric, nullif(p_dong->>'ngay_coc', '')::date, coalesce(nullif(p_dong->>'trang_thai', ''), 'nhap'),
       coalesce(p_dong->'dong', '[]'), p_dong->'khach', p_dong->>'ghi_chu', ten) returning id into v;
+    update kt_po set chi_ids = coalesce(p_dong->'chi_ids', '[]') where id = v;
   else
     update kt_po set so = coalesce(nullif(btrim(p_dong->>'so'), ''), so), loai = coalesce(p_dong->>'loai', loai), ncc_id = nullif(p_dong->>'ncc_id', '')::bigint, ncc_ten = p_dong->>'ncc_ten',
       ngay = coalesce(nullif(p_dong->>'ngay', '')::date, ngay), so_pi = p_dong->>'so_pi', tien_te = coalesce(nullif(p_dong->>'tien_te', ''), tien_te),
       ty_gia = nullif(p_dong->>'ty_gia', '')::numeric, noi_giao = p_dong->>'noi_giao', ngay_giao = nullif(p_dong->>'ngay_giao', '')::date, vat = nullif(p_dong->>'vat', '')::numeric,
       dat_coc = nullif(p_dong->>'dat_coc', '')::numeric, ngay_coc = nullif(p_dong->>'ngay_coc', '')::date, trang_thai = coalesce(nullif(p_dong->>'trang_thai', ''), trang_thai),
-      dong = coalesce(p_dong->'dong', dong), khach = p_dong->'khach', ghi_chu = p_dong->>'ghi_chu', la_mau = false, sua_boi = ten, sua_luc = now()
+      dong = coalesce(p_dong->'dong', dong), khach = p_dong->'khach', chi_ids = coalesce(p_dong->'chi_ids', chi_ids), ghi_chu = p_dong->>'ghi_chu', la_mau = false, sua_boi = ten, sua_luc = now()
     where id = v and not da_xoa;
     if not found then raise exception 'Không tìm thấy PO'; end if;
   end if;
