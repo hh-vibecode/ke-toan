@@ -2,6 +2,7 @@
 // Trang web gửi phiên đăng nhập; hàm kiểm phiên + quyền theo trang / dòng (kt_quyen_chung_tu) bằng service_role rồi mới ký link.
 // Body: {phien, viec:'tai_len', bang, dong_id, ten}  → {duong_dan, url}   (trình duyệt PUT file vào url)
 //       {viec:'tai_len_phieu', ma, ten} → {duong_dan, url}   (phiếu đề nghị công khai — kiểm bằng mã phiếu, không cần phiên)
+//       {viec:'tai_len_dx', ma, ten} → {duong_dan, url}   (form đề xuất mua hàng công khai — kiểm bằng mã đề xuất)
 //       {phien, viec:'xem', ids:[...], tai_ve?:bool} → {ds:[{id, url}]}
 //       {viec:'bill_phieu', ma} → {ds:[{ten, mime, url}]}   (26/10: người gửi phiếu công khai xem bill chuyển khoản khi phiếu Đã thanh toán — kt_bill_phieu)
 // Monsieur Claude
@@ -36,6 +37,16 @@ Deno.serve(async req => {
       if (!q.ok) { const j = await q.json().catch(() => ({})); throw new Error(j.message || 'Mã phiếu không đúng'); }
       const id = Number(await q.json());
       const duong = `chi/${id}/${Date.now()}_${sach(String(b.ten || 'tep'))}`;
+      const r = await fetch(`${SB}/storage/v1/object/upload/sign/${BUCKET}/${duong}`, { method: 'POST', headers: H, body: '{}' });
+      if (!r.ok) throw new Error('Ký link tải lên lỗi ' + r.status);
+      const j = await r.json();
+      return tra({ duong_dan: duong, url: `${SB}/storage/v1${j.url}` });
+    }
+    if (b.viec === 'tai_len_dx') {   // 12/11/2026 form đề xuất mua hàng / đơn khách đặt riêng công khai: kiểm bằng mã đề xuất (3 giờ, tối đa 30 file)
+      const q = await fetch(`${SB}/rest/v1/rpc/kt_quyen_ct_dx`, { method: 'POST', headers: H, body: JSON.stringify({ p_ma: String(b.ma || '') }) });
+      if (!q.ok) { const j = await q.json().catch(() => ({})); throw new Error(j.message || 'Mã đề xuất không đúng'); }
+      const id = Number(await q.json());
+      const duong = `de_xuat/${id}/${Date.now()}_${sach(String(b.ten || 'anh'))}`;
       const r = await fetch(`${SB}/storage/v1/object/upload/sign/${BUCKET}/${duong}`, { method: 'POST', headers: H, body: '{}' });
       if (!r.ok) throw new Error('Ký link tải lên lỗi ' + r.status);
       const j = await r.json();
