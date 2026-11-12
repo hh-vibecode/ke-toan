@@ -1165,8 +1165,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.380';
-const APP_VERSION='12/11/2026 17:31';
+const APP_SO='1.381';
+const APP_VERSION='12/11/2026 17:42';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4101,7 +4101,7 @@ function lnkVe(){const c=S.cache.lnk;if(!c)return;const l=c.lo,f=S.f,g=nccGhi(),
         <td><span class="m-link" title="Mở hồ sơ NCC" onclick="event.stopPropagation();closeModal();nccMo(${d.ncc.id},'gd')">${esc(d.ncc.ten)}</span>${d.hs?`<div class="muted" style="font-size:12px">${esc(d.hs.so_hd||d.hs.ten)}</div>`:''}</td>
         <td class="nw">${esc(d.ma_po||'')||'<span class="muted">—</span>'}</td><td class="nw">${d.ngay?fmtD(d.ngay):'<span class="muted">—</span>'}</td>
         <td class="num">${gte!=null?fmtTe(gte)+' '+te:'<span class="muted">—</span>'}</td><td class="num">${te==='VND'?'<span class="muted">—</span>':ty?fmtTe(ty):'<span class="neg-t" title="Chưa có tỷ giá — nhập ở đơn hoặc hồ sơ">thiếu</span>'}</td>
-        <td class="num"><b>${fmt(d.gia_tri_vnd)}</b></td><td class="c">${(d.hang||[]).length||(d.nhap&&(d.nhap.chi_tiet||[]).length?(d.nhap.chi_tiet||[]).length+' (Kiot)':'<span class="muted">—</span>')}</td>
+        <td class="num"><b>${fmt(d.gia_tri_vnd)}</b>${d.gia_tri_kk!=null?`<div class="muted" style="font-size:11px" title="Giá trị khai báo hải quan — chỉ đối chiếu, không tính giá vốn">khai báo ${fmt(+d.gia_tri_kk*(+d.ty_gia_kk||+d.ty_gia||+c.lo.ty_gia||1))}</div>`:''}</td><td class="c">${(d.hang||[]).length||(d.nhap&&(d.nhap.chi_tiet||[]).length?(d.nhap.chi_tiet||[]).length+' (Kiot)':'<span class="muted">—</span>')}</td>
         <td class="nw">${d.nhap?`<a class="m-link" href="${KIOT_MAN}PurchaseOrder?Code=${encodeURIComponent(d.nhap.ma)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(d.nhap.ma)} ↗</a>`:'<span class="muted">Chưa nhập kho</span>'}</td>
         <td class="c">${pill(...(LNK_DON[d.trang_thai]||[d.trang_thai,'']))}</td>
         ${g?`<td class="c nw" onclick="event.stopPropagation()"><span class="lnk-nut">${nut(IC_SUA,`lnkDonForm(${d.id})`)}${nut('✕',`lnkDonXoa(${d.id})`,'do')}</span></td>`:''}</tr>`}).join('')||`<tr><td colspan="${g?10:9}" class="m-empty">Chưa có đơn hàng — bấm + Thêm đơn hàng (nhiều NCC cùng 1 container)</td></tr>`}
@@ -4110,12 +4110,12 @@ function lnkVe(){const c=S.cache.lnk;if(!c)return;const l=c.lo,f=S.f,g=nccGhi(),
     body=`<div class="gd-k">${dau('Chi phí liên quan',ds.length+' khoản',g?`<button class="m-btn sm pri" onclick="lnkCpForm()">+ Thêm chi phí</button>`:'')}
       <div class="scroll"><table class="m-t"><tr><th>Ngày</th><th>Loại chi phí</th><th>Nội dung</th><th>Phiếu chi</th><th class="num">Số tiền (đ)</th><th class="c">Tính giá vốn</th>${g?'<th class="c"></th>':''}</tr>
       ${ds.map(x=>`<tr class="click" onclick="lnkCpForm(${x.id})"><td class="nw">${x.ngay?fmtD(x.ngay):'<span class="muted">—</span>'}</td><td class="nw">${esc(LNK_CP[x.loai]||x.loai)}</td><td class="gd-nd">${esc(x.noi_dung||'')||'<span class="muted">—</span>'}</td>
-        <td class="nw">${x.chi?`<span class="m-link" title="${esc(x.chi.noi_dung||'')}" onclick="event.stopPropagation();closeModal();moPhieu('PC',${x.chi.id})">${maPh('chi',x.chi.id)}</span>${pill(...(TT_CHI[x.chi.trang_thai]||['','']))}`:'<span class="muted">—</span>'}</td>
+        <td class="nw">${x.chi?`<span class="m-link" title="${esc(x.chi.noi_dung||'')}" onclick="event.stopPropagation();closeModal();moPhieu('PC',${x.chi.id})">${maPh('chi',x.chi.id)}</span>${pill(...(TT_CHI[x.chi.trang_thai]||['','']))}`:pill('Chưa trả','warn')}${x.don_vi_nhan?`<div class="muted" style="font-size:11px">${esc(x.don_vi_nhan)}</div>`:''}</td>
         <td class="num"><b>${fmt(x.so_tien)}</b></td><td class="c">${x.tinh_gv?pill('Có','ok'):pill('Không','')}</td>
         ${g?`<td class="c nw" onclick="event.stopPropagation()"><span class="lnk-nut">${nut(IC_SUA,`lnkCpForm(${x.id})`)}${nut('✕',`lnkCpXoa(${x.id})`,'do')}</span></td>`:''}</tr>`).join('')||`<tr><td colspan="${g?7:6}" class="m-empty">Chưa có chi phí — vận chuyển, thuế nhập khẩu, hải quan, bốc xếp…</td></tr>`}
       ${ds.length?`<tr class="tong"><td colspan="4">Tính vào giá vốn</td><td class="num">${fmt(tg)}</td><td colspan="${g?2:1}"></td></tr>${cpKhac?`<tr class="tong"><td colspan="4">Không tính giá vốn (VAT nhập khẩu…)</td><td class="num">${fmt(cpKhac)}</td><td colspan="${g?2:1}"></td></tr>`:''}`:''}</table></div></div>`;
   }else if(tab==='pb'){const R=P.rows,coK=R.some(r=>r.kiot);
-    body=`<div class="m-flt" style="align-items:center">${g?`<select class="m-in" style="width:auto" onchange="lnkCachPB(this.value)">${optsObj({gia_tri:'Phân bổ chi phí theo giá trị hàng',so_luong:'Phân bổ chi phí theo số lượng'},l.cach_pb)}</select>`:`<span class="badge">${l.cach_pb==='so_luong'?'Theo số lượng':'Theo giá trị hàng'}</span>`}
+    body=`<div class="m-flt" style="align-items:center">${g?`<select class="m-in" style="width:auto" onchange="lnkCachPB(this.value)">${optsObj({gia_tri:'Chia chi phí theo giá trị hàng',so_luong:'Chia chi phí theo số lượng'},l.cach_pb)}</select>`:`<span class="badge">${l.cach_pb==='so_luong'?'Theo số lượng':'Theo giá trị hàng'}</span>`}
         <span class="badge">Chi phí phân bổ ${fmt(P.cp)}</span>${P.thieuTy.length?`<span class="badge" style="background:var(--bad-bg);color:var(--bad)">${P.thieuTy.length} đơn thiếu tỷ giá</span>`:''}
         <span style="margin-left:auto"></span><button class="m-btn out" onclick="lnkXuatGV()">${IC_XLS} Xuất Excel giá vốn</button></div>
       <div class="gd-k"><div class="scroll"><table class="m-t"><tr><th>Đơn hàng</th><th>Mã hàng</th><th>Tên hàng</th><th class="num">SL</th><th class="num">Đơn giá</th><th class="num">Giá trị hàng (đ)</th><th class="num">Chi phí phân bổ (đ)</th><th class="num">Giá vốn (đ)</th><th class="num">Giá vốn / đv (đ)</th>${coK?'<th class="num">Giá nhập Kiot / đv</th><th class="num">Chênh / đv</th>':''}</tr>
@@ -4151,9 +4151,9 @@ function lnkForm(id){const l=id?S.cache.lnk.lo:{trang_thai:'dat_hang',tien_te:'C
     ${SEC('2. Vận chuyển')}
     ${o('so_cont','Số container / vận đơn',l.so_cont,'1 cont 40HQ — số B/L')}${o('forwarder','Forwarder',l.forwarder,'Đơn vị vận chuyển')}
     ${o('ngay_kh','Ngày khởi hành',l.ngay_kh,'','date')}${o('ngay_du_kien','Dự kiến về',l.ngay_du_kien,'','date')}${o('ngay_ve','Ngày về kho',l.ngay_ve,'','date')}<label></label>
-    ${SEC('3. Tiền tệ & giá vốn')}
-    <label>Tiền tệ<select name="tien_te">${LNK_TE.map(t=>`<option ${l.tien_te===t?'selected':''}>${t}</option>`).join('')}</select></label><label>Tỷ giá (đ)${moneyIn('ty_gia',l.ty_gia??'','placeholder="VD: 3.550"')}</label>
-    <label class="full">Phân bổ chi phí<select name="cach_pb">${optsObj({gia_tri:'Theo giá trị hàng',so_luong:'Theo số lượng'},l.cach_pb)}</select></label>
+    ${SEC('3. Quy đổi tiền & chia chi phí vào giá vốn')}
+    <label>Tiền tệ NCC báo giá<select name="tien_te">${LNK_TE.map(t=>`<option ${l.tien_te===t?'selected':''}>${t}</option>`).join('')}</select></label><label>Tỷ giá quy đổi (đ / 1 đơn vị)${moneyIn('ty_gia',l.ty_gia??'','placeholder="VD: 3.550"')}</label>
+    <label class="full">Chia chi phí nhập khẩu vào từng mã hàng<select name="cach_pb">${optsObj({gia_tri:'Theo giá trị hàng — mã đắt gánh nhiều phí hơn',so_luong:'Theo số lượng — mỗi cái gánh phí bằng nhau'},l.cach_pb)}</select></label>
     <label class="full">Ghi chú<input name="ghi_chu" value="${esc(l.ghi_chu||'')}"></label></div>
     <div class="acts">${id?`<button class="btn" style="color:var(--bad);margin-right:auto" onclick="lnkXoa(${id})">Xoá hồ sơ</button>`:''}<button class="btn" onclick="dong2()">Huỷ</button><button class="btn pri" onclick="lnkLuu(${id||'null'})">Lưu</button></div>`,640)}
 async function lnkLuu(id){const f=$('#flnk'),v=k=>f.querySelector(`[name=${k}]`).value;
@@ -4174,11 +4174,12 @@ async function lnkDonForm(id){const c=S.cache.lnk,l=c.lo,d=id?c.don.find(x=>x.id
     <label>Mã PO<input name="ma_po" value="${esc(d.ma_po||'')}" placeholder="PO-202510"></label><label>Ngày đặt<input type="date" name="ngay" value="${d.ngay||''}"></label>
     <label>Trạng thái<select name="trang_thai">${optsObj(Object.fromEntries(Object.entries(LNK_DON).map(([k,v])=>[k,v[0]])),d.trang_thai)}</select></label>
     <label>Phiếu nhập Kiot (khi hàng về)<select name="nhap_id" id="lnd-nhap"><option value="">— Chưa nhập kho —</option>${d.nhap?`<option value="${d.nhap.id}" selected>${esc(d.nhap.ma)}</option>`:''}</select></label>
-    ${SEC('2. Tiền tệ')}
+    ${SEC('2. Tiền tệ · giá trị thực tế & khai báo hải quan')}
     <label>Tiền tệ<select name="tien_te" onchange="lnkHangVe()">${LNK_TE.map(t=>`<option ${(d.tien_te||l.tien_te)===t?'selected':''}>${t}</option>`).join('')}</select></label>
     <label>Tỷ giá (đ)${moneyIn('ty_gia',d.ty_gia??'',`placeholder="${+l.ty_gia?'Theo hồ sơ: '+fmt(l.ty_gia):'VD: 3.550'}"`)}</label>
+    <label>Giá trị khai báo hải quan (nguyên tệ)<input name="gia_tri_kk" type="number" step="any" style="text-align:right" value="${d.gia_tri_kk??''}" placeholder="Theo tờ khai / invoice khai báo"></label><label>Tỷ giá trên tờ khai (đ)${moneyIn('ty_gia_kk',d.ty_gia_kk??'','placeholder="Tỷ giá hải quan"')}</label>
     <label class="full">Ghi chú<input name="ghi_chu" value="${esc(d.ghi_chu||'')}"></label>
-    ${SEC('3. Hàng hoá')}
+    ${SEC('3. Hàng hoá (giá trị thực tế — dùng tính giá vốn)')}
     <div class="full" style="grid-column:1/-1"><div class="lnk-bar"><label class="m-btn sm out">⬆ Đọc file Excel<input type="file" hidden accept=".xlsx,.xls,.csv" onchange="lnkDocExcel(this.files[0]);this.value=''"></label>
       <button class="m-btn sm out" onclick="lnkHangThem()">+ Thêm dòng</button><span class="muted" style="font-size:12px">Excel cần cột Tên hàng, Số lượng, Đơn giá (Mã hàng nếu có — nên dùng mã Kiot)</span></div><div id="lnd-hang"></div></div></div>
     <div class="acts">${id?`<button class="btn" style="color:var(--bad);margin-right:auto" onclick="lnkDonXoa(${id})">Xoá đơn</button>`:''}<button class="btn" onclick="dong2()">Huỷ</button><button class="btn pri" onclick="lnkDonLuu(${id||'null'})">Lưu đơn hàng</button></div>`,980);
@@ -4215,7 +4216,7 @@ async function lnkDonLuu(id){const c=S.cache.lnk,f=$('#flnd'),v=k=>f.querySelect
   const H=(S.cache.lnk_hang||[]).filter(h=>h.ten||h.ma).map(h=>({ma:String(h.ma||'').trim(),ten:String(h.ten||'').trim(),sl:+h.sl||0,gia:+h.gia||0}));
   if(H.some(h=>!h.ten))return alert('Dòng hàng thiếu tên hàng');
   const gt=H.length?'':(($('#lnd-gt')||{}).value||'');
-  const o={id,lo_id:c.lo.id,po_id:v('po_id')||null,ncc_id:v('ncc_id'),ma_po:v('ma_po'),ngay:v('ngay'),trang_thai:v('trang_thai'),nhap_id:v('nhap_id'),tien_te:v('tien_te'),ty_gia:v('ty_gia')?so(v('ty_gia')):'',ghi_chu:v('ghi_chu'),hang:H,gia_tri:gt};
+  const o={id,lo_id:c.lo.id,po_id:v('po_id')||null,gia_tri_kk:v('gia_tri_kk'),ty_gia_kk:v('ty_gia_kk')?so(v('ty_gia_kk')):'',ncc_id:v('ncc_id'),ma_po:v('ma_po'),ngay:v('ngay'),trang_thai:v('trang_thai'),nhap_id:v('nhap_id'),tien_te:v('tien_te'),ty_gia:v('ty_gia')?so(v('ty_gia')):'',ghi_chu:v('ghi_chu'),hang:H,gia_tri:gt};
   if(!o.ncc_id)return alert('Chọn nhà cung cấp');
   try{await rpc('kt_luu_lo_nk_don',{p_dong:o})}catch(e){return alert(e.message)}toast('Đã lưu đơn hàng');lnkSau(c.lo.id,'don')}
 async function lnkDonXoa(id){const c=S.cache.lnk,d=c.don.find(x=>x.id===id);if(!confirm(`Xoá đơn hàng ${d&&d.ma_po?d.ma_po+' ':''}(${d?d.ncc.ten:''}) khỏi hồ sơ?`))return;
@@ -4226,6 +4227,7 @@ function lnkCpForm(id){const c=S.cache.lnk,x=id?c.cp.find(z=>z.id===id):{loai:'v
     <label><span>Loại chi phí${BB}</span><select name="loai" onchange="if(this.value==='vat_nk')$('#flnc [name=tinh_gv]').checked=false">${optsObj(LNK_CP,x.loai)}</select></label><label>Ngày<input type="date" name="ngay" value="${x.ngay||''}"></label>
     <label><span>Số tiền (đ)${BB}</span>${moneyIn('so_tien',x.so_tien??'')}</label><label class="lnk-chk"><input type="checkbox" name="tinh_gv" ${x.tinh_gv?'checked':''}><span>Tính vào giá vốn</span></label>
     <label class="full">Nội dung<input name="noi_dung" value="${esc(x.noi_dung||'')}" placeholder="VD: Cước biển Xiamen – Hải Phòng"></label>
+    <label class="full">Đơn vị nhận tiền<input name="don_vi_nhan" value="${esc(x.don_vi_nhan||'')}" placeholder="VD: Cty dịch vụ khai hải quan ABC — chưa gắn phiếu chi = còn nợ đơn vị này"></label>
     <div class="full" style="grid-column:1/-1"><div class="sec" style="margin:4px 0 6px">Phiếu chi liên quan</div><div id="lnc-chon"></div>
       <input class="m-in" type="search" style="margin-top:6px;width:100%" placeholder="Tìm số phiếu (PC…), nội dung, người nhận, số tiền" onchange="lnkTimChi(this.value)"><div id="lnc-tim" style="margin-top:6px"></div></div>
     <label class="full">Ghi chú<input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label></div>
@@ -4240,7 +4242,7 @@ async function lnkTimChi(q){const el=$('#lnc-tim');if(!el)return;el.innerHTML='<
 function lnkChonChi(i){const p=(S.cache.lnk_tim||[])[i];if(!p)return;S.cache.lnk_chi=p;const f=$('#flnc'),e=k=>f.querySelector(`[name=${k}]`);
   if(!so(e('so_tien').value))e('so_tien').value=fmt(p.so_tien);if(!e('noi_dung').value)e('noi_dung').value=p.noi_dung||'';if(p.ngay)e('ngay').value=String(p.ngay).slice(0,10);lnkChiVe()}
 async function lnkCpLuu(id){const c=S.cache.lnk,f=$('#flnc'),v=k=>f.querySelector(`[name=${k}]`).value;
-  const o={id,lo_id:c.lo.id,loai:v('loai'),ngay:v('ngay'),so_tien:so(v('so_tien')),tinh_gv:f.querySelector('[name=tinh_gv]').checked,noi_dung:v('noi_dung'),ghi_chu:v('ghi_chu'),chi_id:S.cache.lnk_chi?S.cache.lnk_chi.id:null};
+  const o={id,lo_id:c.lo.id,loai:v('loai'),ngay:v('ngay'),don_vi_nhan:v('don_vi_nhan'),so_tien:so(v('so_tien')),tinh_gv:f.querySelector('[name=tinh_gv]').checked,noi_dung:v('noi_dung'),ghi_chu:v('ghi_chu'),chi_id:S.cache.lnk_chi?S.cache.lnk_chi.id:null};
   if(o.so_tien==null)return alert('Nhập số tiền');
   try{await rpc('kt_luu_lo_nk_cp',{p_dong:o})}catch(e){return alert(e.message)}toast('Đã lưu chi phí');lnkSau(c.lo.id,'cp')}
 async function lnkCpXoa(id){const c=S.cache.lnk;if(!confirm('Xoá khoản chi phí này khỏi hồ sơ?'))return;
