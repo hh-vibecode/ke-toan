@@ -96,11 +96,12 @@ begin
   return jsonb_build_object(
     -- [mã, tên, nhóm, giá bán Kiot, tồn, giá vốn bình quân tồn, giá vốn Kiot (chi nhánh cao nhất), giá nhập gần nhất (đã trừ giảm giá), ngày phiếu nhập, NCC, mã phiếu nhập]
     -- 12/11 kế toán: "toàn bộ giá vốn đối chiếu từ phiếu nhập hàng của các NCC trước mắt" → trang dùng giá nhập gần nhất làm giá vốn
-    'hang', coalesce((with nh as (select distinct on (e->>'ma') e->>'ma' ma, (e->>'gia')::numeric - coalesce((e->>'giam')::numeric, 0) gia, (n.ngay at time zone 'Asia/Ho_Chi_Minh')::date ngay, n.ncc_ten, n.ma pn from kt_kiot_nhap_hang n, jsonb_array_elements(coalesce(n.chi_tiet, '[]')) e
+    'hang', coalesce((with nh as (select distinct on (e->>'ma') e->>'ma' ma, (e->>'gia')::numeric - coalesce((e->>'giam')::numeric, 0) gia, (n.ngay at time zone 'Asia/Ho_Chi_Minh')::date ngay, n.ncc_ten, n.ma pn,
+                                     exists (select 1 from kt_ncc c where c.kiot_id = n.ncc_id and c.loai = 'nuoc_ngoai' and not c.da_xoa) nk from kt_kiot_nhap_hang n, jsonb_array_elements(coalesce(n.chi_tiet, '[]')) e
                                    where n.trang_thai is distinct from 4 order by e->>'ma', n.ngay desc)
       select jsonb_agg(jsonb_build_array(h.ma, h.ten, h.nhom, h.gia_ban, h.tong_ton,
         case when h.tong_ton > 0 and h.gia_tri_ton > 0 then round(h.gia_tri_ton / h.tong_ton) end,
-        (select max((t->>'gia_von')::numeric) from jsonb_array_elements(case when jsonb_typeof(h.ton) = 'array' then h.ton else '[]' end) t), nh.gia, nh.ngay, nh.ncc_ten, nh.pn))
+        (select max((t->>'gia_von')::numeric) from jsonb_array_elements(case when jsonb_typeof(h.ton) = 'array' then h.ton else '[]' end) t), nh.gia, nh.ngay, nh.ncc_ten, nh.pn, coalesce(nh.nk, false)))   -- [11] phiếu nhập gần nhất của NCC nước ngoài (12/11: giá vốn chưa gồm chi phí nhập khẩu)
       from kt_kiot_hang h left join nh on nh.ma = h.ma where h.hoat_dong), '[]'),
     'quy_tac', coalesce((select jsonb_agg(to_jsonb(q) order by q.nhom) from kt_gia_quy_tac q), '[]'),
     'sp', coalesce((select jsonb_agg(to_jsonb(s)) from kt_gia_sp s), '[]'),
