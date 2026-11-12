@@ -1164,8 +1164,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.374';
-const APP_VERSION='12/11/2026 15:02';
+const APP_SO='1.375';
+const APP_VERSION='12/11/2026 15:22';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3689,25 +3689,42 @@ function poKhach(el,P){const nay=homNay(),sau7=ymd(new Date(Date.now()+7*864e5))
       ['Chứng từ cọc','Mã đơn đặt hàng Kiot + phiếu thu cọc để đối chiếu tiền cọc thật.'],
       ['Phân bổ hàng về','Khi PO về từng phần: hàng nào giao cho khách nào (hiện tính theo trạng thái cả PO).'],
       ['Ngưỡng nhắc','Bao nhiêu ngày trước hẹn thì nhắc, ai nhận nhắc.']])}`}
-// ── Kho báo giá NCC nước ngoài (khung — dữ liệu mẫu dựng từ PO nhập khẩu + NCC nước ngoài có sẵn, CHƯA lưu) ──
-async function pageBaoGia(){const el=$('#page'),f=S.f;if(!S.cache.po_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const [d,nc,lk]=await Promise.all([poDS(),nccDS(),lnkDS()]),NN=nc.ncc.filter(NCC_KIEU.ngoai.loc),h=s=>[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
-  const hang=d.po.filter(p=>p.loai==='nhap_khau').flatMap(p=>(p.dong||[]).map(x=>({...x,ncc_id:p.ncc_id,ncc_ten:p.ncc_ten,ngay:p.ngay})));
-  const BG=hang.flatMap(x=>{const ds=[{ncc_id:x.ncc_id,ncc_ten:x.ncc_ten,gia:+x.don_gia,ngay:x.ngay}];
-    for(let i=1;i<=2&&NN.length>1;i++){const n=NN[(h(x.ma_tht)+i*7)%NN.length];if(n.id===x.ncc_id)continue;ds.push({ncc_id:n.id,ncc_ten:n.ten,gia:Math.round(+x.don_gia*(0.9+((h(x.ma_tht+i)%25)/100))),ngay:ymd(new Date(new Date(x.ngay).getTime()-(h(n.ten)%40)*864e5))})}
-    const min=Math.min(...ds.map(z=>z.gia));return ds.map(z=>({...z,ma:x.ma_tht,ten:x.ten,moq:5+(h(z.ncc_ten+x.ma_tht)%4)*5,re:z.gia===min}))});
-  const q=f.bg_q||'',l=BG.filter(x=>!q||khopTim(q,[x.ma,x.ten,x.ncc_ten]));
-  el.innerHTML=nccNgoaiTabs(NN.length,lk.length)+`<div class="m-kpis m-k3">${kThe('info',IC_LNK.tien,'Mẫu hàng có báo giá',fmt(new Set(BG.map(x=>x.ma)).size),'mỗi mẫu nhiều NCC')}${kThe('teal',IC_LNK.ve,'Báo giá',fmt(BG.length),'giữ lịch sử, không ghi đè')}
-      ${kThe('warn',IC_LNK.cp,'NCC đã báo giá',fmt(new Set(BG.map(x=>x.ncc_id)).size),'trên '+fmt(NN.length)+' NCC nước ngoài')}</div>
-    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Kho báo giá <span class="badge">${fmt(l.length)}</span> ${pill('Dữ liệu mẫu — chưa lưu','warn')}</div></div>
-      <div class="ncc-ctl"><input class="m-in" type="search" style="width:260px" placeholder="Tìm mã, tên hàng, NCC..." value="${esc(q)}" onchange="S.f.bg_q=this.value;render()"></div></div>
-    <div class="scroll"><table class="m-t"><tr><th>Mã THT · mẫu hàng</th><th>Nhà cung cấp</th><th class="num">Giá (CNY)</th><th class="num">MOQ</th><th>Ngày báo giá</th><th class="c"></th><th></th></tr>
-    ${l.map((x,i)=>`<tr><td class="ten"><b>${esc(x.ma||'')}</b> ${esc(x.ten||'')}</td><td class="ten">${esc(x.ncc_ten||'')}</td><td class="num"><b>${fmt(x.gia)}</b></td><td class="num">${fmt(x.moq)}</td><td class="nw">${fmtD(x.ngay)}</td>
-      <td class="c">${x.re?pill('Rẻ nhất','ok'):''}</td><td>${nccGhi()?`<button class="m-btn sm" onclick='poForm(null,${JSON.stringify({loai:'nhap_khau',ncc_id:x.ncc_id,ncc_ten:x.ncc_ten,tien_te:'CNY',ty_gia:3600,dong:[{ma_tht:x.ma,ten:x.ten,sl:x.moq,don_gia:x.gia,dvt:'Cái'}]}).replace(/'/g,'&#39;')})'>Tạo PO</button>`:''}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Chưa có báo giá</td></tr>'}</table></div></div>
-    ${canBoSung([['Bảng lưu báo giá','Mỗi báo giá: mẫu hàng, NCC, giá + tiền tệ, MOQ, thời gian sản xuất, hiệu lực, ảnh, file gốc — hiện là dữ liệu mẫu, chưa lưu được.'],
-      ['Nguồn báo giá','NCC gửi Excel / ảnh / chat — chọn cách nhập (Excel theo mẫu hay nhập tay).'],
+// ── Kho báo giá NCC (NCC nước ngoài → tab) — 12/11 lưu bảng kt_bao_gia: 1 mẫu hàng nhiều báo giá nhiều NCC, giữ lịch sử; so giá rẻ nhất; Tạo PO từ báo giá ──
+async function bgDS(moi){if(!moi&&S.cache.bg_d&&Date.now()-(S.cache.bg_luc||0)<60e3)return S.cache.bg_d;S.cache.bg_d=await rpc('kt_bg_ds');S.cache.bg_luc=Date.now();return S.cache.bg_d}
+async function pageBaoGia(){const el=$('#page'),f=S.f,g=nccGhi();if(!S.cache.bg_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const [BG,nc,lk]=await Promise.all([bgDS(),nccDS(),lnkDS()]),NN=nc.ncc.filter(NCC_KIEU.ngoai.loc),nay=homNay();
+  const re={};BG.forEach(x=>{const k=x.ma_tht||x.ten;if(!re[k]||+x.gia<+re[k].gia)re[k]=x});
+  const q=f.bg_q||'',mau=BG.filter(x=>x.la_mau).length,l=BG.filter(x=>!q||khopTim(q,[x.ma_tht,x.ten,x.ncc_ten,x.ghi_chu])),[a,b,tr]=phanTrang('bg',l.length,50);
+  el.innerHTML=nccNgoaiTabs(NN.length,lk.length)+`<div class="m-kpis m-k3">${kThe('info',IC_LNK.tien,'Mẫu hàng có báo giá',fmt(Object.keys(re).length),'mỗi mẫu so nhiều NCC')}${kThe('teal',IC_LNK.ve,'Báo giá',fmt(BG.length),'giữ lịch sử, không ghi đè')}
+      ${kThe('warn',IC_LNK.cp,'Hết hiệu lực',fmt(BG.filter(x=>x.hieu_luc&&x.hieu_luc<nay).length),'cần hỏi lại giá')}</div>
+    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Kho báo giá <span class="badge">${fmt(l.length)}</span>${mau?` ${pill(mau+' báo giá mẫu','warn')}`:''}</div></div>
+      <div class="ncc-ctl"><input class="m-in" type="search" style="width:260px" placeholder="Tìm mã, tên hàng, NCC..." value="${esc(q)}" onchange="S.f.bg_q=this.value;S.f.bg_tr=1;render()">
+        ${g&&mau?`<button class="m-btn out" onclick="bgXoa(null)">Xoá dữ liệu mẫu</button>`:''}${g?`<button class="m-btn pri" onclick="bgForm()">+ Thêm báo giá</button>`:''}</div></div>
+    <div class="scroll"><table class="m-t"><tr><th>Mã THT · mẫu hàng</th><th>Nhà cung cấp</th><th class="num">Giá báo</th><th class="num">MOQ</th><th class="num">Sản xuất</th><th>Ngày báo</th><th>Hiệu lực</th><th class="c"></th><th></th></tr>
+    ${l.slice(a,b).map(x=>`<tr class="click" onclick="bgForm(${x.id})"><td class="ten"><b>${esc(x.ma_tht||'')}</b> ${esc(x.ten||'')}${x.la_mau?' <span class="badge">Mẫu</span>':''}</td><td class="ten">${esc(x.ncc_ten||'—')}</td>
+      <td class="num"><b>${fmt(x.gia)}</b> <span class="muted">${x.tien_te}</span></td><td class="num">${x.moq!=null?fmt(x.moq):''}</td><td class="num">${x.tg_sx?x.tg_sx+' ngày':''}</td><td class="nw">${fmtD(x.ngay)}</td>
+      <td class="nw ${x.hieu_luc&&x.hieu_luc<nay?'neg-t':''}">${x.hieu_luc?fmtD(x.hieu_luc):'<span class="muted">—</span>'}</td><td class="c">${re[x.ma_tht||x.ten]===x?pill('Rẻ nhất','ok'):''}</td>
+      <td onclick="event.stopPropagation()">${g?`<button class="m-btn sm" onclick="bgTaoPO(${x.id})">Tạo PO</button>`:''}</td></tr>`).join('')||`<tr><td colspan="9" class="m-empty">${BG.length?'Không có báo giá phù hợp':'Chưa có báo giá'+(g?' — bấm + Thêm báo giá':'')}</td></tr>`}</table></div>
+    ${thanhTrang('bg',l.length,50,tr,'báo giá')}</div>
+    ${canBoSung([['Báo giá thật','Đang có '+mau+' báo giá mẫu (dựng từ PO nhập khẩu mẫu). Nhập báo giá thật rồi bấm "Xoá dữ liệu mẫu".'],
+      ['Nhập từ Excel NCC','NCC gửi báo giá bằng Excel / ảnh — nếu có mẫu Excel chung, hệ thống làm nút nhập nhiều dòng một lần.'],
       ['Yêu cầu hỏi giá','Sale gửi mẫu khách cần → người mua hàng hỏi giá NCC (form công khai hoặc app MKT/Sale).'],
-      ['Tỷ giá CNY','Nguồn tỷ giá dùng quy đổi (tạm 3.600) và ai cập nhật.']])}`}
+      ['Tỷ giá CNY','Nguồn tỷ giá và người cập nhật (PO tạo từ báo giá đang để tạm 3.600).']])}`}
+async function bgForm(id){const BG=await bgDS(),nc=await nccDS(),NN=nc.ncc.filter(NCC_KIEU.ngoai.loc),g=nccGhi();
+  const x=id?BG.find(z=>z.id===id):{tien_te:'CNY',ngay:homNay()},ro=g?'':'disabled',i=(k,l,ty,ex)=>`<label>${l}<input class="m-in" name="${k}" ${ty?`type="${ty}"`:''} value="${esc(x[k]??'')}" ${ro} ${ex||''}></label>`;
+  modal(`<h2>${id?'Báo giá':'Thêm báo giá'} ${x.la_mau?pill('Dữ liệu mẫu','warn'):''}</h2><div class="form" id="fbg" style="grid-template-columns:1fr 1fr">
+    ${i('ma_tht','Mã THT (nếu đã có trên Kiot)')}${i('ten','Tên mẫu hàng')}
+    <label>Nhà cung cấp<select class="m-in" name="ncc_id" ${ro}><option value="">— chọn NCC —</option>${NN.map(n=>`<option value="${n.id}" ${+x.ncc_id===n.id?'selected':''}>${esc(n.ten)}</option>`).join('')}</select></label>
+    <label>Tiền tệ<select class="m-in" name="tien_te" ${ro}>${['CNY','USD','VND'].map(t=>`<option ${x.tien_te===t?'selected':''}>${t}</option>`).join('')}</select></label>
+    ${i('gia','Giá báo','','inputmode="decimal"')}${i('moq','Số lượng tối thiểu (MOQ)','','inputmode="numeric"')}${i('tg_sx','Thời gian sản xuất (ngày)','','inputmode="numeric"')}${i('ngay','Ngày báo giá','date')}
+    ${i('hieu_luc','Hiệu lực đến','date')}${i('anh','Link ảnh mẫu')}<label style="grid-column:1/-1">Ghi chú<input class="m-in" name="ghi_chu" value="${esc(x.ghi_chu||'')}" ${ro}></label></div>
+    <div class="acts">${g&&id?`<button class="btn bad" style="margin-right:auto" onclick="bgXoa(${id})">Xoá</button>`:''}<button class="btn" onclick="closeModal()">Đóng</button>${g?`<button class="btn pri" onclick="bgLuu(${id||'null'})">Lưu</button>`:''}</div>`)}
+async function bgLuu(id){const o=formData($('#fbg')),n=(S.cache.hs_d&&S.cache.hs_d.ncc||[]).find(z=>z.id===+o.ncc_id);
+  if(!o.ncc_id)return alert('Chọn nhà cung cấp');try{await rpc('kt_bg_luu',{p_dong:{...o,id,ncc_ten:n?n.ten:'',gia:String(o.gia).replace(/\./g,'').replace(',','.'),moq:String(o.moq||'').replace(/\./g,'')}});
+    toast('Đã lưu báo giá');closeModal();S.cache.bg_d=null;await render()}catch(e){alert(e.message)}}
+async function bgXoa(id){if(!confirm(id?'Xoá báo giá này?':'Xoá toàn bộ báo giá mẫu?'))return;try{const n=await rpc('kt_bg_xoa',{p_id:id});toast(id?'Đã xoá':'Đã xoá '+n+' báo giá mẫu');closeModal();S.cache.bg_d=null;await render()}catch(e){alert(e.message)}}
+function bgTaoPO(id){const x=(S.cache.bg_d||[]).find(z=>z.id===id);if(!x)return;
+  poForm(null,{loai:'nhap_khau',ncc_id:x.ncc_id,ncc_ten:x.ncc_ten,tien_te:x.tien_te,ty_gia:x.tien_te==='CNY'?3600:null,dong:[{ma_tht:x.ma_tht||'',ten:x.ten,sl:+x.moq||1,don_gia:+x.gia,dvt:'Cái',anh:x.anh||''}]})}
 // ═ ĐỊNH GIÁ BÁN ═ giá vốn + giá bán Kiot → giá đề xuất theo biên lãi nhóm hàng × phân khúc; duyệt rồi xuất Excel nhập giá Kiot (app không ghi Kiot)
 // Công thức (spec Định giá bán mục 5): giá niêm yết trước thuế = giá vốn ÷ ((1 − biên mục tiêu) × (1 − CK dự kiến)), làm tròn LÊN bước giá;
 // giá sàn = giá vốn ÷ (1 − biên tối thiểu). Giá Kiot gồm VAT (nếu chọn) → so sánh trên giá trước VAT.
