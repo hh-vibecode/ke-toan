@@ -1155,8 +1155,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.370';
-const APP_VERSION='11/11/2026 14:45';
+const APP_SO='1.371';
+const APP_VERSION='12/11/2026 10:43';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -6886,7 +6886,7 @@ const LOGIC2=[
  ['thue','Nguồn hoá đơn','Hộ Hiền Thủy, Chánh Tâm: file 3TShop (anh xuất ra Google Sheet / kéo thả trên app).','Đọc theo tên cột.','09/10'],
  ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 và 12:25), HĐ mua từ MISA Xử lý hoá đơn (00:35 và 12:35) — 2 lần / ngày (anh 03/11).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
  ['thue','Ghép HĐ mua','Mọi phiếu chi đã trả từ 01/01 (trừ chi cá nhân) ↔ HĐ đầu vào MISA: số tiền lệch ≤ 1.000đ, ngày HĐ từ 30 ngày trước → 15 ngày sau ngày trả. Tự gắn khi 1 phiếu ↔ 1 HĐ duy nhất VÀ khớp STK người nhận (học từ lần gắn trước) / tên người nhận ≥ 50% / tên trong nội dung ≥ 80%. 1 lần trả nhiều HĐ cùng người bán: tổng HĐ = số tiền → gắn cả nhóm.','Chỉ khớp số tiền, không khớp tên / STK → không gợi ý. Không thấy → ô "Tìm HĐ MISA" (số HĐ / MST / tên) trong khung Hoá đơn đỏ.','23/10'],
- ['thue','Đối chiếu sao kê','Nạp file sao kê ngân hàng (Excel / CSV, nhiều tab = nhiều tài khoản; app nhận số tài khoản, kỳ, số dư đầu / cuối, kiểm số dư khớp). Mỗi dòng sao kê tự ghép với phiếu của đúng tài khoản trên app: (1) 1 phiếu cùng tiền, cùng ngày rồi lệch tới 3 ngày; (2) nhiều phiếu cùng ngày ±1 cộng lại đúng bằng dòng sao kê (vd COD Nhất Tín = tiền thu − phí); (3) nhiều dòng sao kê = 1 phiếu (vd nộp 2 lần, app ghi 1 phiếu). Hoá đơn lấy từ phiếu: phiếu thu → HĐ bán ra đã gắn, phiếu chi → HĐ mua vào đã gắn (hoặc số HĐ gõ trên phiếu). Bảng 3 khối: Phiếu thu / chi · Hoá đơn đỏ (đầu vào, đầu ra) · Sao kê ngân hàng. Tình trạng: Có HĐ · Chưa có HĐ (phiếu thu bán hàng / công nợ / cọc, phiếu chi có HĐ đỏ mà chưa gắn) · Không cần HĐ (điều chuyển, vay, phí, thu khác…) · Chưa khớp app. Bấm 1 dòng: xem phiếu khớp, sửa tay riêng cho báo cáo. Xuất Excel cùng 3 khối; Link online (bật / tắt) cho bên dịch vụ xem không cần đăng nhập — bảng trên link cập nhật mỗi lần kế toán mở trang.'],
+ ['thue','Đối chiếu sao kê','Nạp file sao kê ngân hàng (Excel / CSV, nhiều tab = nhiều tài khoản; app nhận số tài khoản, kỳ, số dư đầu / cuối, kiểm số dư khớp). Mỗi dòng sao kê tự ghép với phiếu của đúng tài khoản trên app: (1) 1 phiếu cùng tiền, cùng ngày rồi lệch tới 3 ngày; (2) nhiều phiếu cùng ngày ±1 cộng lại đúng bằng dòng sao kê (vd COD Nhất Tín = tiền thu − phí); (3) nhiều dòng sao kê = 1 phiếu (vd nộp 2 lần, app ghi 1 phiếu). Hoá đơn lấy từ phiếu: phiếu thu → HĐ bán ra đã gắn, phiếu chi → HĐ mua vào đã gắn (hoặc số HĐ gõ trên phiếu). Bảng 3 khối: Phiếu thu / chi · Hoá đơn đỏ (đầu vào, đầu ra) · Sao kê ngân hàng. Tình trạng: Có HĐ · Chưa có HĐ (phiếu thu bán hàng / công nợ / cọc, phiếu chi có HĐ đỏ mà chưa gắn) · Không cần HĐ (điều chuyển, vay, phí, thu khác…) · Chưa khớp app. Bấm 1 dòng: xem phiếu khớp, sửa tay riêng cho báo cáo. Sao kê thẻ Visa VCB ("Lịch sử giao dịch tài khoản thẻ" — cột Ghi nợ = trả sao kê, Chi có = tiêu thẻ, app tự đảo): tiêu thẻ không có phiếu riêng → kế toán ghi tay số HĐ từng dòng; chưa có số HĐ mà có ghi Diễn giải = Không cần HĐ; trả sao kê = Không cần HĐ. Xuất Excel cùng 3 khối; Link online (bật / tắt) cho bên dịch vụ xem không cần đăng nhập — bảng trên link cập nhật mỗi lần kế toán mở trang.'],
  ['thue','Lập hoá đơn từ kho','Đầu trang: bảng Chênh tồn sổ sách – thực tế theo nhóm (chọn đơn vị): nhóm hàng · số mã còn tồn · tồn sổ sách (tiền, đã trừ đơn đã lưu) · tồn thực tế Kiot · chênh; chênh > 0 = Ưu tiên xuất, xếp chênh nhiều trước = đúng thứ tự app đề xuất; bấm 1 nhóm → đơn mới chỉ đề xuất mã nhóm đó (trong popup đổi nhóm ở ô cạnh ô tìm). Dưới: danh sách đơn đã lưu. "+ Đơn mới" (hoặc bấm 1 đơn) mở popup: chọn Đơn vị · Giá trị hoá đơn (đã gồm thuế) · Thuế suất. Cột Đề xuất = mã tồn sổ sách (file NXT) nhiều hơn tồn thực tế Kiot, xếp chênh nhiều → ít, có cột Chênh vs Kiot (2 hộ so theo mã, công ty THT so theo nhóm), mã tô vàng + SL gợi ý = đủ giá trị còn thiếu; bấm + hoặc kéo thả sang cột Trên hoá đơn (mã ngoài gợi ý = SL vừa đủ phần còn thiếu, tối đa còn tồn); "Thêm cho đủ giá trị" thêm hết gợi ý; "Khớp số lẻ" chỉnh đơn giá 1 dòng cho tổng đúng giá trị. Tên trên hoá đơn = tên rút gọn của SP (phần đầu tên sổ thuế, bỏ chất liệu / nước sơn / thông số) + kích thước (số đầu tiên kèm cm / mm / ml / kg / inch) + mã, vd "Ban thờ 155cm BTD0526-02", "Mõ 7inch HHNKMO08" (anh 10/11; trước 09/11 = tên nhóm); tên sổ thuế hiện dòng dưới để soát. Giá bán = giá vốn file NXT sổ thuế (cột đơn giá; không có thì tiền tồn cuối ÷ SL tồn cuối) + 20%, làm tròn LÊN hàng chục nghìn (anh 09/11 · 10/11); Khớp số lẻ chỉ dùng giá chẵn chục nghìn nên tổng lệch giá trị cần lập vài nghìn đồng. Đơn đã lưu: đổi Trạng thái / Số HĐ MISA ở chân popup.','09/11 anh: popup chỉ chọn giá trị + thuế suất, bỏ khách / MST / % cộng giá vốn / bảng nhóm khỏi màn.','03/11 · 09/11'],
  ['thue','Lập hoá đơn — thuế suất & tồn (10/11)','Thuế suất mặc định "Theo nhóm hàng": mỗi dòng lấy thuế suất của nhóm (cột Thuế suất bảng nhóm trên trang, kế toán đặt); nhóm chưa đặt = mặc định theo NĐ 174/2025 (8% đến hết 31/12/2026; tên nhóm có ĐỒNG / KIM LOẠI / INOX / SẮT / THÉP = 10% vì Phụ lục I không giảm có "sản phẩm kim loại"). Thuế tính từng dòng, làm tròn từng dòng; tổng thuế tách theo mức. Chọn 1 mức cố định thì mọi dòng dùng mức đó. Tồn sổ sách còn (công ty THT) = tồn cuối kỳ file NXT − hàng trên HĐ bán ra MISA sau ngày chốt kỳ (dòng hàng lấy từ XML meInvoice; MISA không ghi mã → mã ở cuối tên hàng) − đơn lập trên app CHƯA xuất HĐ. Đề xuất bỏ hàng FOC (giá vốn gần 0). Ô tìm gõ giá (1tr, 500k) = mã có giá bán sát nhất.','Kế toán 10/11. Dòng HĐ MISA không ra mã khớp file (hàng mới nhập T10, tên không kèm mã) thì không trừ — khi dịch vụ gửi tồn hết T10 đối chiếu cân lại.','10/11'],
  ['thue','Đẩy đơn sang MISA (nháp)','Popup Lập hoá đơn kiểu màn "Lập hoá đơn" meInvoice: ngày · ký hiệu (1C26THT / TTV / TCK / TYY) · số (chưa cấp) · người bán · người mua (MST, tên đơn vị, địa chỉ, họ tên, SĐT, email, CCCD, hình thức TT, TK + tên ngân hàng — để trống được) · bảng hàng hoá (tên sửa được, ĐVT, SL, đơn giá, % thuế từng dòng theo nhóm hoặc chọn tay, Thêm dòng gõ tay, Thêm ghi chú) · tổng tách theo mức thuế; cột phải = hàng hoá đề xuất kéo thả. Nút "Lưu và gửi nháp MISA" (công ty THT) = lưu đơn + tạo HOÁ ĐƠN NHÁP trên meInvoice mang ĐỦ thông tin trên (Edge kt-meinvoice-nhap) — kế toán vào meInvoice kiểm rồi tự phát hành; app tự lấy số HĐ khi đã phát hành. Gửi lại = xoá nháp cũ tạo nháp mới; đã phát hành thì chặn. Xoá đơn = xoá nháp chưa phát hành.','09/11 tắt → 10/11 anh: "vẫn làm tạo bản nháp, cho kế toán check lại rồi tự phát hành" + "chuyển hết thông tin phiếu nháp sang luôn". App không ký / phát hành.','09/11 · 10/11'],
@@ -7808,17 +7808,17 @@ function skGiai(s){const m=s.m;if(!m.length)return 'Chưa có phiếu trên app 
   if(s.cach==='gop'){const t=m.filter(a=>a.vao),c=m.filter(a=>a.ra);return 'Gộp '+m.length+' phiếu: '+[t.length?'thu '+fmt(sumBy(t,a=>a.vao))+' ('+t.length+')':'',c.length?'chi '+fmt(sumBy(c,a=>a.ra))+' ('+c.length+')':''].filter(Boolean).join(' − ')}
   return (s.cach==='chia'?'Gộp với dòng cùng ngày — ':'')+mot(m[0])}
 // tính bảng kết quả (cùng 1 dạng cho app, link online, Excel)
-function skKQ(D){const L=skGhep(D),k=D.ky,tt=k.thong_tin||{};
+function skKQ(D){const L=skGhep(D),k=D.ky,tt=k.thong_tin||{},the=!!tt.the;   // the = sao kê thẻ tín dụng: tiêu thẻ không có phiếu riêng trên app
   const rows=L.map(s=>{const t=s.tay||{},vao=[],ra=[];
     s.m.forEach(a=>{if(a.k==='thu')(a.hd||[]).forEach(h=>ra.push(h));if(a.k==='chi'){if((a.hd||[]).length)a.hd.forEach(h=>vao.push(h));else if(a.so_tay)vao.push({so:a.so_tay})}});
     const thieu=s.m.filter(a=>skCanHD(a)&&!(a.hd||[]).length&&!(a.k==='chi'&&a.so_tay)),cb=[...new Set(s.m.flatMap(a=>(a.hd||[]).map(h=>h.cb).filter(Boolean)))];
     const V=t.vao?{so:t.vao.so||'',ngay:t.vao.ngay||'',ten:t.vao.ten||''}:skHdGop(vao),R=t.ra?{so:t.ra.so||'',ngay:t.ra.ngay||'',ten:t.ra.ten||''}:skHdGop(ra);
-    const coHD=!!(V.so||R.so),tt=coHD?'co_hd':!s.m.length?(t.gc?'khong_can':'chua_khop'):(s.m.some(skCanHD)?'chua_hd':'khong_can');
+    const coHD=!!(V.so||R.so),tt=coHD?'co_hd':!s.m.length?(t.gc||(the&&s.co)?'khong_can':the?'chua_hd':'chua_khop'):(s.m.some(skCanHD)?'chua_hd':'khong_can');
     // 10/11 kế toán: "phần nội dung diễn giải lấy luôn từ nội dung phiếu thu phiếu chi" → diễn giải = nội dung phiếu (gộp nhiều phiếu: nối lại); kế toán sửa tay vẫn ưu tiên
-    let gc=t.gc!=null&&t.gc!==''?t.gc:!s.m.length?'Chưa có phiếu trên app khớp số tiền':[...new Set(s.m.map(a=>String(a.nd||'').trim()).filter(Boolean))].join('; ');
+    let gc=t.gc!=null&&t.gc!==''?t.gc:!s.m.length?(the?'':'Chưa có phiếu trên app khớp số tiền'):[...new Set(s.m.map(a=>String(a.nd||'').trim()).filter(Boolean))].join('; ');
     return {id:s.id,stt:s.stt,ngay:s.ngay,so_ct:s.so_ct||'',ngay_hl:s.ngay_hl||'',no:s.no,co:s.co,so_du:s.so_du!=null?+s.so_du:null,nd:s.nd||'',phieu:s.m.map(a=>({so:skSoPhieu(a),k:a.k,id:a.id})),vao:V,ra:R,gc,tt,tay:!!s.tay,cach:s.cach}});
   const dem=x=>rows.filter(r=>r.tt===x).length;
-  return {v:1,tk:k.tk,chu_tk:tt.chu_tk||'',so_tk:tt.so_tk||'',ngan_hang:tt.ngan_hang||'',tu:k.tu,den:k.den,dau_ky:k.dau_ky!=null?+k.dau_ky:null,cuoi_ky:k.cuoi_ky!=null?+k.cuoi_ky:null,
+  return {v:1,tk:k.tk,chu_tk:tt.chu_tk||'',so_tk:tt.so_tk||'',ngan_hang:tt.ngan_hang||'',...(the?{the:1,so_the:tt.so_the||''}:{}),tu:k.tu,den:k.den,dau_ky:k.dau_ky!=null?+k.dau_ky:null,cuoi_ky:k.cuoi_ky!=null?+k.cuoi_ky:null,
     rows,tom_tat:{n:rows.length,co_hd:dem('co_hd'),chua_hd:dem('chua_hd'),khong_can:dem('khong_can'),chua_khop:dem('chua_khop'),tong_no:sumBy(rows,r=>r.no),tong_co:sumBy(rows,r=>r.co)}}}
 // </sk-tinh-chung>
 // 10/11 anh (ảnh bảng): "thẻ gắn thành filter, click vô là lọc" + "trình bày lại bảng, khó nhìn, bôi đen phải đều — không đều được thì xử lý cách khác".
@@ -7848,7 +7848,7 @@ function skBangHtml(kq,sua){const f=S.f,l=skLocDong(kq),loc=[f.sk_chieu&&(f.sk_c
     <div class="scroll"><table class="m-t sk-t"><colgroup><col style="width:44px"><col style="width:112px"><col style="width:19%"><col style="width:142px"><col style="width:92px"><col style="width:14%"><col style="width:132px"><col style="width:122px"><col style="width:118px"><col></colgroup>
     <tr class="sk-nh"><th rowspan="2" class="num">STT</th><th colspan="2" class="sk-s sk-a">Phiếu thu / chi</th><th colspan="3" class="sk-s sk-b">Hoá đơn đỏ</th><th colspan="4" class="sk-s sk-c">Sao kê ngân hàng</th></tr>
     <tr class="sk-cot"><th class="sk-s sk-a2">Số phiếu</th><th class="sk-a2">Diễn giải</th><th class="sk-s sk-b2">Số HĐ</th><th class="sk-b2">Ngày HĐ</th><th class="sk-b2">Công ty</th><th class="sk-s sk-c2">Ngày GD · số CT</th><th class="num sk-c2">Số tiền</th><th class="num sk-c2">Số dư</th><th class="sk-c2">Nội dung chi tiết</th></tr>
-    ${l.map(r=>`<tr${sua?` class="click" onclick="skSua(${r.id})"`:''}><td class="num muted">${r.stt??''}</td><td class="sk-s">${phO(r)}</td><td>${hai(esc(String(r.gc).replace(/^Chưa (xuất HĐ|nhận HĐ đầu vào) — /,''))+(r.tay?' <span class="muted">(sửa tay)</span>':''),'',r.gc)}</td>
+    ${l.map(r=>`<tr${sua?` class="click" onclick="skSua(${r.id})"`:''}><td class="num muted">${r.stt??''}</td><td class="sk-s">${phO(r)}</td><td>${hai(esc(String(r.gc).replace(/^Chưa (xuất HĐ|nhận HĐ đầu vào) — /,''))+(r.tay&&!kq.the?' <span class="muted">(sửa tay)</span>':''),'',r.gc)}</td>
       <td class="sk-s">${hdO(r)}</td><td class="nw">${ngHD(r)}</td><td>${hai(esc([r.vao.ten,r.ra.ten].filter(Boolean).join('; ')),'',[r.vao.ten,r.ra.ten].filter(Boolean).join('; '))}</td>
       <td class="sk-s">${hai(fmtD(r.ngay),esc(r.so_ct))}</td><td class="num ${r.co?'pos-t':'neg-t'}">${r.co?'+'+fmt(r.co):'−'+fmt(r.no)}</td><td class="num">${r.so_du!=null?fmt(r.so_du):''}</td><td>${hai(esc(r.nd),'',r.nd)}</td></tr>`).join('')||'<tr><td colspan="10" class="m-empty">Không có dòng nào</td></tr>'}
     <tr class="tong"><td></td><td colspan="2" class="sk-s">Tổng ${fmt(l.length)} dòng</td><td colspan="3" class="sk-s"></td><td class="sk-s"></td><td class="num">${(()=>{const c=sumBy(l,r=>r.co),n=sumBy(l,r=>r.no);return `<div class="pos-t">+${fmt(c)}</div><div class="neg-t">−${fmt(n)}</div>`})()}</td><td colspan="2"></td></tr></table></div>`}
@@ -7865,23 +7865,23 @@ async function pageSaoKe(){const el=$('#page'),f=S.f,g=can('hoa_don_thue',true);
   const chon=`<select class="m-in" style="width:auto;max-width:100%" onchange="S.f.sk_ky=+this.value;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';render()">${ds.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${esc(x.tk)} · ${fmtD(x.tu)} – ${fmtD(x.den)}</option>`).join('')}</select>`;
   el.innerHTML=`<section class="tq2"><div class="tq2-h" style="flex-wrap:wrap;row-gap:8px"><b class="nw">Đối chiếu sao kê</b><span class="badge">${esc(k.tk)}${kq.so_tk&&!String(k.tk).includes(kq.so_tk)?' · '+esc(kq.so_tk):''}</span>
       <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;min-width:0;max-width:100%">${chon}<button class="m-btn out" onclick="skExcel(S.cache.sk_kq)">${IC_XLS} Excel</button><button class="m-btn" onclick="skLink()">Link online${k.token?' · đang bật':''}</button>${nut}</span></div>
-    <div class="sk-info"><span>Chủ tài khoản: <b>${esc(kq.chu_tk||'–')}</b></span><span>Kỳ: <b>${skKyTxt(kq)}</b></span><span>Số dư đầu kỳ: <b>${kq.dau_ky!=null?fmt(kq.dau_ky):'–'}</b></span>
+    <div class="sk-info"><span>Chủ tài khoản: <b>${esc(kq.chu_tk||'–')}</b></span><span>Kỳ: <b>${skKyTxt(kq)}</b></span>${kq.the&&kq.dau_ky==null?`<span>Số thẻ: <b>${esc(kq.so_the||'–')}</b></span>`:`<span>Số dư đầu kỳ: <b>${kq.dau_ky!=null?fmt(kq.dau_ky):'–'}</b></span>`}
       <span>${lech===null?'':lech?pill('Số dư lệch '+fmt(lech),'bad'):pill('Khớp số dư sao kê','ok')}</span><span class="muted">Nạp ${fmtDT(k.nap_luc)} · ${esc(k.nap_boi||'')}</span></div>
     ${skTheHtml(kq)}${skBangHtml(kq,true)}</section>`}
 // sửa tay 1 dòng: xem phiếu app đã khớp + HĐ, ghi đè Số HĐ / ngày / thông tin cty / ghi chú
 function skSua(id){const D=S.cache.sk_D,kq=S.cache.sk_kq,r=kq.rows.find(x=>x.id===id),s=skGhep(D).find(x=>x.id===id),g=can('hoa_don_thue',true),dis=g?'':' disabled';if(!r)return;
-  const PH={thu:'PT',chi:'PC',dc:'DC'},t=(D.dong.find(x=>x.id===id)||{}).tay||{};
+  const PH={thu:'PT',chi:'PC',dc:'DC'},t=(D.dong.find(x=>x.id===id)||{}).tay||{},the=!!(D.ky.thong_tin||{}).the&&!s.m.length;   // thẻ tín dụng: không có phiếu riêng → ẩn khối phiếu
   const o=(n,nm,v)=>`<label><span>${n}</span><input class="m-in" name="${nm}" value="${esc(v||'')}"${dis}></label>`;
   modal(`<h2>Dòng ${r.stt??''} · ${fmtD(r.ngay)} <span class="badge" style="vertical-align:middle">${r.co?'Ghi có '+fmt(r.co):'Ghi nợ '+fmt(r.no)}</span></h2>
     <div class="muted" style="font-size:12.5px;margin-bottom:10px;word-break:break-word">${esc(r.nd)}</div>
-    <div class="tq2-h" style="padding:4px 0"><b>Phiếu trên app khớp</b>${s.cach==='gop'?pill('Gộp '+s.m.length+' phiếu','info'):s.cach==='chia'?pill('Chung 1 phiếu với dòng khác','info'):''}</div>
+    ${the?'':`<div class="tq2-h" style="padding:4px 0"><b>Phiếu trên app khớp</b>${s.cach==='gop'?pill('Gộp '+s.m.length+' phiếu','info'):s.cach==='chia'?pill('Chung 1 phiếu với dòng khác','info'):''}</div>
     <div class="scroll"><table class="m-t"><tr><th>Phiếu</th><th>Ngày</th><th>Nội dung</th><th class="num">Vào</th><th class="num">Ra</th><th>Hoá đơn đã gắn</th></tr>
       ${s.m.map(a=>`<tr><td class="nw">${PH[a.k]?`<span class="m-link" onclick="moPhieu('${PH[a.k]}',${a.id})">${PH[a.k]+String(a.id).padStart(6,'0')}</span>`:'Vay'}</td><td class="nw">${fmtD(a.ngay)}</td><td class="ten">${esc((a.loai?a.loai+': ':'')+(a.nd||''))}</td>
         <td class="num">${a.vao?fmt(a.vao):''}</td><td class="num">${a.ra?fmt(a.ra):''}</td><td class="nw">${esc(skHdGop(a.hd).so||a.so_tay||'')}${!(a.hd||[]).length&&skCanHD(a)&&!a.so_tay?pill('Chưa gắn','warn'):''}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Không có phiếu nào cùng số tiền</td></tr>'}</table></div>
-    <div class="muted" style="font-size:12px;margin:6px 0 12px">Gắn HĐ vào phiếu thu / chi trên app thì dòng này tự cập nhật. Ô dưới chỉ dùng khi cần ghi đè riêng cho báo cáo sao kê.</div>
+    <div class="muted" style="font-size:12px;margin:6px 0 12px">Gắn HĐ vào phiếu thu / chi trên app thì dòng này tự cập nhật. Ô dưới chỉ dùng khi cần ghi đè riêng cho báo cáo sao kê.</div>`}
     <div id="sk-f"><div class="tq2-h" style="padding:4px 0"><b>Hoá đơn khoản chi (đầu vào)</b></div><div class="lhd-f" style="grid-template-columns:2fr 1fr 3fr">${o('Số HĐ','vs',r.vao.so)}${o('Ngày','vn',r.vao.ngay)}${o('Thông tin công ty','vt',r.vao.ten)}</div>
       <div class="tq2-h" style="padding:4px 0"><b>Hoá đơn khoản thu (đầu ra)</b></div><div class="lhd-f" style="grid-template-columns:2fr 1fr 3fr">${o('Số HĐ','rs',r.ra.so)}${o('Ngày','rn',r.ra.ngay)}${o('Thông tin công ty','rt',r.ra.ten)}</div>
-      <div class="lhd-f" style="grid-template-columns:1fr;margin-top:8px">${o('Diễn giải (mặc định = nội dung phiếu)','gc',r.gc)}</div></div>
+      <div class="lhd-f" style="grid-template-columns:1fr;margin-top:8px">${o(the?'Diễn giải (ghi mà chưa có số HĐ = Không cần HĐ)':'Diễn giải (mặc định = nội dung phiếu)','gc',r.gc)}</div></div>
     ${r.tay?`<div class="muted" style="font-size:12px;margin-top:6px">Đang sửa tay: ${esc((D.dong.find(x=>x.id===id)||{}).sua_boi||'')} · ${fmtDT((D.dong.find(x=>x.id===id)||{}).sua_luc)}</div>`:''}
     <div class="acts">${g&&r.tay?`<button class="m-btn" onclick="skLuuTay(${id},null)">Bỏ sửa tay (về tự ghép)</button>`:''}<span style="margin-right:auto"></span><button class="m-btn" onclick="closeModal()">Đóng</button>${g?`<button class="m-btn pri" onclick="skLuuTay(${id},1)">Lưu</button>`:''}</div>`)}
 async function skLuuTay(id,luu){let tay=null;
@@ -7902,22 +7902,25 @@ async function skLinkDoi(bat){if(!bat&&!confirm('Tắt link? Người đang gi�
 const skNgay=v=>{if(typeof v==='number'&&v>20000&&v<80000)return new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10);
   const m=String(v||'').match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):null};
 const skSo=v=>{if(typeof v==='number')return Number.isInteger(v)?v:Math.round(v*1000);   // VND không có số lẻ: 76.182 = Google Sheet đọc nhầm "76,182"
-  const t=String(v||'').replace(/[^\d\-]/g,'');return t&&t!=='-'?Number(t):0};
+  const t=String(v||'').replace(/[.,]\d{1,2}(?=\D*$)/,'').replace(/[^\d\-]/g,'');return t&&t!=='-'?Number(t):0};   // "1,132,751.00VND" (sao kê thẻ) → bỏ phần lẻ
 function skDocTab(A,ten){const low=A.map(r=>r.map(c=>String(c??'').toLowerCase().replace(/\s+/g,' ').trim()));
   const h=low.findIndex(r=>r.some(c=>/ghi nợ|debit|phát sinh nợ|số tiền rút/.test(c))&&r.some(c=>/ghi có|credit|phát sinh có|số tiền gửi/.test(c)));if(h<0)return null;
-  const H=low[h],ix=re=>H.findIndex(c=>re.test(c));
-  const cNo=ix(/ghi nợ|debit|phát sinh nợ|số tiền rút/),cCo=ix(/ghi có|credit|phát sinh có|số tiền gửi/),cDu=ix(/số dư|balance/),cNd=ix(/nội dung|transactions in detail|diễn giải|mô tả|description/),cHl=ix(/hiệu lực|effective/);
+  const H=low[h],ix=re=>H.findIndex(c=>re.test(c)),the=low.some(r=>r.some(c=>/tài khoản thẻ|card account|card number/.test(c)));
+  // 12/11 sao kê thẻ Visa VCB ("Lịch sử giao dịch tài khoản thẻ"): cột Ghi nợ = trả sao kê (tiền vào thẻ), cột Chi có = tiêu thẻ (tiền ra) → đảo 2 cột
+  let cNo=ix(/ghi nợ|debit|phát sinh nợ|số tiền rút/),cCo=ix(/ghi có|credit|phát sinh có|số tiền gửi/);if(the)[cNo,cCo]=[cCo,cNo];const cDu=ix(/số dư|balance/),cNd=ix(/nội dung|transactions in detail|diễn giải|mô tả|description/),cHl=ix(/hiệu lực|effective/);
   const cNg=H.findIndex((c,i)=>i!==cHl&&/ngày|date/.test(c)),cStt=H.findIndex(c=>/^stt|^no\.?$/.test(c)),cCt0=ix(/số ct|doc no|số chứng từ|số tham chiếu|reference|số gd|số giao dịch/),cCt=cCt0===cNg?-1:cCt0;
   const info={},lay=(r,i)=>{for(let j=i+1;j<r.length;j++)if(String(r[j]??'').trim())return r[j];return ''};
   A.forEach((r,ri)=>r.forEach((c,i)=>{const s=low[ri][i];if(!s||ri===h)return;
     if(!info.so_tk&&/số tài khoản|account number|account no/.test(s))info.so_tk=String(lay(r,i)).replace(/[^\d]/g,'');
     else if(!info.chu_tk&&/chủ tài khoản|account name|tên tài khoản/.test(s))info.chu_tk=String(lay(r,i)).trim();
+    else if(!info.chu_the&&/^ông \(bà\)|^mr\. ?\(ms\.\)/.test(s))info.chu_the=String(lay(r,i)).trim();
+    else if(!info.so_the&&/card number/.test(s))info.so_the=(String(r[i]).match(/\d{4,6}\D+\d{4}/)||[''])[0].replace(/\.{2,}/,'…');
     else if(!info.tu&&/^(từ|from)|từ ngày/.test(s)&&ri<h)info.tu=skNgay(lay(r,i));
     else if(!info.den&&/^(đến|to\b)|đến ngày/.test(s)&&ri<h)info.den=skNgay(lay(r,i));
     else if(info.dau==null&&/số dư đầu|opening balance/.test(s))info.dau=skSo(lay(r,i));
     else if(info.cuoi==null&&/số dư cuối|closing balance/.test(s))info.cuoi=skSo(lay(r,i))}));
   const dong=[];for(let ri=h+1;ri<A.length;ri++){const r=A[ri],ng=skNgay(r[cNg]);if(!ng)continue;const no=Math.abs(skSo(r[cNo])),co=Math.abs(skSo(r[cCo]));if(!no&&!co)continue;
-    const raw=String(r[cNg]??''),ct=cCt>=0?String(r[cCt]??'').trim():raw.replace(/^.*?\d{4}\s*\/?\s*/,'').trim();
+    const raw=String(r[cNg]??''),ct=cCt>=0?String(r[cCt]??'').trim():typeof r[cNg]==='number'?'':raw.replace(/^.*?\d{4}\s*\/?\s*/,'').trim();
     dong.push({stt:cStt>=0&&/^\d+$/.test(String(r[cStt]).trim())?+String(r[cStt]).trim():dong.length+1,ngay:ng,so_ct:ct,ngay_hl:cHl>=0?skNgay(r[cHl]):null,no,co,so_du:cDu>=0&&String(r[cDu]??'').trim()!==''?skSo(r[cDu]):null,nd:cNd>=0?String(r[cNd]??'').trim():''})}
   if(!dong.length)return null;
   // file xếp ngày mới trước (vd VIB) → đảo lại theo thời gian, đánh lại STT
@@ -7929,7 +7932,7 @@ function skDocTab(A,ten){const low=A.map(r=>r.map(c=>String(c??'').toLowerCase()
   const tu=info.tu||dong.reduce((m,d)=>d.ngay<m?d.ngay:m,dong[0].ngay),den=info.den||dong.reduce((m,d)=>d.ngay>m?d.ngay:m,dong[0].ngay);
   const d0=dong[0],dau=info.dau??(d0.so_du!=null?d0.so_du-d0.co+d0.no:null),cuoi=info.cuoi??dong[dong.length-1].so_du;
   const so=(info.so_tk||'').replace(/\D/g,''),tkK=S.dm.tai_khoan.find(t=>so&&so.length>=6&&t.ten.replace(/\D/g,'').includes(so))||S.dm.tai_khoan.find(t=>/^\d{3,}$/.test(String(ten).trim())&&t.ten.replace(/\D/g,'').endsWith(String(ten).trim()));
-  return {ten,tk_id:tkK?tkK.id:'',tu,den,dau,cuoi,dong,thong_tin:{chu_tk:info.chu_tk||'',so_tk:so}}}
+  return {ten,tk_id:tkK?tkK.id:'',tu,den,dau,cuoi,dong,thong_tin:{chu_tk:info.chu_the||info.chu_tk||'',so_tk:so,...(the?{the:1,so_the:info.so_the||''}:{})}}}
 async function skNapFile(file){if(!file)return;let T=[];
   try{const X=await napXLSX(),wb=X.read(await file.arrayBuffer(),{type:'array'});
     T=wb.SheetNames.map(n=>skDocTab(X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}),n)).filter(Boolean)}catch(e){return alert('Không đọc được file: '+e.message)}
@@ -7940,7 +7943,7 @@ function skNapVe(){const {file,T}=S.cache.sk_nap,ds=S.cache.sk_ds||[];
     <div class="scroll"><table class="m-t"><tr><th class="c">Nạp</th><th>Tab</th><th>Tài khoản trên app</th><th>Kỳ</th><th class="num">Số dòng</th><th class="num">Đầu kỳ</th><th class="num">Cuối kỳ</th><th class="c">Kiểm số dư</th></tr>
     ${T.map((t,i)=>{const l=t.dau!=null&&t.cuoi!=null?Math.round(t.dau+sumBy(t.dong,d=>d.co)-sumBy(t.dong,d=>d.no)-t.cuoi):null,cu=ds.find(x=>x.tk_id==t.tk_id&&x.tu===t.tu&&x.den===t.den);t.chon=t.chon??!!t.tk_id;
       return `<tr><td class="c"><input type="checkbox" ${t.chon?'checked':''} onchange="S.cache.sk_nap.T[${i}].chon=this.checked"></td><td class="nw"><b>${esc(t.ten)}</b>${t.thong_tin.so_tk?`<div class="muted" style="font-size:11.5px">${esc(t.thong_tin.so_tk)}</div>`:''}</td>
-        <td><select class="m-in" style="width:260px" onchange="S.cache.sk_nap.T[${i}].tk_id=+this.value||'';skNapVe()"><option value="">— chọn tài khoản —</option>${S.dm.tai_khoan.map(x=>`<option value="${x.id}" ${x.id==t.tk_id?'selected':''}>${esc(x.ten)}</option>`).join('')}</select>${cu?`<div class="muted" style="font-size:11.5px">Đã có kỳ này — nạp lại, giữ phần sửa tay</div>`:''}</td>
+        <td><select class="m-in" style="width:340px" onchange="S.cache.sk_nap.T[${i}].tk_id=+this.value||'';skNapVe()"><option value="">— chọn tài khoản —</option>${S.dm.tai_khoan.map(x=>`<option value="${x.id}" ${x.id==t.tk_id?'selected':''}>${esc(x.ten)}</option>`).join('')}</select>${cu?`<div class="muted" style="font-size:11.5px">Đã có kỳ này — nạp lại, giữ phần sửa tay</div>`:''}</td>
         <td class="nw">${fmtD(t.tu)} – ${fmtD(t.den)}</td><td class="num">${fmt(t.dong.length)}</td><td class="num">${t.dau!=null?fmt(t.dau):'–'}</td><td class="num">${t.cuoi!=null?fmt(t.cuoi):'–'}</td>
         <td class="c">${l===null?pill('Không có số dư',''):l?pill('Lệch '+fmt(l),'bad'):pill('Khớp','ok')}</td></tr>`}).join('')}</table></div>
     <div class="acts"><button class="m-btn" onclick="closeModal()">Huỷ</button><button class="m-btn pri" id="sk-nap" onclick="skNap()">Nạp</button></div>`).classList.add('sk-m')}
@@ -7959,7 +7962,7 @@ async function skExcel(kq){if(!kq)return;toast('Đang tạo file Excel...');
     [6,14,40,20,12,30,20,16,16,58].forEach((w,i)=>ws.getColumn(i+1).width=w);
     const dat=(r,c,v,st)=>{const o=ws.getCell(r,c);o.value=v;if(st)Object.assign(o,st);return o};
     ws.mergeCells(1,1,1,N);dat(1,1,'ĐỐI CHIẾU PHIẾU THU / CHI — HOÁ ĐƠN ĐỎ — SAO KÊ NGÂN HÀNG',{font:{bold:true,size:15,color:{argb:XANH}},alignment:{horizontal:'center'}});ws.getRow(1).height=24;
-    const tg=new Date(Date.now()+7*3600e3).toISOString(),info=[['Chủ tài khoản',kq.chu_tk||'','Kỳ',skKyTxt(kq)],['Số tài khoản',(kq.so_tk||'')+(kq.tk&&!String(kq.tk).includes(kq.so_tk||'§')?'  ('+kq.tk+')':''),'Số dư đầu kỳ',kq.dau_ky],
+    const tg=new Date(Date.now()+7*3600e3).toISOString(),info=[['Chủ tài khoản',kq.chu_tk||'','Kỳ',skKyTxt(kq)],['Số tài khoản',(kq.so_tk||'')+(kq.tk&&!String(kq.tk).includes(kq.so_tk||'§')?'  ('+kq.tk+')':''),...(kq.the&&kq.dau_ky==null?['Số thẻ',kq.so_the||'']:['Số dư đầu kỳ',kq.dau_ky])],
       ['Số dư cuối kỳ',kq.cuoi_ky,'Xuất lúc',tg.slice(11,16)+' '+fmtD(tg.slice(0,10))]];
     info.forEach((d,i)=>{const r=3+i;ws.mergeCells(r,1,r,2);ws.mergeCells(r,3,r,5);ws.mergeCells(r,8,r,9);
       dat(r,1,d[0],{font:{bold:true,color:{argb:'FF595959'}}});const a=dat(r,3,d[1],{font:{bold:true}});if(typeof d[1]==='number'){a.numFmt='#,##0';a.alignment={horizontal:'left'}}
@@ -8001,7 +8004,7 @@ async function skCongKhai(tok){$('#app').innerHTML='<div class="sk-pub"><div cla
 function skPubVe(){const kq=S.skPub;
   $('#app').innerHTML=`<div class="sk-pub"><div class="sk-pub-h"><div><b>TÂN HƯNG THỊNH</b><span>Đối chiếu sao kê — hoá đơn</span></div><button class="m-btn out" onclick="skExcel(S.skPub)">${IC_XLS} Tải Excel</button></div>
     <section class="tq2"><div class="tq2-h" style="flex-wrap:wrap"><b class="nw">Sao kê tài khoản</b><span class="badge">${esc(kq.tk||'')}${kq.so_tk&&!String(kq.tk||'').includes(kq.so_tk)?' · '+esc(kq.so_tk):''}</span></div>
-    <div class="sk-info"><span>Chủ tài khoản: <b>${esc(kq.chu_tk||'–')}</b></span><span>Kỳ: <b>${skKyTxt(kq)}</b></span><span>Số dư đầu kỳ: <b>${kq.dau_ky!=null?fmt(kq.dau_ky):'–'}</b></span><span class="muted">Cập nhật ${fmtDT(kq.luc)}</span></div>
+    <div class="sk-info"><span>Chủ tài khoản: <b>${esc(kq.chu_tk||'–')}</b></span><span>Kỳ: <b>${skKyTxt(kq)}</b></span>${kq.the&&kq.dau_ky==null?`<span>Số thẻ: <b>${esc(kq.so_the||'–')}</b></span>`:`<span>Số dư đầu kỳ: <b>${kq.dau_ky!=null?fmt(kq.dau_ky):'–'}</b></span>`}<span class="muted">Cập nhật ${fmtDT(kq.luc)}</span></div>
     ${skTheHtml(kq)}${skBangHtml(kq,false)}</section></div>`}
 // Xuất dữ liệu: mỗi kỳ sao kê nằm trong khoảng ngày = 1 sheet (cột phẳng)
 async function xuSaoKe(tu,den){const ds=(await rpc('kt_sao_ke_ds')).filter(x=>x.den>=tu&&x.tu<=den),out=[];
