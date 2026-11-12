@@ -94,12 +94,13 @@ language plpgsql stable security definer set search_path = public as $$
 begin
   perform kt_chan(p_phien, 'dinh_gia');
   return jsonb_build_object(
-    -- [mã, tên, nhóm, giá bán Kiot, tồn, giá vốn bình quân tồn, giá vốn Kiot (chi nhánh cao nhất), giá nhập gần nhất]
-    'hang', coalesce((with nh as (select distinct on (e->>'ma') e->>'ma' ma, (e->>'gia')::numeric gia from kt_kiot_nhap_hang n, jsonb_array_elements(coalesce(n.chi_tiet, '[]')) e
+    -- [mã, tên, nhóm, giá bán Kiot, tồn, giá vốn bình quân tồn, giá vốn Kiot (chi nhánh cao nhất), giá nhập gần nhất (đã trừ giảm giá), ngày phiếu nhập, NCC, mã phiếu nhập]
+    -- 12/11 kế toán: "toàn bộ giá vốn đối chiếu từ phiếu nhập hàng của các NCC trước mắt" → trang dùng giá nhập gần nhất làm giá vốn
+    'hang', coalesce((with nh as (select distinct on (e->>'ma') e->>'ma' ma, (e->>'gia')::numeric - coalesce((e->>'giam')::numeric, 0) gia, (n.ngay at time zone 'Asia/Ho_Chi_Minh')::date ngay, n.ncc_ten, n.ma pn from kt_kiot_nhap_hang n, jsonb_array_elements(coalesce(n.chi_tiet, '[]')) e
                                    where n.trang_thai is distinct from 4 order by e->>'ma', n.ngay desc)
       select jsonb_agg(jsonb_build_array(h.ma, h.ten, h.nhom, h.gia_ban, h.tong_ton,
         case when h.tong_ton > 0 and h.gia_tri_ton > 0 then round(h.gia_tri_ton / h.tong_ton) end,
-        (select max((t->>'gia_von')::numeric) from jsonb_array_elements(case when jsonb_typeof(h.ton) = 'array' then h.ton else '[]' end) t), nh.gia))
+        (select max((t->>'gia_von')::numeric) from jsonb_array_elements(case when jsonb_typeof(h.ton) = 'array' then h.ton else '[]' end) t), nh.gia, nh.ngay, nh.ncc_ten, nh.pn))
       from kt_kiot_hang h left join nh on nh.ma = h.ma where h.hoat_dong), '[]'),
     'quy_tac', coalesce((select jsonb_agg(to_jsonb(q) order by q.nhom) from kt_gia_quy_tac q), '[]'),
     'sp', coalesce((select jsonb_agg(to_jsonb(s)) from kt_gia_sp s), '[]'),
