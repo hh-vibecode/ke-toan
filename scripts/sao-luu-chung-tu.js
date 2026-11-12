@@ -20,7 +20,7 @@ async function thuLai(n, cho, fn) { for (let i = 1; ; i++) { try { return await 
 // sinh file / thư mục trùng tên): có tiến trình khác đang chạy script này thì thoát luôn, không ghi nhật ký. — Monsieur Claude
 function dangChay() {
   try {
-    const o = execFileSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process | ? { $_.Name -match '^(Code|node).exe$' -and $_.CommandLine -like '*sao-luu-chung-tu.js*' } | % { $_.ProcessId }"], { encoding: 'utf8', timeout: 60e3 });
+    const o = execFileSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process | ? { $_.Name -match '^(Code|node).exe$' -and ($_.CommandLine -like '*sao-luu-chung-tu.js*' -or $_.CommandLine -like '*sao-luu-doi-ten.js*') } | % { $_.ProcessId }"], { encoding: 'utf8', timeout: 60e3 });
     return o.split(/\s+/).filter(x => x && +x !== process.pid && +x !== process.ppid).length > 0;
   } catch (_) { return false; }
 }
@@ -33,7 +33,9 @@ function dangChay() {
   const ten = (await napTen(sql))([...new Set([...ds.map(f => f.name), ...Object.keys(daCo)])]);
   const tt = n => (daCo[n] || '').split('|'), cuaFile = f => tt(f.name).slice(0, 2).join('|') === f.updated_at + '|' + f.size;
   // file không đổi nội dung nhưng tên Drive đổi (vd đổi tên NCC, HĐ mới có số) → chuyển tên trên Drive, không tải lại
-  const doi = ds.filter(f => cuaFile(f) && (tt(f.name)[2] || THU_MUC + '/' + f.name) !== ten[f.name]);
+  let doi = ds.filter(f => cuaFile(f) && (tt(f.name)[2] || THU_MUC + '/' + f.name) !== ten[f.name]);
+  // 12/11: nhiều file cần đổi tên (lần đổi tên hàng loạt chưa xong) → để scripts/sao-luu-doi-ten.js làm (chuyển song song, nhanh), lịch hằng ngày không tự chuyển từng file
+  if (doi.length > 50) { console.log(`${doi.length} file cần đổi tên — để scripts/sao-luu-doi-ten.js chay xử lý`); doi = []; }
   let doiXong = 0;
   for (const f of doi) {
     try { await thuLai(3, 30e3, async () => execFileSync(RC, ['moveto', REMOTE + (tt(f.name)[2] || THU_MUC + '/' + f.name), REMOTE + ten[f.name], '--drive-root-folder-id', GOC_DRIVE, '-q'], { stdio: 'pipe', timeout: 5 * 60e3 }));

@@ -30,7 +30,12 @@ const CHAY = process.argv[2] === 'chay', SONG_SONG = 6, GH = +process.argv[3] ||
     const lam = async () => { while (i < can.length) { const n = can[i++], cu = daCo[n].split('|')[2] || CU + '/' + n;
       try { await goi('operations/movefile', { srcFs: FS, srcRemote: cu, dstFs: FS, dstRemote: moi[n] });
         const [u, s] = daCo[n].split('|'); daCo[n] = `${u}|${s}|${moi[n]}`; bd[n] = { cu, moi: moi[n] }; xong++;
-      } catch (e) { loi++; if (loi <= 5) console.log('  lỗi', n, String(e.message).slice(0, 160)); }
+      } catch (e) {
+        // 12/11: file đã được chuyển trước đó (lần chạy bị dừng giữa chừng / chạy trùng) → có sẵn ở tên mới thì coi là xong
+        let co = false; try { co = /"item"\s*:\s*\{/.test(await goi('operations/stat', { fs: FS, remote: moi[n] })); } catch (_) { }
+        if (co) { const [u, s] = daCo[n].split('|'); daCo[n] = `${u}|${s}|${moi[n]}`; bd[n] = { cu, moi: moi[n] }; xong++; }
+        else { loi++; if (loi <= 5) console.log('  lỗi', n, String(e.message).slice(0, 160)); }
+      }
       if ((xong + loi) % 200 === 0) { fs.writeFileSync(TT, JSON.stringify(daCo)); fs.writeFileSync(BD, JSON.stringify(bd)); console.log(`  ${xong + loi}/${can.length} · lỗi ${loi}`); } } };
     await Promise.all(Array.from({ length: SONG_SONG }, lam));
     fs.writeFileSync(TT, JSON.stringify(daCo)); fs.writeFileSync(BD, JSON.stringify(bd));
