@@ -1166,8 +1166,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.383';
-const APP_VERSION='13/11/2026 09:34';
+const APP_SO='1.384';
+const APP_VERSION='13/11/2026 10:25';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3729,9 +3729,12 @@ async function poMauTrong(){try{await poDS();S.cache.po_ncc=(await nccDS()).ncc}
 function poTaiLen(files){S.cache.po_hang_doi=[...files||[]];poMoTiep()}
 async function poMoTiep(){const q=S.cache.po_hang_doi||[];if(!q.length)return;const f=q.shift();
   try{await poDocExcel(f,q.length)}catch(e){alert('Không đọc được '+f.name+': '+e.message);poMoTiep()}}
-async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');const E=await napExcelJS(),wb=new E.Workbook();let buf=await file.arrayBuffer();
+async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');const E=await napExcelJS();let wb=new E.Workbook(),buf=await file.arrayBuffer(),ANH=null;
   if(!/\.xlsx$/i.test(file.name)){const X=await napXLSX();buf=X.write(X.read(buf,{type:'array'}),{type:'array',bookType:'xlsx'})}   // 13/11: .xls / .csv → xlsx (ảnh trong file .xls không đọc được)
-  await wb.xlsx.load(buf);
+  // 13/11 kế toán: "PO-0126-BTD_Ban-tho-FanzeFu.xlsx: Cannot read properties of undefined (reading 'anchors')" — ExcelJS hỏng ở phần ảnh của file do phần mềm khác tạo
+  // → app tự lấy ảnh (xlsxBoAnh), bỏ phần ảnh khỏi file rồi đọc lại; vẫn hỏng thì đổi qua SheetJS (bảng vẫn đọc được, ảnh lấy theo cách trên)
+  try{await wb.xlsx.load(buf)}catch(e){const g=await xlsxBoAnh(buf);ANH=g.anh;wb=new E.Workbook();
+    try{await wb.xlsx.load(g.buf)}catch(e2){const X=await napXLSX();wb=new E.Workbook();await wb.xlsx.load(X.write(X.read(g.buf,{type:'array'}),{type:'array',bookType:'xlsx'}))}}
   const nm=s=>boDau(String(s||'')).toLowerCase().replace(/\s+/g,' ').trim();
   const txt=c=>{const v=c.value;if(v==null)return '';if(v instanceof Date)return ymd(v);if(typeof v==='object'){if(v.richText)return v.richText.map(r=>r.text).join('');if(v.result!=null)return v.result instanceof Date?ymd(v.result):String(v.result);if(v.text)return String(v.text);return ''}return String(v)};
   const val=c=>{const v=c.value;return v&&typeof v==='object'&&!(v instanceof Date)&&'result' in v?v.result:v};
@@ -3761,9 +3764,10 @@ async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');co
     dong.push({ma_tht:ma,ma_ncc:g(col.ma_ncc),ten,mau:g(col.mau),kt:g(col.kt),quy_cach:g(col.qc),dvt:g(col.dvt),sl:col.sl?soT(val(row.getCell(col.sl)))||null:null,don_gia:col.gia?soT(val(row.getCell(col.gia)))||null:null,ghi_chu:g(col.gc),anh:link,_r:r})}
   if(!dong.length)throw new Error('file không có dòng hàng');
   // ảnh dán trong file → dòng theo vị trí
-  let soAnh=0;for(const im of ws.getImages()){const r=Math.round(im.range.tl.nativeRow??im.range.tl.row)+1,x=dong.find(d=>d._r===r)||dong.find(d=>Math.abs(d._r-r)<=0);if(!x||x._f)continue;
-    const g=wb.getImage(im.imageId),ext=String(g.extension||'png').replace('jpg','jpeg');if(!g.buffer)continue;
-    x._f=new File([g.buffer],`${(x.ma_tht||x.ma_ncc||'anh').replace(/[^\w-]/g,'_')}.${ext==='jpeg'?'jpg':ext}`,{type:'image/'+ext});x._u=URL.createObjectURL(x._f);soAnh++}
+  const IM=ANH?(ANH[ws.name]||[]):ws.getImages().map(im=>{const g=wb.getImage(im.imageId)||{};return {row:Math.round(im.range.tl.nativeRow??im.range.tl.row)+1,ext:g.extension,buf:g.buffer}});
+  let soAnh=0;for(const im of IM){const r=im.row,x=dong.find(d=>d._r===r);if(!x||x._f||!im.buf)continue;
+    const ext=String(im.ext||'png').toLowerCase().replace('jpg','jpeg');
+    x._f=new File([im.buf],`${(x.ma_tht||x.ma_ncc||'anh').replace(/[^\w-]/g,'_')}.${ext==='jpeg'?'jpg':ext}`,{type:'image/'+ext});x._u=URL.createObjectURL(x._f);soAnh++}
   // đầu đơn
   // 13/11 anh: "tải lên PO không theo mẫu, hệ thống tự quy chuẩn theo mẫu, chỉ điền thêm thông tin còn thiếu" → đầu đơn đoán thêm từ nhãn Trung / Anh,
   // nhãn và giá trị chung 1 ô ("日期：2026-11-10"), tiền tệ theo ký hiệu (¥ / 人民币 / 单价(元) / USD), mã THT theo PO cũ cùng mã NCC; phần đoán không ra → form báo "Còn thiếu".
@@ -3790,6 +3794,22 @@ async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');co
     vat:vatL,ngay_giao:ngGiao||goc.ngay_giao||'',ncc_id:ncc?ncc.id:(capNhat?goc.ncc_id:null),ncc_ten:ncc?ncc.ten:(capNhat?goc.ncc_ten:''),dong,
     ghi_chu:goc.ghi_chu||('Tải lên từ file '+file.name),_file:{ncc:ncc?'':ban,te_doan:teDoan&&!capNhat}};
   poVe();toast(`Đã đọc ${dong.length} dòng hàng · ${soAnh} ảnh${tuMa?' · '+tuMa+' mã THT theo PO cũ':''}${conLai?' · còn '+conLai+' file':''}`)}
+// 13/11: đọc ảnh trong xlsx không qua ExcelJS (file do WPS / Google / công cụ khác tạo làm ExcelJS lỗi 'anchors'): mỗi sheet → drawing → neo ảnh (dòng bắt đầu) + file ảnh;
+// trả gói xlsx đã bỏ thẻ <drawing> ở sheet để ExcelJS đọc phần bảng. Không phụ thuộc tiền tố XML (xdr: / không tiền tố). — Monsieur Claude
+async function napJSZip(){if(window.JSZip)return window.JSZip;await new Promise((ok,loi)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';sc.onload=ok;sc.onerror=()=>loi(new Error('Không tải được thư viện giải nén'));document.head.appendChild(sc)});return window.JSZip}
+async function xlsxBoAnh(buf){const Z=await napJSZip(),z=await Z.loadAsync(buf),f=n=>z.file(n),doc=async n=>f(n)?await f(n).async('string'):'';
+  const giai=(d,t)=>{if(t.startsWith('/'))return t.slice(1);const o=[];for(const x of (d+t).split('/')){if(x==='..')o.pop();else if(x&&x!=='.')o.push(x)}return o.join('/')};
+  const xa=t=>String(t||'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+  const rels=async p=>{const d=p.replace(/[^/]+$/,''),r=await doc(d+'_rels/'+p.split('/').pop()+'.rels'),o={};
+    for(const m of r.matchAll(/<(?:\w+:)?Relationship\b[^>]*>/g)){const id=(m[0].match(/\bId="([^"]+)"/)||[])[1],t=(m[0].match(/\bTarget="([^"]+)"/)||[])[1];if(id&&t&&!/TargetMode="External"/i.test(m[0]))o[id]=giai(d,xa(t))}return o};
+  const wbx=await doc('xl/workbook.xml'),wr=await rels('xl/workbook.xml'),anh={};
+  for(const m of wbx.matchAll(/<(?:\w+:)?sheet\b[^>]*>/g)){const ten=xa((m[0].match(/\bname="([^"]*)"/)||[])[1]),rid=(m[0].match(/:id="([^"]+)"/)||[])[1],sp=wr[rid];if(!sp||!f(sp))continue;
+    let sx=await doc(sp);const dm=sx.match(/<(?:\w+:)?drawing\b[^>]*?:id="([^"]+)"[^>]*?(?:\/>|>\s*<\/(?:\w+:)?drawing>)/);if(!dm)continue;
+    z.file(sp,sx.replace(dm[0],''));const dp=(await rels(sp))[dm[1]];if(!dp||!f(dp))continue;const dx=await doc(dp),dr=await rels(dp),ds=[];
+    for(const a of dx.matchAll(/<((?:\w+:)?(?:twoCellAnchor|oneCellAnchor))\b[\s\S]*?<\/\1>/g)){const row=(a[0].match(/<(?:\w+:)?from>[\s\S]*?<(?:\w+:)?row>\s*(\d+)\s*</)||[])[1],em=(a[0].match(/:embed="([^"]+)"/)||[])[1],mp=em&&dr[em];
+      if(row!=null&&mp&&f(mp))ds.push({row:+row+1,ext:mp.split('.').pop(),buf:await f(mp).async('arraybuffer')})}
+    anh[ten]=ds}
+  return {buf:await z.generateAsync({type:'arraybuffer'}),anh}}
 async function poXoa(id){if(!confirm('Xoá PO này?'))return;try{await rpc('kt_po_xoa',{p_id:id});toast('Đã xoá');closeModal();S.cache.po_d=null;await render()}catch(e){alert(e.message)}}
 async function poXoaMau(){if(!confirm('Xoá toàn bộ PO mẫu?'))return;try{const n=await rpc('kt_po_xoa',{p_id:null});toast('Đã xoá '+n+' PO mẫu');S.cache.po_d=null;await render()}catch(e){alert(e.message)}}
 // Excel PO theo đúng mẫu "THT - Mẫu PO (Nội địa & Nhập khẩu)" — song ngữ Việt / Trung, công thức thành tiền / tổng
