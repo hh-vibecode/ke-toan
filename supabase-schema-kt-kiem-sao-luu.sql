@@ -28,3 +28,5 @@ revoke execute on function public.kt_kiem_sao_luu() from public, anon, authentic
 
 select cron.unschedule('kt-kiem-sao-luu') where exists (select 1 from cron.job where jobname = 'kt-kiem-sao-luu');
 select cron.schedule('kt-kiem-sao-luu', '30 10 * * *', 'select public.kt_kiem_sao_luu()');   -- 10:30 UTC = 17:30 giờ VN
+
+-- 13/11/2026 anh: "bỏ luồng sao lưu đi nhé" → đã gỡ lịch: select cron.unschedule('kt-kiem-sao-luu'); lịch Windows kt-sao-luu-chung-tu tắt (Disabled). Bật lại thì chạy lại 2 dòng cron.schedule ở trên. — Monsieur Claude
