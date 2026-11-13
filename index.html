@@ -1165,8 +1165,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.381';
-const APP_VERSION='12/11/2026 17:42';
+const APP_SO='1.382';
+const APP_VERSION='13/11/2026 09:25';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3722,7 +3722,7 @@ function poTaiLen(files){S.cache.po_hang_doi=[...files||[]];poMoTiep()}
 async function poMoTiep(){const q=S.cache.po_hang_doi||[];if(!q.length)return;const f=q.shift();
   try{await poDocExcel(f,q.length)}catch(e){alert('Không đọc được '+f.name+': '+e.message);poMoTiep()}}
 async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');const E=await napExcelJS(),wb=new E.Workbook();await wb.xlsx.load(await file.arrayBuffer());
-  const ws=wb.worksheets[0],nm=s=>boDau(String(s||'')).toLowerCase().replace(/\s+/g,' ').trim();
+  const nm=s=>boDau(String(s||'')).toLowerCase().replace(/\s+/g,' ').trim();
   const txt=c=>{const v=c.value;if(v==null)return '';if(v instanceof Date)return ymd(v);if(typeof v==='object'){if(v.richText)return v.richText.map(r=>r.text).join('');if(v.result!=null)return v.result instanceof Date?ymd(v.result):String(v.result);if(v.text)return String(v.text);return ''}return String(v)};
   const val=c=>{const v=c.value;return v&&typeof v==='object'&&!(v instanceof Date)&&'result' in v?v.result:v};
   const ngayT=v=>{if(v instanceof Date)return ymd(v);const m=String(v||'').match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;const m2=String(v||'').match(/(\d{4})-(\d{2})-(\d{2})/);return m2?m2[0]:''};
@@ -3731,13 +3731,21 @@ async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');co
   const nhan=(re,tat)=>{const out=[];ws.eachRow((row,r)=>{row.eachCell((c,col)=>{const t=txt(c).trim();if(!re.test(nm(t))||out.length&&!tat)return;
       for(let j=col+1;j<=Math.min(col+12,ws.columnCount+1);j++){const cj=row.getCell(j),tj=txt(cj).trim();if(tj&&tj!==t&&!re.test(nm(tj))){if(!out.some(o=>o.t===tj))out.push({t:tj,v:val(cj),r});if(!tat)break}}})});return tat?out:out[0]||null};
   // bảng hàng
-  let H=-1,col={};ws.eachRow((row,r)=>{if(H>0)return;const cs={};row.eachCell((c,ci)=>{cs[ci]=nm(txt(c))});const tim=re=>{const k=Object.keys(cs).find(ci=>re.test(cs[ci]));return k?+k:0};
-    const c={ten:tim(/ten hang|ten san pham|mo ta|品名|description/),sl:tim(/so luong|^sl\b|数量|qty/),gia:tim(/don gia|单价|unit price|^gia\b/)};
-    if(c.ten&&(c.sl||c.gia)){H=r;col={...c,ma:tim(/ma tht|tht编码|ma hang|ma sp|^ma\b(?!.*ncc)/),ma_ncc:tim(/ma ncc|供应商编码/),mau:tim(/^mau|颜色/),kt:tim(/kich thuoc|尺寸/),qc:tim(/quy cach|规格/),
-      dvt:tim(/dvt|don vi|单位/),gc:tim(/ghi chu|备注/),anh:tim(/hinh anh|图片|^anh/)}}});
-  if(H<0)throw new Error('không thấy dòng tiêu đề bảng hàng (cần cột Tên hàng và Số lượng / Đơn giá)');
+  // 13/11 file đơn NCC Trung Quốc (vd "春湖海防10.11号订单") báo không thấy tiêu đề → nhận thêm tên cột tiếng Trung / Anh hay gặp (产品名称, 名称, 货号, 款号, 价格…),
+  // tiêu đề gộp 2 hàng, tìm ở mọi sheet; không có cột tên thì lấy mã hàng NCC làm tên. — Monsieur Claude
+  let ws=wb.worksheets[0],H=-1,col={};
+  const RE={ten:/ten hang|ten san pham|ten sp|mo ta|hang hoa|san pham|品名|名称|产品|商品|货品|描述|description|product|item name|^name\b/,sl:/so luong|^sl\b|数量|件数|qty|quantity|^pcs\b/,
+    gia:/don gia|单价|价格|unit price|^price|^gia\b/,giaBo:/thanh tien|tong|总|金额|amount|total/,ma_ncc:/ma ncc|供应商编码|货号|款号|型号|编号|item no|^code\b|sku/};
+  for(const w of wb.worksheets){if(H>0)break;const R=[];w.eachRow((row,r)=>{const cs={};row.eachCell((c,ci)=>{const t=nm(txt(c));if(t)cs[ci]=t});R.push([r,cs])});
+    for(let i=0;i<R.length&&H<0;i++)for(const hai of [false,true]){const [r,c1]=R[i],c2=hai&&R[i+1]&&R[i+1][0]===r+1?R[i+1][1]:null;if(hai&&!c2)continue;
+      const cs={...c1};if(c2)for(const k in c2)cs[k]=((c1[k]||'')+' '+c2[k]).trim();
+      const tim=(re,bo)=>{const k=Object.keys(cs).find(ci=>re.test(cs[ci])&&!(bo&&bo.test(cs[ci])));return k?+k:0};
+      const c={ten:tim(RE.ten,/ma |编码|编号|货号|图片|hinh anh|供应商|supplier/),sl:tim(RE.sl),gia:tim(RE.gia,RE.giaBo)},mn=tim(RE.ma_ncc);if(!c.ten&&mn&&(c.sl||c.gia))c.ten=mn;
+      if(c.ten&&(c.sl||c.gia)){ws=w;H=c2?r+1:r;col={...c,ma:tim(/ma tht|tht编码|ma hang|ma sp|^ma\b(?!.*ncc)/),ma_ncc:mn===c.ten?0:mn,mau:tim(/^mau|颜色/),kt:tim(/kich thuoc|尺寸/),qc:tim(/quy cach|规格/),
+        dvt:tim(/dvt|don vi|单位/),gc:tim(/ghi chu|备注/),anh:tim(/hinh anh|图片|^anh/)};break}}}
+  if(H<0)throw new Error('không thấy dòng tiêu đề bảng hàng (cần cột Tên hàng và Số lượng / Đơn giá — vd 品名 / 产品名称 / 货号 + 数量 / 单价)');
   const dong=[];for(let r=H+1;r<=ws.rowCount;r++){const row=ws.getRow(r),g=ci=>ci?txt(row.getCell(ci)).trim():'';
-    const dau=nm(g(1)+' '+g(2)+' '+g(col.ten));if(/cong tien hang|tong cong|合计|小计|thue gtgt|dat coc/.test(dau))break;
+    const dau=nm(g(1)+' '+g(2)+' '+g(col.ten));if(/cong tien hang|tong cong|合计|小计|总计|thue gtgt|dat coc/.test(dau))break;
     const ten=g(col.ten),ma=g(col.ma);if(!ten&&!ma)continue;
     const a=col.anh?row.getCell(col.anh).value:null,link=a&&typeof a==='object'&&a.hyperlink?a.hyperlink:'';
     dong.push({ma_tht:ma,ma_ncc:g(col.ma_ncc),ten,mau:g(col.mau),kt:g(col.kt),quy_cach:g(col.qc),dvt:g(col.dvt),sl:col.sl?soT(val(row.getCell(col.sl)))||null:null,don_gia:col.gia?soT(val(row.getCell(col.gia)))||null:null,ghi_chu:g(col.gc),anh:link,_r:r})}
