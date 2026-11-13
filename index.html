@@ -629,6 +629,7 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .cbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;padding:0 14px 14px}.cbs>div{background:var(--bg2);border-radius:9px;padding:9px 12px;font-size:12.5px}.cbs b{display:block;margin-bottom:3px;font-size:13px}.cbs span{color:var(--text2)}
 .dx-sec{font-weight:600;font-size:13px;margin:6px 0 -2px}.dx-lb{font-size:12px;color:var(--text2);margin-bottom:4px}.dx-d{display:grid;grid-template-columns:130px minmax(0,1.3fr) minmax(0,1fr) 56px 34px;gap:6px;margin-bottom:6px}.dx-d input{min-width:0}.dx-f{display:flex;gap:8px;font-size:12px;padding:3px 0}.dx-da{font-size:12.5px;padding:3px 0;cursor:pointer}.dx-anh{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.dx-anh img{width:84px;height:84px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border)}@media(max-width:600px){.dx-d{grid-template-columns:1fr 1fr}}
 .po-d td{padding:3px 4px}.po-anh{width:34px;height:34px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border)}.po-fix{table-layout:fixed;width:100%;min-width:1060px}.po-fix .m-in{width:100%;min-width:0;box-sizing:border-box}.po-fix th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.po-d .m-in{padding:4px 6px;font-size:12.5px}.po-d .m-in.num{text-align:right}
+.po-thieu{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:-4px 0 12px;font-size:12.5px}.po-thieu b{margin-right:2px}.m-in.po-tg{border-color:var(--bad)}.po-d .m-in.po-tg2{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 7%,transparent)}
 .po-tong{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px}.po-tong>div{background:var(--bg2);border-radius:9px;padding:8px 10px}.po-tong span{display:block;font-size:11px;color:var(--text2)}.po-tong b{font-size:14px}
 .dg-nhac{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:12px}
 @media(max-width:700px){.po-tong{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -1165,8 +1166,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.382';
-const APP_VERSION='13/11/2026 09:25';
+const APP_SO='1.383';
+const APP_VERSION='13/11/2026 09:34';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3628,7 +3629,7 @@ async function pagePO(){const el=$('#page'),f=S.f,g=nccGhi(),t=f.po_tab||'po';if
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:240px" placeholder="Tìm số PO, NCC, mã hàng..." value="${esc(q)}" onchange="S.f.po_q=this.value;S.f.po_tr=1;render()">
         <select class="m-in" style="width:130px" onchange="S.f.po_loai=this.value;S.f.po_tr=1;render()"><option value="">Tất cả loại</option>${optsObj(PO_LOAI,lo)}</select>
         <select class="m-in" style="width:150px" onchange="S.f.po_tt=this.value;S.f.po_tr=1;render()"><option value="">Tất cả trạng thái</option>${optsObj(Object.fromEntries(Object.entries(PO_TT).map(([k,v])=>[k,v[0]])),tt)}</select>
-        ${g&&mau?`<button class="m-btn out" onclick="poXoaMau()">Xoá dữ liệu mẫu</button>`:''}${g?`<button class="m-btn out" onclick="poMauTrong()">⬇ Mẫu PO trống</button><label class="m-btn out" title="File Excel theo mẫu PO (chọn nhiều file được) — PO cũ / PO bộ phận làm trên máy">⬆ Tải lên PO (Excel)<input type="file" hidden multiple accept=".xlsx" onchange="poTaiLen(this.files);this.value=''"></label><button class="m-btn pri" onclick="poForm()">+ Tạo PO</button>`:''}</div></div>
+        ${g&&mau?`<button class="m-btn out" onclick="poXoaMau()">Xoá dữ liệu mẫu</button>`:''}${g?`<button class="m-btn out" onclick="poMauTrong()">⬇ Mẫu PO trống</button><label class="m-btn out" title="File PO bất kỳ (Excel, theo mẫu hay không) — app đưa về mẫu PO, chỉ cần điền phần Còn thiếu; chọn nhiều file được">⬆ Tải lên PO (Excel)<input type="file" hidden multiple accept=".xlsx,.xls,.csv" onchange="poTaiLen(this.files);this.value=''"></label><button class="m-btn pri" onclick="poForm()">+ Tạo PO</button>`:''}</div></div>
     <div class="scroll"><table class="m-t"><tr><th>Số PO</th><th>Ngày</th><th>Loại</th><th>Nhà cung cấp</th><th class="num">Mặt hàng</th><th class="num">Tổng tiền</th><th class="num">Quy đổi VND</th><th>Ngày giao</th><th class="c">Trạng thái</th></tr>
     ${l.slice(a,b).map(p=>`<tr class="click" onclick="poForm(${p.id})"><td class="nw"><span class="m-link">${esc(p.so)}</span>${p.la_mau?' <span class="badge">Mẫu</span>':''}</td><td class="nw">${fmtD(p.ngay)}</td><td class="nw">${PO_LOAI[p.loai]}</td>
       <td class="ten">${esc(p.ncc_ten||'—')}</td><td class="num">${fmt((p.dong||[]).length)}</td><td class="num"><b>${poF(p,poTong(p))}</b></td><td class="num">${p.tien_te==='VND'?'':+p.ty_gia?fmt(poVnd(p,poTong(p))):'<span class="muted">chưa có tỷ giá</span>'}</td>
@@ -3648,22 +3649,29 @@ function poVe(){const p=window._po,g=nccGhi(),ds=(S.cache.po_ncc||[]).filter(x=>
   const i1=(k,ty,ex)=>`<input class="m-in" ${ty?`type="${ty}"`:''} value="${esc(p[k]??'')}" onchange="poSet('${k}',this.value)" ${ex||''}>`;
   const tien=poTien(p),thue=poThue(p),tong=tien+thue,coc=poDaTe(p),CM=poChiMap();
   const o=(l,v)=>`<label>${l}${v}</label>`,ro=g?'':'disabled';
+  // 13/11: thanh Còn thiếu (đỏ = phải có mới lưu được, cam = nên bổ sung) + viền ô tương ứng
+  const H=(p.dong||[]).filter(x=>x.ten||x.ma_tht||x.ma_ncc),dem=f=>H.filter(f).length,thieuTG=p.tien_te!=='VND'&&!(+p.ty_gia);
+  const TH=[...(!p.ncc_id&&!p.ncc_ten?[['Nhà cung cấp'+(p._file&&p._file.ncc?' (file ghi: '+p._file.ncc+')':''),'bad']]:[]),...(thieuTG?[['Tỷ giá','bad']]:[]),...(!H.length?[['Dòng hàng','bad']]:[]),
+    ...[[x=>!x.ma_tht,'chưa có mã THT'],[x=>!(+x.sl),'chưa có SL'],[x=>!(+x.don_gia),'chưa có đơn giá'],[x=>!x._f&&!x.anh_ct&&!x.anh,'chưa có ảnh']].map(([f,t])=>dem(f)?[dem(f)+' dòng '+t,'warn']:null).filter(Boolean),
+    ...(!p.ngay_giao?[['Ngày giao','warn']]:[]),...(p._file&&p._file.te_doan?[['Tiền tệ đoán '+p.tien_te+' — kiểm lại','warn']]:[])];
+  const thieuBar=g?`<div class="po-thieu">${TH.length?'<b>Còn thiếu</b>'+TH.map(x=>pill(x[0],x[1])).join(''):pill('Đủ thông tin','ok')}</div>`:'';
+  const vien=(x,k)=>(x.ten||x.ma_tht||x.ma_ncc)&&(k==='ma_tht'?!x.ma_tht:k==='sl'?!(+x.sl):k==='don_gia'?!(+x.don_gia):false)?' po-tg2':'';
   const anhO=(x,i)=>{const u=x._u||(x.anh_ct&&(S.cache.po_anh||{})[x.anh_ct]),co=u||x.anh_ct;
     return `<div style="display:flex;align-items:center;gap:4px">${u?`<img src="${esc(u)}" class="po-anh" onclick="window.open('${esc(u)}')" title="${x._f?'Chưa tải lên — lưu PO sẽ tải':''}">`:x.anh_ct?'<span class="badge">Có ảnh</span>':''}${g?`<label class="m-link" style="font-size:11.5px;cursor:pointer;white-space:nowrap">${co?'Đổi':'+ Ảnh'}<input type="file" accept="image/*" style="display:none" onchange="poAnhChon(${i},this.files[0])"></label>`:''}</div>`};
-  const m=modal(`<h2>${p.id?esc(p.so):'Tạo đơn đặt hàng'} ${p.la_mau?pill('Dữ liệu mẫu','warn'):''}</h2>
+  const m=modal(`<h2>${p.id?esc(p.so):'Tạo đơn đặt hàng'} ${p.la_mau?pill('Dữ liệu mẫu','warn'):''}</h2>${thieuBar}
     <fieldset ${ro} style="border:0;padding:0;margin:0;min-width:0"><div class="form" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       ${o('Loại đơn',`<select class="m-in" onchange="poSet('loai',this.value);poSet('ncc_id','')">${optsObj(PO_LOAI,p.loai)}</select>`)}
-      ${o('Nhà cung cấp',`<select class="m-in" onchange="poNcc(this.value)"><option value="">— chọn NCC —</option>${ds.map(x=>`<option value="${x.id}" ${+p.ncc_id===x.id?'selected':''}>${esc(x.ten)}</option>`).join('')}</select>`)}
+      ${o('Nhà cung cấp',`<select class="m-in${!p.ncc_id&&!p.ncc_ten?' po-tg':''}" onchange="poNcc(this.value)"><option value="">— chọn NCC —</option>${ds.map(x=>`<option value="${x.id}" ${+p.ncc_id===x.id?'selected':''}>${esc(x.ten)}</option>`).join('')}</select>`)}
       ${o('Ngày PO',i1('ngay','date'))}${o('Số PI (NCC báo)',i1('so_pi'))}
       ${o('Tiền tệ',`<select class="m-in" onchange="poSet('tien_te',this.value)">${['VND','CNY','USD'].map(x=>`<option ${p.tien_te===x?'selected':''}>${x}</option>`).join('')}</select>`)}
-      ${o('Tỷ giá (VND)',p.tien_te==='VND'?'<input class="m-in" disabled value="—">':i1('ty_gia','','inputmode="decimal"'))}
+      ${o('Tỷ giá (VND)',p.tien_te==='VND'?'<input class="m-in" disabled value="—">':i1('ty_gia','',`inputmode="decimal"${thieuTG?' style="border-color:var(--bad)"':''}`))}
       ${o('Nơi giao',`<select class="m-in" onchange="poSet('noi_giao',this.value)">${PO_NOI.map(x=>`<option ${p.noi_giao===x?'selected':''}>${esc(x)}</option>`).join('')}</select>`)}${o('Ngày giao',i1('ngay_giao','date'))}
       ${o('Thuế GTGT (%)',i1('vat','','inputmode="decimal"'))}
       ${o('Trạng thái',`<select class="m-in" onchange="poSet('trang_thai',this.value)">${optsObj(Object.fromEntries(Object.entries(PO_TT).map(([k,v])=>[k,v[0]])),p.trang_thai)}</select>`)}
       <label style="grid-column:1/-1">Ghi chú${i1('ghi_chu')}</label></div>
     <h4 style="margin:14px 0 6px">Hàng đặt</h4>
     <div class="scroll"><table class="m-t po-d po-fix"><colgroup><col style="width:24px"><col style="width:92px"><col style="width:80px"><col><col style="width:60px"><col style="width:72px"><col style="width:72px"><col style="width:50px"><col style="width:58px"><col style="width:58px"><col style="width:88px"><col style="width:100px"><col style="width:80px"><col style="width:92px"><col style="width:22px"></colgroup><tr><th>#</th><th>Mã THT</th><th>Mã NCC</th><th>Tên hàng</th><th>Màu</th><th>Kích thước</th><th>Quy cách</th><th>ĐVT</th><th class="num">SL đặt</th><th class="num">Đã nhận</th><th class="num">Đơn giá</th><th class="num">Thành tiền</th><th>Ảnh mẫu</th><th>Ghi chú</th><th></th></tr>
-      ${p.dong.map((x,i)=>{const c=(k,w,num)=>`<td><input class="m-in${num?' num':''}" value="${esc(x[k]??'')}" onchange="poDong(${i},'${k}',this.value)"${num?' inputmode="decimal"':''}></td>`;
+      ${p.dong.map((x,i)=>{const c=(k,w,num)=>`<td><input class="m-in${num?' num':''}${vien(x,k)}" value="${esc(x[k]??'')}" onchange="poDong(${i},'${k}',this.value)"${num?' inputmode="decimal"':''}></td>`;
         return `<tr><td class="muted">${i+1}</td>${c('ma_tht',96)}${c('ma_ncc',84)}${c('ten',200)}${c('mau',64)}${c('kt',80)}${c('quy_cach',80)}${c('dvt',50)}${c('sl',60,1)}${c('sl_nhan',60,1)}${c('don_gia',96,1)}
           <td class="num nw"><b>${poF(p,(+x.sl||0)*(+x.don_gia||0))}</b></td><td>${anhO(x,i)}</td>${c('ghi_chu',110)}<td>${g?`<span class="m-link" title="Bỏ dòng" onclick="poBo(${i})">✕</span>`:''}</td></tr>`}).join('')}</table></div>
     ${g?`<div style="display:flex;gap:6px;margin-top:6px;align-items:center"><button class="m-btn sm" onclick="poThem()">+ Thêm dòng</button><label class="m-btn sm out" title="Chọn nhiều ảnh — tên file = Mã THT hoặc Mã NCC của dòng">⬆ Ảnh theo mã hàng<input type="file" hidden multiple accept="image/*" onchange="poAnhTheoMa(this.files);this.value=''"></label><span class="muted" style="font-size:11.5px">tên file ảnh = mã hàng · ảnh chọn trước khi lưu sẽ tải lên khi bấm Lưu</span></div>`:''}
@@ -3692,7 +3700,7 @@ function poKh(i,k,v){_po.khach[i][k]=k==='coc'?(+String(v).replace(/\./g,'')||0)
 function poKhThem(){(_po.khach=_po.khach||[]).push({});poVe()}
 function poKhBo(i){_po.khach.splice(i,1);poVe()}
 async function poLuu(){const ds=_po.dong.filter(x=>x.ma_tht||x.ten||+x.sl),sach=()=>ds.map(({_f,_u,_r,...r})=>r);
-  const p={..._po,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don)};
+  const {_file,...po0}=_po,p={...po0,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don)};
   if(!p.ncc_ten)return alert('Chọn nhà cung cấp');if(!p.dong.length)return alert('Nhập ít nhất 1 dòng hàng');
   if(p.tien_te!=='VND'&&!(+p.ty_gia))return alert('Nhập tỷ giá quy đổi VND');
   try{const id=await rpc('kt_po_luu',{p_dong:p});
@@ -3721,11 +3729,13 @@ async function poMauTrong(){try{await poDS();S.cache.po_ncc=(await nccDS()).ncc}
 function poTaiLen(files){S.cache.po_hang_doi=[...files||[]];poMoTiep()}
 async function poMoTiep(){const q=S.cache.po_hang_doi||[];if(!q.length)return;const f=q.shift();
   try{await poDocExcel(f,q.length)}catch(e){alert('Không đọc được '+f.name+': '+e.message);poMoTiep()}}
-async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');const E=await napExcelJS(),wb=new E.Workbook();await wb.xlsx.load(await file.arrayBuffer());
+async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');const E=await napExcelJS(),wb=new E.Workbook();let buf=await file.arrayBuffer();
+  if(!/\.xlsx$/i.test(file.name)){const X=await napXLSX();buf=X.write(X.read(buf,{type:'array'}),{type:'array',bookType:'xlsx'})}   // 13/11: .xls / .csv → xlsx (ảnh trong file .xls không đọc được)
+  await wb.xlsx.load(buf);
   const nm=s=>boDau(String(s||'')).toLowerCase().replace(/\s+/g,' ').trim();
   const txt=c=>{const v=c.value;if(v==null)return '';if(v instanceof Date)return ymd(v);if(typeof v==='object'){if(v.richText)return v.richText.map(r=>r.text).join('');if(v.result!=null)return v.result instanceof Date?ymd(v.result):String(v.result);if(v.text)return String(v.text);return ''}return String(v)};
   const val=c=>{const v=c.value;return v&&typeof v==='object'&&!(v instanceof Date)&&'result' in v?v.result:v};
-  const ngayT=v=>{if(v instanceof Date)return ymd(v);const m=String(v||'').match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;const m2=String(v||'').match(/(\d{4})-(\d{2})-(\d{2})/);return m2?m2[0]:''};
+  const ngayT=v=>{if(v instanceof Date)return ymd(v);const m=String(v||'').match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;const m2=String(v||'').match(/(\d{4})[-\/.年](\d{1,2})[-\/.月](\d{1,2})/);return m2?`${m2[1]}-${m2[2].padStart(2,'0')}-${m2[3].padStart(2,'0')}`:''};
   const soT=v=>typeof v==='number'?v:soTe(String(v||''));
   // nhãn → các giá trị bên phải (bỏ ô gộp lặp lại đúng chữ nhãn)
   const nhan=(re,tat)=>{const out=[];ws.eachRow((row,r)=>{row.eachCell((c,col)=>{const t=txt(c).trim();if(!re.test(nm(t))||out.length&&!tat)return;
@@ -3755,19 +3765,31 @@ async function poDocExcel(file,conLai){toast('Đang đọc '+file.name+'…');co
     const g=wb.getImage(im.imageId),ext=String(g.extension||'png').replace('jpg','jpeg');if(!g.buffer)continue;
     x._f=new File([g.buffer],`${(x.ma_tht||x.ma_ncc||'anh').replace(/[^\w-]/g,'_')}.${ext==='jpeg'?'jpg':ext}`,{type:'image/'+ext});x._u=URL.createObjectURL(x._f);soAnh++}
   // đầu đơn
-  const so=(nhan(/^so po/)||{}).t||'',ngay=ngayT((nhan(/^ngay( \/|:|$)/)||{}).v),pi=(nhan(/^so pi/)||{}).t||'',loai=/nhap khau|进口/.test(nm((nhan(/^loai don/)||{}).t))?'nhap_khau':'noi_dia';
-  const tt=String((nhan(/^tien te/)||{}).t||'VND').toUpperCase().match(/VND|CNY|USD/),noi=(nhan(/^noi giao/)||{}).t||'';
-  const ten=nhan(/^ten cong ty/,true),ban=ten.length>1?ten[ten.length-1].t:'',vatL=(()=>{let t='';ws.eachRow(row=>row.eachCell(c=>{const s=txt(c);if(!t&&/^thue gtgt/.test(nm(s)))t=s}));const m=t.match(/(\d+(?:[.,]\d+)?)\s*%/);return m?+m[1].replace(',','.'):0})();
-  const ngGiao=ngayT((nhan(/^ngay giao hang/)||{}).v);
-  const d=await poDS(),nc=await nccDS();S.cache.po_ncc=nc.ncc;const ncc=ban?nc.ncc.find(n=>nm(n.ten)===nm(ban)):null;
+  // 13/11 anh: "tải lên PO không theo mẫu, hệ thống tự quy chuẩn theo mẫu, chỉ điền thêm thông tin còn thiếu" → đầu đơn đoán thêm từ nhãn Trung / Anh,
+  // nhãn và giá trị chung 1 ô ("日期：2026-11-10"), tiền tệ theo ký hiệu (¥ / 人民币 / 单价(元) / USD), mã THT theo PO cũ cùng mã NCC; phần đoán không ra → form báo "Còn thiếu".
+  const ALL=[];wb.worksheets.forEach(w=>w.eachRow(row=>row.eachCell(c=>{const t=txt(c).trim();if(t)ALL.push(t)})));const AT=ALL.join('\n');
+  const inl=re=>{for(const t of ALL){const m=t.match(re);if(m&&m[1]&&m[1].trim())return {t:m[1].trim(),v:m[1].trim()}}return null};
+  const so=(nhan(/^so po/)||{}).t||'';
+  const ngay=ngayT((nhan(/^ngay( \/|:|$)/)||nhan(/^(下单日期|订单日期|日期|order date|date)\s*[:：]?$/)||inl(/(?:下单日期|订单日期|日期|order date|date)\s*[:：]\s*(.+)$/i)||{}).v);
+  const pi=(nhan(/^so pi/)||nhan(/^(pi ?no\.?|订单号|合同号|order no\.?|contract no\.?)\s*[:：]?$/)||inl(/(?:订单号|合同号|PI ?No\.?|Order No\.?|Contract No\.?)\s*[:：]\s*(.+)$/i)||{}).t||'';
+  const loaiL=(nhan(/^loai don/)||{}).t,ttL=String((nhan(/^tien te/)||{}).t||'').toUpperCase().match(/VND|CNY|USD/),noi=(nhan(/^noi giao/)||{}).t||'';
+  let te=ttL?ttL[0]:'',teDoan=false;if(!te){if(/\bUSD\b|US\$/i.test(AT))te='USD';else if(/CNY|RMB|人民币|[¥￥]|[(（]元[)）]/.test(AT))te='CNY';else if(/[\u4e00-\u9fff]/.test(AT)){te='CNY';teDoan=true}else te='VND'}
+  const tt=[te],loai=loaiL?(/nhap khau|进口/.test(nm(loaiL))?'nhap_khau':'noi_dia'):(te!=='VND'?'nhap_khau':'noi_dia');
+  const ten=nhan(/^ten cong ty/,true),ban=ten.length>1?ten[ten.length-1].t:((nhan(/^(供应商|卖方|seller|supplier|ben ban)\s*[:：]?$/)||inl(/(?:供应商|卖方|Seller|Supplier)\s*[:：]\s*(.+)$/i)||{}).t||''),vatL=(()=>{let t='';ws.eachRow(row=>row.eachCell(c=>{const s=txt(c);if(!t&&/^thue gtgt/.test(nm(s)))t=s}));const m=t.match(/(\d+(?:[.,]\d+)?)\s*%/);return m?+m[1].replace(',','.'):0})();
+  const ngGiao=ngayT((nhan(/^ngay giao hang/)||nhan(/^(交货日期|交期|delivery date)\s*[:：]?$/)||inl(/(?:交货日期|交期|Delivery Date)\s*[:：]\s*(.+)$/i)||{}).v);
+  const d=await poDS(),nc=await nccDS();S.cache.po_ncc=nc.ncc;const nb=nm(ban),nf=nm(file.name);
+  const ncc=(nb?nc.ncc.find(n=>nm(n.ten)===nb)||(nb.length>=4?nc.ncc.find(n=>nm(n.ten).length>=4&&(nm(n.ten).includes(nb)||nb.includes(nm(n.ten)))):null):null)||nc.ncc.find(n=>nm(n.ten).length>=6&&nf.includes(nm(n.ten)))||null;
+  // mã THT: PO thật đã có cùng mã NCC (hoặc cùng tên hàng) → điền sẵn
+  const MA={},TEN={};d.po.filter(p=>!p.la_mau).forEach(p=>(p.dong||[]).forEach(x=>{if(!x.ma_tht)return;if(x.ma_ncc)MA[nm(x.ma_ncc)]=x.ma_tht;if(x.ten)TEN[nm(x.ten)]=x.ma_tht}));
+  let tuMa=0;dong.forEach(x=>{if(x.ma_tht)return;const m=(x.ma_ncc&&MA[nm(x.ma_ncc)])||(x.ten&&TEN[nm(x.ten)]);if(m){x.ma_tht=m;tuMa++}});
   const cu=so&&!/^THT-PO-\s*\//.test(so)?d.po.find(p=>nm(p.so)===nm(so)):null;
   const capNhat=!!cu&&confirm(`File ${file.name}: PO ${cu.so} đã có trên app — cập nhật PO này theo file? (Huỷ = tạo PO mới)`);
   const goc=capNhat?JSON.parse(JSON.stringify(cu)):{loai,trang_thai:'nhap',dong:[],khach:[],chi_ids:[]};
   if(capNhat)dong.forEach(x=>{if(!x._f){const z=(cu.dong||[]).find(c=>c.anh_ct&&c.ma_tht&&c.ma_tht===x.ma_tht);if(z)x.anh_ct=z.anh_ct}});
   window._po={...goc,so:capNhat?cu.so:(so&&!/^THT-PO-\s*\//.test(so)?so:''),loai,ngay:ngay||goc.ngay||homNay(),so_pi:pi||goc.so_pi||'',tien_te:tt?tt[0]:'VND',noi_giao:PO_NOI.find(x=>nm(x)===nm(noi))||noi||PO_NOI[0],
     vat:vatL,ngay_giao:ngGiao||goc.ngay_giao||'',ncc_id:ncc?ncc.id:(capNhat?goc.ncc_id:null),ncc_ten:ncc?ncc.ten:(capNhat?goc.ncc_ten:''),dong,
-    ghi_chu:goc.ghi_chu||('Tải lên từ file '+file.name)};
-  poVe();toast(`Đã đọc ${dong.length} dòng hàng · ${soAnh} ảnh${ban&&!ncc?' · chưa khớp NCC "'+ban+'" — chọn lại':''}${conLai?' · còn '+conLai+' file':''}`)}
+    ghi_chu:goc.ghi_chu||('Tải lên từ file '+file.name),_file:{ncc:ncc?'':ban,te_doan:teDoan&&!capNhat}};
+  poVe();toast(`Đã đọc ${dong.length} dòng hàng · ${soAnh} ảnh${tuMa?' · '+tuMa+' mã THT theo PO cũ':''}${conLai?' · còn '+conLai+' file':''}`)}
 async function poXoa(id){if(!confirm('Xoá PO này?'))return;try{await rpc('kt_po_xoa',{p_id:id});toast('Đã xoá');closeModal();S.cache.po_d=null;await render()}catch(e){alert(e.message)}}
 async function poXoaMau(){if(!confirm('Xoá toàn bộ PO mẫu?'))return;try{const n=await rpc('kt_po_xoa',{p_id:null});toast('Đã xoá '+n+' PO mẫu');S.cache.po_d=null;await render()}catch(e){alert(e.message)}}
 // Excel PO theo đúng mẫu "THT - Mẫu PO (Nội địa & Nhập khẩu)" — song ngữ Việt / Trung, công thức thành tiền / tổng
