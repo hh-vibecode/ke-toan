@@ -627,10 +627,11 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .sk-pub-h b{display:block;font-size:16px;letter-spacing:.04em}.sk-pub-h span{font-size:12.5px;color:var(--muted)}
 .modal.sk-m>div{max-width:1080px}.sk-k{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .cbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;padding:0 14px 14px}.cbs>div{background:var(--bg2);border-radius:9px;padding:9px 12px;font-size:12.5px}.cbs b{display:block;margin-bottom:3px;font-size:13px}.cbs span{color:var(--text2)}
+.dx-it{border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:8px;background:var(--surface)}.dx-it-h{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12.5px}.dx-g3{display:grid;grid-template-columns:130px 130px minmax(0,1fr);gap:6px;margin-bottom:6px}.dx-g6{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.dx-it input{min-width:0;width:100%}@media(max-width:600px){.dx-g3{grid-template-columns:1fr 1fr}.dx-g3 input:last-child{grid-column:1/-1}.dx-g6{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .dx-sec{font-weight:600;font-size:13px;margin:6px 0 -2px}.dx-lb{font-size:12px;color:var(--text2);margin-bottom:4px}.dx-d{display:grid;grid-template-columns:130px minmax(0,1.3fr) minmax(0,1fr) 56px 34px;gap:6px;margin-bottom:6px}.dx-d input{min-width:0}.dx-f{display:flex;gap:8px;font-size:12px;padding:3px 0}.dx-da{font-size:12.5px;padding:3px 0;cursor:pointer}.dx-anh{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.dx-anh img{width:84px;height:84px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border)}@media(max-width:600px){.dx-d{grid-template-columns:1fr 1fr}}
 .po-d td{padding:3px 4px}.po-anh{width:34px;height:34px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border)}.po-fix{table-layout:fixed;width:100%;min-width:1060px}.po-fix .m-in{width:100%;min-width:0;box-sizing:border-box}.po-fix th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.po-d .m-in{padding:4px 6px;font-size:12.5px}.po-d .m-in.num{text-align:right}
 .po-thieu{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:-4px 0 12px;font-size:12.5px}.po-thieu b{margin-right:2px}.m-in.po-tg{border-color:var(--bad)}.po-d .m-in.po-tg2{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 7%,transparent)}
-.po-tong{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px}.po-tong>div{background:var(--bg2);border-radius:9px;padding:8px 10px}.po-tong span{display:block;font-size:11px;color:var(--text2)}.po-tong b{font-size:14px}
+.po-tong{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}.po-tong>div{background:var(--bg2);border-radius:9px;padding:8px 10px}.po-tong span{display:block;font-size:11px;color:var(--text2)}.po-tong b{font-size:14px}
 .dg-nhac{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:12px}
 @media(max-width:700px){.po-tong{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ds-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ds-3>div{background:var(--bg2);border-radius:9px;padding:10px 12px;min-width:0}.ds-3 h4,.modal h4{margin:0 0 8px;font-size:13px}
@@ -1166,8 +1167,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.384';
-const APP_VERSION='13/11/2026 10:25';
+const APP_SO='1.385';
+const APP_VERSION='13/11/2026 14:07';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1337,73 +1338,95 @@ function dnQR(){const o=$('#dn-qr');if(!o)return;const v=k=>(($('#dn [name='+k+'
 // Cùng màn đầu với phiếu đề nghị (link #de-xuat-mua), không cần tài khoản → kt_gui_de_xuat → mã bí mật (ảnh mẫu tải bằng mã, 3 giờ) → người gửi xem #dx=<mã>.
 // Người mua hàng xử lý ở Đơn đặt hàng (PO) → tab Đề xuất mua hàng. — Monsieur Claude
 const DX={dong:[{}],files:[],loai:'bo_sung',gui:false,v:{}};
-const DX_TT={cho_duyet:['Chờ duyệt','warn'],da_duyet:['Đã duyệt','info'],da_dat:['Đã đặt PO','ok'],tu_choi:['Từ chối','bad']},DX_LOAI={bo_sung:'Bổ sung hàng',khach_dat:'Khách đặt riêng'};
+const DX_TT={cho_duyet:['Chờ duyệt','warn'],da_duyet:['Đã duyệt','info'],da_dat:['Đã đặt PO','ok'],tu_choi:['Từ chối','bad']},DX_LOAI={bo_sung:'Bổ sung hàng',khach_dat:'Khách đặt riêng',trung_bay:'Hàng trưng bày'};
 const maDX=id=>'DX'+String(id).padStart(5,'0'),dxDa=()=>{try{return JSON.parse(localStorage.getItem('kt_dx_ds')||'[]')}catch(e){return []}};
 function dnMo(){const h=location.hash,m1=h.match(/^#phieu=([0-9a-f]{20,64})$/),m2=h.match(/^#dx=([0-9a-f]{20,64})$/);
   if(m1)return dnXem(m1[1]);if(m2)return dxXem(m2[1]);if(h==='#de-xuat-mua')return dxForm();dnForm()}
 function dxDoc(){const f=$('#dx');if(f)DX.v=formData(f)}
 function dxLoai(k){dxDoc();DX.loai=k;dxForm()}
+// 13/11 kế toán: "form thiếu nhiều trường — Hiền Thuỷ nhập hàng trong nước hàng luân chuyển (hương nến trầm vàng mã): cửa hàng gửi PO → hệ thống check tồn cảnh báo
+// người duyệt → duyệt → KT gửi NCC; Chánh Tâm + sales đặt khi khách cọc → gửi PO → duyệt → người đặt đặt + cập nhật tình trạng để sales nắm → hàng về → giao khách;
+// CT có đơn trưng bày không gắn cọc; form PO từ các BP phải đúng mẫu — bắt buộc người order điền đủ; gắn khách hàng nào, phiếu cọc nào". — Monsieur Claude
+const DX_TEN={bo_sung:'Đề xuất mua hàng',khach_dat:'Đơn khách đặt riêng',trung_bay:'Đặt hàng trưng bày'};
 async function dxForm(){const b=$('#gt-body');if(!b)return;
   if(!DN.dm){b.innerHTML='<div class="empty">Đang tải...</div>';try{DN.dm=await rpc('kt_dm_de_nghi',{},true)}catch(e){b.innerHTML=`<div class="empty neg">${esc(e.message)}</div>`;return}}
+  if(!DX.ncc){try{DX.ncc=await rpc('kt_dm_de_xuat',{},true)}catch(e){DX.ncc=[]}}
   if(!S.toi&&location.hash!=='#de-xuat-mua')history.replaceState(null,'',location.pathname+'#de-xuat-mua');
   let ten='';try{ten=localStorage.getItem('kt_dn_ten')||''}catch(e){}if(S.toi&&S.toi.ho_ten)ten=S.toi.ho_ten;
-  const kd=DX.loai==='khach_dat',da=dxDa().slice(0,5);
-  b.innerHTML=`<div class="gt-h"><div><h1>${kd?'Đơn khách đặt riêng':'Đề xuất mua hàng'}</h1></div></div>
+  const L=DX.loai,kd=L==='khach_dat',nDa=dxDa().length;
+  b.innerHTML=`<div class="gt-h"><div><h1>${DX_TEN[L]}</h1></div>${nDa?`<button class="m-btn sm out" style="margin-left:auto" onclick="dxTheoDoi()">Theo dõi đơn đã gửi (${nDa})</button>`:''}</div>
     <div class="m-seg dn-loai" style="margin:4px 0 8px"><button type="button" onclick="DN.loai='thanh_toan';dnForm()">Đề nghị thanh toán</button><button type="button" onclick="DN.loai='tam_ung';dnForm()">Tạm ứng & hoàn ứng</button><button type="button" class="on">Đề xuất mua hàng</button></div>
-    <div class="m-seg" style="margin:0 0 10px"><button type="button" class="${kd?'':'on'}" onclick="dxLoai('bo_sung')">Bổ sung hàng cho cửa hàng</button><button type="button" class="${kd?'on':''}" onclick="dxLoai('khach_dat')">Khách đặt riêng (đã cọc)</button></div>
+    <div class="m-seg" style="margin:0 0 10px">${[['bo_sung','Bổ sung hàng cửa hàng'],['khach_dat','Khách đặt riêng (đã cọc)'],['trung_bay','Hàng trưng bày']].map(([k,t])=>`<button type="button" class="${L===k?'on':''}" onclick="dxLoai('${k}')">${t}</button>`).join('')}</div>
     <div class="form" id="dx">
       <label><span>Họ tên người đề xuất${BB}</span><input name="nguoi" value="${esc(ten)}"></label>
       <label><span>Cơ sở / bộ phận${BB}</span><select name="bo_phan_id"><option value="">— chọn —</option><optgroup label="Cơ sở">${DN.dm.don_vi.map(x=>`<option value="${x.id}">${esc(x.ten)}</option>`).join('')}</optgroup><optgroup label="Bộ phận">${DN.dm.bo_phan.map(x=>`<option value="${x.id}">${esc(x.ten)}</option>`).join('')}</optgroup></select></label>
-      <label>Cần hàng trước ngày<input type="date" name="ngay_can"></label>
-      <label>Mức ưu tiên<select name="uu_tien"><option value="thuong">Bình thường</option><option value="gap">Gấp</option></select></label>
-      ${kd?`<div class="full dx-sec">Thông tin khách</div>
-        <label><span>Tên khách${BB}</span><input name="k_ten"></label><label>Số điện thoại<input name="k_sdt" inputmode="tel"></label>
-        <label>Mã đơn đặt hàng Kiot<input name="k_ma_don"></label><label>Tiền khách đã cọc${moneyIn('k_coc','')}</label>
-        <label>Hẹn giao khách<input type="date" name="k_hen_giao"></label><label></label>`:''}
-      <div class="full dx-sec">Hàng cần mua</div>
+      <label><span>Nhà cung cấp${BB}</span><input name="ncc_ten" list="dx-ncc" placeholder="Gõ để chọn NCC — NCC mới thì ghi tên"><datalist id="dx-ncc">${(DX.ncc||[]).map(t=>`<option value="${esc(t)}">`).join('')}</datalist></label>
+      <label><span>Cần hàng trước ngày${BB}</span><input type="date" name="ngay_can"></label>
+      <label>Mức ưu tiên<select name="uu_tien"><option value="thuong">Bình thường</option><option value="gap">Gấp</option></select></label><label></label>
+      ${kd?`<div class="full dx-sec">Thông tin khách & tiền cọc</div>
+        <label><span>Tên khách${BB}</span><input name="k_ten"></label><label><span>Số điện thoại${BB}</span><input name="k_sdt" inputmode="tel"></label>
+        <label><span>Mã đơn đặt hàng Kiot${BB}</span><input name="k_ma_don" placeholder="DH…"></label><label><span>Tiền khách đã cọc${BB}</span>${moneyIn('k_coc','')}</label>
+        <label><span>Mã phiếu thu cọc (Kiot)${BB}</span><input name="k_phieu_coc" placeholder="TT… / PT…"></label><label><span>Hẹn giao khách${BB}</span><input type="date" name="k_hen_giao"></label>`:''}
+      <div class="full dx-sec">Hàng cần đặt <span class="muted" style="font-weight:400;font-size:12px">· mỗi dòng cần tên, SL, màu / kích thước / quy cách</span></div>
       <div class="full" id="dx-dong"></div>
-      <label class="full">Ghi chú<input name="ghi_chu" placeholder="Lý do / yêu cầu thêm"></label>
-      <div class="full"><div class="dx-lb">Ảnh mẫu (chụp / chọn nhiều ảnh được)</div><input type="file" accept="image/*,application/pdf" multiple onchange="dxChonFile(this.files);this.value=''"><div id="dx-files"></div></div></div>
+      <label class="full">Ghi chú<input name="ghi_chu" placeholder="Lý do / yêu cầu thêm cho người đặt hàng"></label>
+      <div class="full"><div class="dx-lb">File / ảnh khác (tuỳ chọn)</div><input type="file" accept="image/*,application/pdf" multiple onchange="dxChonFile(this.files);this.value=''"><div id="dx-files"></div></div></div>
     <div class="err" id="dx-err"></div>
-    <button class="btn pri" id="dx-gui" style="width:100%" onclick="dxGui()">Gửi đề xuất</button>
-    ${da.length?`<div class="muted" style="font-size:12px;margin:14px 0 6px">Đề xuất đã gửi từ máy này</div>${da.map(x=>`<div class="dx-da" onclick="dxXem('${x.ma}')"><span class="m-link">${maDX(x.id)}</span> <span class="muted">${esc(x.nd)}</span></div>`).join('')}`:''}`;
+    <button class="btn pri" id="dx-gui" style="width:100%" onclick="dxGui()">Gửi ${DX_TEN[L].toLowerCase()}</button>`;
   const f=$('#dx');Object.entries(DX.v||{}).forEach(([k,v])=>{const e=f.querySelector(`[name=${k}]`);if(e&&v!=null&&v!=='')e.value=v});dxVeDong();dxVeFile()}
 function dxVeDong(){const el=$('#dx-dong');if(!el)return;
-  el.innerHTML=DX.dong.map((x,i)=>`<div class="dx-d"><input placeholder="Mã Kiot (nếu có)" value="${esc(x.ma||'')}" onchange="DX.dong[${i}].ma=this.value"><input placeholder="Tên / mô tả hàng" value="${esc(x.ten||'')}" onchange="DX.dong[${i}].ten=this.value">
-    <input placeholder="Quy cách: màu, kích thước…" value="${esc(x.quy_cach||'')}" onchange="DX.dong[${i}].quy_cach=this.value"><input placeholder="SL" inputmode="numeric" value="${esc(x.sl||'')}" onchange="DX.dong[${i}].sl=this.value">
-    <button type="button" class="m-btn sm" title="Bỏ dòng" onclick="DX.dong.splice(${i},1);if(!DX.dong.length)DX.dong=[{}];dxVeDong()">✕</button></div>`).join('')+`<button type="button" class="m-btn sm" onclick="DX.dong.push({});dxVeDong()">+ Thêm mặt hàng</button>`}
+  const ip=(i,k,ph,ex)=>`<input placeholder="${ph}" value="${esc(DX.dong[i][k]??'')}" onchange="DX.dong[${i}].${k}=this.value" ${ex||''}>`;
+  el.innerHTML=DX.dong.map((x,i)=>`<div class="dx-it"><div class="dx-it-h"><b>Dòng ${i+1}</b>${x._u?`<img src="${x._u}" class="po-anh">`:''}<button type="button" class="m-btn sm out" onclick="this.nextElementSibling.click()">${x._f?'Đổi ảnh':'+ Ảnh mẫu'}</button><input type="file" accept="image/*" hidden onchange="dxAnhDong(${i},this.files[0])">
+      <span class="m-link" style="margin-left:auto" onclick="DX.dong.splice(${i},1);if(!DX.dong.length)DX.dong=[{}];dxVeDong()">✕ Bỏ dòng</span></div>
+    <div class="dx-g3">${ip(i,'ma','Mã Kiot (nếu có)')}${ip(i,'ma_ncc','Mã NCC (nếu có)')}${ip(i,'ten','Tên hàng *')}</div>
+    <div class="dx-g6">${ip(i,'mau','Màu')}${ip(i,'kt','Kích thước')}${ip(i,'quy_cach','Quy cách')}${ip(i,'dvt','ĐVT')}${ip(i,'sl','SL *','inputmode="numeric"')}${ip(i,'gia','Đơn giá dự kiến','inputmode="numeric"')}</div></div>`).join('')
+    +`<button type="button" class="m-btn sm" onclick="DX.dong.push({});dxVeDong()">+ Thêm mặt hàng</button>`}
+function dxAnhDong(i,f){if(!f)return;const x=DX.dong[i];if(x._u)URL.revokeObjectURL(x._u);x._f=f;x._u=URL.createObjectURL(f);dxVeDong()}
 function dxChonFile(fs){for(const f of fs)if(/^image\/|pdf/i.test(f.type||'')||/\.(jpe?g|png|webp|heic|heif|pdf)$/i.test(f.name))DX.files.push(f);dxVeFile()}
 function dxVeFile(){const el=$('#dx-files');if(!el)return;el.innerHTML=DX.files.map((f,i)=>`<div class="dx-f"><span>${esc(f.name)}</span><span class="dn-tt" id="dx-tt-${i}"></span>${DX.gui?'':`<span class="m-link" onclick="DX.files.splice(${i},1);dxVeFile()">✕</span>`}</div>`).join('')}
+async function dxTaiMot(ma,f){let fi=await nenAnh(f);const mime=dnMime(fi);if(fi.size>15*1024*1024)throw new Error('quá 15 MB');
+  const {duong_dan,url}=await ctFn({viec:'tai_len_dx',ma,ten:fi.name});if(!fi.type)fi=new File([fi],fi.name,{type:mime});await putTienDo(url,fi,()=>{});
+  return await rpc('kt_them_ct_dx',{p_ma:ma,p_duong_dan:duong_dan,p_ten:fi.name,p_mime:mime,p_kich_thuoc:fi.size},true)}
 async function dxGui(){if(DX.gui)return;const f=$('#dx'),o=formData(f),e=$('#dx-err'),kd=DX.loai==='khach_dat';
-  const dong=DX.dong.filter(x=>(x.ma||'').trim()||(x.ten||'').trim()).map(x=>({ma:(x.ma||'').trim(),ten:(x.ten||'').trim(),quy_cach:(x.quy_cach||'').trim(),sl:so(x.sl)||0}));
-  const thieu=[!o.nguoi&&'họ tên',!o.bo_phan_id&&'cơ sở / bộ phận',!dong.length&&'mặt hàng',dong.some(x=>!x.sl)&&'số lượng từng mặt hàng',kd&&!o.k_ten&&'tên khách'].filter(Boolean);
+  const ds=DX.dong.filter(x=>(x.ma||'').trim()||(x.ten||'').trim()),dong=ds.map(x=>({ma:(x.ma||'').trim(),ma_ncc:(x.ma_ncc||'').trim(),ten:(x.ten||'').trim(),mau:(x.mau||'').trim(),kt:(x.kt||'').trim(),
+    quy_cach:(x.quy_cach||'').trim(),dvt:(x.dvt||'').trim(),sl:so(x.sl)||0,gia:x.gia?so(x.gia):null}));
+  const thieu=[!o.nguoi&&'họ tên',!o.bo_phan_id&&'cơ sở / bộ phận',!o.ncc_ten&&'nhà cung cấp',!o.ngay_can&&'ngày cần hàng',!dong.length&&'mặt hàng',dong.some(x=>!x.ten)&&'tên hàng từng dòng',
+    dong.some(x=>!x.sl)&&'SL từng dòng',dong.some(x=>!x.mau&&!x.kt&&!x.quy_cach)&&'màu / kích thước / quy cách từng dòng',
+    kd&&!o.k_ten&&'tên khách',kd&&!o.k_sdt&&'SĐT khách',kd&&!o.k_ma_don&&'mã đơn Kiot',kd&&!o.k_coc&&'tiền cọc',kd&&!o.k_phieu_coc&&'mã phiếu thu cọc',kd&&!o.k_hen_giao&&'hẹn giao'].filter(Boolean);
   if(thieu.length){e.textContent='Còn thiếu: '+thieu.join(', ');return}
   DX.gui=true;const nut=$('#dx-gui');nut.disabled=true;nut.textContent='Đang gửi...';e.textContent='';
-  const p={loai:DX.loai,nguoi:o.nguoi,bo_phan_id:+o.bo_phan_id,ngay_can:o.ngay_can||null,uu_tien:o.uu_tien,dong,ghi_chu:o.ghi_chu,
-    khach:kd?{ten:o.k_ten,sdt:o.k_sdt,ma_don:o.k_ma_don,coc:o.k_coc?so(o.k_coc):null,hen_giao:o.k_hen_giao||null}:null};
-  let r;try{r=await rpc('kt_gui_de_xuat',{p_dong:p},true)}catch(x){DX.gui=false;nut.disabled=false;nut.textContent='Gửi đề xuất';e.textContent=x.message;return}
+  const p={loai:DX.loai,nguoi:o.nguoi,bo_phan_id:+o.bo_phan_id,ncc_ten:o.ncc_ten,ngay_can:o.ngay_can,uu_tien:o.uu_tien,dong,ghi_chu:o.ghi_chu,
+    khach:kd?{ten:o.k_ten,sdt:o.k_sdt,ma_don:o.k_ma_don,coc:so(o.k_coc),phieu_coc:o.k_phieu_coc,hen_giao:o.k_hen_giao}:null};
+  let r;try{r=await rpc('kt_gui_de_xuat',{p_dong:p},true)}catch(x){DX.gui=false;nut.disabled=false;nut.textContent='Gửi lại';e.textContent=x.message;return}
   const nd=dong.map(x=>x.ten||x.ma).slice(0,2).join(', ')+(dong.length>2?' +'+(dong.length-2):'');
   try{localStorage.setItem('kt_dn_ten',p.nguoi);localStorage.setItem('kt_dx_ds',JSON.stringify([{id:r.id,ma:r.ma,nd,luc:Date.now()},...dxDa()].slice(0,200)))}catch(x){}
-  nut.textContent='Đang tải ảnh...';dxVeFile();const loi=[];
-  for(let i=0;i<DX.files.length;i++){const tt=$('#dx-tt-'+i);
-    try{if(tt)tt.textContent='đang nén...';let fi=await nenAnh(DX.files[i]);const mime=dnMime(fi);if(fi.size>15*1024*1024)throw new Error('quá 15 MB');
-      const {duong_dan,url}=await ctFn({viec:'tai_len_dx',ma:r.ma,ten:fi.name});if(!fi.type)fi=new File([fi],fi.name,{type:mime});
-      await putTienDo(url,fi,pc=>{if(tt)tt.textContent=pc+'%'});await rpc('kt_them_ct_dx',{p_ma:r.ma,p_duong_dan:duong_dan,p_ten:fi.name,p_mime:mime,p_kich_thuoc:fi.size},true);
-      if(tt){tt.textContent='✓';tt.className='dn-tt pos-t'}}catch(x){loi.push(DX.files[i].name+' ('+x.message+')')}}
+  nut.textContent='Đang tải ảnh...';const loi=[];
+  for(let i=0;i<ds.length;i++){if(!ds[i]._f)continue;try{const ct=await dxTaiMot(r.ma,ds[i]._f);await rpc('kt_dx_gan_anh',{p_ma:r.ma,p_i:i,p_ct:ct},true)}catch(x){loi.push('ảnh dòng '+(i+1)+' ('+x.message+')')}}
+  for(let i=0;i<DX.files.length;i++){const tt=$('#dx-tt-'+i);try{if(tt)tt.textContent='đang tải...';await dxTaiMot(r.ma,DX.files[i]);if(tt){tt.textContent='✓';tt.className='dn-tt pos-t'}}catch(x){loi.push(DX.files[i].name+' ('+x.message+')')}}
   DX.gui=false;DX.files=[];DX.dong=[{}];DX.v={};
   $('#gt-body').innerHTML=`<div class="gt-ok"><div class="gt-ok-i">✓</div><h1>Đã gửi ${maDX(r.id)}</h1><div>${esc(nd)}</div>
-    <div class="muted" style="margin:10px 0">Người mua hàng sẽ kiểm tồn kho 3 cơ sở rồi duyệt / đặt hàng NCC.${loi.length?`<br><span class="neg-t">${loi.length} ảnh chưa tải được: ${esc(loi.join('; '))}</span>`:''}</div>
+    <div class="muted" style="margin:10px 0">Người mua hàng kiểm tồn kho 3 cơ sở rồi duyệt / đặt NCC. Tình trạng hàng cập nhật ở link theo dõi.${loi.length?`<br><span class="neg-t">Chưa tải được: ${esc(loi.join('; '))}</span>`:''}</div>
     <div class="gt-link"><input readonly value="${esc(location.origin+location.pathname+'#dx='+r.ma)}" onclick="this.select()"><button class="btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(this.previousElementSibling.value);toast('Đã chép link')">Chép link theo dõi</button></div>
-    <div class="acts" style="justify-content:center"><button class="btn" onclick="dxXem('${r.ma}')">Xem trạng thái</button><button class="btn pri" onclick="dxForm()">Gửi đề xuất khác</button></div></div>`}
+    <div class="acts" style="justify-content:center"><button class="btn" onclick="dxTheoDoi()">Theo dõi đơn đã gửi</button><button class="btn pri" onclick="dxForm()">Gửi đơn khác</button></div></div>`}
+// tình trạng 1 đơn cho Sale: từ chối / chờ duyệt / đã duyệt / theo PO (đã gửi NCC → đang sản xuất → đang vận chuyển → về kho → đã giao khách)
+const dxTinhTrang=x=>x.tt==='tu_choi'?['Từ chối','bad']:x.po_tt?(PO_TT[x.po_tt]||[x.po_tt,'']):(DX_TT[x.tt]||[x.tt,'']);
 async function dxXem(ma){const b=$('#gt-body');if(!b)return;b.innerHTML='<div class="empty">Đang tải...</div>';if(!S.toi)history.replaceState(null,'',location.pathname+'#dx='+ma);
-  let x;try{x=await rpc('kt_xem_de_xuat',{p_ma:ma},true)}catch(e){b.innerHTML=`<div class="empty neg">${esc(e.message)}</div><div class="acts" style="justify-content:center"><button class="btn pri" onclick="dxForm()">Gửi đề xuất mới</button></div>`;return}
-  b.innerHTML=`<div class="gt-h"><div><h1>${maDX(x.id)} · ${DX_LOAI[x.loai]}</h1></div></div>
-    <div style="margin:4px 0 12px">${pill(...DX_TT[x.trang_thai])}${x.uu_tien==='gap'?' '+pill('Gấp','bad'):''}${x.po?' '+pill('PO '+x.po,'ok'):''}</div>
-    <div class="muted" style="font-size:12.5px">Gửi ${fmtDT(x.tao_luc)} · ${esc(x.nguoi)}${x.ngay_can?' · cần trước '+fmtD(x.ngay_can):''}${x.so_file?' · '+x.so_file+' ảnh':''}</div>
+  let x;try{x=await rpc('kt_xem_de_xuat',{p_ma:ma},true)}catch(e){b.innerHTML=`<div class="empty neg">${esc(e.message)}</div><div class="acts" style="justify-content:center"><button class="btn pri" onclick="dxForm()">Gửi đơn mới</button></div>`;return}
+  const t=dxTinhTrang({tt:x.trang_thai,po_tt:x.po_tt});
+  b.innerHTML=`<div class="gt-h"><div><h1>${maDX(x.id)} · ${DX_TEN[x.loai]||''}</h1></div><button class="m-btn sm out" style="margin-left:auto" onclick="dxTheoDoi()">Tất cả đơn đã gửi</button></div>
+    <div style="margin:4px 0 12px">${pill(...t)}${x.uu_tien==='gap'?' '+pill('Gấp','bad'):''}${x.po?' '+pill('PO '+x.po,'info'):''}${x.po_giao?` <span class="muted" style="font-size:12.5px">dự kiến hàng về ${fmtD(x.po_giao)}</span>`:''}</div>
+    <div class="muted" style="font-size:12.5px">Gửi ${fmtDT(x.tao_luc)} · ${esc(x.nguoi)}${x.ncc?' · NCC '+esc(x.ncc):''}${x.ngay_can?' · cần trước '+fmtD(x.ngay_can):''}</div>
     ${x.ly_do?`<div class="neg-t" style="margin-top:8px">Lý do: ${esc(x.ly_do)}</div>`:''}
-    <table class="m-t" style="margin-top:10px"><tr><th>Mã</th><th>Hàng</th><th>Quy cách</th><th class="num">SL</th></tr>${(x.dong||[]).map(d=>`<tr><td class="nw">${esc(d.ma||'')}</td><td class="ten">${esc(d.ten||'')}</td><td class="ten">${esc(d.quy_cach||'')}</td><td class="num">${fmt(d.sl)}</td></tr>`).join('')}</table>
+    <table class="m-t" style="margin-top:10px"><tr><th>Mã</th><th>Hàng</th><th>Màu · kích thước · quy cách</th><th class="num">SL</th></tr>${(x.dong||[]).map(d=>`<tr><td class="nw">${esc(d.ma||'')}</td><td class="ten">${esc(d.ten||'')}</td><td class="ten">${esc([d.mau,d.kt,d.quy_cach].filter(Boolean).join(' · '))}</td><td class="num">${fmt(d.sl)}</td></tr>`).join('')}</table>
     ${x.khach?`<div class="muted" style="font-size:12.5px;margin-top:8px">Khách: ${esc(x.khach.ten||'')}${x.khach.ma_don?' · đơn '+esc(x.khach.ma_don):''}${x.khach.hen_giao?' · hẹn giao '+fmtD(x.khach.hen_giao):''}</div>`:''}
-    <div class="acts" style="justify-content:center;margin-top:14px"><button class="btn pri" onclick="dxForm()">Gửi đề xuất khác</button></div>`}
+    <div class="acts" style="justify-content:center;margin-top:14px"><button class="btn pri" onclick="dxForm()">Gửi đơn khác</button></div>`}
+// Sale theo dõi mọi đơn đã gửi từ máy này (máy nhớ mã bí mật — không lộ đơn người khác)
+async function dxTheoDoi(){const b=$('#gt-body');if(!b)return;b.innerHTML='<div class="empty">Đang tải...</div>';
+  let ds=[];try{ds=await rpc('kt_xem_de_xuat_ds',{p_ds:dxDa().map(x=>x.ma)},true)}catch(e){b.innerHTML=`<div class="empty neg">${esc(e.message)}</div>`;return}
+  b.innerHTML=`<div class="gt-h"><div><h1>Đơn đã gửi từ máy này</h1></div><button class="m-btn sm out" style="margin-left:auto" onclick="dxForm()">+ Gửi đơn mới</button></div>
+    <div class="scroll"><table class="m-t"><tr><th>Mã</th><th>Ngày gửi</th><th>Loại</th><th>Hàng</th><th>Khách</th><th class="c">Tình trạng</th></tr>
+    ${ds.map(x=>`<tr class="click" onclick="dxXem('${x.ma}')"><td class="nw"><span class="m-link">${maDX(x.id)}</span></td><td class="nw">${fmtD(String(x.tao_luc).slice(0,10))}</td><td class="nw">${DX_TEN[x.loai]||''}</td>
+      <td class="ten">${esc(String(x.hang||'').slice(0,60))}</td><td class="ten">${esc(x.khach||'')}</td><td class="c">${pill(...dxTinhTrang(x))}${x.po_giao?`<div class="muted" style="font-size:11px">về ${fmtD(x.po_giao)}</div>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">Chưa có đơn nào</td></tr>'}</table></div>`}
 async function dnForm(){
   const b=$('#gt-body');if(!b)return;if(!S.toi&&/^#(de-xuat-mua|dx=)/.test(location.hash))history.replaceState(null,'',location.pathname+'#de-nghi');
   if(!DN.dm){b.innerHTML='<div class="empty">Đang tải...</div>';try{DN.dm=await rpc('kt_dm_de_nghi',{},true)}catch(e){b.innerHTML=`<div class="empty neg">${esc(e.message)}</div>`;return}}
@@ -3605,7 +3628,8 @@ async function lnkDS(moi){if(!moi&&S.cache.lnk_ds&&Date.now()-(S.cache.lnk_luc||
 // Anh: "dựng trước khung, tự tạo dữ liệu giả lập hoặc dựa trên có sẵn, nào cần gì t update thêm sau, note rõ các phần dữ liệu cần bổ sung" + gửi mẫu PO
 // song ngữ (Nội địa & Nhập khẩu). Kế toán: "cần luôn để làm lại giá". Không đổi luồng cũ: trang mới, bảng mới (kt_po, kt_gia_*), không ghi gì vào Kiot.
 // Dữ liệu mẫu gắn nhãn "Mẫu" (PO: la_mau, xoá 1 nút; quy tắc giá: la_mau đến khi kế toán lưu). Mỗi trang có khối "Cần bổ sung để chạy thật". — Monsieur Claude
-const PO_TT={nhap:['Nháp',''],da_gui:['Đã gửi NCC','info'],dang_giao:['Đang giao','warn'],da_nhan:['Đã nhận đủ','ok'],huy:['Đã huỷ','bad']};
+const PO_TT={nhap:['Nháp',''],da_gui:['Đã gửi NCC','info'],dang_sx:['Đang sản xuất','info'],dang_giao:['Đang vận chuyển','warn'],da_nhan:['Hàng đã về kho','ok'],da_giao_khach:['Đã giao khách','ok'],huy:['Đã huỷ','bad']};   // 13/11: thêm Đang sản xuất / Đã giao khách — Sale theo dõi tình trạng hàng
+const PO_CP={van_chuyen:'Vận chuyển',dong_kien:'Đóng kiện gỗ',dich_vu:'Dịch vụ khác',khac:'Khác'};   // 13/11 kế toán: chi phí khác ngoài tiền hàng
 const PO_LOAI={noi_dia:'Nội địa',nhap_khau:'Nhập khẩu'},PO_LOAI_TQ={noi_dia:'Nội địa / 国内',nhap_khau:'Nhập khẩu / 进口'};
 const PO_NOI=['Giao tận kho THT / 送到THT仓库','THT nhận tại kho NCC / THT到供应商仓库提货','Giao tại cảng / 港口交货'];
 const poTien=p=>sumBy(p.dong||[],d=>(+d.sl||0)*(+d.don_gia||0)),poThue=p=>Math.round(poTien(p)*(+p.vat||0)/100),poTong=p=>poTien(p)+poThue(p);
@@ -3630,10 +3654,10 @@ async function pagePO(){const el=$('#page'),f=S.f,g=nccGhi(),t=f.po_tab||'po';if
         <select class="m-in" style="width:130px" onchange="S.f.po_loai=this.value;S.f.po_tr=1;render()"><option value="">Tất cả loại</option>${optsObj(PO_LOAI,lo)}</select>
         <select class="m-in" style="width:150px" onchange="S.f.po_tt=this.value;S.f.po_tr=1;render()"><option value="">Tất cả trạng thái</option>${optsObj(Object.fromEntries(Object.entries(PO_TT).map(([k,v])=>[k,v[0]])),tt)}</select>
         ${g&&mau?`<button class="m-btn out" onclick="poXoaMau()">Xoá dữ liệu mẫu</button>`:''}${g?`<button class="m-btn out" onclick="poMauTrong()">⬇ Mẫu PO trống</button><label class="m-btn out" title="File PO bất kỳ (Excel, theo mẫu hay không) — app đưa về mẫu PO, chỉ cần điền phần Còn thiếu; chọn nhiều file được">⬆ Tải lên PO (Excel)<input type="file" hidden multiple accept=".xlsx,.xls,.csv" onchange="poTaiLen(this.files);this.value=''"></label><button class="m-btn pri" onclick="poForm()">+ Tạo PO</button>`:''}</div></div>
-    <div class="scroll"><table class="m-t"><tr><th>Số PO</th><th>Ngày</th><th>Loại</th><th>Nhà cung cấp</th><th class="num">Mặt hàng</th><th class="num">Tổng tiền</th><th class="num">Quy đổi VND</th><th>Ngày giao</th><th class="c">Trạng thái</th></tr>
+    <div class="scroll"><table class="m-t"><tr><th>Số PO</th><th>Ngày</th><th>Loại</th><th>Nhà cung cấp</th><th class="num">Mặt hàng</th><th class="num">Tổng tiền</th><th class="num">Quy đổi VND</th><th>Ngày giao</th><th class="c">Trạng thái</th><th></th></tr>
     ${l.slice(a,b).map(p=>`<tr class="click" onclick="poForm(${p.id})"><td class="nw"><span class="m-link">${esc(p.so)}</span>${p.la_mau?' <span class="badge">Mẫu</span>':''}</td><td class="nw">${fmtD(p.ngay)}</td><td class="nw">${PO_LOAI[p.loai]}</td>
       <td class="ten">${esc(p.ncc_ten||'—')}</td><td class="num">${fmt((p.dong||[]).length)}</td><td class="num"><b>${poF(p,poTong(p))}</b></td><td class="num">${p.tien_te==='VND'?'':+p.ty_gia?fmt(poVnd(p,poTong(p))):'<span class="muted">chưa có tỷ giá</span>'}</td>
-      <td class="nw">${p.ngay_giao?fmtD(p.ngay_giao):'<span class="muted">—</span>'}</td><td class="c">${pill(...PO_TT[p.trang_thai])}</td></tr>`).join('')||`<tr><td colspan="9" class="m-empty">${P.length?'Không có PO phù hợp':'Chưa có PO'+(g?' — bấm + Tạo PO':'')}</td></tr>`}</table></div>
+      <td class="nw">${p.ngay_giao?fmtD(p.ngay_giao):'<span class="muted">—</span>'}</td><td class="c">${pill(...PO_TT[p.trang_thai])}</td><td class="c"><button class="m-btn sm out" onclick="event.stopPropagation();poForm(${p.id})">✏ ${g?'Sửa':'Xem'}</button></td></tr>`).join('')||`<tr><td colspan="10" class="m-empty">${P.length?'Không có PO phù hợp':'Chưa có PO'+(g?' — bấm + Tạo PO':'')}</td></tr>`}</table></div>
     ${thanhTrang('po',l.length,30,tr,'đơn')}</div>
     ${canBoSung([['PO thật','Hiện có '+mau+' PO mẫu (dựng từ phiếu nhập Kiot / hàng nhập khẩu có sẵn). Tạo PO thật rồi bấm "Xoá dữ liệu mẫu".'],
       ['Thông tin bên bán','Địa chỉ, MST, tài khoản nhận tiền của từng NCC (hồ sơ NCC) — PO Excel lấy từ đây; NCC nước ngoài cần tên tiếng Trung / tài khoản RMB.'],
@@ -3674,9 +3698,15 @@ function poVe(){const p=window._po,g=nccGhi(),ds=(S.cache.po_ncc||[]).filter(x=>
       ${p.dong.map((x,i)=>{const c=(k,w,num)=>`<td><input class="m-in${num?' num':''}${vien(x,k)}" value="${esc(x[k]??'')}" onchange="poDong(${i},'${k}',this.value)"${num?' inputmode="decimal"':''}></td>`;
         return `<tr><td class="muted">${i+1}</td>${c('ma_tht',96)}${c('ma_ncc',84)}${c('ten',200)}${c('mau',64)}${c('kt',80)}${c('quy_cach',80)}${c('dvt',50)}${c('sl',60,1)}${c('sl_nhan',60,1)}${c('don_gia',96,1)}
           <td class="num nw"><b>${poF(p,(+x.sl||0)*(+x.don_gia||0))}</b></td><td>${anhO(x,i)}</td>${c('ghi_chu',110)}<td>${g?`<span class="m-link" title="Bỏ dòng" onclick="poBo(${i})">✕</span>`:''}</td></tr>`}).join('')}</table></div>
-    ${g?`<div style="display:flex;gap:6px;margin-top:6px;align-items:center"><button class="m-btn sm" onclick="poThem()">+ Thêm dòng</button><label class="m-btn sm out" title="Chọn nhiều ảnh — tên file = Mã THT hoặc Mã NCC của dòng">⬆ Ảnh theo mã hàng<input type="file" hidden multiple accept="image/*" onchange="poAnhTheoMa(this.files);this.value=''"></label><span class="muted" style="font-size:11.5px">tên file ảnh = mã hàng · ảnh chọn trước khi lưu sẽ tải lên khi bấm Lưu</span></div>`:''}
-    <div class="po-tong"><div><span>Cộng tiền hàng</span><b>${poF(p,tien)}</b></div><div><span>Thuế GTGT ${+p.vat||0}%</span><b>${poF(p,thue)}</b></div><div><span>Tổng cộng</span><b>${poF(p,tong)}</b></div>
+    ${g?`<div style="display:flex;gap:6px;margin-top:6px;align-items:center"><button class="m-btn sm" onclick="poThem()">+ Thêm dòng</button>${(p._xoa||[]).length?`<button class="m-btn sm out" onclick="poHoanTac()" title="Khôi phục dòng vừa xoá">↶ Hoàn tác xoá (${p._xoa.length})</button>`:''}<label class="m-btn sm out" title="Chọn nhiều ảnh — tên file = Mã THT hoặc Mã NCC của dòng">⬆ Ảnh theo mã hàng<input type="file" hidden multiple accept="image/*" onchange="poAnhTheoMa(this.files);this.value=''"></label><span class="muted" style="font-size:11.5px">tên file ảnh = mã hàng · ảnh chọn trước khi lưu sẽ tải lên khi bấm Lưu</span></div>`:''}
+    <div class="po-tong"><div><span>Cộng tiền hàng</span><b>${poF(p,tien)}</b></div><div><span>Thuế GTGT ${+p.vat||0}%</span><b>${poF(p,thue)}</b></div><div><span>Tổng cộng</span><b>${poF(p,tong)}</b></div><div><span>Chi phí khác</span><b>${fmt(sumBy(p.chi_phi||[],z=>+z.so_tien||0))} đ</b></div>
       <div><span>Đã trả (phiếu chi)</span><b>${fmt(poDa(p))} đ</b></div><div><span>Còn lại</span><b>${coc==null?'— cần tỷ giá':poF(p,tong-coc)}</b></div>${p.tien_te!=='VND'?`<div><span>Quy đổi VND</span><b>${+p.ty_gia?fmt(poVnd(p,tong)):'—'}</b></div>`:''}</div>
+    <h4 style="margin:14px 0 6px">Chi phí khác (vận chuyển, đóng kiện gỗ, dịch vụ…)</h4>
+    <div class="scroll"><table class="m-t po-d"><tr><th>Loại</th><th>Nội dung</th><th class="num">Số tiền (đ)</th><th>Đơn vị nhận tiền</th><th>Số phiếu chi (nếu đã trả)</th><th></th></tr>
+      ${(p.chi_phi||[]).map((z,i)=>{const c=(k,w)=>`<td><input class="m-in" style="width:${w}px" value="${esc(z[k]??'')}" onchange="poCp(${i},'${k}',this.value)"></td>`;
+        return `<tr><td><select class="m-in" style="width:150px" onchange="poCp(${i},'loai',this.value)">${optsObj(PO_CP,z.loai||'van_chuyen')}</select></td>${c('nd',230)}<td><input class="m-in num" style="width:120px" inputmode="numeric" value="${z.so_tien!=null?fmt(z.so_tien):''}" onchange="poCp(${i},'so_tien',this.value)"></td>${c('don_vi_nhan',190)}${c('so_pc',130)}
+        <td>${g?`<span class="m-link" onclick="poCpBo(${i})">✕</span>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="muted">Chưa có chi phí khác</td></tr>'}</table></div>
+    ${g?`<button class="m-btn sm" style="margin-top:6px" onclick="poCpThem()">+ Thêm chi phí</button>`:''}
     <h4 style="margin:14px 0 6px">Thanh toán NCC (phiếu chi trên app)</h4>
     <div class="scroll"><table class="m-t po-d"><tr><th>Phiếu chi</th><th>Ngày</th><th>Người thụ hưởng · nội dung</th><th class="num">Số tiền (đ)</th><th class="c">Trạng thái</th><th></th></tr>
       ${(p.chi_ids||[]).map(Number).map(id=>{const c=CM[id]||{};return `<tr><td class="nw"><span class="m-link" onclick="moPhieu('PC',${id})">PC${String(id).padStart(6,'0')}</span></td><td class="nw">${c.ngay?fmtD(c.ngay):''}</td>
@@ -3695,18 +3725,23 @@ function poNcc(id){const x=(S.cache.po_ncc||[]).find(n=>n.id===+id);_po.ncc_id=x
 function poDong(i,k,v){const x=_po.dong[i];x[k]=['sl','sl_nhan','don_gia'].includes(k)?(v===''?null:+String(v).replace(/\./g,'').replace(',','.')||0):v;
   if(k==='ma_tht'&&v&&!x.ten&&S.cache.gia_d){const h=S.cache.gia_d.hang.find(r=>r[0]===v.trim());if(h)x.ten=h[1]}poVe()}
 function poThem(){_po.dong.push({});poVe()}
-function poBo(i){_po.dong.splice(i,1);if(!_po.dong.length)_po.dong=[{}];poVe()}
+function poBo(i){(_po._xoa=_po._xoa||[]).push({i,x:_po.dong[i]});_po.dong.splice(i,1);if(!_po.dong.length)_po.dong=[{}];poVe()}
+// 13/11 kế toán: "cho xin 1 nút back lại vì vừa lỡ tay xoá mất 1 sản phẩm" → hoàn tác lần lượt các dòng vừa xoá (trước khi bấm Lưu)
+function poHoanTac(){const z=(_po._xoa||[]).pop();if(!z)return;if(_po.dong.length===1&&!_po.dong[0].ten&&!_po.dong[0].ma_tht)_po.dong=[];_po.dong.splice(Math.min(z.i,_po.dong.length),0,z.x);poVe();toast('Đã khôi phục dòng '+(z.x.ten||z.x.ma_tht||''))}
+function poCp(i,k,v){const z=_po.chi_phi[i];z[k]=k==='so_tien'?(so(v)||null):v;poVe()}
+function poCpThem(){(_po.chi_phi=_po.chi_phi||[]).push({loai:'van_chuyen'});poVe()}
+function poCpBo(i){_po.chi_phi.splice(i,1);poVe()}
 function poKh(i,k,v){_po.khach[i][k]=k==='coc'?(+String(v).replace(/\./g,'')||0):v;poVe()}
 function poKhThem(){(_po.khach=_po.khach||[]).push({});poVe()}
 function poKhBo(i){_po.khach.splice(i,1);poVe()}
 async function poLuu(){const ds=_po.dong.filter(x=>x.ma_tht||x.ten||+x.sl),sach=()=>ds.map(({_f,_u,_r,...r})=>r);
-  const {_file,...po0}=_po,p={...po0,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don)};
+  const {_file,_xoa,...po0}=_po,p={...po0,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don),chi_phi:(_po.chi_phi||[]).filter(z=>+z.so_tien||z.nd)};
   if(!p.ncc_ten)return alert('Chọn nhà cung cấp');if(!p.dong.length)return alert('Nhập ít nhất 1 dòng hàng');
   if(p.tien_te!=='VND'&&!(+p.ty_gia))return alert('Nhập tỷ giá quy đổi VND');
   try{const id=await rpc('kt_po_luu',{p_dong:p});
     // 12/11 anh: ảnh chọn từ máy khi PO chưa lưu → lưu PO xong mới tải ảnh lên rồi ghi lại mã ảnh vào dòng
     const cho=ds.filter(x=>x._f);if(cho.length){toast('Đang tải '+cho.length+' ảnh mẫu…');let loi=0;
-      for(const x of cho){try{x.anh_ct=await poUpAnh(id,x._f);x.anh='';delete x._f}catch(e){loi++}}
+      const q=cho.slice();await Promise.all([0,1,2].map(async()=>{for(let x;(x=q.shift());){try{x.anh_ct=await poUpAnh(id,x._f);x.anh='';delete x._f}catch(e){loi++}}}));   // 13/11: 3 ảnh cùng lúc
       await rpc('kt_po_luu',{p_dong:{...p,id,dong:sach()}});if(loi)alert(loi+' ảnh chưa tải được — mở lại PO để tải lại')}
     if(p.dx_id)await rpc('kt_dx_xu_ly',{p_id:p.dx_id,p_tt:'da_dat',p_ly_do:null,p_po:id});S.cache.dx_d=null;toast('Đã lưu PO');closeModal();S.cache.po_d=null;await render();poMoTiep()}catch(e){alert(e.message)}}
 // ── TẢI LÊN / TẢI VỀ PO EXCEL (12/11 anh: "nút up lên cho PO để: 1. chuẩn hoá lại các PO cũ để lưu hồ sơ hàng hoá; 2. PO mới các bộ phận muốn tải về làm trên máy
@@ -4084,10 +4119,10 @@ async function poDX(el){const f=S.f;if(!S.cache.dx_d)el.innerHTML=poTabs('dx')+'
 async function dxMo(id){if(!S.cache.dx_d)S.cache.dx_d=await rpc('kt_dx_ds');const x=S.cache.dx_d.find(z=>z.id===id);if(!x)return alert('Không tìm thấy đề xuất (có thể đã quá 120 ngày)');const g=nccGhi();
   const d=x.dong||[],con=r=>{const t=dxTon(r),tong=t.reduce((a,v)=>a+(v||0),0);return {t,tong}};
   modal(`<h2>${maDX(x.id)} · ${DX_LOAI[x.loai]} ${pill(...DX_TT[x.trang_thai])}${x.uu_tien==='gap'?' '+pill('Gấp','bad'):''}</h2>
-    <div class="muted" style="font-size:12.5px;margin:-4px 0 10px">${esc(x.nguoi)} · ${esc(x.bo_phan||'')} · gửi ${fmtDT(x.tao_luc)}${x.ngay_can?' · cần trước '+fmtD(x.ngay_can):''}</div>
-    ${x.khach?`<div class="ds-xl" style="margin:0 0 10px"><b>Khách:</b> ${esc(x.khach.ten||'')}${x.khach.sdt?' · '+esc(x.khach.sdt):''}${x.khach.ma_don?' · đơn Kiot '+esc(x.khach.ma_don):''}${x.khach.coc?' · đã cọc '+fmt(x.khach.coc):''}${x.khach.hen_giao?' · hẹn giao '+fmtD(x.khach.hen_giao):''}</div>`:''}
-    <div class="scroll"><table class="m-t"><tr><th>Mã</th><th>Hàng</th><th>Quy cách</th><th class="num">SL</th>${DX_CN.map(([n])=>`<th class="num">Tồn ${n}</th>`).join('')}<th class="c"></th></tr>
-    ${d.map(r=>{const c=con(r);return `<tr><td class="nw">${esc(r.ma||'')}</td><td class="ten">${esc(r.ten||r.ten_kiot||'')}${r.ten&&r.ten_kiot&&r.ten!==r.ten_kiot?`<div class="muted" style="font-size:11px">Kiot: ${esc(r.ten_kiot)}</div>`:''}</td><td class="ten">${esc(r.quy_cach||'')}</td><td class="num"><b>${fmt(r.sl)}</b></td>
+    <div class="muted" style="font-size:12.5px;margin:-4px 0 10px">${esc(x.nguoi)} · ${esc(x.bo_phan||'')}${x.ncc?' · NCC <b>'+esc(x.ncc)+'</b>':''} · gửi ${fmtDT(x.tao_luc)}${x.ngay_can?' · cần trước '+fmtD(x.ngay_can):''}</div>
+    ${x.khach?`<div class="ds-xl" style="margin:0 0 10px"><b>Khách:</b> ${esc(x.khach.ten||'')}${x.khach.sdt?' · '+esc(x.khach.sdt):''}${x.khach.ma_don?' · đơn Kiot '+esc(x.khach.ma_don):''}${x.khach.coc?' · đã cọc '+fmt(x.khach.coc):''}${x.khach.phieu_coc?' · phiếu cọc '+esc(x.khach.phieu_coc):''}${x.khach.hen_giao?' · hẹn giao '+fmtD(x.khach.hen_giao):''}</div>`:''}
+    <div class="scroll"><table class="m-t"><tr><th>Mã</th><th>Hàng</th><th>Màu · kích thước · quy cách</th><th class="num">SL</th><th class="num">Giá dự kiến</th>${DX_CN.map(([n])=>`<th class="num">Tồn ${n}</th>`).join('')}<th class="c"></th></tr>
+    ${d.map(r=>{const c=con(r);return `<tr><td class="nw">${esc(r.ma||'')}</td><td class="ten">${esc(r.ten||r.ten_kiot||'')}${r.ten&&r.ten_kiot&&r.ten!==r.ten_kiot?`<div class="muted" style="font-size:11px">Kiot: ${esc(r.ten_kiot)}</div>`:''}</td><td class="ten">${esc([r.mau,r.kt,r.quy_cach].filter(Boolean).join(' · '))}</td><td class="num"><b>${fmt(r.sl)}</b></td><td class="num">${r.gia?fmt(r.gia):''}</td>
       ${c.t.map(v=>`<td class="num">${v==null?'<span class="muted">—</span>':fmt(v)}</td>`).join('')}<td class="c">${!r.ma?'<span class="muted" style="font-size:11px">mã mới</span>':r.ton==null?pill('Không thấy mã','warn'):c.tong>=+r.sl?pill('Còn tồn','warn'):c.tong>0?pill('Tồn ít','info'):''}</td></tr>`}).join('')}</table></div>
     ${x.anh.length?`<div class="dx-anh" id="dx-anh">${x.anh.map(a=>`<span data-id="${a.id}" class="muted">đang tải ảnh…</span>`).join('')}</div>`:''}
     ${x.ghi_chu?`<div style="margin-top:8px"><b>Ghi chú:</b> ${esc(x.ghi_chu)}</div>`:''}${x.ly_do?`<div class="neg-t" style="margin-top:6px">Lý do: ${esc(x.ly_do)}</div>`:''}
@@ -4097,9 +4132,10 @@ async function dxMo(id){if(!S.cache.dx_d)S.cache.dx_d=await rpc('kt_dx_ds');cons
     el.innerHTML=(r.ds||[]).map(z=>{const a=x.anh.find(q=>q.id===z.id)||{};return /pdf/i.test(a.mime||a.ten||'')?`<a href="${esc(z.url)}" target="_blank" class="m-link">${esc(a.ten||'PDF')}</a>`:`<img src="${esc(z.url)}" onclick="window.open('${esc(z.url)}')">`}).join('')}catch(e){const el=$('#dx-anh');if(el)el.innerHTML=`<span class="muted">${esc(e.message)}</span>`}}}
 async function dxXuLy(id,tt){let ly='';if(tt==='tu_choi'){ly=(prompt('Lý do từ chối (người đề xuất xem được):')||'').trim();if(!ly)return}
   try{await rpc('kt_dx_xu_ly',{p_id:id,p_tt:tt,p_ly_do:ly||null,p_po:null});toast(DX_TT[tt][0]);closeModal();S.cache.dx_d=null;await render()}catch(e){alert(e.message)}}
-function dxTaoPO(id){const x=(S.cache.dx_d||[]).find(z=>z.id===id);if(!x)return;closeModal();
-  poForm(null,{loai:'noi_dia',dx_id:id,dong:(x.dong||[]).map(r=>({ma_tht:r.ma||'',ten:r.ten_kiot||r.ten||'',quy_cach:r.quy_cach||'',sl:+r.sl||0,dvt:'Cái',ghi_chu:maDX(id)})),
-    khach:x.khach?[{ten:x.khach.ten,sdt:x.khach.sdt,ma_don:x.khach.ma_don,coc:x.khach.coc,hen_giao:x.khach.hen_giao}]:[]})}
+async function dxTaoPO(id){const x=(S.cache.dx_d||[]).find(z=>z.id===id);if(!x)return;closeModal();
+  const nm=t=>boDau(String(t||'')).toLowerCase().trim(),nc=x.ncc?(await nccDS()).ncc.find(n=>nm(n.ten)===nm(x.ncc)):null;
+  poForm(null,{loai:nc&&nc.loai==='nuoc_ngoai'?'nhap_khau':'noi_dia',ncc_id:nc?nc.id:null,ncc_ten:nc?nc.ten:'',dx_id:id,dong:(x.dong||[]).map(r=>({ma_tht:r.ma||'',ma_ncc:r.ma_ncc||'',ten:r.ten||r.ten_kiot||'',mau:r.mau||'',kt:r.kt||'',quy_cach:r.quy_cach||'',sl:+r.sl||0,don_gia:r.gia?+r.gia:null,dvt:r.dvt||'Cái',anh_ct:r.anh_ct||null,ghi_chu:maDX(id)+(x.loai==='trung_bay'?' · trưng bày':'')})),
+    khach:x.khach?[{ten:x.khach.ten,sdt:x.khach.sdt,ma_don:x.khach.ma_don,coc:x.khach.coc,hen_giao:x.khach.hen_giao,phieu_coc:x.khach.phieu_coc}]:[]})}
 async function pageLoNK(){const el=$('#page'),f=S.f,g=nccGhi();if(!S.cache.lnk_ds)el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const T=await lnkDS(),nNgoai=(await nccDS()).ncc.filter(NCC_KIEU.ngoai.loc).length,tl=f.lnk_the||'',tt=f.lnk_tt||'',q=f.lnk_q||'';
   const l=T.filter(x=>(!tl||LNK_NHOM[tl].includes(x.trang_thai))&&(!tt||x.trang_thai===tt)&&(!q||khopTim(q,[x.ma,x.ten,x.so_cont,x.forwarder,...(x.ncc||[])])));

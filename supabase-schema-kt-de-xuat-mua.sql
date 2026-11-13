@@ -3,13 +3,17 @@
 -- (3 giờ, tối đa 30 file, kho chứng từ bang 'de_xuat') và xem trạng thái (#dx=<mã>). Chặn gửi ồ ạt: 10 lần / giờ / IP, 60 lần / giờ toàn hệ thống.
 -- Kế toán / người mua hàng (quyền trang 'ncc') xem ở Đơn đặt hàng (PO) → tab Đề xuất mua hàng: tồn Kiot từng cơ sở, duyệt / từ chối, tạo PO từ đề xuất. — Monsieur Claude
 create table if not exists public.kt_de_xuat_mua (
-  id bigserial primary key, loai text not null check (loai in ('bo_sung', 'khach_dat')),
+  id bigserial primary key, loai text not null check (loai in ('bo_sung', 'khach_dat', 'trung_bay')),
   nguoi text not null, bo_phan_id int references kt_don_vi(id), ngay_can date, uu_tien text not null default 'thuong' check (uu_tien in ('thuong', 'gap')),
   dong jsonb not null default '[]',      -- [{ma, ten, quy_cach, sl, ghi_chu}]
   khach jsonb,                            -- {ten, sdt, ma_don, coc, hen_giao}
   ghi_chu text, trang_thai text not null default 'cho_duyet' check (trang_thai in ('cho_duyet', 'da_duyet', 'da_dat', 'tu_choi')),
   ly_do text, xu_ly_boi text, xu_ly_luc timestamptz, po_id bigint references kt_po(id),
   ma_hash text unique, so_file int not null default 0, ip text, tao_luc timestamptz not null default now(), da_xoa boolean not null default false);
+-- 13/11 kế toán: form thiếu trường — phải đúng mẫu PO, người order điền đủ; Chánh Tâm có đơn hàng trưng bày không gắn cọc; gắn khách + phiếu cọc; Sale nắm tình trạng hàng
+alter table public.kt_de_xuat_mua drop constraint if exists kt_de_xuat_mua_loai_check;
+alter table public.kt_de_xuat_mua add constraint kt_de_xuat_mua_loai_check check (loai in ('bo_sung', 'khach_dat', 'trung_bay'));
+alter table public.kt_de_xuat_mua add column if not exists ncc_ten text;
 alter table public.kt_de_xuat_mua enable row level security;
 revoke all on public.kt_de_xuat_mua from anon, authenticated;
 
@@ -32,25 +36,34 @@ begin
   if (select count(*) from kt_de_xuat_mua where ip = v_ip and tao_luc > now() - interval '1 hour') >= 10 then raise exception 'Gửi quá nhiều trong 1 giờ — thử lại sau'; end if;
   if (select count(*) from kt_de_xuat_mua where tao_luc > now() - interval '1 hour') >= 60 then raise exception 'Hệ thống đang nhận quá nhiều đề xuất — thử lại sau'; end if;
   if length(v_nguoi) < 2 then raise exception 'Nhập họ tên người đề xuất'; end if;
-  if v_loai not in ('bo_sung', 'khach_dat') then raise exception 'Loại đề xuất không hợp lệ'; end if;
+  if v_loai not in ('bo_sung', 'khach_dat', 'trung_bay') then raise exception 'Loại đề xuất không hợp lệ'; end if;
   if not exists (select 1 from kt_don_vi where id = nullif(p_dong->>'bo_phan_id', '')::int and hoat_dong) then raise exception 'Chọn cơ sở / bộ phận'; end if;
   select coalesce(jsonb_agg(jsonb_build_object('ma', left(btrim(coalesce(e->>'ma', '')), 40), 'ten', left(btrim(coalesce(e->>'ten', '')), 200),
-           'quy_cach', left(btrim(coalesce(e->>'quy_cach', '')), 200), 'sl', greatest(0, coalesce(nullif(e->>'sl', '')::numeric, 0)), 'ghi_chu', left(btrim(coalesce(e->>'ghi_chu', '')), 300))), '[]')
+           'quy_cach', left(btrim(coalesce(e->>'quy_cach', '')), 200), 'sl', greatest(0, coalesce(nullif(e->>'sl', '')::numeric, 0)), 'ghi_chu', left(btrim(coalesce(e->>'ghi_chu', '')), 300),
+           'mau', left(btrim(coalesce(e->>'mau', '')), 60), 'kt', left(btrim(coalesce(e->>'kt', '')), 80), 'dvt', left(btrim(coalesce(e->>'dvt', '')), 20),
+           'gia', nullif(e->>'gia', '')::numeric, 'ma_ncc', left(btrim(coalesce(e->>'ma_ncc', '')), 60))), '[]')
     into v_dong from jsonb_array_elements(case when jsonb_typeof(p_dong->'dong') = 'array' then p_dong->'dong' else '[]' end) e
    where btrim(coalesce(e->>'ma', '') || coalesce(e->>'ten', '')) <> '';
   if jsonb_array_length(v_dong) = 0 then raise exception 'Nhập ít nhất 1 mặt hàng'; end if;
   if jsonb_array_length(v_dong) > 50 then raise exception 'Tối đa 50 mặt hàng / đề xuất'; end if;
   if exists (select 1 from jsonb_array_elements(v_dong) e where (e->>'sl')::numeric <= 0) then raise exception 'Nhập số lượng cho từng mặt hàng'; end if;
-  if v_loai = 'khach_dat' and coalesce(btrim(p_dong->'khach'->>'ten'), '') = '' then raise exception 'Nhập tên khách đặt'; end if;
-  insert into kt_de_xuat_mua (loai, nguoi, bo_phan_id, ngay_can, uu_tien, dong, khach, ghi_chu, ip)
+  if coalesce(btrim(p_dong->>'ncc_ten'), '') = '' then raise exception 'Nhập nhà cung cấp'; end if;
+  if nullif(p_dong->>'ngay_can', '') is null then raise exception 'Nhập ngày cần hàng'; end if;
+  if exists (select 1 from jsonb_array_elements(v_dong) e where e->>'ten' = '') then raise exception 'Nhập tên hàng cho từng dòng'; end if;
+  if exists (select 1 from jsonb_array_elements(v_dong) e where e->>'quy_cach' = '' and e->>'mau' = '' and e->>'kt' = '') then raise exception 'Nhập màu / kích thước / quy cách cho từng dòng'; end if;
+  if v_loai = 'khach_dat' and (coalesce(btrim(p_dong->'khach'->>'ten'), '') = '' or coalesce(btrim(p_dong->'khach'->>'sdt'), '') = '' or coalesce(btrim(p_dong->'khach'->>'ma_don'), '') = ''
+       or nullif(p_dong->'khach'->>'coc', '') is null or coalesce(btrim(p_dong->'khach'->>'phieu_coc'), '') = '' or nullif(p_dong->'khach'->>'hen_giao', '') is null) then
+    raise exception 'Đơn khách đặt riêng: nhập đủ tên khách, SĐT, mã đơn Kiot, tiền cọc, phiếu thu cọc, hẹn giao'; end if;
+  insert into kt_de_xuat_mua (loai, nguoi, bo_phan_id, ngay_can, uu_tien, dong, khach, ghi_chu, ip, ncc_ten)
   values (v_loai, left(v_nguoi, 100), (p_dong->>'bo_phan_id')::int, nullif(p_dong->>'ngay_can', '')::date, case when p_dong->>'uu_tien' = 'gap' then 'gap' else 'thuong' end,
     v_dong, case when v_loai = 'khach_dat' then jsonb_build_object('ten', left(btrim(p_dong->'khach'->>'ten'), 120), 'sdt', left(btrim(coalesce(p_dong->'khach'->>'sdt', '')), 30),
-      'ma_don', left(btrim(coalesce(p_dong->'khach'->>'ma_don', '')), 40), 'coc', nullif(p_dong->'khach'->>'coc', '')::numeric, 'hen_giao', nullif(p_dong->'khach'->>'hen_giao', '')) end,
-    left(nullif(btrim(p_dong->>'ghi_chu'), ''), 1000), v_ip) returning id into v_id;
+      'ma_don', left(btrim(coalesce(p_dong->'khach'->>'ma_don', '')), 40), 'coc', nullif(p_dong->'khach'->>'coc', '')::numeric, 'hen_giao', nullif(p_dong->'khach'->>'hen_giao', ''),
+      'phieu_coc', left(btrim(coalesce(p_dong->'khach'->>'phieu_coc', '')), 40)) end,
+    left(nullif(btrim(p_dong->>'ghi_chu'), ''), 1000), v_ip, left(btrim(p_dong->>'ncc_ten'), 150)) returning id into v_id;
   v_ma := encode(gen_random_bytes(18), 'hex');
   update kt_de_xuat_mua set ma_hash = encode(digest(v_ma, 'sha256'), 'hex') where id = v_id;
   select array_agg(id) into nhan from kt_nguoi_dung where hoat_dong and (vi_tri in ('supreme', 'admin') or 'ncc:ghi' = any(quyen));
-  perform kt_bao(nhan, v_nguoi, 'de_xuat_mua', case when v_loai = 'khach_dat' then 'Đơn khách đặt riêng mới' else 'Đề xuất mua hàng mới' end,
+  perform kt_bao(nhan, v_nguoi, 'de_xuat_mua', case v_loai when 'khach_dat' then 'Đơn khách đặt riêng mới' when 'trung_bay' then 'Đề xuất hàng trưng bày mới' else 'Đề xuất mua hàng mới' end,
     'DX' || lpad(v_id::text, 5, '0') || ' · ' || v_nguoi || ' · ' || jsonb_array_length(v_dong) || ' mặt hàng' || case when p_dong->>'uu_tien' = 'gap' then ' · GẤP' else '' end, 'de_xuat', v_id);
   perform kt_ghi_nhat_ky(v_nguoi, 'kt_de_xuat_mua', v_id, 'them', jsonb_build_object('loai', v_loai, 'so_dong', jsonb_array_length(v_dong)));
   return jsonb_build_object('id', v_id, 'ma', v_ma);
@@ -80,15 +93,35 @@ declare d kt_de_xuat_mua := kt_dx_theo_ma(p_ma, false);
 begin
   return jsonb_build_object('id', d.id, 'loai', d.loai, 'nguoi', d.nguoi, 'tao_luc', d.tao_luc, 'ngay_can', d.ngay_can, 'uu_tien', d.uu_tien, 'dong', d.dong, 'khach', d.khach,
     'trang_thai', d.trang_thai, 'ly_do', d.ly_do, 'xu_ly_luc', d.xu_ly_luc, 'so_file', d.so_file, 'tai_them', d.tao_luc > now() - interval '3 hours',
-    'po', (select so from kt_po where id = d.po_id));
+    'po', (select so from kt_po where id = d.po_id), 'po_tt', (select trang_thai from kt_po where id = d.po_id), 'po_giao', (select ngay_giao from kt_po where id = d.po_id), 'ncc', d.ncc_ten);
 end $$;
+create or replace function public.kt_xem_de_xuat_ds(p_ds text[]) returns jsonb
+language plpgsql stable security definer set search_path = public, extensions as $$
+begin
+  if coalesce(array_length(p_ds, 1), 0) > 300 then raise exception 'Tối đa 300 mã'; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object('ma', m, 'id', d.id, 'loai', d.loai, 'tao_luc', d.tao_luc, 'ncc', d.ncc_ten, 'khach', d.khach->>'ten', 'tt', d.trang_thai, 'ly_do', d.ly_do,
+      'po', p.so, 'po_tt', p.trang_thai, 'po_giao', p.ngay_giao, 'hang', (select string_agg(coalesce(nullif(e->>'ten', ''), e->>'ma'), ', ') from jsonb_array_elements(d.dong) e)) order by d.id desc)
+    from unnest(p_ds) m join kt_de_xuat_mua d on d.ma_hash = encode(digest(m, 'sha256'), 'hex') and not d.da_xoa left join kt_po p on p.id = d.po_id), '[]');
+end $$;
+create or replace function public.kt_dx_gan_anh(p_ma text, p_i int, p_ct bigint) returns void
+language plpgsql security definer set search_path = public as $$
+declare d kt_de_xuat_mua := kt_dx_theo_ma(p_ma, true);
+begin
+  if not exists (select 1 from kt_chung_tu where id = p_ct and bang = 'de_xuat' and dong_id = d.id) then raise exception 'Ảnh không thuộc đề xuất này'; end if;
+  if p_i < 0 or p_i >= jsonb_array_length(d.dong) then raise exception 'Dòng không hợp lệ'; end if;
+  update kt_de_xuat_mua set dong = jsonb_set(dong, array[p_i::text, 'anh_ct'], to_jsonb(p_ct)) where id = d.id;
+end $$;
+create or replace function public.kt_dm_de_xuat() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(ten order by ten), '[]') from kt_ncc where not da_xoa;
+$$;
 
 -- người mua hàng: danh sách + tồn Kiot từng cơ sở của từng mã + ảnh
 create or replace function public.kt_dx_ds(p_phien text) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
 begin
   perform kt_chan(p_phien, 'ncc');
-  return coalesce((select jsonb_agg(jsonb_build_object('id', d.id, 'loai', d.loai, 'nguoi', d.nguoi, 'bo_phan', (select ten from kt_don_vi where id = d.bo_phan_id), 'ngay_can', d.ngay_can,
+  return coalesce((select jsonb_agg(jsonb_build_object('id', d.id, 'loai', d.loai, 'nguoi', d.nguoi, 'ncc', d.ncc_ten, 'bo_phan', (select ten from kt_don_vi where id = d.bo_phan_id), 'ngay_can', d.ngay_can,
       'uu_tien', d.uu_tien, 'khach', d.khach, 'ghi_chu', d.ghi_chu, 'trang_thai', d.trang_thai, 'ly_do', d.ly_do, 'xu_ly_boi', d.xu_ly_boi, 'xu_ly_luc', d.xu_ly_luc, 'tao_luc', d.tao_luc,
       'po_id', d.po_id, 'po', (select so from kt_po where id = d.po_id),
       'anh', (select coalesce(jsonb_agg(jsonb_build_object('id', c.id, 'ten', c.ten_file, 'mime', c.mime) order by c.id), '[]') from kt_chung_tu c where c.bang = 'de_xuat' and c.dong_id = d.id and not c.da_xoa),
@@ -111,7 +144,7 @@ begin
 end $$;
 
 do $$ declare f text; begin
-  foreach f in array array['kt_gui_de_xuat(jsonb)', 'kt_them_ct_dx(text, text, text, text, bigint)', 'kt_xem_de_xuat(text)', 'kt_dx_ds(text)', 'kt_dx_xu_ly(text, bigint, text, text, bigint)'] loop
+  foreach f in array array['kt_gui_de_xuat(jsonb)', 'kt_them_ct_dx(text, text, text, text, bigint)', 'kt_xem_de_xuat(text)', 'kt_xem_de_xuat_ds(text[])', 'kt_dx_gan_anh(text, int, bigint)', 'kt_dm_de_xuat()', 'kt_dx_ds(text)', 'kt_dx_xu_ly(text, bigint, text, text, bigint)'] loop
     execute 'revoke all on function public.' || f || ' from public';
     execute 'grant execute on function public.' || f || ' to anon, authenticated';
   end loop;
