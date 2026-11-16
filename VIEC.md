@@ -169,7 +169,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
   gõ MST → tự điền tên công ty + địa chỉ (Edge kt-mst có sẵn; `supabase-schema-kt-ncc-noi-mst.sql`: kt_mst_lay nhận thêm quyền xem NCC, trước chỉ quyền Hoá đơn & Thuế). Popup chi tiết NCC nội địa: nhóm "Thông tin chung" mới, bỏ nhóm "Thông tin khác";
   trang danh sách: lọc theo Nhóm NCC (thay lọc Loại NCC), nhóm hiện dưới tên. Lưu chỉ ghi ô có trên form — ô form kia không có giữ nguyên trong `them` (trước: lưu là xoá hết khoá them không có trên form).
   Form NCC nước ngoài giữ nguyên. Kiểm: 309 NCC nội địa + 2 dịch vụ chưa có loại hình / ngành hàng / tên giao dịch → không mất dữ liệu; ảnh Chrome form mới / form sửa / popup / form nước ngoài; tra MST công ty điền đúng;
-  TK chỉ quyền `ncc` hoặc `hoa_don_thue` tra được, TK `chi_de_nghi` bị chặn. CHƯA thử bấm Lưu thật trên trình duyệt (không tạo NCC rác). — Monsieur Claude
+  TK chỉ quyền `ncc` hoặc `hoa_don_thue` tra được, TK `chi_de_nghi` bị chặn. CHƯA thử bấm Lưu thật trên trình duyệt (không tạo NCC rác).
+  Kèm: `kt_ncc_dong_bo` (kéo NCC Kiot) trước ghi đè dia_chi theo Kiot (154 NCC Kiot có địa chỉ) → nay chỉ điền khi trống, không đè địa chỉ ĐKKD kế toán nhập.
+  Sự cố git: `.git/refs/heads/main` bị đổi thành `main 2` (iCloud đồng bộ Desktop — `git pull` lần đầu báo timeout ghi ref) → đổi tên lại, nhánh đúng 289578c. — Monsieur Claude
 - **16/11/2026 (360)** — Anh (ảnh menu Đề xuất mua): "bỏ bổ sung cửa hàng, đổi đơn khách đặt riêng thành đơn hàng khách đặt, gộp với công nợ khách hàng". v1.400: nhóm KHÁCH HÀNG = Công nợ khách hàng · Đơn hàng khách đặt;
   bỏ nhóm Đề xuất mua; trang Bổ sung cửa hàng ẩn khỏi menu (link cũ / chuông đề xuất chuyển sang Đơn hàng khách đặt); form công khai #de-xuat-mua → Đặt hàng bỏ lựa chọn Bổ sung cửa hàng, chỉ còn Đơn hàng khách đặt.
   Kiểm: bảng kt_de_xuat_mua chưa có dòng nào → không mất dữ liệu; trang mới mở không lỗi (ảnh). Sửa 2 dòng Logic. — Monsieur Claude
