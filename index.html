@@ -622,6 +622,7 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .sk-d{display:inline-block;min-width:24px;font-size:10.5px;color:var(--muted);font-weight:600;margin-right:4px}
 .sk-th{cursor:pointer;border:1px solid transparent;transition:border-color .12s,background .12s}.sk-th:hover{border-color:var(--border)}.sk-th.on{border-color:var(--accent);background:var(--surface)!important}
 .sk-loc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 8px}.sk-loc input{margin-left:auto;width:320px;max-width:100%}
+.skk-b{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px}.skk-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;margin-bottom:10px}.skk-tk{font-weight:500;font-size:12.5px;margin-left:auto}.skk-f{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.skk-f label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--text2);font-weight:600;min-width:0}.skk-f .m-in{width:100%}.skk-drop{height:36px;border:1.5px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.skk-drop b{overflow:hidden;text-overflow:ellipsis}.skk-drop:hover,.skk-drop.keo{border-color:var(--accent);background:var(--bg2)}.skk-drop.dis{cursor:not-allowed;opacity:.5}.skk-xt{margin-top:12px}.skk-tb{margin-top:8px;font-size:12.5px;min-height:0}.skk-tb:empty{display:none}.skk-a{display:flex;justify-content:flex-end;margin-top:12px}.skk-t{table-layout:fixed;width:100%;min-width:860px}.skk-t td{vertical-align:middle}.skk-1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.skk-2{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}@media (max-width:760px){.skk-f{grid-template-columns:1fr}}
 .sk-info{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;font-size:13px;margin:0 2px 10px}
 .sk-pub{max-width:1600px;margin:0 auto;padding:16px}.sk-pub-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .sk-pub-h b{display:block;font-size:16px;letter-spacing:.04em}.sk-pub-h span{font-size:12.5px;color:var(--muted)}
@@ -1203,8 +1204,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.398';
-const APP_VERSION='16/11/2026 14:29';
+const APP_SO='1.399';
+const APP_VERSION='16/11/2026 16:19';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -7876,7 +7877,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={sao_ke:"info",lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -7890,6 +7891,7 @@ async function docChuong(id){try{await rpc('kt_doc_thong_bao',{p_id:id||null});i
 async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)return;
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
+  if(x.bang==='sao_ke'){if(coXem('sao_ke_hd')){S.f.sk_ky=x.dong_id;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';S.cache.sk_ds=null;delete S.cache['sk_'+x.dong_id];go('sao_ke_hd')}return}   // 16/11 sao kê mới đã đối chiếu tự động
   if(x.bang==='lich_tt'){if(coXem('sap_tra')){S.f.ltt_tab='dk';go('sap_tra')}return}   // 26/10: nhắc lịch thanh toán định kỳ
   if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='de_xuat'){if(coXem('po')){S.f.dx_loc='cho_duyet';S.cache.dx_d=null;go('dx_bs');if(x.dong_id)setTimeout(()=>dxMo(x.dong_id),900)}return}   // 12/11 đề xuất mua hàng mới
@@ -8151,7 +8153,8 @@ const LOGIC2=[
  ['thue','Nguồn hoá đơn','Hộ Hiền Thủy, Chánh Tâm: file 3TShop (anh xuất ra Google Sheet / kéo thả trên app).','Đọc theo tên cột.','09/10'],
  ['thue','Nguồn hoá đơn','Công ty tổng: HĐ bán từ MISA meInvoice (00:25 và 12:25), HĐ mua từ MISA Xử lý hoá đơn (00:35 và 12:35) — 2 lần / ngày (anh 03/11).','Chỉ đọc; không tính 2 ký hiệu máy tính tiền nhà hàng.','12/10'],
  ['thue','Ghép HĐ mua','Mọi phiếu chi đã trả từ 01/01 (trừ chi cá nhân) ↔ HĐ đầu vào MISA: số tiền lệch ≤ 1.000đ, ngày HĐ từ 30 ngày trước → 15 ngày sau ngày trả. Tự gắn khi 1 phiếu ↔ 1 HĐ duy nhất VÀ khớp STK người nhận (học từ lần gắn trước) / tên người nhận ≥ 50% / tên trong nội dung ≥ 80%. 1 lần trả nhiều HĐ cùng người bán: tổng HĐ = số tiền → gắn cả nhóm.','Chỉ khớp số tiền, không khớp tên / STK → không gợi ý. Không thấy → ô "Tìm HĐ MISA" (số HĐ / MST / tên) trong khung Hoá đơn đỏ.','23/10'],
- ['thue','Đối chiếu sao kê','Nạp file sao kê ngân hàng (Excel / CSV, nhiều tab = nhiều tài khoản; app nhận số tài khoản, kỳ, số dư đầu / cuối, kiểm số dư khớp). Mỗi dòng sao kê tự ghép với phiếu của đúng tài khoản trên app: (1) 1 phiếu cùng tiền, cùng ngày rồi lệch tới 3 ngày; (2) nhiều phiếu cùng ngày ±1 cộng lại đúng bằng dòng sao kê (vd COD Nhất Tín = tiền thu − phí); (3) nhiều dòng sao kê = 1 phiếu (vd nộp 2 lần, app ghi 1 phiếu). Hoá đơn lấy từ phiếu: phiếu thu → HĐ bán ra đã gắn, phiếu chi → HĐ mua vào đã gắn (hoặc số HĐ gõ trên phiếu). Bảng 3 khối: Phiếu thu / chi · Hoá đơn đỏ (đầu vào, đầu ra) · Sao kê ngân hàng. Tình trạng: Có HĐ · Chưa có HĐ (phiếu thu bán hàng / công nợ / cọc, phiếu chi có HĐ đỏ mà chưa gắn) · Không cần HĐ (điều chuyển, vay, phí, thu khác…) · Chưa khớp app. Bấm 1 dòng: xem phiếu khớp, sửa tay riêng cho báo cáo. Sao kê thẻ Visa VCB ("Lịch sử giao dịch tài khoản thẻ" — cột Ghi nợ = trả sao kê, Chi có = tiêu thẻ, app tự đảo): tiêu thẻ không có phiếu riêng → kế toán ghi tay số HĐ từng dòng; chưa có số HĐ mà có ghi Diễn giải = Không cần HĐ; trả sao kê = Không cần HĐ. Xuất Excel cùng 3 khối; Link online (bật / tắt) cho bên dịch vụ xem không cần đăng nhập — bảng trên link cập nhật mỗi lần kế toán mở trang.'],
+ ['thue','Đối chiếu sao kê','Nạp file sao kê ngân hàng (Excel, qua popup Kho sao kê — chọn tài khoản trước; app nhận số tài khoản, kỳ, số dư đầu / cuối, kiểm số dư khớp). Mỗi dòng sao kê tự ghép với phiếu của đúng tài khoản trên app: (1) 1 phiếu cùng tiền, cùng ngày rồi lệch tới 3 ngày; (2) nhiều phiếu cùng ngày ±1 cộng lại đúng bằng dòng sao kê (vd COD Nhất Tín = tiền thu − phí); (3) nhiều dòng sao kê = 1 phiếu (vd nộp 2 lần, app ghi 1 phiếu). Hoá đơn lấy từ phiếu: phiếu thu → HĐ bán ra đã gắn, phiếu chi → HĐ mua vào đã gắn (hoặc số HĐ gõ trên phiếu). Bảng 3 khối: Phiếu thu / chi · Hoá đơn đỏ (đầu vào, đầu ra) · Sao kê ngân hàng. Tình trạng: Có HĐ · Chưa có HĐ (phiếu thu bán hàng / công nợ / cọc, phiếu chi có HĐ đỏ mà chưa gắn) · Không cần HĐ (điều chuyển, vay, phí, thu khác…) · Chưa khớp app. Bấm 1 dòng: xem phiếu khớp, sửa tay riêng cho báo cáo. Sao kê thẻ Visa VCB ("Lịch sử giao dịch tài khoản thẻ" — cột Ghi nợ = trả sao kê, Chi có = tiêu thẻ, app tự đảo): tiêu thẻ không có phiếu riêng → kế toán ghi tay số HĐ từng dòng; chưa có số HĐ mà có ghi Diễn giải = Không cần HĐ; trả sao kê = Không cần HĐ. Xuất Excel cùng 3 khối; Link online (bật / tắt) cho bên dịch vụ xem không cần đăng nhập — bảng trên link cập nhật mỗi lần kế toán mở trang.'],
+ ['thue','Kho sao kê (16/11)','Nút "+ Nạp sao kê" mở popup Kho sao kê: (1) Nạp sao kê mới — chọn tài khoản ngân hàng / thẻ đang dùng, chọn file Excel (.xlsx / .xls, kéo thả được); file nhiều tab thì lấy tab có số TK khớp tài khoản đã chọn. Số TK trong file khác tài khoản đã chọn → không cho nạp, hiện "Đổi sang tài khoản này". File gốc lưu kho chứng từ để tải lại. (2) Sao kê đã lưu — lọc theo tài khoản đang chọn: kỳ, số dòng, HĐ có · chưa · chưa khớp app, trạng thái, người nạp; ▶ Xem mở bảng đối chiếu, ✕ Xoá kỳ (xoá dòng sao kê + phần sửa tay + file gốc, phiếu thu / chi không đổi). Nạp lại cùng tài khoản + cùng kỳ = thay bản cũ, giữ dòng đã sửa tay.','Luồng xử lý: kỳ mới nạp = "Chờ đối chiếu". Lịch kt-sao-ke-moi 2 tiếng / lần chỉ kiểm có kỳ chờ không (không có thì thôi); có → ghép như trang Đối chiếu sao kê (từng dòng với phiếu thu / chi / điều chuyển / vay của đúng tài khoản) → lưu kết quả, "Đã đối chiếu", chuông cho người sửa được Hoá đơn & Thuế + người nạp (số dòng, có / chưa HĐ, chưa khớp app, số dư). Bấm chuông mở đúng kỳ.','16/11'],
  ['thue','Lập hoá đơn từ kho','Đầu trang: bảng Chênh tồn sổ sách – thực tế theo nhóm (chọn đơn vị): nhóm hàng · số mã còn tồn · tồn sổ sách (tiền, đã trừ đơn đã lưu) · tồn thực tế Kiot · chênh; chênh > 0 = Ưu tiên xuất, xếp chênh nhiều trước = đúng thứ tự app đề xuất; bấm 1 nhóm → đơn mới chỉ đề xuất mã nhóm đó (trong popup đổi nhóm ở ô cạnh ô tìm). Dưới: danh sách đơn đã lưu. "+ Đơn mới" (hoặc bấm 1 đơn) mở popup: chọn Đơn vị · Giá trị hoá đơn (đã gồm thuế) · Thuế suất. Cột Đề xuất = mã tồn sổ sách (file NXT) nhiều hơn tồn thực tế Kiot, xếp chênh nhiều → ít, có cột Chênh vs Kiot (2 hộ so theo mã, công ty THT so theo nhóm), mã tô vàng + SL gợi ý = đủ giá trị còn thiếu; bấm + hoặc kéo thả sang cột Trên hoá đơn (mã ngoài gợi ý = SL vừa đủ phần còn thiếu, tối đa còn tồn); "Thêm cho đủ giá trị" thêm hết gợi ý; "Khớp số lẻ" chỉnh đơn giá 1 dòng cho tổng đúng giá trị. Tên trên hoá đơn = tên rút gọn của SP (phần đầu tên sổ thuế, bỏ chất liệu / nước sơn / thông số) + kích thước (số đầu tiên kèm cm / mm / ml / kg / inch) + mã, vd "Ban thờ 155cm BTD0526-02", "Mõ 7inch HHNKMO08" (anh 10/11; trước 09/11 = tên nhóm); tên sổ thuế hiện dòng dưới để soát. Giá bán = giá vốn file NXT sổ thuế (cột đơn giá; không có thì tiền tồn cuối ÷ SL tồn cuối) + 20%, làm tròn LÊN hàng chục nghìn (anh 09/11 · 10/11); Khớp số lẻ chỉ dùng giá chẵn chục nghìn nên tổng lệch giá trị cần lập vài nghìn đồng. Đơn đã lưu: đổi Trạng thái / Số HĐ MISA ở chân popup.','09/11 anh: popup chỉ chọn giá trị + thuế suất, bỏ khách / MST / % cộng giá vốn / bảng nhóm khỏi màn.','03/11 · 09/11'],
  ['thue','Lập hoá đơn — thuế suất & tồn (10/11)','Thuế suất mặc định "Theo nhóm hàng": mỗi dòng lấy thuế suất của nhóm (cột Thuế suất bảng nhóm trên trang, kế toán đặt); nhóm chưa đặt = mặc định theo NĐ 174/2025 (8% đến hết 31/12/2026; tên nhóm có ĐỒNG / KIM LOẠI / INOX / SẮT / THÉP = 10% vì Phụ lục I không giảm có "sản phẩm kim loại"). Thuế tính từng dòng, làm tròn từng dòng; tổng thuế tách theo mức. Chọn 1 mức cố định thì mọi dòng dùng mức đó. Tồn sổ sách còn (công ty THT) = tồn cuối kỳ file NXT − hàng trên HĐ bán ra MISA sau ngày chốt kỳ (dòng hàng lấy từ XML meInvoice; MISA không ghi mã → mã ở cuối tên hàng) − đơn lập trên app CHƯA xuất HĐ. Đề xuất bỏ hàng FOC (giá vốn gần 0). Ô tìm gõ giá (1tr, 500k) = mã có giá bán sát nhất.','Kế toán 10/11. Dòng HĐ MISA không ra mã khớp file (hàng mới nhập T10, tên không kèm mã) thì không trừ — khi dịch vụ gửi tồn hết T10 đối chiếu cân lại.','10/11'],
  ['thue','Đẩy đơn sang MISA (nháp)','Popup Lập hoá đơn kiểu màn "Lập hoá đơn" meInvoice: ngày · ký hiệu (1C26THT / TTV / TCK / TYY) · số (chưa cấp) · người bán · người mua (MST, tên đơn vị, địa chỉ, họ tên, SĐT, email, CCCD, hình thức TT, TK + tên ngân hàng — để trống được) · bảng hàng hoá (tên sửa được, ĐVT, SL, đơn giá, % thuế từng dòng theo nhóm hoặc chọn tay, Thêm dòng gõ tay, Thêm ghi chú) · tổng tách theo mức thuế; cột phải = hàng hoá đề xuất kéo thả. Nút "Lưu và gửi nháp MISA" (công ty THT) = lưu đơn + tạo HOÁ ĐƠN NHÁP trên meInvoice mang ĐỦ thông tin trên (Edge kt-meinvoice-nhap) — kế toán vào meInvoice kiểm rồi tự phát hành; app tự lấy số HĐ khi đã phát hành. Gửi lại = xoá nháp cũ tạo nháp mới; đã phát hành thì chặn. Xoá đơn = xoá nháp chưa phát hành.','09/11 tắt → 10/11 anh: "vẫn làm tạo bản nháp, cho kế toán check lại rồi tự phát hành" + "chuyển hết thông tin phiếu nháp sang luôn". App không ký / phát hành.','09/11 · 10/11'],
@@ -9121,8 +9124,8 @@ const skKyTxt=kq=>fmtD(kq.tu)+' – '+fmtD(kq.den);
 async function pageSaoKe(){const el=$('#page'),f=S.f,g=can('hoa_don_thue',true);
   if(!S.cache.sk_ds)el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const ds=S.cache.sk_ds||await rpc('kt_sao_ke_ds');S.cache.sk_ds=ds;
-  const nut=`${g?`<button class="m-btn pri" onclick="$('#sk-file').click()">+ Nạp sao kê</button><input type="file" id="sk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="skNapFile(this.files[0]);this.value=''">`:''}`;
-  if(!ds.length){el.innerHTML=`<section class="tq2"><div class="tq2-h" style="flex-wrap:wrap"><b class="nw">Đối chiếu sao kê</b><span style="margin-left:auto">${nut}</span></div><div class="m-empty">Chưa có sao kê nào — bấm "+ Nạp sao kê" và chọn file sao kê ngân hàng (Excel / CSV)</div></section>`;return}
+  const nut=`<button class="m-btn ${g?'pri':''}" onclick="skKho()">${g?'+ Nạp sao kê':'Kho sao kê'}</button>`;
+  if(!ds.length){el.innerHTML=`<section class="tq2"><div class="tq2-h" style="flex-wrap:wrap"><b class="nw">Đối chiếu sao kê</b><span style="margin-left:auto">${nut}</span></div><div class="m-empty">Chưa có sao kê nào</div></section>`;return}
   const id=ds.some(x=>x.id===f.sk_ky)?f.sk_ky:ds[0].id;f.sk_ky=id;
   const D=S.cache['sk_'+id]||await rpc('kt_sao_ke_lay',{p_ky:id});S.cache['sk_'+id]=D;const kq=skKQ(D);S.cache.sk_kq=kq;S.cache.sk_D=D;
   const js=JSON.stringify(kq);if(S.cache['sk_luu_'+id]!==js){S.cache['sk_luu_'+id]=js;rpc('kt_sao_ke_luu_kq',{p_ky:id,p_kq:kq}).catch(()=>{S.cache['sk_luu_'+id]=null})}
@@ -9198,24 +9201,66 @@ function skDocTab(A,ten){const low=A.map(r=>r.map(c=>String(c??'').toLowerCase()
   const d0=dong[0],dau=info.dau??(d0.so_du!=null?d0.so_du-d0.co+d0.no:null),cuoi=info.cuoi??dong[dong.length-1].so_du;
   const so=(info.so_tk||'').replace(/\D/g,''),tkK=S.dm.tai_khoan.find(t=>so&&so.length>=6&&t.ten.replace(/\D/g,'').includes(so))||S.dm.tai_khoan.find(t=>/^\d{3,}$/.test(String(ten).trim())&&t.ten.replace(/\D/g,'').endsWith(String(ten).trim()));
   return {ten,tk_id:tkK?tkK.id:'',tu,den,dau,cuoi,dong,thong_tin:{chu_tk:info.chu_the||info.chu_tk||'',so_tk:so,...(the?{the:1,so_the:info.so_the||''}:{})}}}
-async function skNapFile(file){if(!file)return;let T=[];
+// 16/11 anh: "nạp sao kê thành 1 popup, chọn TKNH có sẵn rồi up sao kê, các sao kê lưu luôn trong đấy, xem kho sao kê trong đó luôn".
+// Popup Kho sao kê: khối Nạp (chọn TK → chọn file Excel → xem trước, kiểm số TK trong file đúng TK đã chọn → Nạp) + khối Sao kê đã lưu
+// (lọc theo TK đang chọn, ▶ xem đối chiếu, ⬇ file gốc, ✕ xoá). File gốc lưu kho chứng từ (bang 'sao_ke', dong_id = kỳ).
+// Kỳ mới nạp vào hàng chờ (xu_ly_luc null): lịch kt-sao-ke-moi 2 tiếng / lần đối chiếu như trang này + báo chuông. — Monsieur Claude
+const skkTK=()=>S.dm.tai_khoan.filter(t=>t.hoat_dong&&/^(ngan_hang|the_tin_dung)$/.test(t.loai));
+const skkLech=t=>t.dau!=null&&t.cuoi!=null?Math.round(t.dau+sumBy(t.dong,d=>d.co)-sumBy(t.dong,d=>d.no)-t.cuoi):null;
+// tab dùng: tab có số TK khớp TK đã chọn → tab đó; không thì tab đầu
+const skkTab=N=>{if(!N||!N.T||!N.T.length)return null;const i=N.T.findIndex(t=>t.tk_id&&t.tk_id==N.tk);return N.T[N.tab??(i>=0?i:0)]};
+async function skKho(){const N=S.cache.sk_nap=S.cache.sk_nap||{};if(N.tk==null){const k=S.f.sk_ky&&((S.cache.sk_ds||[]).find(x=>x.id===S.f.sk_ky)||{}).tk_id;N.tk=k&&skkTK().some(t=>t.id==k)?String(k):''}
+  if(!S.cache.sk_ds){modal('<h2>Kho sao kê</h2><div class="m-empty">Đang tải...</div>').classList.add('sk-m');try{S.cache.sk_ds=await rpc('kt_sao_ke_ds')}catch(e){return alert(e.message)}}
+  skKhoVe()}
+function skKhoVe(){const N=S.cache.sk_nap,g=can('hoa_don_thue',true),ds=S.cache.sk_ds||[],tk=N.tk,t=skkTab(N),TK=skkTK();
+  const tenTK=id=>((S.dm.tai_khoan.find(x=>x.id==id)||{}).ten||'');
+  // số TK trong file khác TK đã chọn → không cho nạp nhầm, gợi ý đổi
+  const sai=t&&tk&&t.tk_id&&t.tk_id!=tk,cu=t&&tk&&ds.find(x=>x.tk_id==tk&&x.tu===t.tu&&x.den===t.den),l=t?skkLech(t):null;
+  const xem=t?`<div class="scroll skk-xt"><table class="m-t skk-t"><colgroup>${N.T.length>1?'<col style="width:150px">':''}<col><col style="width:150px"><col style="width:70px"><col style="width:120px"><col style="width:150px"><col style="width:246px"></colgroup>
+      <tr>${N.T.length>1?'<th>Tab</th>':''}<th>Số TK trong file</th><th>Kỳ</th><th class="num">Số dòng</th><th class="num">Đầu kỳ</th><th class="num">Cuối kỳ</th><th class="c">Số dư</th></tr>
+      <tr>${N.T.length>1?`<td><select class="m-in" onchange="S.cache.sk_nap.tab=+this.value;skKhoVe()">${N.T.map((x,i)=>`<option value="${i}" ${x===t?'selected':''}>${esc(x.ten)}</option>`).join('')}</select></td>`:''}
+      <td class="nw">${esc(t.thong_tin.so_tk||t.thong_tin.so_the||'–')}</td><td class="nw">${fmtD(t.tu)} – ${fmtD(t.den)}</td><td class="num">${fmt(t.dong.length)}</td>
+      <td class="num">${t.dau!=null?fmt(t.dau):'–'}</td><td class="num">${t.cuoi!=null?fmt(t.cuoi):'–'}</td><td class="c">${l===null?pill('Không có số dư',''):l?pill('Lệch '+fmt(l),'bad'):pill('Khớp','ok')}</td></tr></table></div>
+    <div class="skk-tb">${sai?pill('File là sao kê '+tenTK(t.tk_id),'bad')+` <span class="m-link" onclick="S.cache.sk_nap.tk='${t.tk_id}';skKhoVe()">Đổi sang tài khoản này</span>`:cu?pill('Đã có kỳ này — nạp lại thay bản cũ, giữ dòng đã sửa tay','warn'):''}</div>`:'';
+  const L=ds.filter(x=>!tk||x.tk_id==tk);
+  const tt=x=>{const s=x.tom_tat;return s?`<span class="pos-t">${fmt(s.co_hd||0)}</span> · <span class="warn-t">${fmt(s.chua_hd||0)}</span> · <span class="neg-t">${fmt(s.chua_khop||0)}</span>`:'<span class="muted">–</span>'};
+  modal(`<h2>Kho sao kê</h2>
+    <div class="skk-b"><div class="skk-h">Nạp sao kê mới</div>
+      <div class="skk-f"><label><span>Tài khoản ngân hàng</span><select class="m-in" onchange="S.cache.sk_nap.tk=this.value;S.cache.sk_nap.tab=null;skKhoVe()"><option value="">Tất cả tài khoản</option>
+          ${TK.map(x=>`<option value="${x.id}" ${x.id==tk?'selected':''}>${esc(x.ten)}</option>`).join('')}</select></label>
+        <label><span>File sao kê (Excel)</span><div class="skk-drop${g?'':' dis'}" ${g?`onclick="$('#skk-file').click()" ondragover="event.preventDefault();event.stopPropagation();this.classList.add('keo')" ondragleave="this.classList.remove('keo')" ondrop="event.preventDefault();event.stopPropagation();this.classList.remove('keo');skNapFile(event.dataTransfer.files[0])"`:''}>
+          ${N.file?`<b>${esc(N.file.name)}</b>${g?'<span class="muted">· đổi file</span>':''}`:'<b>Chọn file</b><span class="muted">hoặc kéo thả · .xlsx / .xls</span>'}</div>
+          <input type="file" id="skk-file" accept=".xlsx,.xls" hidden onchange="skNapFile(this.files[0]);this.value=''"></label></div>
+      ${xem}
+      ${g?`<div class="skk-a"><button class="m-btn pri" id="sk-nap" onclick="skNap()" ${t&&tk&&!sai?'':'disabled'}>Nạp &amp; đối chiếu</button></div>`:''}</div>
+    <div class="skk-b"><div class="skk-h">Sao kê đã lưu <span class="badge">${fmt(L.length)}</span>${tk?`<span class="muted skk-tk">${esc(tenTK(tk))}</span>`:''}</div>
+      <div class="scroll"><table class="m-t skk-t"><colgroup><col><col style="width:150px"><col style="width:70px"><col style="width:120px"><col style="width:150px"><col style="width:150px"><col style="width:96px"></colgroup>
+        <tr><th>Tài khoản</th><th>Kỳ</th><th class="num">Số dòng</th><th class="c" title="Có HĐ · Chưa có HĐ · Chưa khớp app">HĐ: có · chưa · lệch</th><th>Trạng thái</th><th>Nạp</th><th></th></tr>
+        ${L.map(x=>`<tr><td><div class="skk-1">${esc(x.tk)}</div>${x.file?`<div class="skk-2 m-link" title="Tải file gốc" onclick="taiVeCT([${x.file.id}])">⬇ ${esc(x.file.ten)}</div>`:`<div class="skk-2 muted">${esc(x.ten_file||'')}</div>`}</td>
+          <td class="nw">${fmtD(x.tu)} – ${fmtD(x.den)}</td><td class="num">${fmt(x.so_dong)}</td><td class="c nw">${tt(x)}</td>
+          <td>${x.xu_ly_luc?pill('Đã đối chiếu','ok'):pill('Chờ đối chiếu','warn')}</td><td><div class="skk-1">${esc(x.nap_boi||'')}</div><div class="skk-2 muted">${fmtDT(x.nap_luc)}</div></td>
+          <td class="nw r"><button class="m-btn sm" title="Xem đối chiếu" onclick="skKhoMo(${x.id})">▶ Xem</button>${g?` <button class="m-btn sm bad" title="Xoá kỳ sao kê" onclick="skKhoXoa(${x.id})">✕</button>`:''}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Chưa có sao kê nào</td></tr>'}</table></div></div>
+    <div class="acts"><span style="margin-right:auto"></span><button class="m-btn" onclick="closeModal()">Đóng</button></div>`).classList.add('sk-m')}
+async function skNapFile(file){if(!file)return;if(!/\.xlsx?$/i.test(file.name))return alert('Chỉ nhận file Excel (.xlsx / .xls)');let T=[];
   try{const X=await napXLSX(),wb=X.read(await file.arrayBuffer(),{type:'array'});
     T=wb.SheetNames.map(n=>skDocTab(X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}),n)).filter(Boolean)}catch(e){return alert('Không đọc được file: '+e.message)}
   if(!T.length)return alert('Không thấy bảng giao dịch (cột Ghi nợ / Ghi có) trong file');
-  S.cache.sk_nap={file:file.name,T};skNapVe()}
-function skNapVe(){const {file,T}=S.cache.sk_nap,ds=S.cache.sk_ds||[];
-  modal(`<h2>Nạp sao kê <span class="badge" style="vertical-align:middle">${esc(file)}</span></h2>
-    <div class="scroll"><table class="m-t"><tr><th class="c">Nạp</th><th>Tab</th><th>Tài khoản trên app</th><th>Kỳ</th><th class="num">Số dòng</th><th class="num">Đầu kỳ</th><th class="num">Cuối kỳ</th><th class="c">Kiểm số dư</th></tr>
-    ${T.map((t,i)=>{const l=t.dau!=null&&t.cuoi!=null?Math.round(t.dau+sumBy(t.dong,d=>d.co)-sumBy(t.dong,d=>d.no)-t.cuoi):null,cu=ds.find(x=>x.tk_id==t.tk_id&&x.tu===t.tu&&x.den===t.den);t.chon=t.chon??!!t.tk_id;
-      return `<tr><td class="c"><input type="checkbox" ${t.chon?'checked':''} onchange="S.cache.sk_nap.T[${i}].chon=this.checked"></td><td class="nw"><b>${esc(t.ten)}</b>${t.thong_tin.so_tk?`<div class="muted" style="font-size:11.5px">${esc(t.thong_tin.so_tk)}</div>`:''}</td>
-        <td><select class="m-in" style="width:340px" onchange="S.cache.sk_nap.T[${i}].tk_id=+this.value||'';skNapVe()"><option value="">— chọn tài khoản —</option>${S.dm.tai_khoan.map(x=>`<option value="${x.id}" ${x.id==t.tk_id?'selected':''}>${esc(x.ten)}</option>`).join('')}</select>${cu?`<div class="muted" style="font-size:11.5px">Đã có kỳ này — nạp lại, giữ phần sửa tay</div>`:''}</td>
-        <td class="nw">${fmtD(t.tu)} – ${fmtD(t.den)}</td><td class="num">${fmt(t.dong.length)}</td><td class="num">${t.dau!=null?fmt(t.dau):'–'}</td><td class="num">${t.cuoi!=null?fmt(t.cuoi):'–'}</td>
-        <td class="c">${l===null?pill('Không có số dư',''):l?pill('Lệch '+fmt(l),'bad'):pill('Khớp','ok')}</td></tr>`}).join('')}</table></div>
-    <div class="acts"><button class="m-btn" onclick="closeModal()">Huỷ</button><button class="m-btn pri" id="sk-nap" onclick="skNap()">Nạp</button></div>`).classList.add('sk-m')}
-async function skNap(){const {file,T}=S.cache.sk_nap,ch=T.filter(t=>t.chon);if(!ch.length)return alert('Chưa chọn tab nào');if(ch.some(t=>!t.tk_id))return alert('Chọn tài khoản trên app cho tab đã tick');
-  const b=$('#sk-nap');b.disabled=true;b.textContent='Đang nạp...';let id=null;
-  try{for(const t of ch)id=await rpc('kt_sao_ke_nap',{p_ky:{tk_id:t.tk_id,tu:t.tu,den:t.den,dau_ky:t.dau,cuoi_ky:t.cuoi,thong_tin:t.thong_tin,ten_file:file+(T.length>1?' · tab '+t.ten:'')},p_dong:t.dong});
-    closeModal();S.cache={};S.f.sk_ky=id;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';toast('Đã nạp '+ch.length+' tài khoản');render()}catch(e){b.disabled=false;b.textContent='Nạp';alert(e.message)}}
+  const N=S.cache.sk_nap=S.cache.sk_nap||{};N.file=file;N.T=T;N.tab=null;
+  if(!N.tk){const i=T.findIndex(t=>t.tk_id);if(i>=0)N.tk=String(T[i].tk_id)}   // chưa chọn TK → lấy TK nhận ra từ số TK trong file
+  skKhoVe()}
+async function skNap(){const N=S.cache.sk_nap,t=skkTab(N);if(!t||!N.tk)return;
+  const b=$('#sk-nap');b.disabled=true;b.textContent='Đang nạp...';
+  try{const id=await rpc('kt_sao_ke_nap',{p_ky:{tk_id:+N.tk,tu:t.tu,den:t.den,dau_ky:t.dau,cuoi_ky:t.cuoi,thong_tin:t.thong_tin,ten_file:N.file.name+(N.T.length>1?' · tab '+t.ten:'')},p_dong:t.dong});
+    b.textContent='Đang lưu file gốc...';
+    try{const f=N.file,{duong_dan,url}=await ctFn({viec:'tai_len',bang:'sao_ke',dong_id:id,ten:f.name});await putTienDo(url,f,()=>{});
+      await rpc('kt_them_chung_tu',{p_bang:'sao_ke',p_dong_id:id,p_duong_dan:duong_dan,p_ten:f.name,p_mime:f.type||CT_DUOI[(f.name.split('.').pop()||'').toLowerCase()]||null,p_kich_thuoc:f.size})}
+    catch(e){toast('Đã nạp sao kê nhưng chưa lưu được file gốc: '+e.message)}
+    const tk=N.tk;S.cache={};S.cache.sk_nap={tk};S.f.sk_ky=id;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';closeModal();toast('Đã nạp sao kê');await render();skKho()}
+  catch(e){b.disabled=false;b.textContent='Nạp & đối chiếu';alert(e.message)}}
+function skKhoMo(id){closeModal();S.f.sk_ky=id;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';if(S.page!=='sao_ke_hd')go('sao_ke_hd');else render()}
+async function skKhoXoa(id){const x=(S.cache.sk_ds||[]).find(k=>k.id===id);if(!x)return;
+  if(!confirm(`Xoá sao kê ${x.tk} · ${fmtD(x.tu)} – ${fmtD(x.den)}?\n${fmt(x.so_dong)} dòng sao kê, phần sửa tay và file gốc sẽ bị xoá; link online của kỳ này hết dùng. Phiếu thu / chi trên app không đổi.`))return;
+  try{await rpc('kt_sao_ke_xoa',{p_ky:id});delete S.cache['sk_'+id];S.cache.sk_ds=null;if(S.f.sk_ky===id)S.f.sk_ky=null;toast('Đã xoá');if(S.page==='sao_ke_hd')await render();skKho()}catch(e){alert(e.message)}}
 // Excel = y bảng trên màn hình (anh 10/11: "trình bày như thế ở form xuất ra luôn"): 9 cột, 3 đầu mục màu đậm + tên cột nhạt cùng tông,
 // viền ngoài đậm, tiêu đề chữ đậm kẻ đủ viền đen, đậm dưới tiêu đề, căn giữa; thân bảng kẻ mảnh nhạt; ô hiện ĐỦ nội dung (xuống dòng, không cắt). — Monsieur Claude
 async function skExcel(kq){if(!kq)return;toast('Đang tạo file Excel...');

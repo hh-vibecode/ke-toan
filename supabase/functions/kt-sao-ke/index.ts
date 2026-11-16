@@ -28,10 +28,16 @@ Deno.serve(async (req) => {
   const ra: any = { doi: 0, giu: 0, loi: [] as string[] };
   try {
     const { skKQ, ban } = await layTinh(); ra.ban = ban;
+    // 16/11: ?moi=1 (lịch kt-sao-ke-moi 2 tiếng / lần, chỉ gọi khi có kỳ chờ) = chỉ xử lý kỳ vừa nạp; lịch 2 lần / ngày tính lại cả 6 tháng + xử lý luôn kỳ chờ
+    const moi = new URL(req.url).searchParams.get('moi') === '1';
     const tu = new Date(Date.now() - 183 * 864e5).toISOString().slice(0, 10);
-    const ky: { id: number }[] = await doc(`kt_sao_ke_ky?select=id&den=gte.${tu}&order=den.desc&limit=60`);
-    for (const k of ky) {
-      try { const kq = skKQ(await rpc('kt_sao_ke_du_lieu', { p_ky: k.id })); if (await rpc('kt_sao_ke_luu_kq_ht', { p_ky: k.id, p_kq: kq })) ra.doi++; else ra.giu++; }
+    const cho: { id: number }[] = await doc('kt_sao_ke_ky?select=id&xu_ly_luc=is.null&order=id&limit=60');
+    const cu: { id: number }[] = moi ? [] : await doc(`kt_sao_ke_ky?select=id&xu_ly_luc=not.is.null&den=gte.${tu}&order=den.desc&limit=60`);
+    ra.moi = cho.length;
+    for (const k of [...cho.map(x => ({ ...x, moi: true })), ...cu.map(x => ({ ...x, moi: false }))]) {
+      try { const kq = skKQ(await rpc('kt_sao_ke_du_lieu', { p_ky: k.id }));
+        if (k.moi) { await rpc('kt_sao_ke_xu_ly_xong', { p_ky: k.id, p_kq: kq }); ra.doi++; }
+        else if (await rpc('kt_sao_ke_luu_kq_ht', { p_ky: k.id, p_kq: kq })) ra.doi++; else ra.giu++; }
       catch (e) { ra.loi.push(k.id + ': ' + String((e as Error).message || e).slice(0, 150)); }
     }
   } catch (e) { ra.loi.push(String((e as Error).message || e).slice(0, 200)); }

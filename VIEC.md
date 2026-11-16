@@ -85,7 +85,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 - **So khớp P&L T1–T8** (Cài đặt → Log so khớp → P&L T1–T8): làm cùng anh cho sạch rồi mới đẩy dữ liệu tháng cũ vào luồng chính (nhật ký 113–115, 122). Lệch thật còn: P&L Shidai không theo file chi phí, P&L Hiền Thuỷ T4 ghi 0, thuê cửa hàng, MKT Chánh Tâm.
 - **5 phiếu nghi đồ thờ** trong đợt dọn nhà hàng 2 (PC001094, 1106, 1135, 1175, 1196) — anh xem, cái nào không phải nhà hàng thì trả lại (bỏ da_xoa).
 - **HĐ mua vào 2 hộ** (Chánh Tâm, Hiền Thủy) — chờ anh nói nguồn đúng (thông tin "lấy từ 3TShop" đang sai).
-- **Khớp sao kê tự động / chi tự động ngân hàng, thẻ** — chờ mỗi ngân hàng 1 file sao kê mẫu (bản nháp `nhap/nhap-chi-tu-dong.sql`, CHƯA chạy).
+- **Khớp sao kê tự động / chi tự động ngân hàng, thẻ** — (16/11: đã có Kho sao kê + lịch kt-sao-ke-moi tự đối chiếu sao kê mới) chờ mỗi ngân hàng 1 file sao kê mẫu (bản nháp `nhap/nhap-chi-tu-dong.sql`, CHƯA chạy).
 - Kế toán: soát 257 phiếu "Loại chi KXĐ" (giám đốc chọn mục con); HĐ gợi ý (từ 23/10 chỉ gợi ý khi khớp tên / STK) + ô "Tìm HĐ MISA" trong khung Hoá đơn đỏ.
 - **Anh quyết:** 2 phiếu thu chủ nộp tiền (#509 két, #155273 TK BIDV) đang loại "Thu khác" — đề xuất loại mới "Chủ sở hữu góp / nộp tiền" (không hạch toán P&L). 6 phiếu "Thu khác" còn lại: 2 khách trả tiền hàng (doanh thu đã tính qua Kiot), lãi tiền gửi + tiền lẻ chênh → P&L để nguyên là đúng.
 
@@ -163,6 +163,16 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **16/11/2026 (358)** — Anh (ảnh Đối chiếu sao kê): "nạp sao kê thành 1 popup, chọn TKNH có sẵn rồi up sao kê, sao kê lưu luôn trong đấy, xem kho sao kê trong đó; file Excel;
+  set luồng xử lý khi có người up sao kê mới, 2h check 1 lần, có thì xử lý không có thì thôi" + "xử lý như trong đối chiếu sao kê, xếp vào TK chuẩn với TK của nó cùng các luồng chi tiêu".
+  v1.399: nút "+ Nạp sao kê" mở popup **Kho sao kê** — khối Nạp (chọn tài khoản → chọn / kéo thả file .xlsx/.xls → xem trước số TK, kỳ, số dòng, đầu / cuối kỳ, kiểm số dư;
+  số TK trong file khác TK đã chọn → chặn nạp + "Đổi sang tài khoản này") + khối Sao kê đã lưu (lọc theo TK, ▶ Xem, ⬇ file gốc, ✕ Xoá). File gốc lưu bucket kt-chung-tu (bang `sao_ke`).
+  SQL `supabase-schema-kt-sao-ke-kho.sql`: cột `kt_sao_ke_ky.xu_ly_luc` (null = chờ; 5 kỳ T10 đánh dấu đã xử lý), ràng buộc + quyền chứng từ thêm `sao_ke` (theo trang hoa_don_thue),
+  `kt_sao_ke_ds` thêm trạng thái + file, `kt_sao_ke_nap` đưa vào hàng chờ, `kt_sao_ke_xoa` ẩn cả file gốc, `kt_sao_ke_cho_xu_ly`, `kt_sao_ke_xu_ly_xong` (lưu kết quả + chuông).
+  Lịch mới **kt-sao-ke-moi** `0 */2 * * *`: `select net.http_post(...?moi=1) where kt_sao_ke_cho_xu_ly()` → không có kỳ chờ thì không gọi Edge. Edge kt-sao-ke: `?moi=1` chỉ xử lý kỳ chờ; lịch cũ 2 lần / ngày tính lại 6 tháng + xử lý luôn kỳ chờ.
+  Lỗi tự sửa trong lúc làm: popup không mở khi chưa chọn file (đọc N.T.length khi chưa có) · bảng kt_chung_tu có ràng buộc tên bảng → file gốc chưa lưu (test bắt, đã thêm) · lệnh shell gộp bị hệ thống chặn (không chạy) → tách bước.
+  Test `scripts/kiem-thu-sao-ke-kho.js` 11/11 (TK tạm, file giả TK 925 kỳ 01–02/09; hàm xử lý xong chạy trong giao dịch huỷ → 6 người nhận chuông, không gửi thật). Đã xoá kỳ thử, chứng từ, 3 file thử trong bucket, nhật ký, TK tạm.
+  CHƯA kiểm: lịch kt-sao-ke-moi chạy thật với kỳ chờ thật (lần chạy đầu khi kế toán nạp sao kê T11) — Edge ?moi=1 đã chạy thử với 0 kỳ chờ: 200, 2,5 s. — Monsieur Claude
 - **16/11/2026 (357)** — Anh (ảnh): "sao đưa cả cước điện thoại với cước internet vào đây". Lỗi của em: điều kiện gợi ý có chữ "cước" trần → dính cước viễn thông. Sửa `kt_vc_goi_y`: "cước" phải kèm chữ vận chuyển
   (cước vc / vận / hàng / đơn / ship / xe / chuyển / tiền hàng / gửi, thu cước) + loại hẳn viễn thông (điện thoại, internet, wifi, di động, sim, cáp quang, 3G/4G/5G, VNPT, Mobifone, Vinaphone, Viettel không kèm Post, FTTH).
   Đối chiếu T10–T11: đúng 10 phiếu bị loại (9 cước điện thoại + 1 internet), không phiếu vận chuyển nào mất. v1.398 (dòng Logic). — Monsieur Claude
