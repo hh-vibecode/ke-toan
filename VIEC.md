@@ -163,6 +163,13 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **16/11/2026 (353)** — Kế toán trả lời 4 câu hỏi (anh chuyển) — v1.394:
+  (1) Vận chuyển nội địa: "chỉ cần theo dõi danh mục đơn vị vận chuyển và tiền thanh toán từng chuyến (Nhất Tín trừ COD; nhà xe cửa hàng trả rồi cộng giá vốn Kiot)" → trang làm lại: bảng `kt_vc_dv` + `kt_vc_chuyen`
+  (`supabase-schema-kt-van-chuyen-nd.sql`), 3 thẻ theo cách trả (lọc), danh sách chuyến, danh mục đơn vị (Thêm · Sửa · Xoá); chỉ theo dõi, không ghi P&L. Bỏ nội dung trang cũ (PO chưa về kho + phí VC khai trong PO / phiếu nhập).
+  (2a) Vẫn làm phiếu ĐNTT → ô "Phiếu đề nghị thanh toán", cột "Chưa gắn", thẻ "Cần bổ sung" (chưa gắn phiếu / thiếu tỷ giá, bấm lọc). (2b) Phí chuyển vào giá vốn lô: `kt_lo_nk_phi_tt` (phí × nguyên tệ phân bổ PO / tổng → hồ sơ chứa PO; PO ở n hồ sơ chia đều),
+  dòng chi phí tự động trong tab Chi phí + cột Chi phí danh sách hồ sơ (`supabase-schema-kt-tt-nn-phi.sql`). Thử trong giao dịch huỷ: phí 300.000 × 600/1.000 → lô nhận 180.000 đúng. (2c) giữ.
+  (3) Báo giá cũ 90 → 180 ngày. (4) Kê khai: trị giá khai mặc định USD, thuế VND.
+  Lỗi tự sửa khi làm: hàm lưu đơn vị VC trùng tên biến / cột (sửa trước khi chạy); trang VC dùng nhầm hàm nút của trang khác → bảng không hiện (test bắt, sửa). Test VC 7/7 rồi xoá dữ liệu thử (2 đơn vị, 2 chuyến, nhật ký). — Monsieur Claude
 - **16/11/2026 (352)** — Anh: "rà xem phiếu lương ổn chưa". PC002017 đã được duyệt (chờ thanh toán), 1 phiếu đủ tiền; kt_v_chi_ht ra đủ tiền tháng 10/2026 theo 5 loại × 3 cơ sở; 6 phiếu lẻ không còn dấu vết (thông báo, hoá đơn, PO, chứng từ = 0).
   Lỗ hổng tìm thấy + sửa: Tổng quan (kt_bao_cao: chi theo loại / đơn vị) và Lưu chuyển tiền tệ (kt_bc_lctt) đọc thẳng kt_chi → khi phiếu đã thanh toán sẽ dồn cả phiếu vào loại "Chi phí tổng công ty phân bổ".
   Thêm `kt_chi_tach_chia()` (phiếu có bảng chia → dòng ảo mỗi nhóm, tổng khớp tuyệt đối: 1.633 phiếu → 1.639 dòng), 2 hàm đọc qua nó (`supabase-schema-kt-chia-luong-bao-cao.sql`, 16 ms). Lịch kt-pb-ds chạy thử trong giao dịch huỷ: không lỗi, tổng giữ nguyên.
