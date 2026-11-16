@@ -163,6 +163,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **16/11/2026 (359)** — Anh: "up 2 file rồi, chạy thử xem có vấn đề gì không". 2 kỳ TK VCB CN DTMO (T10, 01–16/11, chị Oanh nạp qua popup, đúng TK, có file gốc, số dư khớp tuyệt đối, 2 file khác nhau — cùng 41 dòng là trùng hợp).
+  Chạy Edge `?moi=1` thật: 2 kỳ xử lý 2,5 s, chuông cho 5 người. Dòng chưa khớp app = thiếu phiếu trên app, không phải lỗi ghép: T11 8 dòng (PC001969 đã chuyển 12/11 nhưng app còn "Chờ thanh toán";
+  chuyển nội bộ từ TK TECH NH / sang TK Hồ Xuân Thịnh chưa có điều chuyển; 1 khoản chi lớn tới cá nhân; phí QLTK; truy thu lương; 2 tiền vào chưa rõ nguồn — 1 khoản có thể phiếu Kiot ghi nhầm TK BIDV HT), T10 2 dòng (1 chi cá nhân, lãi). Đã gửi danh sách cho anh chuyển kế toán. — Monsieur Claude
 - **16/11/2026 (358)** — Anh (ảnh Đối chiếu sao kê): "nạp sao kê thành 1 popup, chọn TKNH có sẵn rồi up sao kê, sao kê lưu luôn trong đấy, xem kho sao kê trong đó; file Excel;
   set luồng xử lý khi có người up sao kê mới, 2h check 1 lần, có thì xử lý không có thì thôi" + "xử lý như trong đối chiếu sao kê, xếp vào TK chuẩn với TK của nó cùng các luồng chi tiêu".
   v1.399: nút "+ Nạp sao kê" mở popup **Kho sao kê** — khối Nạp (chọn tài khoản → chọn / kéo thả file .xlsx/.xls → xem trước số TK, kỳ, số dòng, đầu / cuối kỳ, kiểm số dư;
