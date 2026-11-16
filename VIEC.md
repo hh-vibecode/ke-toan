@@ -163,6 +163,13 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **16/11/2026 (361)** — Kế toán (chị Jaycie, ảnh Zalo) góp ý form NCC NỘI ĐỊA + "đánh MST tự động ra thông tin". v1.401: form Thêm / Sửa NCC nội địa (loai noi_dia / dich_vu) — bỏ tên giao dịch, tên nước ngoài, quốc gia,
+  tiền tệ, tỷ giá, điều kiện giao hàng; Loại NCC + loại hình + ngành hàng gộp thành 1 ô **Nhóm NCC** (`them.nhom`, chọn trong các nhóm đã dùng hoặc "+ Thêm nhóm mới…" — kế toán tự khai, chưa có nhóm nào sẵn);
+  Thông tin chung: tên NCC · nhóm · MST · tên công ty / HKD (`them.ten_cong_ty`) · địa chỉ ĐKKD (= cột dia_chi cũ, bỏ ô địa chỉ ở Liên hệ) · ngân hàng (`them.ngan_hang`) · số TK (= stk cũ, vẫn tự gán phiếu chi theo số TK);
+  gõ MST → tự điền tên công ty + địa chỉ (Edge kt-mst có sẵn; `supabase-schema-kt-ncc-noi-mst.sql`: kt_mst_lay nhận thêm quyền xem NCC, trước chỉ quyền Hoá đơn & Thuế). Popup chi tiết NCC nội địa: nhóm "Thông tin chung" mới, bỏ nhóm "Thông tin khác";
+  trang danh sách: lọc theo Nhóm NCC (thay lọc Loại NCC), nhóm hiện dưới tên. Lưu chỉ ghi ô có trên form — ô form kia không có giữ nguyên trong `them` (trước: lưu là xoá hết khoá them không có trên form).
+  Form NCC nước ngoài giữ nguyên. Kiểm: 309 NCC nội địa + 2 dịch vụ chưa có loại hình / ngành hàng / tên giao dịch → không mất dữ liệu; ảnh Chrome form mới / form sửa / popup / form nước ngoài; tra MST công ty điền đúng;
+  TK chỉ quyền `ncc` hoặc `hoa_don_thue` tra được, TK `chi_de_nghi` bị chặn. CHƯA thử bấm Lưu thật trên trình duyệt (không tạo NCC rác). — Monsieur Claude
 - **16/11/2026 (360)** — Anh (ảnh menu Đề xuất mua): "bỏ bổ sung cửa hàng, đổi đơn khách đặt riêng thành đơn hàng khách đặt, gộp với công nợ khách hàng". v1.400: nhóm KHÁCH HÀNG = Công nợ khách hàng · Đơn hàng khách đặt;
   bỏ nhóm Đề xuất mua; trang Bổ sung cửa hàng ẩn khỏi menu (link cũ / chuông đề xuất chuyển sang Đơn hàng khách đặt); form công khai #de-xuat-mua → Đặt hàng bỏ lựa chọn Bổ sung cửa hàng, chỉ còn Đơn hàng khách đặt.
   Kiểm: bảng kt_de_xuat_mua chưa có dòng nào → không mất dữ liệu; trang mới mở không lỗi (ảnh). Sửa 2 dòng Logic. — Monsieur Claude
