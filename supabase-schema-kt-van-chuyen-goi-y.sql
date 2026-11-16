@@ -34,8 +34,11 @@ begin
             from kt_chi c cross join lateral (select lower(concat_ws(' ', c.thu_huong_ten, c.noi_dung, c.ghi_chu)) t) x
            where not c.da_xoa and not c.la_tam_ung and c.trang_thai not in ('tu_choi', 'tu_choi_tt')
              and coalesce(c.ngay_tt, c.ngay_de_nghi) between p_tu and p_den
-             and (c.loai_con_id = 102 or kt_vc_hang(x.t) is not null or x.t ~ '(cước|vận chuyển|\mvc\M|\mship|tiền xe|\mcod\M)')
+             -- 16/11 anh: "sao đưa cả cước điện thoại với cước internet vào đây" — "cước" phải đi kèm chữ vận chuyển; loại hẳn viễn thông
+             and (c.loai_con_id = 102 or kt_vc_hang(x.t) is not null
+                  or x.t ~ '(cước (vc|vận|hàng|đơn|ship|xe|chuyển|tiền hàng|gửi)|thu cước|vận chuyển|\mvc\M|\mship|tiền xe|\mcod\M)')
              and x.t !~ '(\mtq\M|trung quốc|\mcont\M|container|cước tàu|cosco|nhập khẩu|quốc tế)'
+             and x.t !~ '(điện thoại|internet|wifi|wi-fi|viễn thông|di động|\msim\M|cáp quang|truyền hình|\m[345]g\M|fpt telecom|\mvnpt\M|mobifone|vinaphone|viettel(?! ?post)|\mgftth|ftth)'
              and not exists (select 1 from kt_vc_chuyen v where v.chi_id = c.id and not v.da_xoa)
              and not exists (select 1 from kt_vc_bo_qua b where b.chi_id = c.id)) z), '[]');
 end $$;

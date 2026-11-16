@@ -163,6 +163,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **16/11/2026 (357)** — Anh (ảnh): "sao đưa cả cước điện thoại với cước internet vào đây". Lỗi của em: điều kiện gợi ý có chữ "cước" trần → dính cước viễn thông. Sửa `kt_vc_goi_y`: "cước" phải kèm chữ vận chuyển
+  (cước vc / vận / hàng / đơn / ship / xe / chuyển / tiền hàng / gửi, thu cước) + loại hẳn viễn thông (điện thoại, internet, wifi, di động, sim, cáp quang, 3G/4G/5G, VNPT, Mobifone, Vinaphone, Viettel không kèm Post, FTTH).
+  Đối chiếu T10–T11: đúng 10 phiếu bị loại (9 cước điện thoại + 1 internet), không phiếu vận chuyển nào mất. v1.398 (dòng Logic). — Monsieur Claude
 - **16/11/2026 (356)** — Anh: "xem lại cách trình bày, t muốn kéo thả, chia nửa nửa màn". v1.397 Vận chuyển nội địa: 3 thẻ + màn chia đôi — trái thẻ phiếu chi chưa kéo (kéo được, ▶ kéo nhanh, ✕ bỏ qua, tìm, "Kéo hết đã nhận ra"),
   phải mỗi đơn vị 1 ô thả kèm chuyến trong kỳ (✏ ✕ đơn vị, ✕ chuyến = trả phiếu về trái) + ô "thả để tạo đơn vị mới" (tên hãng đoán, không có thì hỏi tên). Bỏ 2 bảng cũ (chuyến / danh mục) vì trùng ô bên phải.
   Test kéo-thả thật (DragEvent) 5/5 tháng 10, đã xoá chuyến / đơn vị / nhật ký thử; 2 dòng anh tự xoá trước đó (Viettel Post, chuyến PC002046) để nguyên. — Monsieur Claude
