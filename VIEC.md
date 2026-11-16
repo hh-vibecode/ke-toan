@@ -163,6 +163,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **16/11/2026 (354)** — Anh: "vận chuyển nội địa kéo với phiếu chi chưa, nhận diện các phiếu của Nhất Tín, Viettel Post để hiện đề xuất kéo cho dễ". v1.395: khối "Phiếu chi vận chuyển chưa kéo vào"
+  (`supabase-schema-kt-van-chuyen-goi-y.sql`: `kt_vc_hang` đoán hãng, `kt_vc_goi_y`, `kt_vc_keo` tạo chuyến gắn phiếu + tự tạo đơn vị, `kt_vc_bo_qua`). Điều kiện: mục Phí vận chuyển / tên hãng / chữ cước-vận chuyển-ship-COD-tiền xe; bỏ cước quốc tế.
+  Không lấy cả mục cha "Chi phí đóng gói & vận chuyển" vì lẫn tiền mua xốp / thùng / nilon. Tháng 10: 42 phiếu gợi ý, 36 nhận ra đơn vị. Lỗi tự sửa: hàm kéo trùng tên biến / cột (test bắt). Test 5/5 trên phiếu thật, đã xoá chuyến / đơn vị / bỏ qua / nhật ký thử. — Monsieur Claude
 - **16/11/2026 (353)** — Kế toán trả lời 4 câu hỏi (anh chuyển) — v1.394:
   (1) Vận chuyển nội địa: "chỉ cần theo dõi danh mục đơn vị vận chuyển và tiền thanh toán từng chuyến (Nhất Tín trừ COD; nhà xe cửa hàng trả rồi cộng giá vốn Kiot)" → trang làm lại: bảng `kt_vc_dv` + `kt_vc_chuyen`
   (`supabase-schema-kt-van-chuyen-nd.sql`), 3 thẻ theo cách trả (lọc), danh sách chuyến, danh mục đơn vị (Thêm · Sửa · Xoá); chỉ theo dõi, không ghi P&L. Bỏ nội dung trang cũ (PO chưa về kho + phí VC khai trong PO / phiếu nhập).
