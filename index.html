@@ -1204,8 +1204,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.402';
-const APP_VERSION='17/11/2026 09:56';
+const APP_SO='1.403';
+const APP_VERSION='17/11/2026 10:25';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3922,7 +3922,7 @@ async function poAnhTheoMa(files){const fs=[...files||[]];if(!fs.length)return;c
   if(_po.id&&khop){try{await rpc('kt_po_luu',{p_dong:{..._po,dong:_po.dong.map(({_f,_u,_r,...r})=>r)}});S.cache.po_d=null}catch(e){alert(e.message)}}
   poVe();toast(`Đã gắn ${khop} ảnh`+(sai.length?` · ${sai.length} ảnh không khớp mã`:''));if(sai.length)alert('Không khớp mã hàng (đặt tên file = Mã THT hoặc Mã NCC):\n'+sai.slice(0,20).join('\n'))}
 async function poMauTrong(){try{await poDS();S.cache.po_ncc=(await nccDS()).ncc}catch(e){return alert(e.message)}
-  window._po={so:'',loai:'noi_dia',tien_te:'VND',ngay:homNay(),noi_giao:PO_NOI[0],vat:0,dong:[],chi_ids:[]};await poExcel()}
+  window._po={so:'THT-PO-     /'+new Date().getFullYear(),loai:'noi_dia',tien_te:'VND',ngay:'',noi_giao:PO_NOI[0],vat:0,dong:[],chi_ids:[],_mau:1};await poExcel()}   // 17/11: như file mẫu — số PO để khung, ngày trống, có dòng thuế
 function poTaiLen(files){S.cache.po_hang_doi=[...files||[]];poMoTiep()}
 async function poMoTiep(){const q=S.cache.po_hang_doi||[];if(!q.length)return;const f=q.shift();
   try{await poDocExcel(f,q.length)}catch(e){alert('Không đọc được '+f.name+': '+e.message);poMoTiep()}}
@@ -4014,47 +4014,89 @@ async function poXoaMau(){if(!confirm('Xoá toàn bộ PO mẫu?'))return;try{co
 const poBenMua=()=>{let b=(S.cache.po_d||{}).ben_mua||{};if(typeof b==='string'){try{b=JSON.parse(b)}catch(e){b={}}}return b||{}};
 async function anhNho(bl,max=160,q=.7){const b=await createImageBitmap(bl),s=Math.min(1,max/Math.max(b.width,b.height)),w=Math.max(1,Math.round(b.width*s)),h=Math.max(1,Math.round(b.height*s)),c=document.createElement('canvas');
   c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(b,0,0,w,h);if(b.close)b.close();return {b64:c.toDataURL('image/jpeg',q),w,h}}
+// 17/11 kế toán: "fix lại giao diện màu sắc kẻ ô y hệt như file PO mẫu, file xuất ra xấu quá" — dựng lại theo từng ô của file "THT - Mẫu PO (Nội địa & Nhập khẩu).xlsx":
+// Arial 10, ẩn lưới ô; logo (Drive) ô A1:B3; tên công ty xanh đậm 0E4B2C cỡ 13; ô Số PO / Ngày / Số PI kẻ mảnh A5B2AA, gạch vàng FFD243 dày dưới phần đầu; tiêu đề cỡ 16;
+// ô giá trị đầu đơn nền vàng nhạt FFF6D6; dải BÊN MUA / BÊN BÁN + hàng tên cột nền xanh đậm chữ trắng; nhãn nền xanh nhạt E7F0EA; kẻ mảnh xám A5B2AA; dòng hàng cao 52.5;
+// TỔNG CỘNG nền xanh nhạt chữ xanh đậm; dải ĐẶT CỌC & THANH TOÁN nền vàng; ký tên. Giữ quyết định 16/11: không có thuế GTGT → chỉ 1 dòng Tổng cộng. — Monsieur Claude
+const PO_LOGO='https://lh3.googleusercontent.com/d/15VM8s-grScP1MdTtA0OtasacZe5TDYP4';
 async function poExcel(){const p=window._po;if(!p)return;toast('Đang tạo file Excel...');
-  try{const E=await napExcelJS(),wb=new E.Workbook(),ws=wb.addWorksheet('PO'),bm=poBenMua(),nc=(S.cache.po_ncc||[]).find(x=>x.id===+p.ncc_id)||{};
-    [6,13,13,13,32,10,13,13,8,11,13,15,20].forEach((w,i)=>ws.getColumn(i+1).width=w);
-    const V='thin',KE={top:{style:V},left:{style:V},bottom:{style:V},right:{style:V}},dat=(r,c,v,st)=>{const o=ws.getCell(r,c);o.value=v;if(st)Object.assign(o,st);return o};
-    const B={bold:true},GOP=(r1,c1,r2,c2)=>ws.mergeCells(r1,c1,r2,c2),so=p.tien_te==='VND'?'#,##0':'#,##0.00';
-    GOP(1,3,1,9);dat(1,3,bm.ten||'',{font:{bold:true,size:13}});dat(1,10,'Số PO / 订单号:',{font:B});GOP(1,12,1,13);dat(1,12,p.so||'');
-    GOP(2,3,2,9);dat(2,3,(bm.dia_chi||'')+(bm.mst?'  |  MST / 税号: '+bm.mst:''));dat(2,10,'Ngày / 日期:',{font:B});GOP(2,12,2,13);dat(2,12,p.ngay?fmtD(p.ngay):'');
-    GOP(3,3,3,9);dat(3,3,bm.lien_he?'Email: '+bm.lien_he:'');dat(3,10,'Số PI / PI号:',{font:B});GOP(3,12,3,13);dat(3,12,p.so_pi||'');
-    GOP(5,1,5,13);dat(5,1,'ĐƠN ĐẶT HÀNG / 采购订单',{font:{bold:true,size:16},alignment:{horizontal:'center'}});ws.getRow(5).height=26;
-    GOP(6,1,6,3);dat(6,1,'Loại đơn / 订单类型:',{font:B});dat(6,4,PO_LOAI_TQ[p.loai]);GOP(6,6,6,7);dat(6,6,'Tiền tệ / 币种:',{font:B});dat(6,8,p.tien_te);
-    GOP(6,9,6,10);dat(6,9,'Nơi giao hàng / 交货地点:',{font:B});GOP(6,11,6,13);dat(6,11,p.noi_giao||'');
-    GOP(8,4,8,7);dat(8,4,'BÊN MUA / 买方',{font:B,alignment:{horizontal:'center'}});GOP(8,8,8,13);dat(8,8,'BÊN BÁN / 卖方',{font:B,alignment:{horizontal:'center'}});
-    [['Tên công ty / 公司名称',bm.ten,p.ncc_ten||nc.ten],['Địa chỉ / 地址',bm.dia_chi,nc.dia_chi],['MST / 税号',bm.mst,nc.mst],['Liên hệ / 联系方式',bm.lien_he,[nc.lien_he,nc.sdt,nc.email].filter(Boolean).join(' · ')],
-     ['Chủ tài khoản / 账户名',bm.chu_tk,''],['Số tài khoản / 银行账号',bm.stk,nc.stk],['Ngân hàng / 开户行',bm.ngan_hang,'']].forEach(([l,a,b],i)=>{const r=9+i;
-      GOP(r,1,r,3);GOP(r,4,r,7);GOP(r,8,r,13);dat(r,1,l,{font:B});dat(r,4,a||'');dat(r,8,b||'');for(let c=1;c<=13;c++)ws.getCell(r,c).border=KE});
-    const H=17,TD=['STT\n序号','Mã THT\nTHT编码','Mã NCC\n供应商编码','Hình ảnh\n图片','Tên hàng\n品名','Màu\n颜色','Kích thước\n尺寸','Quy cách\n规格','ĐVT\n单位','Số lượng đặt\n订购数量','Đơn giá\n单价','Thành tiền\n金额','Ghi chú\n备注'];
-    TD.forEach((t,i)=>dat(H,i+1,t,{font:B,alignment:{horizontal:'center',vertical:'middle',wrapText:true},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFDDEBF7'}},border:KE}));ws.getRow(H).height=34;
+  try{const E=await napExcelJS(),wb=new E.Workbook(),ws=wb.addWorksheet('PO',{views:[{showGridLines:false}],properties:{defaultRowHeight:15.75}}),bm=poBenMua(),nc=(S.cache.po_ncc||[]).find(x=>x.id===+p.ncc_id)||{},NX=nc.them||{};
+    [5.38,12,12,11.38,21.38,9.5,10.75,12,6.38,8.25,12,13.88,15.13].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    const XD='FF0E4B2C',XN='FFE7F0EA',VN='FFFFF6D6',KE='FFA5B2AA',VG='FFFFD243',dp=p.tien_te==='VND'?0:2,so=dp?'#,##0.00':'#,##0';
+    const F=(o={})=>({name:'Arial',size:10,color:{argb:'FF000000'},...o}),N=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}}),L={style:'thin',color:{argb:KE}},H={style:'hair',color:{argb:KE}};
+    const AL=(h,o)=>({vertical:'middle',wrapText:true,...(h?{horizontal:h}:{}),...(o||{})});
+    const dat=(r,c,v,st)=>{const o=ws.getCell(r,c);if(v!==undefined)o.value=v;o.font=F();o.alignment=AL();if(st)Object.assign(o,st);return o};
+    const GOP=(r1,c1,r2,c2)=>ws.mergeCells(r1,c1,r2,c2);
+    const khung=(r,c1)=>{ws.getCell(r,c1).border={top:L,left:L,bottom:L,right:L}};   // vùng gộp: ExcelJS ghi chung 1 kiểu cho cả vùng → kẻ đủ 4 cạnh ở ô đầu
+    const ngay=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?new Date(Date.UTC(+m[1],m[2]-1,+m[3])):null};
+    // ── đầu đơn (dòng 1–3)
+    GOP(1,1,3,2);dat(1,1,'');   // ô logo phải có thật (ô gộp trống không ghi ra → vài trình xem lệch cả phần đầu sang trái)
+    GOP(1,3,1,9);dat(1,3,bm.ten||'',{font:F({bold:true,size:13,color:{argb:XD}})});
+    GOP(2,3,2,9);dat(2,3,(bm.dia_chi||'')+'  |  MST / 税号: '+(bm.mst||''));
+    GOP(3,3,3,9);dat(3,3,'Email: '+(bm.lien_he||''));
+    [['Số PO / 订单号:',p.so||''],['Ngày / 日期:',p.ngay?fmtD(p.ngay):''],['Số PI / PI号:',p.so_pi||'']].forEach(([l,v],i)=>{const r=1+i;GOP(r,10,r,11);GOP(r,12,r,13);
+      dat(r,10,l,{font:F({bold:true}),alignment:AL('right')});dat(r,12,v);
+      for(const c of [12,13])ws.getCell(r,c).border={...(i?{top:H}:{}),...(i<2?{bottom:H}:{})};ws.getRow(r).height=22.5});
+    for(let c=3;c<=13;c++){const o=ws.getCell(3,c);o.border={...(o.border||{}),bottom:{style:'thick',color:{argb:VG}}}}
+    // ── tiêu đề + loại đơn
+    GOP(5,1,5,13);dat(5,1,'ĐƠN ĐẶT HÀNG / 采购订单',{font:F({bold:true,size:16,color:{argb:XD}}),alignment:AL('center')});ws.getRow(5).height=28.5;
+    GOP(6,1,6,3);dat(6,1,'Loại đơn / 订单类型:',{font:F({bold:true})});GOP(6,4,6,5);dat(6,4,PO_LOAI_TQ[p.loai]||'',{fill:N(VN),alignment:AL('center')});
+    GOP(6,6,6,7);dat(6,6,'Tiền tệ / 币种:',{font:F({bold:true}),alignment:AL('right')});dat(6,8,p.tien_te||'',{fill:N(VN),alignment:AL('center')});
+    GOP(6,9,6,10);dat(6,9,'Nơi giao hàng / 交货地点:',{font:F({bold:true}),alignment:AL('right')});GOP(6,11,6,13);dat(6,11,p.noi_giao||'',{fill:N(VN),alignment:AL('center')});
+    // ── bên mua / bên bán (dòng 8–15)
+    const dau=F({bold:true,color:{argb:'FFFFFFFF'}});
+    [[1,3,''],[4,7,'BÊN MUA / 买方'],[8,13,'BÊN BÁN / 卖方']].forEach(([a,b,t])=>{GOP(8,a,8,b);dat(8,a,t,{font:dau,fill:N(XD),alignment:AL('center')});khung(8,a,b)});
+    [['Tên công ty / 公司名称',bm.ten,NX.ten_cong_ty||p.ncc_ten||nc.ten],['Địa chỉ / 地址',bm.dia_chi,nc.dia_chi],['MST / 税号',bm.mst,nc.mst],['Liên hệ / 联系方式',bm.lien_he,[nc.lien_he,nc.sdt,nc.email].filter(Boolean).join(' · ')],
+     ['Chủ tài khoản / 账户名',bm.chu_tk,NX.chu_tk||''],['Số tài khoản / 银行账号',bm.stk,Array.isArray(nc.stk)?nc.stk.join(', '):(nc.stk||'')],['Ngân hàng / 开户行',bm.ngan_hang,NX.ngan_hang||'']].forEach(([l,a,b],i)=>{const r=9+i;
+      GOP(r,1,r,3);GOP(r,4,r,7);GOP(r,8,r,13);dat(r,1,l,{font:F({bold:true}),fill:N(XN)});dat(r,4,a||'');dat(r,8,b||'');khung(r,1,3);khung(r,4,7);khung(r,8,13)});
+    // ── bảng hàng (tiêu đề dòng 17)
+    const HR=17,TD=['STT\n序号','Mã THT\nTHT编码','Mã NCC\n供应商编码','Hình ảnh\n图片','Tên hàng\n品名','Màu\n颜色','Kích thước\n尺寸','Quy cách\n规格','ĐVT\n单位','Số lượng đặt\n订购数量','Đơn giá\n单价','Thành tiền\n金额','Ghi chú\n备注'],K4={top:L,left:L,bottom:L,right:L};
+    TD.forEach((t,i)=>dat(HR,i+1,t,{font:dau,fill:N(XD),alignment:AL('center'),border:K4}));ws.getRow(HR).height=30;
     const dg=p.dong.filter(x=>x.ma_tht||x.ten||+x.sl),n=Math.max(10,dg.length),U={},ids=dg.map(x=>x.anh_ct).filter(Boolean),urls=dg.filter(x=>!x.anh_ct&&/^https?:\/\//i.test(x.anh||'')).map(x=>x.anh);   // 17/11: + ảnh Kiot (link) của dòng chưa tải ảnh mẫu
-    // 16/11 anh: "file PO down về nhẹ thôi, ảnh không cần giữ chất lượng, tải nhanh" — ảnh thu nhỏ ≤160px JPEG 70%, tải 6 ảnh song song,
-    // ảnh trùng nhúng 1 lần, giữ đúng tỷ lệ trong ô (trước: ảnh gốc vài MB tải lần lượt, kéo méo vuông 74×74). — Monsieur Claude
-    const AN={},uq=[...new Set([...ids,...urls])];urls.forEach(u=>U[u]=u);
-    if(uq.length){if(ids.length)try{const r=await ctFn({viec:'xem',ids:[...new Set(ids)]});(r.ds||[]).forEach(z=>U[z.id]=z.url)}catch(e){}
-      const q=uq.filter(id=>U[id]);let k=0;toast(`Đang thu nhỏ ${q.length} ảnh...`);
-      await Promise.all(Array.from({length:Math.min(6,q.length)},async()=>{while(k<q.length){const id=q[k++];try{AN[id]=await anhNho(await (await fetch(U[id])).blob())}catch(e){}}}));
-      for(const id in AN)AN[id].im=wb.addImage({base64:AN[id].b64,extension:'jpeg'})}
-    for(let i=0;i<n;i++){const r=H+1+i,x=dg[i]||{};[i+1,x.ma_tht||'',x.ma_ncc||'',x.anh?{text:'Xem ảnh',hyperlink:x.anh}:'',x.ten||'',x.mau||'',x.kt||'',x.quy_cach||'',x.dvt||'',x.sl!=null?+x.sl:null,x.don_gia!=null?+x.don_gia:null].forEach((v,c)=>dat(r,c+1,v,{border:KE,alignment:{vertical:'middle',wrapText:c===4}}));
-      dat(r,12,{formula:`ROUND(J${r}*K${r},${p.tien_te==='VND'?0:2})`},{border:KE,numFmt:so});dat(r,13,x.ghi_chu||'',{border:KE});ws.getCell(r,11).numFmt=so;ws.getCell(r,10).numFmt='#,##0';
-      const a=AN[x.anh_ct||x.anh];if(a){const s=74/Math.max(a.w,a.h);ws.addImage(a.im,{tl:{col:3.08,row:r-1+0.08},ext:{width:Math.round(a.w*s),height:Math.round(a.h*s)}});ws.getRow(r).height=60;dat(r,4,'',{border:KE})}}
-    const r1=H+1+n,cV=+p.vat>0,rT=r1,rV=r1+1,rG=cV?r1+2:r1;   // 16/11: không có thuế GTGT → chỉ 1 dòng Tổng cộng
-    (cV?[[rT,'Cộng tiền hàng / 货款小计',`SUM(L${H+1}:L${r1-1})`],[rV,`Thuế GTGT (${+p.vat||0}%) / 增值税`,`ROUND(L${rT}*${(+p.vat||0)/100},${p.tien_te==='VND'?0:2})`],[rG,'TỔNG CỘNG / 合计',`L${rT}+L${rV}`]]:[[rG,'TỔNG CỘNG / 合计',`SUM(L${H+1}:L${r1-1})`]]).forEach(([r,l,fm])=>{
-      GOP(r,1,r,11);dat(r,1,l,{font:B,alignment:{horizontal:'right'},border:KE});dat(r,12,{formula:fm},{font:B,numFmt:so,border:KE});dat(r,13,'',{border:KE})});
-    const c0=rG+2;GOP(c0,1,c0,13);dat(c0,1,'ĐẶT CỌC & THANH TOÁN / 定金及付款',{font:B});
-    [['Nội dung / 项目','Ngày / 日期','Số tiền / 金额',1],['Đã thanh toán / 已付款','',poDaTe(p)||0],['Thanh toán còn lại / 尾款','',{formula:`L${rG}-I${c0+2}`}],['Ngày giao hàng / 交货日期',p.ngay_giao?fmtD(p.ngay_giao):'','']].forEach(([a,b,c,h],i)=>{const r=c0+1+i;
-      GOP(r,1,r,4);GOP(r,5,r,8);GOP(r,9,r,12);dat(r,1,a,{font:h?B:{},border:KE});dat(r,5,b,{font:h?B:{},border:KE});dat(r,9,c,{font:h?B:{},border:KE,numFmt:so});dat(r,13,'',{border:KE})});
-    const k0=c0+6;GOP(k0,1,k0,13);dat(k0,1,'Đơn hàng có hiệu lực khi hai bên ký, đóng dấu. / 本订单经双方签字盖章后生效。',{font:{italic:true}});
-    const s0=k0+2;GOP(s0,1,s0,6);GOP(s0,8,s0,13);dat(s0,1,'ĐẠI DIỆN BÊN MUA / 买方代表',{font:B,alignment:{horizontal:'center'}});dat(s0,8,'ĐẠI DIỆN BÊN BÁN / 卖方代表',{font:B,alignment:{horizontal:'center'}});
-    GOP(s0+1,1,s0+1,6);GOP(s0+1,8,s0+1,13);dat(s0+1,1,'(Ký, ghi rõ họ tên, đóng dấu / 签字盖章)',{alignment:{horizontal:'center'},font:{italic:true}});dat(s0+1,8,'(Ký, ghi rõ họ tên, đóng dấu / 签字盖章)',{alignment:{horizontal:'center'},font:{italic:true}});
-    GOP(s0+5,1,s0+5,6);GOP(s0+5,8,s0+5,13);dat(s0+5,1,bm.dai_dien||'',{font:B,alignment:{horizontal:'center'}});dat(s0+5,8,'Họ tên, chức vụ / 姓名、职务: ……………',{alignment:{horizontal:'center'}});
-    ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9};
+    // 16/11 anh: "file PO down về nhẹ thôi, ảnh không cần giữ chất lượng, tải nhanh" — ảnh thu nhỏ ≤160px JPEG 70%, tải 6 ảnh song song, ảnh trùng nhúng 1 lần, giữ tỷ lệ trong ô
+    const AN={},uq=[...new Set([...ids,...urls])];urls.forEach(u=>U[u]=u);let LG=null;
+    const [,lg]=await Promise.all([(async()=>{if(!uq.length)return;if(ids.length)try{const r=await ctFn({viec:'xem',ids:[...new Set(ids)]});(r.ds||[]).forEach(z=>U[z.id]=z.url)}catch(e){}
+      const q=uq.filter(id=>U[id]);let k=0;if(q.length)toast(`Đang thu nhỏ ${q.length} ảnh...`);
+      await Promise.all(Array.from({length:Math.min(6,q.length)},async()=>{while(k<q.length){const id=q[k++];try{AN[id]=await anhNho(await (await fetch(U[id])).blob())}catch(e){}}}))})(),
+      (async()=>{try{return await anhNho(await (await fetch(PO_LOGO)).blob(),200,.85)}catch(e){return null}})()]);
+    for(const id in AN)AN[id].im=wb.addImage({base64:AN[id].b64,extension:'jpeg'});
+    if(lg){LG=wb.addImage({base64:lg.b64,extension:'jpeg'});const s=82/Math.max(lg.w,lg.h);ws.addImage(LG,{tl:{col:0.55,row:0.08},ext:{width:Math.round(lg.w*s),height:Math.round(lg.h*s)}})}   // logo như file mẫu (ô A1:B3)
+    let TONG=0;
+    for(let i=0;i<n;i++){const r=HR+1+i,x=dg[i]||{};
+      [dg[i]?i+1:i+1,x.ma_tht||'',x.ma_ncc||'',x.anh&&!AN[x.anh]&&!(x.anh_ct&&AN[x.anh_ct])?{text:'Xem ảnh',hyperlink:x.anh}:'',x.ten||'',x.mau||'',x.kt||'',x.quy_cach||'',x.dvt||'',x.sl!=null&&x.sl!==''?+x.sl:null,x.don_gia!=null&&x.don_gia!==''?+x.don_gia:null]
+        .forEach((v,c)=>dat(r,c+1,v,{border:K4,alignment:AL(c===0||(c>=5&&c<=8)?'center':null)}));
+      // ghi sẵn kết quả công thức: xem trước trên điện thoại / Zalo (không tự tính) vẫn thấy số
+      const tt=x.sl!=null&&x.sl!==''&&x.don_gia!=null&&x.don_gia!==''?Math.round(+x.sl*+x.don_gia*10**dp)/10**dp:'';TONG+=+tt||0;
+      dat(r,12,{formula:`IF(OR(J${r}="",K${r}=""),"",ROUND(J${r}*K${r},${dp}))`,result:tt},{border:K4,numFmt:so});dat(r,13,x.ghi_chu||'',{border:K4});ws.getCell(r,11).numFmt=so;ws.getCell(r,10).numFmt='#,##0';ws.getRow(r).height=52.5;
+      const a=AN[x.anh_ct||x.anh];if(a){const s=62/Math.max(a.w,a.h),w=Math.round(a.w*s),h=Math.round(a.h*s);ws.addImage(a.im,{tl:{col:3+Math.max(0,(84-w)/2)/84,row:r-1+Math.max(0,(70-h)/2)/70},ext:{width:w,height:h}})}}
+    // ── cộng tiền
+    const r1=HR+1+n,cV=+p.vat>0||!!p._mau,rT=r1,rV=r1+1,rG=cV?r1+2:r1,B=F({bold:true}),BX=F({bold:true,color:{argb:XD}});
+    const VAT=cV&&+p.vat?Math.round(TONG*(+p.vat)/100*10**dp)/10**dp:0,KQ={[rT]:TONG,[rV]:VAT,[rG]:TONG+VAT};
+    const dongTong=(r,l,fm,tong)=>{GOP(r,1,r,cV&&r===rV?10:11);dat(r,1,l,{font:tong?BX:B,alignment:AL('right'),...(tong?{fill:N(XN)}:{})});khung(r,1,cV&&r===rV?10:11);
+      dat(r,12,{formula:fm,result:KQ[r]},{font:tong?BX:B,numFmt:so,border:K4,...(tong?{fill:N(XN)}:{})});dat(r,13,'',{font:tong?BX:F(),border:K4,...(tong?{fill:N(XN)}:{})})};
+    if(cV){dongTong(rT,'Cộng tiền hàng / 货款小计',`SUM(L${HR+1}:L${r1-1})`);dongTong(rV,p._mau?'Thuế GTGT (nhập %) / 增值税':'Thuế GTGT / 增值税',`IF(K${rV}="",0,ROUND(L${rT}*K${rV},${dp}))`);
+      dat(rV,11,+p.vat?(+p.vat)/100:null,{fill:N(VN),numFmt:'0%',alignment:AL('center'),border:K4});dongTong(rG,'TỔNG CỘNG / 合计',`L${rT}+L${rV}`,1)}
+    else dongTong(rG,'TỔNG CỘNG / 合计',`SUM(L${HR+1}:L${r1-1})`,1);
+    // ── đặt cọc & thanh toán
+    const c0=rG+2,dc=poDaTe(p)||+p.dat_coc||null;GOP(c0,1,c0,13);dat(c0,1,'ĐẶT CỌC & THANH TOÁN / 定金及付款',{font:F({bold:true,size:11,color:{argb:XD}}),fill:N(VG),alignment:AL('left')});
+    const vung=[[1,4],[5,8],[9,13]];
+    ['Nội dung / 项目','Ngày / 日期','Số tiền / 金额'].forEach((t,i)=>{const [a,b]=vung[i];GOP(c0+1,a,c0+1,b);dat(c0+1,a,t,{font:dau,fill:N('FF0D4A2B'),alignment:AL('center')});khung(c0+1,a,b)});ws.getRow(c0+1).height=22.5;
+    [['Đặt cọc / 定金',ngay(p.ngay_coc),dc],['Thanh toán còn lại / 尾款',null,{formula:`IF(L${rG}=0,"",L${rG}-N(I${c0+2}))`,result:KQ[rG]?KQ[rG]-(+dc||0):''}],['Ngày giao hàng / 交货日期',ngay(p.ngay_giao),undefined]].forEach(([l,d,v],i)=>{const r=c0+2+i;ws.getRow(r).height=22.5;
+      GOP(r,1,r,4);dat(r,1,l,{font:B,fill:N(XN)});khung(r,1,4);
+      if(i===2){GOP(r,5,r,13);dat(r,5,d,{fill:N(VN),alignment:AL('center'),numFmt:'dd/mm/yyyy'});khung(r,5,13);return}
+      GOP(r,5,r,8);dat(r,5,d,{fill:N(VN),alignment:AL('center'),numFmt:'dd/mm/yyyy'});khung(r,5,8);
+      GOP(r,9,r,13);dat(r,9,v??null,{...(i?{font:B,fill:N('FFFFFFFF')}:{fill:N(VN)}),alignment:AL('right'),numFmt:so});khung(r,9,13)});
+    const k0=c0+5;GOP(k0,1,k0,13);dat(k0,1,'Đơn hàng có hiệu lực khi hai bên ký, đóng dấu. / 本订单经双方签字盖章后生效。',{font:F({italic:true,size:9,color:{argb:'FF595959'}}),alignment:AL('left')});ws.getRow(k0).height=22.5;
+    // ── ký tên
+    const s0=k0+2,KY=F({italic:true,size:8,color:{argb:'FF666666'}});
+    GOP(s0,1,s0,6);GOP(s0,8,s0,13);dat(s0,1,'ĐẠI DIỆN BÊN MUA / 买方代表',{font:BX,alignment:AL('center')});dat(s0,8,'ĐẠI DIỆN BÊN BÁN / 卖方代表',{font:BX,alignment:AL('center')});
+    GOP(s0+1,1,s0+1,6);GOP(s0+1,8,s0+1,13);dat(s0+1,1,'(Ký, ghi rõ họ tên, đóng dấu / 签字盖章)',{font:KY,alignment:AL('center')});dat(s0+1,8,'(Ký, ghi rõ họ tên, đóng dấu / 签字盖章)',{font:KY,alignment:AL('center')});
+    ws.getRow(s0+2).height=60;
+    GOP(s0+3,1,s0+3,6);GOP(s0+3,8,s0+3,13);dat(s0+3,1,bm.dai_dien||'',{font:B,alignment:AL('center')});dat(s0+3,8,'Họ tên, chức vụ / 姓名、职务: ……………',{alignment:AL('center')});
+    for(let r=1;r<=s0+3;r++){const w=ws.getRow(r);if(!w.height){w.height=15.75;if(!w.cellCount)ws.getCell(r,1).font=F()}}   // dòng trống cao 15.75 như mẫu (mặc định ExcelJS theo Calibri 11 → cao hơn)
+    ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,margins:{left:0.4,right:0.4,top:0.5,bottom:0.5,header:0.3,footer:0.3}};
     const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-    a.download=String(p.so||'PO').replace(/[\\/:*?"<>|]/g,'-')+'.xlsx';a.click();toast('Đã tải file PO')}catch(e){alert('Không tạo được Excel: '+e.message)}}
+    a.download=p._mau?'Mau-PO-trong.xlsx':String(p.so||'PO').replace(/[\\/:*?"<>|]/g,'-')+(p._mau?'':'.xlsx');a.click();toast('Đã tải file PO')}catch(e){alert('Không tạo được Excel: '+e.message)}}
 // ── Đối chiếu giá nhập (NCC nội địa) theo TỪNG PHIẾU NHẬP Kiot — 12/11 sửa theo soát lỗi: không suy phí vận chuyển từ chênh lệch; kế toán khai trên phiếu nhập:
 // phí vận chuyển đã cộng vào đơn giá Kiot (có / không / chưa rõ), số tiền, người nhận, giải trình → trạng thái Chưa có PO / Chưa đủ dữ liệu / Khớp / Có chênh / Đã giải trình. ──
 const PN_TT={thieu_po:['Chưa có PO',''],chua_du:['Chưa đủ dữ liệu','warn'],khop:['Khớp','ok'],co_chenh:['Có chênh','bad'],giai_trinh:['Đã giải trình','info']},PN_CONG={co:'Có',khong:'Không',chua_ro:'Chưa rõ'};
