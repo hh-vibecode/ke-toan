@@ -1204,8 +1204,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.405';
-const APP_VERSION='17/11/2026 12:05';
+const APP_SO='1.406';
+const APP_VERSION='17/11/2026 12:15';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3807,7 +3807,7 @@ async function pagePO(){const el=$('#page'),f=S.f,g=nccGhi(),t=f.po_tab||'po';if
 async function poForm(id,san){const d=await poDS(),nc=await nccDS();S.cache.po_ncc=nc.ncc;
   const p=id?d.po.find(x=>x.id===id):{loai:san&&san.loai||'noi_dia',ncc_id:san&&san.ncc_id||null,ncc_ten:san&&san.ncc_ten||'',tien_te:san&&san.tien_te||'VND',ty_gia:san&&san.ty_gia||null,
     trang_thai:'nhap',ngay:homNay(),noi_giao:PO_NOI[0],vat:0,dong:san&&san.dong||[{}],khach:san&&san.khach||[],dx_id:san&&san.dx_id||null};
-  window._po=JSON.parse(JSON.stringify(p));if(!(_po.dong||[]).length)_po.dong=[{}];poVe()}
+  window._po=JSON.parse(JSON.stringify(p));_po._h=_po.so;if(!(_po.dong||[]).length)_po.dong=[{}];poVe()}   // _h: tiêu đề giữ số cũ khi đang sửa Số PO
 // 17/11 kế toán: "thông tin trên PO không sửa được, chỉ sửa được list hàng" — mỗi ô Thông tin đơn sửa xong là vẽ lại cả cửa sổ: ô ngày gõ tới đâu vẽ lại tới đó
 // (mất con trỏ giữa chừng → ngày sai / không gõ tiếp được), Tab / bấm ô kế tiếp bị mất. Ô không đổi bố cục (Số PI, ngày, nơi giao, trạng thái, ghi chú) giờ chỉ ghi giá trị
 // + cập nhật thanh Còn thiếu, không vẽ lại. — Monsieur Claude
@@ -3829,10 +3829,10 @@ function poVe(){const p=window._po,g=nccGhi(),ds=(S.cache.po_ncc||[]).filter(x=>
   // → Hàng đặt (cột như file: STT, Mã THT, Mã NCC, Hình ảnh, Tên hàng…, dòng Tổng cộng) → Đặt cọc & thanh toán; mỗi nhóm 1 khung. — Monsieur Claude
   const bm=poBenMua(),nc=ds.find(x=>x.id===+p.ncc_id)||{},kv=a=>{const r=a.filter(z=>z[1]);return r.length?`<div class="po-kv">${r.map(([l,v])=>`<span>${l}</span><div>${esc(v)}</div>`).join('')}</div>`:''};
   const tSL=sumBy(H,x=>+x.sl||0),tNh=sumBy(H,x=>+x.sl_nhan||0);
-  const m=modal(`<h2>${p.id?esc(p.so):'Tạo đơn đặt hàng'} ${p.la_mau?pill('Dữ liệu mẫu','warn'):''}</h2>${thieuBar}
+  const m=modal(`<h2>${p.id?esc(p._h||p.so):'Tạo đơn đặt hàng'} ${p.la_mau?pill('Dữ liệu mẫu','warn'):''}</h2>${thieuBar}
     <fieldset ${ro} style="border:0;padding:0;margin:0;min-width:0">
     <div class="po-sec"><div class="po-sh">Thông tin đơn</div><div class="form po-g4">
-      ${o('Số PO',`<input class="m-in" disabled value="${esc(p.so||'Tự cấp khi lưu')}">`)}${o('Ngày PO',i1('ngay','date'))}${o('Số PI (NCC báo)',i1('so_pi'))}
+      ${o('Số PO',i1('so','','placeholder="Để trống = tự cấp"'))}${o('Ngày PO',i1('ngay','date'))}${o('Số PI (NCC báo)',i1('so_pi'))}
       ${o('Trạng thái',`<select class="m-in" onchange="poSet('trang_thai',this.value)">${optsObj(Object.fromEntries(Object.entries(PO_TT).map(([k,v])=>[k,v[0]])),p.trang_thai)}</select>`)}
       ${o('Loại đơn',`<select class="m-in" onchange="poSet('loai',this.value);poSet('ncc_id','')">${optsObj(PO_LOAI,p.loai)}</select>`)}
       ${o('Tiền tệ',`<select class="m-in" onchange="poSet('tien_te',this.value)">${['VND','CNY','USD'].map(x=>`<option ${p.tien_te===x?'selected':''}>${x}</option>`).join('')}</select>`)}
@@ -3879,7 +3879,8 @@ function poVe(){const p=window._po,g=nccGhi(),ds=(S.cache.po_ncc||[]).filter(x=>
   m.firstChild.style.maxWidth='1400px';$$('.po-x textarea.po-ta').forEach(poTaCao);poAnhNap()}
 function poTaCao(t){t.style.height='auto';t.style.height=Math.max(38,Math.min(t.scrollHeight+2,76))+'px'}   // ô tên hàng cao theo chữ (tối đa 4 dòng), không cắt nửa dòng
 // 17/11 kế toán: "tạo PO không lưu được thông tin đã thêm" — poSet trước bị dính vào cuối dòng chú thích trên (mất xuống dòng) → mọi ô Thông tin đơn báo lỗi, không ghi. — Monsieur Claude
-function poSet(k,v){_po[k]=v;if(['so_pi','ngay','ngay_giao','noi_giao','trang_thai','ghi_chu'].includes(k)){const t=$('#modal .po-thieu');if(t)t.outerHTML=poThieu(_po);return}poVe()}
+// 17/11 kế toán: "để chị tự đặt mã" — ô Số PO gõ được (để trống = tự cấp THT-PO-xxx/năm; trùng PO khác thì báo khi lưu). — Monsieur Claude
+function poSet(k,v){_po[k]=v;if(['so','so_pi','ngay','ngay_giao','noi_giao','trang_thai','ghi_chu'].includes(k)){const t=$('#modal .po-thieu');if(t)t.outerHTML=poThieu(_po);return}poVe()}
 function poNcc(id){const x=(S.cache.po_ncc||[]).find(n=>n.id===+id);_po.ncc_id=x?x.id:null;_po.ncc_ten=x?x.ten:'';poVe()}
 function poDong(i,k,v){const x=_po.dong[i];x[k]=['sl','sl_nhan','don_gia'].includes(k)?(v===''?null:+String(v).replace(/\./g,'').replace(',','.')||0):v;
   if(k==='ma_tht'&&v&&!x.ten&&S.cache.gia_d){const h=S.cache.gia_d.hang.find(r=>r[0]===v.trim());if(h)x.ten=h[1]}poVe()}
@@ -3899,7 +3900,7 @@ function poKh(i,k,v){_po.khach[i][k]=k==='coc'?(+String(v).replace(/\./g,'')||0)
 function poKhThem(){(_po.khach=_po.khach||[]).push({});poVe()}
 function poKhBo(i){_po.khach.splice(i,1);poVe()}
 async function poLuu(){const ds=_po.dong.filter(x=>x.ma_tht||x.ten||+x.sl),sach=()=>ds.map(({_f,_u,_r,...r})=>r);
-  const {_file,_xoa,...po0}=_po,p={...po0,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don),chi_phi:(_po.chi_phi||[]).filter(z=>+z.so_tien||z.nd)};
+  const {_file,_xoa,_h,...po0}=_po,p={...po0,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don),chi_phi:(_po.chi_phi||[]).filter(z=>+z.so_tien||z.nd)};
   if(!p.ncc_ten)return alert('Chọn nhà cung cấp');if(!p.dong.length)return alert('Nhập ít nhất 1 dòng hàng');
   if(p.tien_te!=='VND'&&!(+p.ty_gia))return alert('Nhập tỷ giá quy đổi VND');
   try{const id=await rpc('kt_po_luu',{p_dong:p});
