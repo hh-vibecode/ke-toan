@@ -168,9 +168,16 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
   phiếu đặt hàng mới nhất của khách đấy là xong" (sổ việc kế toán không có ghi chú này — có thể anh dặn phiên MKT). `supabase-schema-kt-hoa-hong-coc-tt-2.sql`: `kt_coc_tt()` bỏ cửa sổ 3 ngày + bỏ điều kiện
   "đơn chưa có cọc khác" → phiếu "Tiền khách trả" TT + số chưa chia vào HĐ = cọc của ĐƠN ĐẶT MỚI NHẤT của khách (tạo trước phiếu hoặc trễ ≤ 3 ngày, đơn từ 01/11). Chạy thử giao dịch huỷ:
   tổng thực thu T11 giữ nguyên; thêm TT012069 (→ DH003088), TT012080 + TT012081 (→ DH003025). Sửa dòng Logic. — Monsieur Claude
-- **17/11/2026 (chờ anh)** — Phiên MKT/SALE nhắn (anh giao bên đó): mỗi đêm app kế toán đẩy doanh thu từng phiếu vào bảng chung `so_dt_2app` (ben='kt', từ T6) trước 22:00 để 2 app so tổng / Online-Offline / nhân sự,
-  trao đổi lệch qua `so_dt_2app_tin`. Đã viết `supabase-schema-kt-so-dt-2app.sql` (hàm `kt_so_dt_2app_gui` từ dt_sale hoa hồng, giá trị chưa trừ VAT, lý do từng phiếu; lịch kt-so-dt-2app 21:30) — CHƯA CHẠY:
-  hệ thống tự duyệt chặn vì là lần đầu ghi / xoá vào bảng app khác (CLAUDE.md: chỉ đọc bảng app khác). Chờ anh xác nhận trực tiếp. — Monsieur Claude
+- **17/11/2026 (371)** — Anh: "xem lại đối soát lỗi cái nào chưa chuẩn so với các quy tắc mới nhất clear hết đi" + "tất cả phiếu thu gắn thiếu công nợ KH hay mã đơn đặt hàng thì cho vào case gắn thiếu
+  của phiếu thu, từ tháng 11, liệt kê vào bảng đối soát lỗi bên Tổng quan" + "bảng đối soát lỗi chạy mặc định filter theo tháng thay vì hiện hết". `supabase-schema-kt-doi-soat-17-11.sql` (kt_doi_soat):
+  HĐ đỏ chưa nhận bỏ trả thẻ tín dụng + phiếu đã gắn HĐ MISA / có số HĐ (41 → 34); chưa thấy Kiot bỏ loại "Hoàn hàng đã tính trong trả hàng Kiot" (38 → 36); quá hạn bỏ phiếu đã ở nhóm sheet thiếu TK
+  (31 → 18, hết lặp 2 chỗ); nhóm mới "Phiếu thu Kiot gắn thiếu khách / hoá đơn / đơn đặt" từ 01/11 (33 phiếu: không chọn khách / app tự gắn đơn mới nhất DH… / app tự chia HĐ còn nợ — ghi rõ từng dòng). 451 ms.
+  Giao diện v1.411: mặc định lọc theo kỳ đầu trang, nút "Kỳ đang chọn (n) · Tất cả (n)" vẽ lại từ dữ liệu đã tải (không gọi máy chủ). Giữ nguyên (vẫn đúng luật): sheet thiếu TK 14, sheet cũ cần bổ sung 1,
+  điều chuyển chưa xác nhận 8, lệch số dư 2 (két 16/11, BIDV CN DTMO 28/10). Lỗi của em: lại dính `$'` trong String.replace (như VIEC 351) — SQL lỗi cú pháp, chưa ghi gì, sửa bằng hàm thay.
+- **17/11/2026 (370)** — So doanh thu 2 app mỗi đêm (anh giao qua phiên MKT/SALE, anh xác nhận trực tiếp "auke"): `supabase-schema-kt-so-dt-2app.sql` — hàm `kt_so_dt_2app_gui()` lấy dt_sale hoa hồng
+  (phiếu đặt đã cọc cả giá trị / HĐ không qua phiếu đặt / trả hàng âm; giá trị CHƯA trừ VAT; kênh theo kt_hd_online; người bán Kiot họ tên đủ; lý do từng phiếu) → xoá + ghi dòng ben='kt' từ T6 vào bảng chung `so_dt_2app`
+  (app MKT tạo); lịch `kt-so-dt-2app` 21:30 VN. Lần đầu 3.363 dòng, 9,6 s. Ngoại lệ ghi vào CLAUDE.md. MKT so lượt đầu: lệch do 4 khác biệt luật (MKT xét cọc theo khách — 54 đơn phần lớn Sỉ;
+  tháng tạo đơn vs tháng HĐ; kế toán trừ trả hàng; giá trị đơn vs giá trị HĐ) — anh chốt KHÔNG đổi luật bên nào, chỉ so. Đã báo phiên MKT. — Monsieur Claude
 - **17/11/2026 (368)** — Kế toán (ảnh bảng Hàng đặt PO): "bổ sung mũi tên để di chuyển được thứ tự dòng". v1.409: cột cuối mỗi dòng ▲ ▼ ✕ (`poDoi` đổi chỗ với dòng trên / dưới; dòng đầu tắt ▲, dòng cuối tắt ▼);
   thứ tự lưu theo mảng dòng khi bấm Lưu (Excel PO theo cùng thứ tự). Test trên PO 19 (▼ rồi ▲ về đúng chỗ, nút tắt đúng), KHÔNG bấm Lưu — PO không đổi. — Monsieur Claude
 - **17/11/2026 (367)** — Anh (ảnh popup hoa hồng Khánh Nguyên T11 "chưa đạt mốc"): "bên MKT Nguyên bán được hơn 400tr" + "tính doanh thu thì tính full giá trị nếu khách đã cọc,

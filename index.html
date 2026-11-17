@@ -1206,8 +1206,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.410';
-const APP_VERSION='17/11/2026 14:29';
+const APP_SO='1.411';
+const APP_VERSION='17/11/2026 14:45';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -8037,9 +8037,13 @@ async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)
 // ── ĐỐI SOÁT LỖI (anh 09/10/2026: "tách riêng, sau có lỗi thì báo vô phần đấy" — tham khảo Daily Task app MKT/Sale) ──
 // Hàm kt_doi_soat gom mọi loại lỗi thành nhóm; bấm dòng mở đúng phiếu. Nhóm "he_thong" = lỗi job / dữ liệu kéo (Claude sửa).
 async function demLoi(){try{const ds=await rpc('kt_doi_soat');S.cache.ds_loi=ds;S.soLoi=ds.filter(g=>g.ai==='ke_toan').reduce((a,g)=>a+g.ds.length,0);shellBadges()}catch(e){}}
-async function pageDoiSoat(){
-  const el=$('#page');el.innerHTML=head('Đối soát lỗi')+'<div class="empty">Đang kiểm...</div>';
-  const ds=await rpc('kt_doi_soat');S.cache.ds_loi=ds;S.soLoi=ds.filter(g=>g.ai==='ke_toan').reduce((a,g)=>a+g.ds.length,0);shellBadges();
+// 17/11 anh: "bảng đối soát lỗi chạy mặc định filter theo tháng thay vì hiện hết" → lọc theo kỳ đang chọn trên đầu trang (S.tu–S.den); nút "Tất cả" xem hết.
+// Đổi lọc vẽ lại từ dữ liệu đã tải (không gọi lại máy chủ); "↻ Kiểm lại" mới tải lại. — Monsieur Claude
+async function pageDoiSoat(tai){
+  const el=$('#page');if(tai!==false||!S.cache.ds_loi){el.innerHTML=head('Đối soát lỗi')+'<div class="empty">Đang kiểm...</div>';
+    S.cache.ds_loi=await rpc('kt_doi_soat');S.soLoi=S.cache.ds_loi.filter(g=>g.ai==='ke_toan').reduce((a,g)=>a+g.ds.length,0);shellBadges()}
+  const tat=!!S.f.ds_tat,trong=x=>{const n=String(x.ngay||'').slice(0,10);return !n||(n>=S.tu&&n<=S.den)};
+  const ds=S.cache.ds_loi.map(g=>({...g,ds:tat?g.ds:g.ds.filter(trong)})),nKy=S.cache.ds_loi.filter(g=>g.ai==='ke_toan').reduce((a,g)=>a+g.ds.filter(trong).length,0);
   const co=ds.filter(g=>g.ds.length),khong=ds.filter(g=>!g.ds.length);
   const khung=g=>`<div class="sec" style="display:flex;align-items:center;gap:8px"><span class="dot-loi" style="--c:var(--${g.ai==='he_thong'?'vio':'bad'})"></span>${esc(g.ten)}
       <span class="badge" style="background:var(--${g.ai==='he_thong'?'vio':'bad'}-bg);color:var(--${g.ai==='he_thong'?'vio':'bad'})">${g.ds.length}</span>
@@ -8048,8 +8052,8 @@ async function pageDoiSoat(){
     ${g.ds.map(x=>`<tr class="${['chi','dieu_chuyen','tai_khoan'].includes(x.bang)?'click':''}" onclick="moLoi('${x.bang}',${x.id})"><td class="nw">${fmtD(x.ngay)}</td><td>${esc(x.mo_ta||'')}</td>
       <td class="muted" style="font-size:12px">${esc(x.chi_tiet||'')}</td><td class="num">${x.so_tien!=null?fmt(x.so_tien):''}</td>${g.ma==='kiot_4a'&&chiDuyet()?`<td class="nw"><button class="m-btn sm" onclick="event.stopPropagation();khongCanKiot(${x.id},'${x.ngay}')">Không cần ghi Kiot</button></td>`:''}</tr>`).join('')}</table></div>`;
   const kt=co.filter(g=>g.ai==='ke_toan'),ht=co.filter(g=>g.ai==='he_thong');
-  el.innerHTML=head('Đối soát lỗi',`<span class="badge ${S.soLoi?'':'ok'}">${S.soLoi?S.soLoi+' việc kế toán':'Không có lỗi'}</span><span class="badge">Từ 01/09/2026</span><button class="btn" onclick="render()">↻ Kiểm lại</button>`)+
-    (kt.map(khung).join('')||'<div class="card"><div class="empty">✓ Không có lỗi nghiệp vụ</div></div>')+
+  el.innerHTML=head('Đối soát lỗi',`<span style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap"><span class="m-seg" style="margin:0;width:auto"><button class="${tat?'':'on'}" onclick="S.f.ds_tat=false;pageDoiSoat(false)">Kỳ đang chọn (${fmt(nKy)})</button><button class="${tat?'on':''}" onclick="S.f.ds_tat=true;pageDoiSoat(false)">Tất cả (${fmt(S.soLoi)})</button></span><button class="btn nw" onclick="render()">↻ Kiểm lại</button></span>`)+
+    (kt.map(khung).join('')||`<div class="card"><div class="empty">✓ Không có lỗi nghiệp vụ${tat?'':' trong kỳ đang chọn'}</div></div>`)+
     (ht.length?'<div class="sec" style="margin-top:18px;color:var(--vio)">Lỗi hệ thống — người làm app xử lý</div>'+ht.map(khung).join(''):'')+
     (khong.length?`<div class="muted" style="font-size:12px;margin-top:12px">✓ Không có lỗi: ${khong.map(g=>esc(g.ten)).join(' · ')}</div>`:'');
 }

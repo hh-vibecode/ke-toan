@@ -21,6 +21,8 @@ Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phi�
 - Quy ước đầy đủ: https://github.com/hh-vibecode/mkt-sale-app/blob/main/QUY-UOC-DUNG-CHUNG-SUPABASE.md
 - Chỉ ĐỌC bảng app khác; bảng dùng chung chỉ được THÊM; không đụng khoá legacy (anon, service_role), JWT secret,
   cài đặt Auth, Edge Function `dang-nhap`, hàm `la_quan_tri()`, cấu trúc `sales_users`.
+  Ngoại lệ (anh đồng ý 17/11/2026): bảng so chung `so_dt_2app` (app MKT tạo) — app kế toán xoá + ghi lại CHỈ dòng `ben='kt'` mỗi đêm
+  (lịch `kt-so-dt-2app` 21:30), trao đổi lệch qua `so_dt_2app_tin` (ghi dòng `ben='kt'`). Không đụng dòng `ben='mkt'`, không đổi luật tính bên nào.
 - Dữ liệu tài chính là nhạy cảm: bảng `kt_*` bật RLS, KHÔNG cho anon đọc thẳng. Trình duyệt chỉ gọi hàm `kt_*`
   (security definer, `set search_path=public`) và hàm tự kiểm phiên đăng nhập + quyền theo trang (`kt_chan`; mật khẩu băm bcrypt, có Đổi mật khẩu). Không bao giờ
   đặt khoá quản trị trong trang web.
