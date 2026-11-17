@@ -89,7 +89,6 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 - Kế toán: soát 257 phiếu "Loại chi KXĐ" (giám đốc chọn mục con); HĐ gợi ý (từ 23/10 chỉ gợi ý khi khớp tên / STK) + ô "Tìm HĐ MISA" trong khung Hoá đơn đỏ.
 - **Anh quyết:** 2 phiếu thu chủ nộp tiền (#509 két, #155273 TK BIDV) đang loại "Thu khác" — đề xuất loại mới "Chủ sở hữu góp / nộp tiền" (không hạch toán P&L). 6 phiếu "Thu khác" còn lại: 2 khách trả tiền hàng (doanh thu đã tính qua Kiot), lãi tiền gửi + tiền lẻ chênh → P&L để nguyên là đúng.
 
-- **Hoa hồng (VIEC 225) — câu chờ anh:** (Chi Trả Lại Khách Hàng: anh chốt TRỪ 05/11, VIEC 277) · online theo kênh Kiot hay gắn tay · Shidai trừ VAT trước khi tính không · cọc lớn không có hoá đơn 2026 tính biên cao hay chia theo hoá đơn gần nhất.
 - **Lịch Windows kt-keo-file-dong-tien** — đã báo 02/11 (file T10 bỏ trống từ 20/10, không ai điền nhầm), chờ anh gật để xoá lịch.
 
 **Hẹn:**
@@ -104,6 +103,8 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 
 ## 3. QUY TẮC ĐÃ CHỐT (đừng hỏi lại)
 - **Trung tâm Quản trị Tài liệu THT: KHÔNG làm trong app kế toán** (anh 12/11: "cái này không nhét vào kế toán đâu, cái này làm riêng, quên cái này đi" — kể cả Nhóm 01 hồ sơ pháp lý / hợp đồng; trước đó 11/11 chia Nhóm 01 cho app kế toán, nay bỏ). App kế toán chỉ giữ: tài liệu NCC đã có sẵn (thư mục, hiệu lực từ / đến) + **sao lưu kho chứng từ kt-chung-tu sang Drive**. Không thêm trang hồ sơ pháp lý công ty, cảnh báo hết hạn, nơi cất bản gốc.
+- **Hoa hồng — 3 nguyên tắc đã chốt, KHÔNG hỏi lại** (anh 17/11: "nguyên tắc t bảo rồi mà, hỏi gì ngáo vậy"): (1) VAT trừ theo tài khoản ngân hàng nhận tiền (TK 599 công ty) + ngành hàng (8%, +2% phần ĐÈN ĐIỆN THỜ / CHUÔNG MÕ — VIEC 276 / 281), áp cho mọi cơ sở kể cả Shidai;
+  (2) đơn online = theo kênh Kiot, nguồn liên quan Facebook / nền tảng online (Shopee, Website…) là online (VIEC 241); (3) cọc chưa có hoá đơn vẫn tính bình thường, tính phần tiền khách đã cọc trong tháng nhận cọc, hoá đơn sau chỉ tính phần còn lại (VIEC 211 / 246). Chi Trả Lại Khách Hàng: trừ (VIEC 277).
 - **Trang dạng BÁO CÁO nhiều cột / nhiều dữ liệu, không phải màn thao tác → trình bày theo mẫu "Đối chiếu sao kê"** (anh 10/11/2026: "giao diện này đẹp, mấy cái nào nhiều cột nhiều dữ liệu, không phải module tương tác mà thuộc dạng trang báo cáo, sau lấy cái này làm mẫu"). Mẫu = `pageSaoKe` + CSS `.sk-t`: dòng thông tin kỳ / nguồn + badge trạng thái ở đầu; thẻ số 3 / hàng (tiền trước, số lượng sau) bấm = lọc, có ô tìm + "x / y dòng"; bảng `table-layout:fixed` cột đều, viền ngoài đậm, 2 tầng tiêu đề: đầu mục nhóm cột tô màu nhạt (xanh lá / cam / xanh dương, chữ đậm IN HOA căn giữa) + tên cột nền nhạt cùng tông, kẻ đủ viền; ô cao đều tối đa 2 dòng, số căn phải, số âm đỏ / dương xanh, dòng phụ (ngày, số CT) chữ mờ nhỏ dưới; nhãn trạng thái dạng pill; Excel xuất y bảng màn hình. Áp cho báo cáo mới và khi sửa báo cáo cũ; màn nhập / thao tác (form, popup lập đơn...) giữ kiểu thường.
 - **Nút Thêm · Sửa · Xoá luôn có sẵn** (anh 29/10/2026: "m rất hay quên thêm nút xoá vs sửa"): mọi danh sách / danh mục người dùng tạo được phải có nút ＋ / ✏ / ✕ hiện rõ trên từng dòng; xoá hỏi xác nhận + nói dữ liệu bên trong đi đâu.
 - **Chia và nhóm theo nội dung** (anh 29/10/2026: "làm mọi thứ đều phải chia và nhóm các phần theo nội dung chung, cho dễ nhìn"): mỗi nhóm 1 khối / tab có tiêu đề; thứ liên quan để cạnh nhau (chứng từ ngay dưới phiếu); không lặp cùng dữ liệu 2 chỗ; thẻ số trên cùng bấm = chỉ xem khối đó.
@@ -163,6 +164,10 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (b)** — Anh: "việc hôm qua cơ mà" → soát riêng các mục ghi "CHƯA" ngày 16/11, tự test 2 mục còn treo:
+  (350) nút Lưu chia lương qua RPC thật trên PC002017 (đã thanh toán), giao dịch huỷ: kt_v_chi_ht trước / sau giống hệt (15 dòng, cùng tổng, cùng md5), bảng chia không đổi — đạt.
+  (361) bấm Lưu thật form NCC nội địa trên trình duyệt (thêm mới + "+ Thêm nhóm mới…" + sửa SĐT): 5/5 đạt, ô khác giữ nguyên khi sửa; NCC thử, nhật ký, TK tạm đã xoá.
+  Anh trả lời 3 câu hoa hồng "câu chờ" cũ (em quên gạch — app đã tính đúng từ VIEC 241 / 246 / 276 / 281) → gạch, ghi vào QUY TẮC ĐÃ CHỐT. Còn chờ kế toán từ 16/11: nhóm "Lương MKT thuê ngoài" đang loại "Chi phí bài SEO Web"; danh sách thiếu phiếu sao kê DTMO (VIEC 359). — Monsieur Claude
 - **17/11/2026** — Anh: "check xem còn gì chưa làm không". Soát: 0 báo lỗi mở; 6 câu Cần giải đáp vẫn chưa trả lời (#41 #44 #49 #51 #59 #60); lịch kt- 3 ngày qua 0 lỗi.
   Kiểm hệ thống 15/11 báo "92 lần lịch lỗi / 15 ngày" — em chưa đọc kịp hôm 15: cả 92 là kt-ncc-tu-gan (trùng khoá kt_ncc_phan_bo chi_id + nhap_id) 06/11 → 10/11 06:25, sau đó 168 lần liên tiếp thành công → đã hết, không cần làm gì.
   Gạch hẹn 03/11 (kt-kiot-thu-hd chạy đều, keo_luc mới nhất 16/11). Lịch kt-sao-ke-moi chạy đủ 2 tiếng / lần từ 16/11, chạy thật với 2 kỳ DTMO đạt (VIEC 359). — Monsieur Claude
