@@ -164,6 +164,14 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (367)** — Anh (ảnh popup hoa hồng Khánh Nguyên T11 "chưa đạt mốc"): "bên MKT Nguyên bán được hơn 400tr" + "tính doanh thu thì tính full giá trị nếu khách đã cọc,
+  hoa hồng thì tính tiền real khách đã trả" + "check Kiot là được". Soát Kiot: DH003075 (Tâm Hòa, phiếu tạm) — Nguyên lập cọc TTDH003075 rồi HUỶ, lập lại bằng phiếu thu thường TT012051 (không gắn đơn)
+  → app không coi đơn đã cọc (thiếu cả giá trị đơn) + tiền cọc rơi vào luồng phiếu cục, tính cho người bán HĐ cũ của khách (Nguyễn Thị Huế, HĐ T4). Cùng lỗi: cọc NPP Thảo Nam tính nhầm cho Nguyễn Thị Chuyện, cọc Tuyết Như cho Toàn.
+  Sửa `supabase-schema-kt-hoa-hong-coc-tt.sql`: `kt_coc_tt()` nhận phiếu "Tiền khách trả" TT+số chưa chia vào HĐ, cùng khách 1 đơn đặt (tạo từ 01/11, chưa huỷ, chưa có cọc) trong 3 ngày trước → 1 ngày sau = cọc của đơn;
+  `kt_bc_hoa_hong_dl` cho phiếu đó đi đường cọc TTDH (10 chỗ: cd, cuc2 ×2 bỏ phiếu này, v5d ×2, dòng cọc, coc). Chạy thử giao dịch huỷ trước: TỔNG thực thu toàn cty T11 giữ nguyên (chỉ chuyển đúng người);
+  Nguyên thực thu tăng, doanh thu xét mốc Nguyên + Kim Oanh qua mốc 300tr (Đối chiếu Kiot vẫn Khớp). Đơn T9–T10 KHÔNG đổi (đã trả hoa hồng). Anh hỏi app MKT xét cọc theo nợ âm của khách → app kế toán xét theo TỪNG ĐƠN (chặt hơn, không tính phiếu tạm khác của cùng khách).
+  Kèm: khung Đối chiếu Kiot tách "+ phiếu đặt đã cọc (cả giá trị)" và "− HĐ của phiếu đó ra trong tháng" thành 2 dòng (trước gộp ra 0 khó hiểu), "-0" → "0"; bảng Đơn hàng khách đặt cột cố định, đệm đều (anh: "đừng để lệch").
+  Lỗi trong lúc làm: đọc nhầm ngày rỗng do trùng tên cột khi ghép bảng (đính chính ngay); 2 lệnh heredoc bị hệ thống chặn (không chạy) → ghi script bằng file. Dòng Logic mới. — Monsieur Claude
 - **17/11/2026 (b)** — Anh: "việc hôm qua cơ mà" → soát riêng các mục ghi "CHƯA" ngày 16/11, tự test 2 mục còn treo:
   (350) nút Lưu chia lương qua RPC thật trên PC002017 (đã thanh toán), giao dịch huỷ: kt_v_chi_ht trước / sau giống hệt (15 dòng, cùng tổng, cùng md5), bảng chia không đổi — đạt.
   (361) bấm Lưu thật form NCC nội địa trên trình duyệt (thêm mới + "+ Thêm nhóm mới…" + sửa SĐT): 5/5 đạt, ô khác giữ nguyên khi sửa; NCC thử, nhật ký, TK tạm đã xoá.
