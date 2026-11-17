@@ -164,6 +164,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (372)** — Anh: "mũi tên lên xuống ở PO làm kéo thả đi, mũi tên thủ công thế, đầu hàng có mấy cái bám vào để cầm lôi đi". v1.412: bỏ ▲ ▼ (VIEC 368); cột STT có tay cầm 6 chấm (SVG),
+  giữ kéo cả dòng, vạch xanh trên / dưới dòng đích = chỗ thả (`poKeoBd / poKeoQua / poKeoTha / poKeoXong`); thứ tự lưu khi bấm Lưu. Test DragEvent thật trên PO 19: kéo dòng 1 xuống dưới dòng 3,
+  dòng 4 lên đầu — đúng thứ tự; không bấm Lưu, PO không đổi. Chỉ máy tính (kéo thả HTML5 không chạy trên điện thoại cảm ứng). — Monsieur Claude
 - **17/11/2026 (369)** — Anh: "trước t bảo nối với cả sổ quỹ rồi mà, nhiều khi đơn hàng trước đấy báo giá không có mã sp nên vẫn cần vào sổ quỹ lập phiếu thu, phiếu thu m cứ gắn với
   phiếu đặt hàng mới nhất của khách đấy là xong" (sổ việc kế toán không có ghi chú này — có thể anh dặn phiên MKT). `supabase-schema-kt-hoa-hong-coc-tt-2.sql`: `kt_coc_tt()` bỏ cửa sổ 3 ngày + bỏ điều kiện
   "đơn chưa có cọc khác" → phiếu "Tiền khách trả" TT + số chưa chia vào HĐ = cọc của ĐƠN ĐẶT MỚI NHẤT của khách (tạo trước phiếu hoặc trễ ≤ 3 ngày, đơn từ 01/11). Chạy thử giao dịch huỷ:
