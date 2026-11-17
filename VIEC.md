@@ -164,6 +164,13 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (369)** — Anh: "trước t bảo nối với cả sổ quỹ rồi mà, nhiều khi đơn hàng trước đấy báo giá không có mã sp nên vẫn cần vào sổ quỹ lập phiếu thu, phiếu thu m cứ gắn với
+  phiếu đặt hàng mới nhất của khách đấy là xong" (sổ việc kế toán không có ghi chú này — có thể anh dặn phiên MKT). `supabase-schema-kt-hoa-hong-coc-tt-2.sql`: `kt_coc_tt()` bỏ cửa sổ 3 ngày + bỏ điều kiện
+  "đơn chưa có cọc khác" → phiếu "Tiền khách trả" TT + số chưa chia vào HĐ = cọc của ĐƠN ĐẶT MỚI NHẤT của khách (tạo trước phiếu hoặc trễ ≤ 3 ngày, đơn từ 01/11). Chạy thử giao dịch huỷ:
+  tổng thực thu T11 giữ nguyên; thêm TT012069 (→ DH003088), TT012080 + TT012081 (→ DH003025). Sửa dòng Logic. — Monsieur Claude
+- **17/11/2026 (chờ anh)** — Phiên MKT/SALE nhắn (anh giao bên đó): mỗi đêm app kế toán đẩy doanh thu từng phiếu vào bảng chung `so_dt_2app` (ben='kt', từ T6) trước 22:00 để 2 app so tổng / Online-Offline / nhân sự,
+  trao đổi lệch qua `so_dt_2app_tin`. Đã viết `supabase-schema-kt-so-dt-2app.sql` (hàm `kt_so_dt_2app_gui` từ dt_sale hoa hồng, giá trị chưa trừ VAT, lý do từng phiếu; lịch kt-so-dt-2app 21:30) — CHƯA CHẠY:
+  hệ thống tự duyệt chặn vì là lần đầu ghi / xoá vào bảng app khác (CLAUDE.md: chỉ đọc bảng app khác). Chờ anh xác nhận trực tiếp. — Monsieur Claude
 - **17/11/2026 (368)** — Kế toán (ảnh bảng Hàng đặt PO): "bổ sung mũi tên để di chuyển được thứ tự dòng". v1.409: cột cuối mỗi dòng ▲ ▼ ✕ (`poDoi` đổi chỗ với dòng trên / dưới; dòng đầu tắt ▲, dòng cuối tắt ▼);
   thứ tự lưu theo mảng dòng khi bấm Lưu (Excel PO theo cùng thứ tự). Test trên PO 19 (▼ rồi ▲ về đúng chỗ, nút tắt đúng), KHÔNG bấm Lưu — PO không đổi. — Monsieur Claude
 - **17/11/2026 (367)** — Anh (ảnh popup hoa hồng Khánh Nguyên T11 "chưa đạt mốc"): "bên MKT Nguyên bán được hơn 400tr" + "tính doanh thu thì tính full giá trị nếu khách đã cọc,
