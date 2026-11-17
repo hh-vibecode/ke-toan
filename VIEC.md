@@ -164,6 +164,10 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (373)** — Anh (ảnh menu): "công nợ khách hàng với đơn hàng khách đặt cũng cần để số đỏ như 2 mục bên trên, với các khách / đơn cần lưu ý". v1.413: số đỏ Công nợ khách hàng = khách trạng thái
+  Quá hạn + Đến hạn 7 ngày (`noCanLuuY`, dùng đúng `ttCongNo` của trang); Đơn hàng khách đặt = đơn còn mặt hàng chưa đặt NCC / quá hẹn / sắp đến hẹn giao (`kdCanLuuY` trên `kdDL` — tách từ poKhach,
+  trang và menu dùng chung 1 cách tính); nhóm Khách hàng & NCC cộng 2 số. Tải ngầm 2,5 s sau khi mở app (`demKH`: kt_cong_no_dt ~0,37 s + kt_dx_ds ~0,47 s + PO ~0,17 s song song), mở 2 trang thì số tự cập nhật.
+  Test: menu 24 / 1 / nhóm 25; trang công nợ đếm lại Quá hạn + Đến hạn = 24 khớp. — Monsieur Claude
 - **17/11/2026 (372)** — Anh: "mũi tên lên xuống ở PO làm kéo thả đi, mũi tên thủ công thế, đầu hàng có mấy cái bám vào để cầm lôi đi". v1.412: bỏ ▲ ▼ (VIEC 368); cột STT có tay cầm 6 chấm (SVG),
   giữ kéo cả dòng, vạch xanh trên / dưới dòng đích = chỗ thả (`poKeoBd / poKeoQua / poKeoTha / poKeoXong`); thứ tự lưu khi bấm Lưu. Test DragEvent thật trên PO 19: kéo dòng 1 xuống dưới dòng 3,
   dòng 4 lên đầu — đúng thứ tự; không bấm Lưu, PO không đổi. Chỉ máy tính (kéo thả HTML5 không chạy trên điện thoại cảm ứng). — Monsieur Claude

@@ -1206,8 +1206,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.412';
-const APP_VERSION='17/11/2026 14:53';
+const APP_SO='1.413';
+const APP_VERSION='17/11/2026 15:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1680,7 +1680,7 @@ function lock(hetHan){if(xnDoc())return thoatXemNhu();const p=S.phien;if(p&&!het
 async function boot(){
   $('#app').innerHTML='<div class="empty">Đang tải...</div>';
   const [dm,gy,ch]=await Promise.all([rpc('kt_danh_muc'),rpc('kt_goi_y'),rpc('kt_dem_cau_hoi').catch(()=>0)]);S.cauHoi=ch;
-  S.dm=dm;S.toi=dm.toi;S.gy=gy;fillDatalists();S.tb=await rpc('kt_dem_thong_bao').catch(()=>0);demLoi();
+  S.dm=dm;S.toi=dm.toi;S.gy=gy;fillDatalists();S.tb=await rpc('kt_dem_thong_bao').catch(()=>0);demLoi();setTimeout(demKH,2500);
   if(!S.tu)setKy('thang',true);
   const h=location.hash.slice(1);if(h&&PAGES[h])S.page=h;
   if(!coXem(S.page))S.page=Object.keys(PAGES).find(coXem)||'cd_logic';
@@ -1837,7 +1837,7 @@ const PAGES={
 };
 function go(p){S.page=p;location.hash=p;shell();dxBao()}
 // số việc cần xử lý trên từng mục (đỏ) — dùng cho menu trái
-function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):0}
+function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):k==='no_kh'?(S.demNoKH||0):k==='dx_kd'?(S.demKD||0):0}
 const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Cài đặt & Hệ thống chia nhóm, có tiêu đề nhỏ
 const CD_NHOM=['Danh mục','Dữ liệu','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_xuat','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
@@ -3434,7 +3434,7 @@ async function pageCongNoDT(loai){
   el.innerHTML=tabNo(f.no_tab||S.page)+'<div class="m-empty">Đang tính...</div>';
   if(f.no_tab&&!TAB_NO.some(t=>t[0]===f.no_tab))f.no_tab=null;
   if(f.no_tab){f.no_tab_tu=S.page;el.innerHTML=tabNo(f.no_tab)+`<div class="m-card"><div class="m-empty">${f.no_tab==='doi_chieu_no'?'Đối chiếu công nợ: cần biên bản đối chiếu với khách / NCC (chưa có dữ liệu). Số nợ hiện lấy theo Kiot.':'Lịch sử thanh toán: xem trong khung chi tiết từng khách / NCC (sổ quỹ Kiot). Màn tổng hợp đang làm.'}</div></div>`;return}
-  const [ds,nsd]=await Promise.all([rpc('kt_cong_no_dt',{p_loai:loai}),rpc('kt_ds_nhan_su').catch(()=>({ns:[]}))]);S.cache[k]=ds;S.cache.ns=nsd.ns;
+  const [ds,nsd]=await Promise.all([rpc('kt_cong_no_dt',{p_loai:loai}),rpc('kt_ds_nhan_su').catch(()=>({ns:[]}))]);S.cache[k]=ds;S.cache.ns=nsd.ns;if(KH){S.demNoKH=noCanLuuY(ds);shellBadges()}
   const ganDuoc=can(KH?'khach_hang':'ncc',true);
   const q=(f[k+'_q']||'').toLowerCase(),cs=locCS(),nh=locNhom(),tt=locTT();
   const l=ds.filter(x=>(f[k+'_tt']==='tra_truoc'?x.no<0:x.no>0)&&(locCSAll()||cs.includes(csCuaCN(x.cn)))&&(!KH||nh.length===NHOM_KH.length||nh.includes(nhomKH(x.ten)))
@@ -4182,12 +4182,25 @@ function poChiBo(id){_po.chi_ids=(_po.chi_ids||[]).map(Number).filter(x=>x!==id)
 // 16/11 kế toán: "PO 100 mã, khách A đặt 2 mã, khách B 1 mã, khách C 4 mã — tách phần đặt hàng này riêng, gắn sản phẩm thuộc PO nào, đã đặt hay chưa, về cont hàng nào"
 // → mỗi dòng = 1 mặt hàng của 1 đơn khách (form Khách đặt riêng): PO nào (dòng PO giữ dx_id + dx_i), NCC, lô nhập khẩu / cont (PO gắn trong Hồ sơ nhập khẩu), tình trạng.
 // Khách gắn tay trong PO cũ (không qua form) hiện cả PO. — Monsieur Claude
-async function poKhach(el,P){const f=S.f,nay=homNay(),sau7=ymd(new Date(Date.now()+7*864e5));if(!S.cache.dx_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const DXd=S.cache.dx_d=S.cache.dx_d||await rpc('kt_dx_ds').catch(()=>[]),K=DXd.filter(x=>x.loai==='khach_dat'&&x.khach&&x.trang_thai!=='tu_choi'),maK=new Set(K.map(x=>x.khach.ma_don).filter(Boolean));
+// 17/11: tách phần tính đơn + tình trạng để số đỏ menu (kdCanLuuY) dùng chung đúng 1 cách tính với trang
+function kdDL(DXd,P){const nay=homNay(),sau7=ymd(new Date(Date.now()+7*864e5));
+  const K=DXd.filter(x=>x.loai==='khach_dat'&&x.khach&&x.trang_thai!=='tu_choi'),maK=new Set(K.map(x=>x.khach.ma_don).filter(Boolean));
   const hen=(h,xong)=>xong?null:h&&h<nay?['Quá hẹn giao','bad']:h&&h<=sau7?['Sắp đến hẹn','warn']:null;
   const ttD=(z,h)=>!z?['Chưa đặt NCC','bad']:z.tt==='da_giao_khach'?['Đã giao khách','ok']:z.tt==='da_nhan'?['Hàng đã về kho','ok']:hen(h,false)||(PO_TT[z.tt]||[z.tt,'info']);
   const D=K.map(x=>({x,k:x.khach,dong:(x.dong||[]).map((r,i)=>{const z=(x.po_dong||[]).find(q=>q.i===i);return {r,i,z,tt:ttD(z,x.khach.hen_giao)}})}));
   const C=P.flatMap(p=>(p.khach||[]).filter(k=>!(k.ma_don&&maK.has(k.ma_don))).map(k=>({p,k,tt:p.trang_thai==='da_giao_khach'?['Đã giao khách','ok']:p.trang_thai==='da_nhan'?['Hàng đã về kho','ok']:hen(k.hen_giao,false)||(PO_TT[p.trang_thai]||['','info'])})));
+  return {D,C}}
+// 17/11 anh: số đỏ menu = đơn cần lưu ý (còn mặt hàng chưa đặt NCC / quá hẹn / sắp đến hẹn giao 7 ngày)
+const KD_LY=['Chưa đặt NCC','Quá hẹn giao','Sắp đến hẹn'],kdCanLuuY=({D,C})=>D.filter(o=>o.dong.some(d=>KD_LY.includes(d.tt[0]))).length+C.filter(o=>KD_LY.includes(o.tt[0])).length;
+// công nợ khách cần lưu ý = Quá hạn + Đến hạn (7 ngày) — đúng nhãn trạng thái trang Công nợ khách hàng
+const noCanLuuY=ds=>(ds||[]).filter(x=>['Quá hạn','Đến hạn'].includes(ttCongNo(x)[0])).length;
+// tải ngầm sau khi mở app (không chặn màn hình) rồi gắn số đỏ; 2 trang tự cập nhật số khi mở lại
+async function demKH(){try{if(!can('khach_hang')&&!can('ncc'))return;
+  const [no,dx,po]=await Promise.all([can('khach_hang')?rpc('kt_cong_no_dt',{p_loai:'kh'}):null,can('ncc')?rpc('kt_dx_ds').catch(()=>[]):null,can('ncc')?poDS().catch(()=>null):null]);
+  if(no){S.cache.no_kh=no;S.demNoKH=noCanLuuY(no)}if(dx&&po){S.cache.dx_d=dx;S.demKD=kdCanLuuY(kdDL(dx,po.po||[]))}shellBadges()}catch(e){}}
+async function poKhach(el,P){const f=S.f;if(!S.cache.dx_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const DXd=S.cache.dx_d=S.cache.dx_d||await rpc('kt_dx_ds').catch(()=>[]),{D,C}=kdDL(DXd,P);
+  S.demKD=kdCanLuuY({D,C});shellBadges();
   const nhom=t=>t[0]==='Chưa đặt NCC'?'chua':['Đã giao khách','Hàng đã về kho'].includes(t[0])?'ve':'cho',lo=f.kd_loc||'',q=f.kd_q||'';
   const hop=(t,txt)=>(!lo||nhom(t)===lo)&&(!q||khopTim(q,txt));
   const Dl=D.map(o=>({...o,dong:o.dong.filter(d=>hop(d.tt,[o.k.ten,o.k.sdt,o.k.ma_don,maDX(o.x.id),d.r.ma,d.r.ten,d.z&&d.z.so]))})).filter(o=>o.dong.length),Cl=C.filter(o=>hop(o.tt,[o.k.ten,o.k.sdt,o.k.ma_don,o.p.so]));
