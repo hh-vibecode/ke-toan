@@ -1204,8 +1204,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.403';
-const APP_VERSION='17/11/2026 10:25';
+const APP_SO='1.404';
+const APP_VERSION='17/11/2026 10:34';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4042,7 +4042,8 @@ async function poExcel(){const p=window._po;if(!p)return;toast('Đang tạo file
     GOP(5,1,5,13);dat(5,1,'ĐƠN ĐẶT HÀNG / 采购订单',{font:F({bold:true,size:16,color:{argb:XD}}),alignment:AL('center')});ws.getRow(5).height=28.5;
     GOP(6,1,6,3);dat(6,1,'Loại đơn / 订单类型:',{font:F({bold:true})});GOP(6,4,6,5);dat(6,4,PO_LOAI_TQ[p.loai]||'',{fill:N(VN),alignment:AL('center')});
     GOP(6,6,6,7);dat(6,6,'Tiền tệ / 币种:',{font:F({bold:true}),alignment:AL('right')});dat(6,8,p.tien_te||'',{fill:N(VN),alignment:AL('center')});
-    GOP(6,9,6,10);dat(6,9,'Nơi giao hàng / 交货地点:',{font:F({bold:true}),alignment:AL('right')});GOP(6,11,6,13);dat(6,11,p.noi_giao||'',{fill:N(VN),alignment:AL('center')});
+    // 17/11 anh: "Nơi giao hàng / 交货地点" bị cắt dòng (ô 2 cột xuống 2 dòng, dòng cao 15.75) → dòng 6 cao 30
+    ws.getRow(6).height=30;GOP(6,9,6,10);dat(6,9,'Nơi giao hàng / 交货地点:',{font:F({bold:true}),alignment:AL('right')});GOP(6,11,6,13);dat(6,11,p.noi_giao||'',{fill:N(VN),alignment:AL('center')});
     // ── bên mua / bên bán (dòng 8–15)
     const dau=F({bold:true,color:{argb:'FFFFFFFF'}});
     [[1,3,''],[4,7,'BÊN MUA / 买方'],[8,13,'BÊN BÁN / 卖方']].forEach(([a,b,t])=>{GOP(8,a,8,b);dat(8,a,t,{font:dau,fill:N(XD),alignment:AL('center')});khung(8,a,b)});
@@ -4051,7 +4052,7 @@ async function poExcel(){const p=window._po;if(!p)return;toast('Đang tạo file
       GOP(r,1,r,3);GOP(r,4,r,7);GOP(r,8,r,13);dat(r,1,l,{font:F({bold:true}),fill:N(XN)});dat(r,4,a||'');dat(r,8,b||'');khung(r,1,3);khung(r,4,7);khung(r,8,13)});
     // ── bảng hàng (tiêu đề dòng 17)
     const HR=17,TD=['STT\n序号','Mã THT\nTHT编码','Mã NCC\n供应商编码','Hình ảnh\n图片','Tên hàng\n品名','Màu\n颜色','Kích thước\n尺寸','Quy cách\n规格','ĐVT\n单位','Số lượng đặt\n订购数量','Đơn giá\n单价','Thành tiền\n金额','Ghi chú\n备注'],K4={top:L,left:L,bottom:L,right:L};
-    TD.forEach((t,i)=>dat(HR,i+1,t,{font:dau,fill:N(XD),alignment:AL('center'),border:K4}));ws.getRow(HR).height=30;
+    TD.forEach((t,i)=>dat(HR,i+1,t,{font:dau,fill:N(XD),alignment:AL('center'),border:K4}));ws.getRow(HR).height=40;   // "Số lượng đặt / 订购数量" xuống 3 dòng — 30 bị sát chữ
     const dg=p.dong.filter(x=>x.ma_tht||x.ten||+x.sl),n=Math.max(10,dg.length),U={},ids=dg.map(x=>x.anh_ct).filter(Boolean),urls=dg.filter(x=>!x.anh_ct&&/^https?:\/\//i.test(x.anh||'')).map(x=>x.anh);   // 17/11: + ảnh Kiot (link) của dòng chưa tải ảnh mẫu
     // 16/11 anh: "file PO down về nhẹ thôi, ảnh không cần giữ chất lượng, tải nhanh" — ảnh thu nhỏ ≤160px JPEG 70%, tải 6 ảnh song song, ảnh trùng nhúng 1 lần, giữ tỷ lệ trong ô
     const AN={},uq=[...new Set([...ids,...urls])];urls.forEach(u=>U[u]=u);let LG=null;
@@ -4092,8 +4093,8 @@ async function poExcel(){const p=window._po;if(!p)return;toast('Đang tạo file
     GOP(s0,1,s0,6);GOP(s0,8,s0,13);dat(s0,1,'ĐẠI DIỆN BÊN MUA / 买方代表',{font:BX,alignment:AL('center')});dat(s0,8,'ĐẠI DIỆN BÊN BÁN / 卖方代表',{font:BX,alignment:AL('center')});
     GOP(s0+1,1,s0+1,6);GOP(s0+1,8,s0+1,13);dat(s0+1,1,'(Ký, ghi rõ họ tên, đóng dấu / 签字盖章)',{font:KY,alignment:AL('center')});dat(s0+1,8,'(Ký, ghi rõ họ tên, đóng dấu / 签字盖章)',{font:KY,alignment:AL('center')});
     ws.getRow(s0+2).height=60;
-    GOP(s0+3,1,s0+3,6);GOP(s0+3,8,s0+3,13);dat(s0+3,1,bm.dai_dien||'',{font:B,alignment:AL('center')});dat(s0+3,8,'Họ tên, chức vụ / 姓名、职务: ……………',{alignment:AL('center')});
-    for(let r=1;r<=s0+3;r++){const w=ws.getRow(r);if(!w.height){w.height=15.75;if(!w.cellCount)ws.getCell(r,1).font=F()}}   // dòng trống cao 15.75 như mẫu (mặc định ExcelJS theo Calibri 11 → cao hơn)
+    // 17/11 anh: bỏ dòng tên người ký ("HỒ XUÂN THỊNH – Giám đốc" / "Họ tên, chức vụ …") — không cần
+    for(let r=1;r<=s0+2;r++){const w=ws.getRow(r);if(!w.height){w.height=15.75;if(!w.cellCount)ws.getCell(r,1).font=F()}}   // dòng trống cao 15.75 như mẫu (mặc định ExcelJS theo Calibri 11 → cao hơn)
     ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,margins:{left:0.4,right:0.4,top:0.5,bottom:0.5,header:0.3,footer:0.3}};
     const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     a.download=p._mau?'Mau-PO-trong.xlsx':String(p.so||'PO').replace(/[\\/:*?"<>|]/g,'-')+(p._mau?'':'.xlsx');a.click();toast('Đã tải file PO')}catch(e){alert('Không tạo được Excel: '+e.message)}}
