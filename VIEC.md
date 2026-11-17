@@ -164,6 +164,8 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (368)** — Kế toán (ảnh bảng Hàng đặt PO): "bổ sung mũi tên để di chuyển được thứ tự dòng". v1.409: cột cuối mỗi dòng ▲ ▼ ✕ (`poDoi` đổi chỗ với dòng trên / dưới; dòng đầu tắt ▲, dòng cuối tắt ▼);
+  thứ tự lưu theo mảng dòng khi bấm Lưu (Excel PO theo cùng thứ tự). Test trên PO 19 (▼ rồi ▲ về đúng chỗ, nút tắt đúng), KHÔNG bấm Lưu — PO không đổi. — Monsieur Claude
 - **17/11/2026 (367)** — Anh (ảnh popup hoa hồng Khánh Nguyên T11 "chưa đạt mốc"): "bên MKT Nguyên bán được hơn 400tr" + "tính doanh thu thì tính full giá trị nếu khách đã cọc,
   hoa hồng thì tính tiền real khách đã trả" + "check Kiot là được". Soát Kiot: DH003075 (Tâm Hòa, phiếu tạm) — Nguyên lập cọc TTDH003075 rồi HUỶ, lập lại bằng phiếu thu thường TT012051 (không gắn đơn)
   → app không coi đơn đã cọc (thiếu cả giá trị đơn) + tiền cọc rơi vào luồng phiếu cục, tính cho người bán HĐ cũ của khách (Nguyễn Thị Huế, HĐ T4). Cùng lỗi: cọc NPP Thảo Nam tính nhầm cho Nguyễn Thị Chuyện, cọc Tuyết Như cho Toàn.
