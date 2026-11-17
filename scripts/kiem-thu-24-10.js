@@ -35,7 +35,7 @@ async function trinhDuyet(phien, ten) {
   for (let i = 0; i < 60; i++) { await ngu(500); try { if (await ev('!!(window.S&&S.toi&&S.dm)')) break; } catch (e) {} }
   await ev(`window.confirm=()=>true;window.alert=m=>{window.__alert=(window.__alert||[]).concat(String(m))};window.prompt=()=>'ghi chú thử';1`);
   const chup = async f => { const s = await goi('Page.captureScreenshot', { format: 'png' }); fs.writeFileSync(path.join(OUT, ten + '-' + f + '.png'), Buffer.from(s.result.data, 'base64')); };
-  return { ev, chup, loi, dong: () => { try { sock.close(); p.kill(); } catch (e) {} } };
+  return { ev, chup, loi, dong: () => { try { sock.close(); p.kill(); require('./tat-trinh-duyet')(prof); } catch (e) {} } };
 }
 const doi = async (b, expr, ms = 15000) => { for (let t = 0; t < ms; t += 300) { try { if (await b.ev(expr)) return true; } catch (e) {} await ngu(300); } return false; };
 

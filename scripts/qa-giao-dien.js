@@ -70,7 +70,7 @@ const ngu = ms => new Promise(r => setTimeout(r, ms));
     const lb = await dauLoi(); if (lb.length) kq.push({ k: 'chuông', kieu: 'mở', loi: lb, giay: '-', treo: false, tran: 0 });
   } catch (e) { kq.push({ k: 'MÁY KIỂM THỬ', kieu: 'lỗi', loi: [['qa', e.message]], giay: '-', treo: false, tran: 0 }); }
   finally {
-    try { ws && ws.close(); } catch (e) {} ed.kill(); await ngu(800);
+    try { ws && ws.close(); } catch (e) {} ed.kill(); require('./tat-trinh-duyet')(dir);   // 17/11: tắt CẢ CÂY tiến trình Edge (ed.kill chỉ tắt tiến trình gốc → sót tiến trình con, máy cạn bộ nhớ) await ngu(800);
     await xoaTam('tam-qa'); try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {}
   }
   const xau = kq.filter(x => x.treo || (x.loi && x.loi.length) || x.tran > 2);

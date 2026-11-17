@@ -70,7 +70,7 @@ const TEN = 'THỬ HỆ THỐNG Sao kê';
     const loi = await ev(`window.__qa`); kq(!loi.length, 'Không lỗi JS / alert', JSON.stringify(loi));
   } catch (e) { kq(false, 'MÁY KIỂM THỬ', e.message); }
   finally {
-    try { ws && ws.close(); } catch (e) {} ed.kill(); await ngu(800);
+    try { ws && ws.close(); } catch (e) {} ed.kill(); require('./tat-trinh-duyet')(dir);   // 17/11: tắt CẢ CÂY tiến trình Edge (ed.kill chỉ tắt tiến trình gốc → sót tiến trình con, máy cạn bộ nhớ) await ngu(800);
     if (kyId) {
       const ct = await sql(`select id, duong_dan from kt_chung_tu where bang='sao_ke' and dong_id=${kyId}`);
       if (ct.length) { const K = require('./khoa').docKhoa();   // bảng storage không cho xoá thẳng → Storage API, đúng đường dẫn file thử
