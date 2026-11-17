@@ -164,6 +164,10 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (376)** — Anh: "bảo nó sau không cần để ý, và m cũng thế, mã không có tiền thu thì clear đi, khác gì phiếu tạm báo giá đâu" (QUY TẮC — đã lưu bộ nhớ). Đã nhắn phiên MKT (bên đó sẽ hỏi anh xác nhận trước khi áp).
+  `supabase-schema-kt-khong-tien-bo-qua.sql`: `kt_dh_co_tien(ma)` (trả trên đơn ở bảng kế toán / bảng app MKT · phiếu TTDH còn hiệu lực · HĐ của đơn đã thu) ; `kt_dc3_tinh` (So khớp 3 bên) bỏ khỏi lệch + "Kiot không còn" mọi đơn đặt
+  không có tiền và HĐ đã xoá chưa thu; bỏ luôn dòng app MKT đã đánh dấu xoá (`kiot_orders / kiot_invoices.kiot_da_xoa`). Trước → sau: T5 1→0, T8 3→0, T9 4→0, T10 1→0 → cả 11 tháng 0 lệch, số đơn đặt 2 app bằng nhau.
+  Sự cố: máy thiếu bộ nhớ (bash không fork được, 1 lệnh áp SQL không chạy) → chạy lại từng lệnh, đã kiểm hàm vào CSDL. — Monsieur Claude
 - **17/11/2026 (375)** — Anh (ảnh trang so khớp app MKT "Bên Kế toán lệch Kiot — kế toán còn giữ mã Kiot đã xoá", 9 mã): "là sao", "đơn đặt hàng đã trả tiền chưa, không trả tiền thì không cần quan tâm",
   "phản hồi lại cho nó cái t bảo". Soát: 6 mã đã đánh dấu "Đã xoá trên Kiot" từ VIEC 315 (giữ dòng có chủ ý); 3 mã mới DH001852 / DH002462 / DH002525 hỏi Kiot (GET orders/code — đơn còn DH003075 trả bình thường) báo không thấy
   → đánh dấu bằng `kt_kiot_danh_dau_xoa('dh', …)` (lần đầu bị dừng vì máy thiếu bộ nhớ khi mở tiến trình, chưa ghi; chạy lại 3/3). Tiền: 7 mã không có đồng nào; DH002643 / DH002684 có tiền ở HĐ HD059385 / HD059544
