@@ -93,7 +93,7 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 - **Lịch Windows kt-keo-file-dong-tien** — đã báo 02/11 (file T10 bỏ trống từ 20/10, không ai điền nhầm), chờ anh gật để xoá lịch.
 
 **Hẹn:**
-- **03/11/2026** — kiểm lần chạy đầu của lịch kt-kiot-thu-hd-1/2/3 (00:45–00:55 giờ VN đêm 02/11): bảng kt_kiot_hd_thu có keo_luc mới.
+- **30/11/2026** — đọc kết quả kt-kiem-he-thong cuối tháng + kiểm lịch kt-sao-ke-moi (kế toán nạp sao kê T11 các TK còn lại).
 - **Theo dõi Supabase**: Cài đặt → Log hệ thống → Lưu lượng (chụp 23:55 hằng ngày, tự báo chuông khi vượt ngưỡng) + kt-kiem-he-thong ngày 15 / cuối tháng.
 
 **Theo dõi định kỳ (23/10 ổn — 0 lần lịch kt- lỗi trong 7 ngày; Kiot 6 lỗi mạng / 289 lần trong 3 ngày, lần sau tự kéo lại):** kéo Kiot 15 phút, đối chiếu Kiot 23:50, tồn kho 23:20 / 23:40, meInvoice 00:25, MISA HĐ đầu vào 00:35, phân loại mục con 4 giờ / lần, lưu lượng 23:55 — xem Cài đặt → Log hệ thống → Lịch chạy.
@@ -163,6 +163,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026** — Anh: "check xem còn gì chưa làm không". Soát: 0 báo lỗi mở; 6 câu Cần giải đáp vẫn chưa trả lời (#41 #44 #49 #51 #59 #60); lịch kt- 3 ngày qua 0 lỗi.
+  Kiểm hệ thống 15/11 báo "92 lần lịch lỗi / 15 ngày" — em chưa đọc kịp hôm 15: cả 92 là kt-ncc-tu-gan (trùng khoá kt_ncc_phan_bo chi_id + nhap_id) 06/11 → 10/11 06:25, sau đó 168 lần liên tiếp thành công → đã hết, không cần làm gì.
+  Gạch hẹn 03/11 (kt-kiot-thu-hd chạy đều, keo_luc mới nhất 16/11). Lịch kt-sao-ke-moi chạy đủ 2 tiếng / lần từ 16/11, chạy thật với 2 kỳ DTMO đạt (VIEC 359). — Monsieur Claude
 - **17/11/2026 (366)** — Kế toán: "để chị tự đặt mã" (ô Số PO đang khoá "Tự cấp khi lưu") → ô Số PO gõ được, để trống = tự cấp THT-PO-xxx/năm như cũ (giờ bỏ qua số đã dùng). kt_po_luu chặn số trùng PO khác chưa xoá (không phân biệt hoa thường / dấu cách), báo "Số PO … đã có ở PO khác". Hiện 0 số trùng. Thử: gõ số trên PO mới → lưu gửi đúng số; PO 24 đặt số của PO 23 → báo lỗi, PO 24 không đổi (gọi thật). Tiêu đề cửa sổ giữ số cũ khi đang sửa. SQL: supabase-schema-kt-po-so-tay.sql. v1.406. Monsieur Claude
 - **17/11/2026 (365)** — Kế toán: "thông tin trên PO không sửa được, chỉ sửa được list hàng" → nguyên nhân: mỗi ô Thông tin đơn sửa xong là vẽ lại cả cửa sổ; ô ngày (Ngày PO / Ngày giao) gõ 1 số là vẽ lại → mất con trỏ, ra ngày sai (thử gõ 20/12/2026 ra 02/11/2026), Tab sang ô sau mất, có lúc báo lỗi "node to be removed". Sửa: Số PI, Ngày PO, Ngày giao, Nơi giao, Trạng thái, Ghi chú chỉ ghi giá trị + cập nhật thanh Còn thiếu (poThieu), không vẽ lại; Loại đơn / Tiền tệ / Tỷ giá / VAT vẫn vẽ lại vì đổi bố cục. Thử Chrome (chặn ghi): gõ đúng ngày, Tab sang ô kế, Lưu gửi đủ so_pi / ngay_giao / trang_thai / ghi_chu, 0 lỗi. Chưa thử trên máy kế toán. v1.405. Monsieur Claude
 - **17/11/2026 (364)** — Anh (ảnh file PO xuất): bỏ dòng tên người ký cuối file ("HỒ XUÂN THỊNH – Giám đốc" / "Họ tên, chức vụ …": "không cần"); "Nơi giao hàng / 交货地点" bị cắt dòng → dòng 6 cao 30; hàng tên cột cao 40 ("Số lượng đặt / 订购数量" 3 dòng). Soát ảnh mẫu trống. v1.404. — Monsieur Claude
