@@ -164,6 +164,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **17/11/2026 (374)** — Phiên MKT (anh muốn mỗi đơn lệch có ghi chú CẢ 2 bên, cập nhật hằng đêm): bảng chung `so_dt_2app_ly_do` (app MKT tạo). `kt_so_dt_2app_ly_do()` (gọi cuối `kt_so_dt_2app_gui`, lịch 21:30):
+  mã ben='mkt' mà kế toán không tính cùng tháng → 1 dòng ben='kt' nêu lý do (xoá + ghi lại từ T6). Lượt đầu 310 mã, 0 "chưa xác định": 222 kế toán tính theo HĐ của đơn (đơn chưa có cọc gắn đơn khi tạo),
+  50 phiếu tạm chưa có cọc gắn đơn (coi là báo giá), 29 dòng 0 đ, 5 HĐ của đơn đã huỷ, 4 đơn Hoàn thành không có HĐ hoàn thành. Thuộc phạm vi ngoại lệ bảng so chung đã ghi CLAUDE.md. — Monsieur Claude
 - **17/11/2026 (373)** — Anh (ảnh menu): "công nợ khách hàng với đơn hàng khách đặt cũng cần để số đỏ như 2 mục bên trên, với các khách / đơn cần lưu ý". v1.413: số đỏ Công nợ khách hàng = khách trạng thái
   Quá hạn + Đến hạn 7 ngày (`noCanLuuY`, dùng đúng `ttCongNo` của trang); Đơn hàng khách đặt = đơn còn mặt hàng chưa đặt NCC / quá hẹn / sắp đến hẹn giao (`kdCanLuuY` trên `kdDL` — tách từ poKhach,
   trang và menu dùng chung 1 cách tính); nhóm Khách hàng & NCC cộng 2 số. Tải ngầm 2,5 s sau khi mở app (`demKH`: kt_cong_no_dt ~0,37 s + kt_dx_ds ~0,47 s + PO ~0,17 s song song), mở 2 trang thì số tự cập nhật.
