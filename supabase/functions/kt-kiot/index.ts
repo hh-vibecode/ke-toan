@@ -118,7 +118,9 @@ const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, s
     doi: x => { const ton = (x.inventories || []).map((i: any) => ({ cn: i.branchName, ton: i.onHand, gia_von: n0(i.cost) }));
       return { id: x.id, ma: x.code, ten: x.fullName || x.name, nhom_id: x.categoryId ?? null, nhom: x.categoryName ?? null, don_vi: x.unit ?? null,
         dv_goc_id: x.masterUnitId ?? null, quy_doi: x.conversionValue ?? 1,
-        gia_ban: n0(x.basePrice), hoat_dong: x.isActive ?? true, ton, tong_ton: ton.reduce((s: number, t: any) => s + (Number(t.ton) || 0), 0),
+        gia_ban: n0(x.basePrice), hoat_dong: x.isActive ?? true, ton,
+        anh: (Array.isArray(x.images) && x.images.length ? String(x.images[0]) : null),   // 17/11: ảnh đầu tiên của mã → PO tạo từ đơn khách đặt có ảnh sản phẩm
+        tong_ton: ton.reduce((s: number, t: any) => s + (Number(t.ton) || 0), 0),
         gia_tri_ton: n0(ton.reduce((s: number, t: any) => s + (Number(t.ton) || 0) * (Number(t.gia_von) || 0), 0)),
         tao_kiot: vn(x.createdDate), sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }; } },
   hoa_don: { bang: 'kt_kiot_hoa_don', duong: 'invoices', tham: {}, dayDu: (tu, den) => ({ fromPurchaseDate: tu, toPurchaseDate: den }), moc: (x, tu) => String(x.purchaseDate) >= tu,
