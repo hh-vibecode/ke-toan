@@ -164,6 +164,9 @@ Mẫu có nhưng KHÔNG có dữ liệu (để khung trống, không số giả)
 | 2 | Trung tâm Quản trị Tài liệu THT — Nhóm 02 (Quy trình · Quy định nội bộ: ban hành, xác nhận đã đọc theo phiên bản), 03 (Thư viện đào tạo · hướng dẫn dùng chung Sales Online / Sales Sỉ / Cửa hàng, bộ đào tạo), 04 (file bảng giá · chính sách đã phát hành cho đại lý / CTV) theo đặc tả THT_TrungTamTaiLieu_Spec_v1_1.md (anh có file) — anh chốt 11/11 đặt ở app MKT/Sale vì người dùng là Sales / cửa hàng. Nhóm 01 (hồ sơ pháp lý / hợp đồng / chứng từ) app kế toán làm; nếu sau cần Sales xem hợp đồng / chứng từ thì nhờ qua hàm đọc riêng, không cấp tài khoản kế toán | MKT/Sale | Chờ anh chuyển lời (11/11/2026) |
 
 ## 5. NHẬT KÝ (mới nhất trước)
+- **18/11/2026 (382)** — Kế toán (anh chuyển ảnh cửa sổ DX00004): "khi ấn vào chi tiết đơn đặt hàng thì không thấy hiển thị hình ảnh sản phẩm, thiếu cột STT". v1.417: cửa sổ chi tiết đơn đặt (`dxMo`) thêm cột STT + cột Ảnh từng dòng
+  (ảnh tải lên khi đặt `anh_ct` — link ký 5 phút nạp sau khi mở; không có thì ảnh Kiot `anh_kiot`; bấm xem to); khu ảnh cuối đổi tên "Tệp đính kèm khác", bỏ ảnh đã hiện theo dòng (không lặp). Test DX00004: 1 ảnh dòng tải xong, 0 lỗi.
+  CHƯA làm: trang theo dõi công khai cho cửa hàng / sales (link #dx=…) — kế toán nhắc "hoàn thiện giao diện theo dõi đơn hàng … gửi chị duyệt" (đang thuộc việc phiên khác, VIEC 380). — Monsieur Claude
 - **18/11/2026 (380)** — Kế toán (anh chuyển, 6 ý) + anh "xem thêm file PDF vào mấy chỗ up Word với Excel luôn". v1.416:
   (1) "ảnh xuất ra Excel bị bé quá" (PO Excel): cột Hình ảnh 11,38 → 17, dòng có ảnh cao 52,5 → 82,5, ảnh ≤ 112×100 px (trước 62 px), thu nhỏ 160 → 260 px — kiểm file xuất: ảnh 112×56 (trước 62×31).
   (2) Đơn hàng khách đặt "cần hiển thị ai là người đặt hàng, bộ phận nào" → cột Người đặt · bộ phận (tìm được theo người đặt); trang gọn cột lại cho vừa màn 1500.
