@@ -1231,8 +1231,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.422';
-const APP_VERSION='18/11/2026 17:42';
+const APP_SO='1.423';
+const APP_VERSION='18/11/2026 17:49';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -4268,8 +4268,17 @@ const noCanLuuY=ds=>(ds||[]).filter(x=>['Quá hạn','Đến hạn'].includes(tt
 async function demKH(){try{if(!can('khach_hang')&&!can('ncc'))return;
   const [no,dx,po]=await Promise.all([can('khach_hang')?rpc('kt_cong_no_dt',{p_loai:'kh'}):null,can('ncc')?rpc('kt_dx_ds').catch(()=>[]):null,can('ncc')?poDS().catch(()=>null):null]);
   if(no){S.cache.no_kh=no;S.demNoKH=noCanLuuY(no)}if(dx&&po){S.cache.dx_d=dx;S.demKD=kdCanLuuY(kdDL(dx,po.po||[]))}shellBadges()}catch(e){}}
+function kdKiotMo(ma){const x=(window._kdKK||[]).find(z=>z.ma===ma);if(!x)return;const o=(l,v)=>v?`<div><span>${l}</span><b>${v}</b></div>`:'';
+  modal(`<h2>${esc(x.ma)} · đơn đặt trên Kiot ${pill('Chưa gửi đơn','warn')}</h2>
+    <div class="dx-tt">${o('Khách',esc([x.khach,x.khach_ma].filter(Boolean).join(' · ')))}${o('Người bán',esc(x.nv||''))}${o('Ngày tạo đơn',fmtD(x.ngay))}${o('Chi nhánh',esc(x.cn||''))}
+      ${o('Giá trị đơn',fmt(x.tong))}${o('Đã cọc',fmt(x.coc))}${o('Phiếu cọc',esc(x.phieu||'trả trên đơn'))}${o('Trạng thái Kiot',esc(x.tt||''))}</div>
+    ${x.gc?`<div class="ds-xl" style="white-space:pre-line;margin-bottom:10px"><b>Ghi chú Kiot:</b> ${esc(x.gc)}</div>`:''}
+    <div class="muted" style="font-size:12.5px">Khách đã cọc nhưng sale chưa gửi form Đặt hàng → người mua hàng chưa có danh sách mặt hàng để đặt NCC. Nhắc sale gửi form (Sản phẩm có khách đặt, ghi mã đơn ${esc(x.ma)}).</div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button></div>`)}
 async function poKhach(el,P){const f=S.f;if(!S.cache.dx_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const DXd=S.cache.dx_d=S.cache.dx_d||await rpc('kt_dx_ds').catch(()=>[]),{D,C}=kdDL(DXd,P);
+  // 18/11 kế toán + anh ("link theo dõi là app"): đơn đặt tạo thẳng trên Kiot đã cọc (TTDH / trả trên đơn / phiếu thu sổ quỹ gắn đơn) mà chưa gửi form → hiện "Chưa gửi đặt hàng"
+  const KK0=S.cache.kd_kiot=S.cache.kd_kiot||await rpc('kt_kd_kiot').catch(()=>[]),daCo=new Set([...D.map(o=>o.k.ma_don),...C.map(o=>o.k.ma_don)].filter(Boolean)),KK=KK0.filter(x=>!daCo.has(x.ma));window._kdKK=KK;
   S.demKD=kdCanLuuY({D,C});shellBadges();
   const nhom=t=>t[0]==='Chưa đặt NCC'?'chua':['Đã giao khách','Hàng đã về kho'].includes(t[0])?'ve':'cho',lo=f.kd_loc||'',q=f.kd_q||'';
   const hop=(t,txt)=>(!lo||nhom(t)===lo)&&(!q||khopTim(q,txt));
@@ -4290,11 +4299,15 @@ async function poKhach(el,P){const f=S.f;if(!S.cache.dx_d)el.innerHTML='<div cla
       <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...tt)}${da<ds.length&&da?`<div class="dx-gy">${da} / ${ds.length} đã đặt NCC</div>`:''}</td></tr>`}).join('')
     +Cl.map(o=>`<tr class="click" onclick="poForm(${o.p.id})"><td class="ten"><b>${esc(o.k.ten||'')}</b><div class="dx-gy">${esc(o.k.sdt||'')}</div></td><td class="ten">${o.p.tao_boi?esc(o.p.tao_boi):'<span class="muted">—</span>'}<div class="dx-gy">gắn tay trên PO</div></td><td class="nw">${esc(o.k.ma_don||'')}${o.k.phieu_coc?`<div class="dx-gy">${esc(o.k.phieu_coc)}</div>`:''}</td><td class="num">${fmt(o.k.coc)}</td>
       <td class="ten"><span class="muted">cả PO (gắn tay)</span></td><td></td><td></td><td class="nw"><span class="m-link">${esc(o.p.so)}</span>${o.p.la_mau?' <span class="badge">Mẫu</span>':''}<div class="dx-gy">${esc(o.p.ncc_ten||'')}</div></td><td><span class="muted">—</span></td>
-      <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...o.tt)}</td></tr>`).join('');
+      <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...o.tt)}</td></tr>`).join('')
+    +KK.filter(x=>(!lo||lo==='chua')&&(!q||khopTim(q,[x.khach,x.ma,x.nv,x.phieu,x.gc]))).map((x,i)=>`<tr class="click" onclick="kdKiotMo('${esc(x.ma)}')"><td class="ten"><b>${esc(x.khach||'')}</b><div class="dx-gy">${esc(x.khach_ma||'')}</div></td>
+      <td class="ten">${esc(x.nv||'')}<div class="dx-gy">tạo trên Kiot</div></td><td class="nw">${esc(x.ma)}<div class="dx-gy">${esc(x.phieu||'')}</div></td><td class="num">${fmt(x.coc)}</td>
+      <td class="ten"><b>${fmt(x.so_mh||0)} mặt hàng</b><div class="dx-gy kd-2d">${esc(String(x.gc||'').replace(/\n/g,' · '))}</div></td><td class="num"></td><td class="num">${fmt(x.tong)}</td>
+      <td class="nw"><span class="muted">chưa đặt</span></td><td><span class="muted">—</span></td><td class="nw"></td><td class="c">${pill('Chưa gửi đơn','warn')}</td></tr>`).join('');
   const th=(k,c,ic,lb,v,s)=>kThe(c,ic,lb,v,s,`S.f.kd_loc=S.f.kd_loc==='${k}'?'':'${k}';render()`,lo===k);
   el.innerHTML=`<div class="m-kpis m-k3">${kThe('info',IC_LNK.tien,'Tiền cọc khách đang giữ',fmt(giu),'đơn chưa về đủ hàng')}${th('chua','bad',IC_LNK.di,'Chưa đặt NCC',fmt(chua)+' mặt hàng','khách đã cọc')}
       ${kThe('warn',IC_LNK.cp,'Quá hẹn / sắp đến hẹn',fmt(tre)+' đơn','trong 7 ngày')}</div>
-    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Đơn hàng khách đặt <span class="badge">${fmt(D.length+C.length)} đơn</span></div></div>
+    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Đơn hàng khách đặt <span class="badge">${fmt(D.length+C.length+KK.length)} đơn</span></div></div>
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:240px" placeholder="Tìm khách, người đặt, mã đơn, mã hàng, PO..." value="${esc(q)}" onchange="S.f.kd_q=this.value;render()">
         <select class="m-in" style="width:150px" onchange="S.f.kd_loc=this.value;render()">${optsObj({'':'Tất cả tình trạng',chua:'Chưa đặt NCC',cho:'Đang chờ hàng',ve:'Đã về / đã giao'},lo)}</select>
         <button class="m-btn out" onclick="navigator.clipboard&&navigator.clipboard.writeText('${location.origin+location.pathname}#de-xuat-mua');toast('Đã chép link form — gửi cho Sale')">Chép link form</button></div></div>
