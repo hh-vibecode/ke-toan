@@ -26,3 +26,17 @@ begin
 end $$;
 revoke all on function public.kt_dx_anh_ma(text) from public, anon, authenticated;
 grant execute on function public.kt_dx_anh_ma(text) to service_role;
+
+-- 18/11 anh: "đặt nhiều đơn thì trông như nào — làm thành các dòng, ấn ra popup" → danh sách đơn của sale trả thêm số mặt hàng + tình trạng PO từng dòng
+-- (bước trên dòng tính cùng cách với popup: mặt hàng chậm nhất), mức gấp, ngày cần.
+create or replace function public.kt_xem_de_xuat_ds(p_ds text[]) returns jsonb
+language plpgsql stable security definer set search_path to 'public', 'extensions' as $function$
+begin
+  if coalesce(array_length(p_ds, 1), 0) > 300 then raise exception 'Tối đa 300 mã'; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object('ma', m, 'id', d.id, 'loai', d.loai, 'tao_luc', d.tao_luc, 'ncc', d.ncc_ten, 'khach', d.khach->>'ten', 'tt', d.trang_thai, 'ly_do', d.ly_do,
+      'po', p.so, 'po_tt', p.trang_thai, 'po_giao', p.ngay_giao, 'hang', (select string_agg(coalesce(nullif(e->>'ten', ''), e->>'ma'), ', ') from jsonb_array_elements(d.dong) e),
+      'so_dong', jsonb_array_length(coalesce(d.dong, '[]')), 'uu_tien', d.uu_tien, 'ngay_can', d.ngay_can,
+      'po_dong', (select coalesce(jsonb_agg(jsonb_build_object('i', (x->>'dx_i')::int, 'tt', p2.trang_thai, 'giao', p2.ngay_giao)), '[]')
+                    from kt_po p2, jsonb_array_elements(p2.dong) x where not p2.da_xoa and p2.trang_thai <> 'huy' and x->>'dx_id' = d.id::text and x ? 'dx_i')) order by d.id desc)
+    from unnest(p_ds) m join kt_de_xuat_mua d on d.ma_hash = encode(digest(m, 'sha256'), 'hex') and not d.da_xoa left join kt_po p on p.id = d.po_id), '[]');
+end $function$;
