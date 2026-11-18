@@ -19,7 +19,7 @@ async function layTinh() {   // giữ 10 phút; app đổi bản (phien-ban.txt)
   const a = h.indexOf('// <hh-tinh-chung>'), b = h.indexOf('// </hh-tinh-chung>');
   const dong = (re: RegExp) => { const m = h.match(re); if (!m) throw new Error('Không đọc được cách tính trên app'); return m[0]; };
   if (a < 0 || b < a) throw new Error('Không đọc được cách tính trên app');
-  const code = [dong(/^const sumBy=.*$/m), dong(/^const CS3=.*$/m), dong(/^const csCuaCN=.*$/m), h.slice(a, b), 'return hhTinh;'].join('\n');
+  const code = [dong(/^const sumBy=.*$/m), dong(/^const fmt=.*$/m), dong(/^const CS3=.*$/m), dong(/^const csCuaCN=.*$/m), h.slice(a, b), 'return hhTinh;'].join('\n');
   maTinh = { luc: Date.now(), f: new Function(code)(), ban };
   return maTinh.f;
 }
