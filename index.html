@@ -1231,8 +1231,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.428';
-const APP_VERSION='19/11/2026 14:48';
+const APP_SO='1.429';
+const APP_VERSION='19/11/2026 15:09';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -8058,14 +8058,22 @@ async function xemXNT(hkd,ky,tim){
 }
 
 // DÒNG TIỀN — QUỸ TIỀN MẶT 3 CỬA HÀNG (đối chiếu cuối ngày, từ sổ quỹ Kiot)
+// 19/11 anh: "số quỹ quầy app và Kiot không khớp" → (1) chi tiền mặt tại quầy Kiot tự thành phiếu chi đã chi của TK quầy (kt_dong_bo_kiot_chi);
+// (2) "Còn giữ ở quầy" cộng dồn từ TỒN ĐẦU kỳ (trước từ 0 → âm đầu kỳ); (3) bảng Tổng 3 cửa hàng trên cùng — so với TK "TIỀN MẶT QUẦY CỬA HÀNG" (gộp 3 cửa hàng). — Monsieur Claude
 async function veQuyCuaHang(c){
   const ds=await rpc('kt_quy_cua_hang',{p_tu:S.tu,p_den:S.den});const cns=[...new Set(ds.map(x=>x.cn))].filter(cn=>locCSAll()||locCS().includes(csCuaCN(cn)));
-  c.innerHTML=`<div class="panel" style="margin-bottom:12px;font-size:12px;color:var(--text2)">Tiền mặt tại quầy từng cửa hàng theo sổ quỹ Kiot: <b>thu</b> tiền mặt − <b>chi</b> tiền mặt tại quầy − <b>nộp</b> về két / quỹ khác + <b>nhận</b> thêm = tiền mặt <b>còn giữ ở quầy</b> (cộng dồn trong kỳ). Cuối ngày đã nộp đủ thì "còn giữ" về gần 0.</div>`+
-    (cns.map(cn=>{let giu=0;const r=ds.filter(x=>x.cn===cn).map(x=>{giu+=(+x.thu||0)-(+x.chi||0)-(+x.nop||0)+(+x.nhan||0);return {...x,giu}});
-      return `<div class="sec">${esc(cn||'(không rõ)')} <span class="badge">thu ${fmtN(sumBy(r,x=>x.thu))} · chi ${fmtN(sumBy(r,x=>x.chi))} · nộp ${fmtN(sumBy(r,x=>x.nop))}</span></div>
+  const T=cns.map(cn=>{const r0=ds.filter(x=>x.cn===cn),dau=+((r0[0]||{}).dau)||0;let giu=dau;const r=r0.map(x=>{giu+=(+x.thu||0)-(+x.chi||0)-(+x.nop||0)+(+x.nhan||0);return {...x,giu}});
+    return {cn,dau,r,thu:sumBy(r,x=>+x.thu||0),chi:sumBy(r,x=>+x.chi||0),nop:sumBy(r,x=>+x.nop||0),nhan:sumBy(r,x=>+x.nhan||0),cuoi:giu}});
+  const o=v=>v?fmt(v):'',dong=(t,x,b)=>`<tr${b?' class="tong"':''}><td>${b?'<b>'+t+'</b>':esc(t)}</td><td class="num">${fmt(x.dau)}</td><td class="num">${o(x.thu)}</td><td class="num">${o(x.chi)}</td><td class="num">${o(x.nop)}</td><td class="num">${o(x.nhan)}</td><td class="num ${x.cuoi<0?'neg':''}"><b>${fmt(x.cuoi)}</b></td></tr>`;
+  const tong={dau:sumBy(T,x=>x.dau),thu:sumBy(T,x=>x.thu),chi:sumBy(T,x=>x.chi),nop:sumBy(T,x=>x.nop),nhan:sumBy(T,x=>x.nhan),cuoi:sumBy(T,x=>x.cuoi)};
+  c.innerHTML=T.length?`<div class="sec">${T.length>1?'Tổng '+T.length+' cửa hàng':'Tổng kỳ'}</div>
+    <div class="card scroll" style="margin-bottom:12px"><table><tr><th>Cửa hàng</th><th class="num">Tồn đầu kỳ</th><th class="num">Thu tiền mặt</th><th class="num">Chi tại quầy</th><th class="num">Nộp két / quỹ</th><th class="num">Nhận thêm</th><th class="num">Còn giữ cuối kỳ</th></tr>
+      ${T.map(x=>dong(x.cn||'(không rõ)',x)).join('')}${T.length>1?dong('Tổng',tong,1):''}</table></div>`+
+    T.map(x=>`<div class="sec">${esc(x.cn||'(không rõ)')} <span class="badge">đầu kỳ ${fmtN(x.dau)} · thu ${fmtN(x.thu)} · chi ${fmtN(x.chi)} · nộp ${fmtN(x.nop)}</span></div>
         <div class="card scroll" style="margin-bottom:12px"><table><tr><th>Ngày</th><th class="num">Thu tiền mặt</th><th class="num">Chi tại quầy</th><th class="num">Nộp két / quỹ</th><th class="num">Nhận thêm</th><th class="num">Còn giữ ở quầy</th></tr>
-        ${r.slice().reverse().map(x=>`<tr><td class="nw">${fmtD(x.ngay)}</td><td class="num">${x.thu?fmt(x.thu):''}</td><td class="num">${x.chi?fmt(x.chi):''}</td><td class="num">${x.nop?fmt(x.nop):''}</td><td class="num">${x.nhan?fmt(x.nhan):''}</td><td class="num ${x.giu<0?'neg':''}"><b>${fmt(x.giu)}</b></td></tr>`).join('')}</table></div>`}).join('')||'<div class="empty">Chưa có phát sinh tiền mặt</div>');
+        ${x.r.slice().reverse().map(z=>`<tr><td class="nw">${fmtD(z.ngay)}</td><td class="num">${o(z.thu)}</td><td class="num">${o(z.chi)}</td><td class="num">${o(z.nop)}</td><td class="num">${o(z.nhan)}</td><td class="num ${z.giu<0?'neg':''}"><b>${fmt(z.giu)}</b></td></tr>`).join('')}</table></div>`).join(''):'<div class="empty">Chưa có phát sinh tiền mặt</div>';
 }
+
 
 function dtTabs(){return `<div class="tabs" style="margin-bottom:12px">${[['tk','Tài khoản & đối soát'],['quy','Quỹ tiền mặt 3 cửa hàng (Kiot)']].map(([k,t])=>`<button class="btn ${(S.f.dt_view||'tk')===k?'on':''}" onclick="S.f.dt_view='${k}';render()">${t}</button>`).join('')}</div>`}
 // ── CHỨNG TỪ (ảnh / PDF) lưu và xem trên app (anh chốt 08/10) ──────────────
@@ -8478,7 +8486,7 @@ const LOGIC2=[
  ['thu_chi','Phiếu chi — hiển thị','Cột Loại chi tách riêng; phiếu Kiot chưa phân loại hiện nhóm Kiot.','','15/10'],
  ['thu_chi','Phiếu chi — QR','Phiếu chưa thanh toán có ngân hàng + số TK → tự tạo mã QR VietQR (số tiền, nội dung điền sẵn). QR tĩnh: quét xong sửa được nội dung.','Tạo trên máy, không gửi số TK ra ngoài. Thiếu số TK → dòng nhắc bổ sung. Một số app ngân hàng vẫn tự khoá ô nội dung khi QR có sẵn nội dung — do app ngân hàng, không chỉnh được từ mã.','16/10'],
  ['thu_chi','Phiếu chi — sửa nội dung CK','Khung mã QR có nút Sửa cạnh Chép: sửa TOÀN BỘ nội dung (mặc định có số phiếu PCxxxxxx, xoá / sửa tuỳ ý, không giới hạn ký tự, tự bỏ dấu — 09/11 anh), lưu vào phiếu, mã tạo lại. Để trống = số phiếu + nội dung chi.','Người đề nghị (khi chờ duyệt), thủ quỹ, kế toán, GĐ. Phiếu đã chi tiền thì khoá. Ghi nhật ký cũ → mới.','26/10'],
- ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt.','Phiếu Kiot (chi két quầy CTM, trả khách TTTH, ngân hàng tự trích nợ…) xem ở Sổ quỹ; 67 đề xuất Kiot cũ đã ẩn 16/10.','16/10'],
+ ['thu_chi','Phiếu chi — từ Kiot','Phiếu chi & duyệt thanh toán CHỈ gồm luồng đề nghị thanh toán (sheet đề nghị / phiếu trên app). Phiếu chi Kiot chỉ để đối chiếu, không vào danh sách duyệt. NGOẠI LỆ 19/11 (anh): chi TIỀN MẶT TẠI QUẦY trên Kiot (vận chuyển, trả NCC, trả khách…) tự thành phiếu chi ĐÃ CHI từ TK TIỀN MẶT QUẦY CỬA HÀNG (ngày Kiot, cơ sở theo chi nhánh; loại: vận chuyển → Chi phí đóng gói & vận chuyển, trả NCC → Chi thanh toán tiền hàng, trả khách → Hoàn hàng đã tính trong trả hàng Kiot, thuê kho, sửa chữa, khác → Chi phí khác), từ 01/09/2026; Kiot huỷ → phiếu tự từ chối; không báo thiếu ảnh giao dịch.','Chi chuyển khoản trên Kiot vẫn chỉ đối chiếu. Tab Quỹ tiền mặt 3 cửa hàng: bảng Tổng 3 cửa hàng + cột Còn giữ cộng dồn từ tồn đầu kỳ (lũy kế Kiot trước kỳ).','19/11'],
  ['thu_chi','Phiếu chi — tháng','Phiếu chi thuộc tháng theo NGÀY SỬ DỤNG DỊCH VỤ (cột F sheet đề nghị), thiếu thì theo ngày đề nghị — số phiếu khớp sheet.','Trả gốc vay không phải chi phí → trang Vay, thẻ "Số phiếu trong tháng" ghi thêm "+N trả gốc vay" để cộng ra đúng số dòng sheet. Phiếu tháng trước còn chờ: nút "Tháng trước còn chờ". Kiot: nhãn / lọc Chưa cập nhật Kiot trên phiếu (19/11 anh bỏ nhóm "Phiếu chi đã thanh toán chưa thấy trên Kiot" ở Đối soát lỗi).','16/10'],
  ['chung','Tự kiểm Supabase','Job kt-kiem-he-thong 09:00 ngày 15 + ngày cuối tháng: đo dữ liệu, kho chứng từ, nhật ký, lịch chạy lỗi, kéo Kiot, khoá RLS / quyền anon → chuông cho Supreme (luôn có tóm tắt, có vấn đề ghi rõ cảnh báo).','Gói Pro: cảnh báo khi dữ liệu > 4 GB, kho > 50 GB, tăng > 5 GB kho / 1 GB dữ liệu giữa 2 lần kiểm, có bảng tắt RLS. Băng thông không đo được từ SQL — xem Dashboard.','16/10'],
  ['chung','Xem như','Admin (Supreme) và giám đốc bấm icon người cạnh chuông (hoặc nút Xem như ở trang Phân quyền) → app mở đúng như tài khoản đó thấy (menu, nút, dữ liệu theo quyền của họ). Thanh vàng trên cùng → Thoát Xem như.','Chỉ xem: máy chủ chặn mọi lệnh thêm / sửa / xoá trong phiên Xem như. Phiên tự hết hạn sau 2 giờ.','16/10'],
