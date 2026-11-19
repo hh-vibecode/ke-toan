@@ -1231,8 +1231,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.426';
-const APP_VERSION='19/11/2026 14:37';
+const APP_SO='1.427';
+const APP_VERSION='19/11/2026 14:43';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5094,7 +5094,8 @@ async function ttForm(id,san){const d=await poDS(),nc=await nccDS(),g=nccGhi();i
     ${g&&!t.chi&&(t.nghi_trung||[]).length?`<div class="dg-nhac" style="margin-top:10px">${pill('Nghi trùng','warn')} ${t.nghi_trung.map(c=>`<span class="m-link" onclick="moPhieu('PC',${c.id})">PC${String(c.id).padStart(6,'0')}</span> <span class="muted">${fmtD(c.ngay)} · ${esc(c.nd||'')}</span> <button class="m-btn sm out" onclick="$('#tt-chi').value=${c.id};ttLuu(${id})">Dùng phiếu chi này</button>`).join(' ')}</div>`:''}
     <div class="m-st" style="margin:12px 0 6px">Phân bổ cho NCC / PO <span class="muted" style="font-weight:400" id="tt-con"></span></div>
     <div id="tt-pb"></div>
-    <div class="acts">${g&&id?`<button class="btn bad" style="margin-right:auto" onclick="ttXoa(${id})">Xoá</button>`:''}<button class="btn" onclick="dong2()">Đóng</button>${g?`<button class="btn pri" onclick="ttLuu(${id||'null'})">Lưu</button>`:''}</div>`,980);ttPbVe()}
+    ${ctBox('tt_nn',id,g)}
+    <div class="acts">${g&&id?`<button class="btn bad" style="margin-right:auto" onclick="ttXoa(${id})">Xoá</button>`:''}<button class="btn" onclick="dong2()">Đóng</button>${g?`<button class="btn pri" onclick="ttLuu(${id||'null'})">Lưu</button>`:''}</div>`,980);ttPbVe();ganCT()}   // 19/11 anh: ô ảnh chứng từ cho từng lần thanh toán trung gian (kt_chung_tu bang tt_nn)
 // số kiểu Việt Nam: 3.550 = ba nghìn năm trăm năm mươi, 3,55 = ba phẩy năm lăm; 3,550.5 (kiểu Anh) cũng đọc được
 const soVN=v=>{if(typeof v==='number')return v;let t=String(v??'').trim().replace(/[\s₫đ¥$]/g,'');if(!t)return null;
   if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t))t=t.replace(/\./g,'').replace(',','.');else if(/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t))t=t.replace(/,/g,'');else t=t.replace(',','.');
@@ -5118,7 +5119,7 @@ async function ttLuu(id){const v=k=>($('#tt-'+k)||{}).value,chi=String(v('chi')|
     phan_bo:_tt.phan_bo.filter(z=>+z.so_tien_nt>0)};
   if(!o.so_tien_nt)return alert('Nhập số tiền chuyển');if(!o.tk_id)return alert('Chọn nguồn tiền (tài khoản trả)');if(o.tien_te!=='VND'&&!o.ty_gia&&!confirm('Chưa có tỷ giá — chưa trừ được số dư tài khoản, PO chưa quy đổi được VND. Vẫn lưu?'))return;
   const cv=coGhi('vay')?vayChonDoc('tt'):null;if(cv&&cv.loi)return alert(cv.loi);
-  try{const tid=await rpc('kt_tt_nn_luu',{p_dong:o});if(cv&&(cv.moi||(cv.vay||null)!==(_tt.vay_id||null)))await vayGan('tt',tid,cv);toast('Đã lưu lần thanh toán · '+(o.chi_id?'theo phiếu chi':o.tien_te!=='VND'&&!o.ty_gia?'chưa trừ số dư (thiếu tỷ giá)':'đã trừ số dư tài khoản'));dong2();await poDS(true);if(window._ttPO&&$('#modal'))poVe();await render()}catch(e){alert(e.message)}}
+  try{const tid=await rpc('kt_tt_nn_luu',{p_dong:o});if(!id)ctGuiMoi('tt_nn',tid);if(cv&&(cv.moi||(cv.vay||null)!==(_tt.vay_id||null)))await vayGan('tt',tid,cv);toast('Đã lưu lần thanh toán · '+(o.chi_id?'theo phiếu chi':o.tien_te!=='VND'&&!o.ty_gia?'chưa trừ số dư (thiếu tỷ giá)':'đã trừ số dư tài khoản'));dong2();await poDS(true);if(window._ttPO&&$('#modal'))poVe();await render()}catch(e){alert(e.message)}}
 async function ttXoa(id){if(!confirm('Xoá lần thanh toán này? Phần đã phân bổ vào PO sẽ bị bỏ.'))return;try{await rpc('kt_tt_nn_xoa',{p_id:id});toast('Đã xoá');dong2();await poDS(true);if(window._ttPO&&$('#modal'))poVe();await render()}catch(e){alert(e.message)}}
 // ── KÊ KHAI HẢI QUAN TỪNG MÃ HÀNG (16/11 kế toán: "bổ sung giá trị kê khai, thuế — có file packing list giá kê khai cụ thể từng mã hàng, cho upload lên để lưu
 // thông tin gắn với từng mã, sau còn tra lại xem cont trước khai giá bao nhiêu") → bảng kt_lo_nk_kk (1 dòng 1 mã), tải Excel packing list / tờ khai, cột "Lần khai trước"
@@ -7092,18 +7093,21 @@ function vayDuKien(v,nay,den){
   return Object.values(o);
 }
 async function pageVay(){
-  const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const dsA=await rpc('kt_ds_vay');S.cache.vay=dsA;const nay=homNay(),sau30=ymd(new Date(Date.now()+30*864e5)),f=S.f,tab=f.vay_tab||'dang';
+  const el=$('#page');if(!S._timNhanh)el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  // 19/11 kế toán: "Vay & lãi vay thêm nút tìm kiếm" + anh: "tìm kiếm nhanh" → ô tìm lọc ngay khi gõ (dùng dữ liệu đã tải, không gọi lại máy chủ):
+  // tên khoản vay, mã vay, bên cho vay, tài sản đảm bảo, ghi chú, số tiền vay / dư nợ. — Monsieur Claude
+  const dsA=S._timNhanh&&S.cache.vay?S.cache.vay:await rpc('kt_ds_vay');S.cache.vay=dsA;const vq=S.f.vay_q||'';const nay=homNay(),sau30=ymd(new Date(Date.now()+30*864e5)),f=S.f,tab=f.vay_tab||'dang';
   // 26/10 anh: lọc theo ngân hàng · cá nhân / công ty · ngắn hạn / trung dài hạn · tài sản đảm bảo — thẻ số + bảng + lịch trả theo bộ lọc
   const tsK=v=>v.co_tsdb===true?'ts:'+(v.tsdb||'(chưa ghi tài sản)'):v.co_tsdb===false?'tin_chap':'chua';
   const ds=dsA.filter(v=>(!f.vay_nh||(v.ben_cho_vay||'')===f.vay_nh)&&(!f.vay_cv||(v.chu_vay||'')===f.vay_cv)&&(!f.vay_kh||(v.ky_han||'chua')===f.vay_kh)
-    &&(!f.vay_ts||(f.vay_ts==='co'?v.co_tsdb===true:tsK(v)===f.vay_ts)));
+    &&(!f.vay_ts||(f.vay_ts==='co'?v.co_tsdb===true:tsK(v)===f.vay_ts))
+    &&(!vq||khopTim(vq,[v.ten,v.ma_vay,v.ben_cho_vay,v.tsdb,v.ghi_chu])||khopSoTien(vq,v.so_tien)||khopSoTien(vq,duNo(v))));
   const selV=(k,tat,ops)=>`<select class="m-in" style="width:auto" onchange="S.f.${k}=this.value;render()"><option value="">${tat}</option>${ops.map(([v,t])=>`<option value="${esc(v)}" ${f[k]===v?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
   const tsDS=[...new Set(dsA.filter(v=>v.co_tsdb===true).map(v=>v.tsdb||'(chưa ghi tài sản)'))];
-  const locVay=`<div class="m-flt" style="align-items:center">${selV('vay_nh','Tất cả ngân hàng',[...new Set(dsA.map(v=>v.ben_cho_vay||''))].filter(Boolean).sort().map(x=>[x,x]))}
+  const locVay=`<div class="m-flt" style="align-items:center">${oTim('vay','Tìm khoản vay, ngân hàng, số tiền…').replace(/<span class="badge".*$/,'')}${selV('vay_nh','Tất cả ngân hàng',[...new Set(dsA.map(v=>v.ben_cho_vay||''))].filter(Boolean).sort().map(x=>[x,x]))}
     ${selV('vay_cv','Công ty + cá nhân',[['cong_ty','Công ty'],['ca_nhan','Cá nhân']])}${selV('vay_kh','Mọi kỳ hạn',[['ngan','Ngắn hạn'],['trung_dai','Trung dài hạn'],['chua','Chưa phân loại']])}
     ${selV('vay_ts','Tài sản đảm bảo: tất cả',[['co','Có tài sản đảm bảo'],...tsDS.map(t=>['ts:'+t,'TSĐB: '+t]),['tin_chap','Tín chấp'],['chua','Chưa nhập TSĐB']])}
-    ${f.vay_nh||f.vay_cv||f.vay_kh||f.vay_ts?`<button class="m-btn out" onclick="S.f.vay_nh=S.f.vay_cv=S.f.vay_kh=S.f.vay_ts='';render()">Bỏ lọc</button>`:''}</div>`;
+    ${f.vay_nh||f.vay_cv||f.vay_kh||f.vay_ts||f.vay_q?`<button class="m-btn out" onclick="S.f.vay_nh=S.f.vay_cv=S.f.vay_kh=S.f.vay_ts=S.f.vay_q='';render()">Bỏ lọc</button>`:''}</div>`;
   const vayNhan=v=>`<div class="vay-nh">${v.ngoai_pl?'<span>Lãi ngoài P&L</span>':''}${v.chu_vay==='ca_nhan'?'<span>Cá nhân</span>':v.chu_vay==='cong_ty'?'<span>Công ty</span>':''}${v.ky_han==='ngan'?'<span>Ngắn hạn</span>':v.ky_han==='trung_dai'?'<span>Trung dài hạn</span>':''}${v.co_tsdb===true?`<span title="${esc(v.tsdb||'')}">TSĐB${v.tsdb?': '+esc(v.tsdb.length>28?v.tsdb.slice(0,28)+'…':v.tsdb):''}</span>`:v.co_tsdb===false?'<span>Tín chấp</span>':''}</div>`;
   const con=ds.filter(v=>!v.da_tat_toan),thieu=ds.filter(v=>!+v.tong_nhan&&+v.goc_da_tra>0);
   const goc=t=>String(t.ngay).slice(0,4)===nay.slice(0,4),gocNam=sumBy(ds,v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.goc)),laiNam=sumBy(ds,v=>sumBy((v.lan_tra||[]).filter(t=>t.da_tra&&goc(t)),t=>t.lai));
