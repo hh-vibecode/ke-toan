@@ -69,12 +69,32 @@ const TEN = 'THỬ HỆ THỐNG Báo giá', NCC = 'THỬ HỆ THỐNG NCC báo g
     const p = (await sql(`select mau, kt, gia, tien_te from kt_bao_gia where ncc_id = ${nid} and ma_ncc = 'THU-PO-1'`))[0];
     kq(p && p.mau === 'Đỏ' && p.kt === '20cm' && +p.gia === 77 && p.tien_te === 'CNY', 'PO → báo giá: dòng vào báo giá NCC đúng màu, kích thước, giá, tiền tệ', JSON.stringify(p));
     await ev(`closeModal()`);
-    // 4b. đơn hàng khách đặt: "+ Báo giá" mở phiếu điền sẵn (chỉ mở, không lưu)
-    const dx = await ev(`(async()=>{S.cache.dx_d=await rpc('kt_dx_ds');const x=S.cache.dx_d.find(z=>(z.po_dong||[]).length);if(!x)return null;await dxMo(x.id);const i=x.po_dong[0].i;
-      const co=!!document.querySelector('#modal .dx-bg');await bgTuDX(x.id,i);await new Promise(r=>setTimeout(r,1500));const f=$('#fbg');if(!f)return {co,mo:false};
-      return {co,mo:true,ten:f.querySelector('[name=ten]').value,gia:f.querySelector('[name=gia]').value,ncc:/Thêm|Sửa/.test($('#modal2').innerText)}})()`);
-    kq(dx && dx.co && dx.mo && dx.ten, 'Đơn đặt: có nút "+ Báo giá", bấm mở phiếu khai báo giá điền sẵn từ dòng đơn / PO', JSON.stringify(dx));
-    await chup('bg-4b-dx'); await ev(`dong2();closeModal()`);
+    // 4b. Chất liệu trong PO: bảng Hàng đặt + file Excel PO (mẫu mới, cột H) + đọc lại file
+    await ev(`closeModal();poForm(null,{loai:'nhap_khau',ncc_id:${nid},ncc_ten:${JSON.stringify(NCC)},tien_te:'CNY',dong:[{ma_tht:'SP-THU',ma_ncc:'THU-CL',ten:'THỬ chất liệu',mau:'Vàng',kt:'30cm',chat_lieu:'Đồng thau',quy_cach:'1 hộp',dvt:'Cái',sl:4,don_gia:12.5}]})`); await ngu(2000);
+    const pb = await ev(`({cot:[...document.querySelectorAll('#modal .sk-cot th')].map(t=>t.textContent).join('|'),o:[...document.querySelectorAll('#modal .po-x input')].some(e=>e.value==='Đồng thau')})`);
+    kq(/Kích thước\|Chất liệu\|Quy cách/.test(pb.cot) && pb.o, 'PO: bảng Hàng đặt có cột Chất liệu sau Kích thước, hiện đúng giá trị', pb.cot);
+    await chup('bg-4b-po-cl');
+    await ev(`window.__blob=[];poExcel()`); for (let i = 0; i < 30; i++) { await ngu(800); if (await ev(`window.__blob.some(b=>b.size>3000)`)) break; }
+    const px = await ev(`(async()=>{const b=window.__blob.find(b=>b.size>3000);if(!b)return null;const E=await napExcelJS(),wb=new E.Workbook();await wb.xlsx.load(await b.arrayBuffer());const ws=wb.worksheets[0];
+      const h=[];for(let c=1;c<=14;c++)h.push(String(ws.getCell(17,c).value||'').split('\\n')[0]);const m=ws.getCell(18,13).value;
+      return {h:h.join('|'),cl:ws.getCell(18,8).value,sl:ws.getCell(18,11).value,gia:ws.getCell(18,12).value,f:m&&m.formula,kq:m&&m.result,tong:(()=>{for(let r=19;r<40;r++){const v=ws.getCell(r,13).value;if(v&&v.formula&&/SUM/.test(v.formula))return v.formula}})()}})()`);
+    kq(px && px.h === 'STT|Mã THT|Mã NCC|Hình ảnh|Tên hàng|Màu|Kích thước|Chất liệu|Quy cách|ĐVT|Số lượng đặt|Đơn giá|Thành tiền|Ghi chú' && px.cl === 'Đồng thau' && px.sl === 4 && px.gia === 12.5 && /K18\*L18/.test(px.f) && px.kq === 50 && /M18/.test(px.tong || ''),
+      'File Excel PO (mẫu mới): cột H = Chất liệu, SL K, Đơn giá L, Thành tiền M = K×L, Tổng cộng cộng cột M', JSON.stringify(px));
+    const pr = await ev(`(async()=>{const b=window.__blob.find(b=>b.size>3000);let kq=null;const o=window.poVe;window.poVe=()=>{kq=JSON.parse(JSON.stringify((window._po.dong||[]).map(({_f,_u,...r})=>r)))};
+      try{await poDocExcel(new File([await b.arrayBuffer()],'po-thu.xlsx'),[])}catch(e){kq={loi:e.message}}window.poVe=o;return kq&&kq[0]?kq[0]:kq})()`);
+    kq(pr && pr.chat_lieu === 'Đồng thau' && pr.kt === '30cm' && +pr.sl === 4 && +pr.don_gia === 12.5, 'Tải file PO vừa xuất lên lại: đọc đúng Chất liệu, Kích thước, SL, Đơn giá', JSON.stringify(pr).slice(0, 300));
+    await ev(`closeModal();dong2()`);
+    // 4c. "+ Báo giá" ở trang Đặt hàng NCC (danh sách PO), KHÔNG còn ở popup đơn hàng khách đặt
+    await ev(`go('po_nk')`); await ngu(4000);
+    const nb = await ev(`[...document.querySelectorAll('#page button')].filter(b=>/\\+ Báo giá/.test(b.textContent)).length`);
+    const dxk = await ev(`(async()=>{S.cache.dx_d=await rpc('kt_dx_ds');const x=S.cache.dx_d.find(z=>z.loai==='khach_dat');if(!x)return 'không có đơn';await dxMo(x.id);const c=/\\+ Báo giá/.test($('#modal').innerText);closeModal();return c})()`);
+    kq(nb > 0 && dxk === false, 'Nút "+ Báo giá" ở danh sách PO (mỗi PO 1 nút), popup Đơn hàng khách đặt không còn nút', `${nb} nút · popup đơn khách: ${dxk}`);
+    await chup('bg-4c-po-ds');
+    // 4d. form đặt hàng của sale có cột Chất liệu
+    await ev(`(()=>{DX.loai='khach_dat';DX.dong=[{}];dxVeDong()})()`).catch(() => {});
+    const fdx = await ev(`(()=>{const d=document.createElement('div');d.id='dx-dong';document.body.appendChild(d);window.DX=window.DX||{};DX.loai='khach_dat';DX.dong=[{chat_lieu:'Gỗ gụ'}];dxVeDong();
+      const h=[...d.querySelectorAll('th')].map(t=>t.textContent.replace('*','').trim()).join('|'),v=[...d.querySelectorAll('input')].some(e=>e.value==='Gỗ gụ');d.remove();return h+'|'+v})()`);
+    kq(/Kích thước\|Chất liệu\|ĐVT/.test(fdx || '') && /true$/.test(fdx || ''), 'Form đặt hàng: có cột Chất liệu sau Kích thước', fdx);
     // 5. phiếu chi: tìm theo số tiền + lọc khi gõ
     const st = (await sql(`select so_tien from kt_chi where so_tien >= 100000 order by id desc limit 1`))[0];
     await ev(`go('chi')`); await ngu(6000);
