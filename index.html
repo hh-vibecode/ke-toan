@@ -661,10 +661,10 @@ tr.lhd-de td{background:color-mix(in srgb,var(--warn) 11%,var(--surface))}
 .dx-nh{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;margin-top:6px;background:var(--surface)}.dx-nh b{min-width:0}.dx-nh .m-btn{margin-left:auto}
 .dx-gy{font-size:11px;color:var(--text2);margin-top:2px;white-space:nowrap}
 .kk-t .m-in{min-width:0;padding:5px 7px}.kk-t td{padding:4px 5px}
-.bg-x{min-width:1300px!important}.bg-x td{height:auto!important;padding:6px 8px!important;border:1px solid var(--border)}.bg-x tr.bg-nhom td{background:var(--bg2,#f4f6fa);font-weight:700;padding:7px 10px!important}.bg-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}.bg-nh{flex:1;min-width:0;flex-wrap:wrap}.bg-nh button{flex:0 0 auto}
+.bg-x{min-width:1300px!important}.bg-x .po-anh{width:60px;height:60px}.bg-x td{height:auto!important;padding:6px 8px!important;border:1px solid var(--border)}.bg-x tr.bg-nhom td{background:var(--bg2,#f4f6fa);font-weight:700;padding:7px 10px!important}.bg-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}.bg-nh{flex:1;min-width:0;flex-wrap:wrap}.bg-nh button{flex:0 0 auto}
 .bg-t tr.bg-nhom td{background:var(--bg2,#f4f6fa);font-weight:600;font-size:12.5px;padding:6px 8px}.warn-t{color:var(--warn)}
 .dx-sec{font-weight:600;font-size:13px;margin:6px 0 -2px}.dx-lb{font-size:12px;color:var(--text2);margin-bottom:4px}.dx-d{display:grid;grid-template-columns:130px minmax(0,1.3fr) minmax(0,1fr) 56px 34px;gap:6px;margin-bottom:6px}.dx-d input{min-width:0}.dx-f{display:flex;gap:8px;font-size:12px;padding:3px 0}.dx-da{font-size:12.5px;padding:3px 0;cursor:pointer}.dx-anh{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.dx-anh img{width:84px;height:84px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border)}@media(max-width:600px){.dx-d{grid-template-columns:1fr 1fr}}
-.po-d td{padding:3px 4px}.po-anh{width:34px;height:34px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid var(--border)}.po-fix{table-layout:fixed;width:100%;min-width:1320px}.po-fix .m-in{width:100%;min-width:0;box-sizing:border-box}.po-fix th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.po-d .m-in{padding:4px 6px;font-size:12.5px}.po-d .m-in.num{text-align:right}
+.po-d td{padding:3px 4px}.po-anh{width:34px;height:34px;object-fit:contain;background:#fff;border-radius:4px;cursor:pointer;border:1px solid var(--border)}.po-fix{table-layout:fixed;width:100%;min-width:1320px}.po-fix .m-in{width:100%;min-width:0;box-sizing:border-box}.po-fix th{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.po-d .m-in{padding:4px 6px;font-size:12.5px}.po-d .m-in.num{text-align:right}
 .po-x{min-width:0!important}.po-xh{min-width:1360px!important}.po-x td{height:auto;padding:0 8px}.po-x td.inp{padding:0}.po-x td.lb{background:var(--bg2);font-weight:600;color:var(--text2)}.po-x td.lb.r{text-align:right;color:var(--text)}
 .po-x tr:not(.sk-nh):not(.sk-cot) td{border:1px solid var(--border);height:38px}.po-x tr.tong td{border-top:1.5px solid var(--text)!important;background:var(--bg2)}
 .po-x .m-in{border:0!important;border-radius:0;background:transparent;box-shadow:none;width:100%;min-width:0;height:38px;padding:0 8px;font-size:12.5px}.po-x .m-in:focus{outline:2px solid var(--accent);outline-offset:-2px;background:var(--surface)}
@@ -1231,8 +1231,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.431';
-const APP_VERSION='19/11/2026 16:18';
+const APP_SO='1.432';
+const APP_VERSION='19/11/2026 16:28';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
