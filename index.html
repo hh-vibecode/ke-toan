@@ -1235,8 +1235,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.439';
-const APP_VERSION='20/11/2026 14:08';
+const APP_SO='1.440';
+const APP_VERSION='20/11/2026 16:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -9776,16 +9776,25 @@ function skKhoMo(id){closeModal();S.f.sk_ky=id;S.f.sk_chieu='';S.f.sk_tt='';S.f.
 async function skKhoXoa(id){const x=(S.cache.sk_ds||[]).find(k=>k.id===id);if(!x)return;
   if(!confirm(`Xoá sao kê ${x.tk} · ${fmtD(x.tu)} – ${fmtD(x.den)}?\n${fmt(x.so_dong)} dòng sao kê, phần sửa tay và file gốc sẽ bị xoá; link online của kỳ này hết dùng. Phiếu thu / chi trên app không đổi.`))return;
   try{await rpc('kt_sao_ke_xoa',{p_ky:id});delete S.cache['sk_'+id];S.cache.sk_ds=null;if(S.f.sk_ky===id)S.f.sk_ky=null;toast('Đã xoá');if(S.page==='sao_ke_hd')await render();skKho()}catch(e){alert(e.message)}}
-// Excel = y bảng trên màn hình (anh 10/11: "trình bày như thế ở form xuất ra luôn"): 9 cột, 3 đầu mục màu đậm + tên cột nhạt cùng tông,
-// viền ngoài đậm, tiêu đề chữ đậm kẻ đủ viền đen, đậm dưới tiêu đề, căn giữa; thân bảng kẻ mảnh nhạt; ô hiện ĐỦ nội dung (xuống dòng, không cắt). — Monsieur Claude
 // 20/11 kế toán: "giao diện sao kê đổi lại đúng STT cột như mẫu (SAO KÊ CÁC TK THÁNG 9.2026.xlsx) — bà thuế set công thức để đối chiếu nên không muốn đảo STT cột, gộp cột;
-// xuất ra đúng STT cột với thông tin từng cột như mẫu, các thông tin thừa ra cho xuống cuối cùng"
-// → Excel: đọc lại FILE GỐC của kỳ (kho chứng từ 'sao_ke'), giữ nguyên mọi ô / cột / thứ tự của ngân hàng; ngay sau cột cuối của ngân hàng thêm
-//   HĐ ĐẦU VÀO (SỐ HĐ · NGÀY · THÔNG TIN CTY) + HÓA ĐƠN ĐẦU RA (SỐ HĐ · NGÀY · THÔNG TIN CTY); thông tin app (số phiếu, diễn giải, tình trạng) để cuối.
-//   Không có file gốc (kỳ cũ / trang xem online) → bố cục chuẩn như mẫu VCB: STT · Ngày GD / Số CT · Ngày hiệu lực · Ghi nợ · Ghi có · Số dư · Nội dung · HĐ vào · HĐ ra · app. — Monsieur Claude
+// xuất ra đúng STT cột với thông tin từng cột như mẫu, các thông tin thừa ra cho xuống cuối cùng" + (lần 2) "vẫn k đúng mẫu, t muốn n chuẩn y như mẫu, hàng nào cột A thì phải là cột A, cột B phải là B".
+// Excel giờ đi đúng TỪNG Ô như file mẫu:
+//  · Kỳ có FILE GỐC trong Kho sao kê → mở chính file ngân hàng (giữ nguyên định dạng, ô gộp, cột ẩn, phần đầu / cuối, đúng hàng đúng cột), chỉ giữ tab của kỳ,
+//    ghi HĐ ĐẦU VÀO (SỐ HĐ · NGÀY · THÔNG TIN CTY) + HÓA ĐƠN ĐẦU RA ngay sau cột cuối của ngân hàng — như mẫu H–M.
+//  · Kỳ không có file gốc (nạp trước 16/11, trang xem online) → khuôn `mau-sao-ke.xlsx` (scripts/tao-mau-sao-ke.js dựng từ chính file mẫu): 3 kiểu
+//    VCB tài khoản (tên cột hàng 14, dữ liệu từ A15) · VIB (hàng 16, từ A17) · thẻ VCB "Lịch sử giao dịch tài khoản thẻ" (hàng 15, dòng Card number 16, từ A17);
+//    phần đầu + phần cuối (Tổng số, Số dư cuối kỳ, bằng chữ...) đúng chỗ như mẫu, chỉ dời xuống theo số dòng giao dịch.
+//  · THÔNG TIN CTY: tên công ty trên HĐ; dòng chưa / không cần HĐ thì ghi diễn giải (như kế toán ghi tay trong mẫu: "THU PHI CK", "CỌC TIỀN HÀNG"...).
+//  · Thẻ: chỉ khối HĐ ĐẦU VÀO (như mẫu THẺ HXT / DTMO); tài khoản không có khoản thu nào thì cũng chỉ HĐ ĐẦU VÀO (như mẫu vcb 925).
+//  · Thông tin app (Số phiếu · Diễn giải · Tình trạng HĐ) để cuối, cách 1 cột trống. — Monsieur Claude
 const SK_HD_COT=['SỐ HĐ','NGÀY','THÔNG TIN CTY'],SK_APP_COT=['SỐ PHIẾU (APP)','DIỄN GIẢI (APP)','TÌNH TRẠNG HĐ'];
-const skHdO=h=>[h.so||'',h.ngay||'',h.ten||''];
 const skAppO=r=>[(r.phieu||[]).map(p=>p.so).join(', '),String(r.gc||''),(SK_TT[r.tt]||[r.tt||''])[0]];
+const SK_MAU={VCB:{h:14,d:15,hd:8},VIB:{h:16,d:17,hd:8},THE:{h:15,d:17,hd:7}};
+const skKieu=kq=>kq.the?'THE':/VIB/i.test((kq.tk||'')+' '+(kq.ngan_hang||''))?'VIB':'VCB';
+const skNgU=s=>{if(!s)return null;s=String(s).trim();let m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);if(m)return new Date(Date.UTC(+m[1],m[2]-1,+m[3]));
+  m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);return m?new Date(Date.UTC(+m[3],m[2]-1,+m[1])):null};
+const skEN=v=>v==null||v===''?'':Math.round(+v).toLocaleString('en-US');
+const skGcX=r=>{const g=String(r.gc||'').replace(/^Chưa (xuất HĐ|nhận HĐ đầu vào) — /,'').trim();return g==='Chưa có phiếu trên app khớp số tiền'?'':g};
 // khớp dòng bảng trong file gốc với dòng đối chiếu (ngày + số tiền, kể cả số tiền ghi kiểu ×1000)
 function skGocKhop(A,kq){const low=A.map(r=>r.map(c=>String(c??'').toLowerCase().replace(/\s+/g,' ').trim()));
   const h=low.findIndex(r=>r.some(c=>/ghi nợ|debit|phát sinh nợ|số tiền rút/.test(c))&&r.some(c=>/ghi có|credit|phát sinh có|số tiền gửi/.test(c)));if(h<0)return null;
@@ -9797,43 +9806,70 @@ function skGocKhop(A,kq){const low=A.map(r=>r.map(c=>String(c??'').toLowerCase()
   for(let ri=h+1;ri<A.length;ri++){const r=A[ri],ng=skNgay(r[cNg]);if(!ng)continue;const no=Math.abs(skSo(r[cNo])),co=Math.abs(skSo(r[cCo]));if(!no&&!co)continue;n++;
     const ds=(kho[ng+'|'+no+'|'+co]||[]).filter(x=>!dung.has(x.id));if(ds.length){map[ri]=ds[0];dung.add(ds[0].id);khop++}}
   let cuoi=0;A[h].forEach((c,i)=>{if(String(c??'').trim())cuoi=i});
-  return n&&khop/kq.rows.length>=0.9?{h,map,cuoi,cNg,cHl,khop,n}:null}
+  return n&&khop/kq.rows.length>=0.9?{h,map,cuoi,khop,n}:null}
 async function skExcel(kq){if(!kq)return;toast('Đang tạo file Excel...');
-  try{const E=await napExcelJS(),wb=new E.Workbook();wb.creator='App kế toán';wb.created=new Date();
-    const D=S.cache.sk_D,kyId=D&&D.ky&&D.ky.id&&!S.skPub?D.ky.id:null;let goc=null,tenTab='Sao kê';
+  try{const E=await napExcelJS(),X=await napXLSX();
+    const tb=await fetch('mau-sao-ke.xlsx',{cache:'no-cache'});if(!tb.ok)throw new Error('không tải được khuôn mẫu sao kê');
+    const mau=new E.Workbook();await mau.xlsx.load(await tb.arrayBuffer());
+    const D=S.cache.sk_D,kyId=D&&D.ky&&D.ky.id&&!S.skPub?D.ky.id:null;let goc=null;
     if(kyId)try{const fs=await rpc('kt_ds_chung_tu',{p_bang:'sao_ke',p_dong_id:kyId});const f=fs[fs.length-1];
-      if(f){const {ds}=await ctFn({viec:'xem',ids:[f.id]});const buf=await (await fetch(ds[0].url)).arrayBuffer(),X=await napXLSX(),wbg=X.read(buf,{type:'array'});
-        for(const n of wbg.SheetNames){const A=X.utils.sheet_to_json(wbg.Sheets[n],{header:1,raw:true,defval:''}),k=skGocKhop(A,kq);if(k&&(!goc||k.khop>goc.khop)){goc={...k,A};tenTab=n}}}}catch(e){goc=null}
-    const DEN={style:'thin',color:{argb:'FF000000'}},K4={top:DEN,bottom:DEN,left:DEN,right:DEN},XANH='FF1F3864';
-    const ws=wb.addWorksheet(xuTenSheet(wb,tenTab));
-    const dauCot=(r,c,v,nen)=>{const o=ws.getCell(r,c);o.value=v;o.font={bold:true,size:10.5};o.alignment={horizontal:'center',vertical:'middle',wrapText:true};o.border=K4;if(nen)o.fill={type:'pattern',pattern:'solid',fgColor:{argb:nen}}};
-    const nhom=(r,c,v,nen)=>{ws.mergeCells(r,c,r,c+2);const o=ws.getCell(r,c);o.value=v;o.font={bold:true,color:{argb:XANH}};o.alignment={horizontal:'center',vertical:'middle'};o.border=K4;o.fill={type:'pattern',pattern:'solid',fgColor:{argb:nen}}};
-    let hR,c0,dong;   // hàng tiêu đề, cột bắt đầu phần HĐ, danh sách [hàng excel, dòng đối chiếu]
-    if(goc){const A=goc.A;
-      A.forEach((r,ri)=>r.forEach((v,ci)=>{if(v===''||v==null)return;const o=ws.getCell(ri+1,ci+1);o.value=v;
-        if(ri>goc.h&&(ci===goc.cNg||ci===goc.cHl)&&typeof v==='number'&&v>20000&&v<80000)o.numFmt='dd/mm/yyyy';
-        else if(ri>goc.h&&typeof v==='number')o.numFmt='#,##0.##'}));
-      hR=goc.h+1;c0=goc.cuoi+2;for(let c=1;c<c0;c++){const o=ws.getCell(hR,c);o.font={bold:true,size:10.5};o.alignment={horizontal:'center',vertical:'middle',wrapText:true};o.border=K4}
-      dong=Object.entries(goc.map).map(([ri,r])=>[+ri+1,r]);
-      for(let c=1;c<c0;c++)ws.getColumn(c).width=c-1===goc.cNg||c-1===goc.cHl?14:String(A[goc.h][c-1]||'').length>30?48:16}
-    else{hR=8;c0=8;
-      ws.mergeCells(1,1,1,7);Object.assign(ws.getCell(1,1),{value:'SAO KÊ TÀI KHOẢN — '+(kq.so_tk||kq.tk||''),font:{bold:true,size:14,color:{argb:XANH}},alignment:{horizontal:'center'}});
-      [['Chủ tài khoản',kq.chu_tk||''],['Số tài khoản',kq.so_tk||kq.tk||''],['Kỳ',skKyTxt(kq)],['Số dư đầu kỳ',kq.dau_ky],['Số dư cuối kỳ',kq.cuoi_ky]].forEach(([a,b],i)=>{ws.getCell(2+i,1).value=a;ws.getCell(2+i,1).font={bold:true};const o=ws.getCell(2+i,3);o.value=b;if(typeof b==='number')o.numFmt='#,##0'});
-      ['STT','Ngày GD / Số CT','Ngày hiệu lực','Số tiền ghi nợ','Số tiền ghi có','Số dư','Nội dung chi tiết'].forEach((t,i)=>dauCot(hR,i+1,t));
-      [6,22,13,16,16,16,52].forEach((w,i)=>ws.getColumn(i+1).width=w);
-      dong=kq.rows.map((r,i)=>{const rr=hR+1+i;[r.stt,fmtD(r.ngay)+(r.so_ct?' / '+r.so_ct:''),r.ngay_hl?fmtD(r.ngay_hl):'',r.no||null,r.co||null,r.so_du,r.nd].forEach((v,c)=>{const o=ws.getCell(rr,c+1);o.value=v;o.border=K4;o.alignment={vertical:'middle',wrapText:c===6};if(c>=3&&c<=5)o.numFmt='#,##0'});return [rr,r]})}
-    // HĐ ĐẦU VÀO · HÓA ĐƠN ĐẦU RA ngay sau cột cuối của ngân hàng, thông tin app để cuối
-    if(hR>1){nhom(hR-1,c0,'HĐ ĐẦU VÀO','FFFDEEE4');nhom(hR-1,c0+3,'HÓA ĐƠN ĐẦU RA','FFEAF2FA')}
-    SK_HD_COT.forEach((t,i)=>{dauCot(hR,c0+i,hR>1?t:'HĐ VÀO · '+t,'FFFDEEE4');dauCot(hR,c0+3+i,hR>1?t:'HĐ RA · '+t,'FFEAF2FA')});
-    SK_APP_COT.forEach((t,i)=>dauCot(hR,c0+7+i,t,'FFF2F2F2'));
-    [14,12,34,14,12,34].forEach((w,i)=>ws.getColumn(c0+i).width=w);ws.getColumn(c0+6).width=3;[18,40,18].forEach((w,i)=>ws.getColumn(c0+7+i).width=w);
-    dong.forEach(([rr,r])=>{[...skHdO(r.vao),...skHdO(r.ra)].forEach((v,i)=>{const o=ws.getCell(rr,c0+i+(i>=3?0:0));o.value=v||null;o.border=K4;o.alignment={vertical:'middle',wrapText:true}});
-      skAppO(r).forEach((v,i)=>{const o=ws.getCell(rr,c0+7+i);o.value=v||null;o.border=K4;o.alignment={vertical:'middle',wrapText:true};o.font={color:{argb:'FF595959'},size:10}})});
-    ws.views=[{state:'frozen',ySplit:hR}];
-    ws.pageSetup={paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.3,right:.3,top:.4,bottom:.4,header:.2,footer:.2}};
+      if(f&&/\.(xlsx|xls|xlsm|csv)$/i.test(f.ten_file||f.ten||'')){const {ds}=await ctFn({viec:'xem',ids:[f.id]});const buf=await (await fetch(ds[0].url)).arrayBuffer(),wbg=X.read(buf,{type:'array'});
+        for(const n of wbg.SheetNames){const sh=wbg.Sheets[n],A=X.utils.sheet_to_json(sh,{header:1,raw:true,defval:'',blankrows:true}),k=skGocKhop(A,kq);
+          // sheet_to_json đếm từ ô đầu của vùng dữ liệu (!ref có thể bắt đầu từ B2...) → cộng lại để ra đúng hàng / cột Excel
+          if(k&&(!goc||k.khop>goc.khop)){const rg=X.utils.decode_range(sh['!ref']||'A1');goc={...k,tab:n,buf,wbg,r0:rg.s.r,c0:rg.s.c}}}}}catch(e){goc=null}
+    const kieu=skKieu(kq),M=SK_MAU[kieu],tp=mau.getWorksheet(kieu),cl=o=>JSON.parse(JSON.stringify(o||{}));
+    const coRa=!kq.the&&kq.rows.some(r=>r.co||r.ra.so);
+    let wb,ws,hR,cV,dong;   // hàng tên cột, cột đầu HĐ ĐẦU VÀO, danh sách [hàng Excel, dòng đối chiếu]
+    if(goc){wb=new E.Workbook();
+      try{await wb.xlsx.load(goc.buf)}catch(e){wb=new E.Workbook();await wb.xlsx.load(X.write(goc.wbg,{type:'array',bookType:'xlsx'}))}   // .xls / file ExcelJS không đọc được → đọc lại qua SheetJS (giữ ô, mất định dạng)
+      ws=wb.getWorksheet(goc.tab)||wb.worksheets.find(w=>w.name.trim()===goc.tab.trim())||wb.worksheets[0];
+      wb.worksheets.filter(w=>w!==ws).forEach(w=>wb.removeWorksheet(w.id));
+      hR=goc.h+goc.r0+1;cV=goc.cuoi+goc.c0+2;dong=Object.entries(goc.map).map(([ri,r])=>[+ri+goc.r0+1,r])}
+    else{wb=new E.Workbook();ws=wb.addWorksheet(xuTenSheet(wb,(kq.tk||kieu).replace(/\s*-\s*\d+$/,'')),{views:cl(tp.views)});
+      const n=Math.max(1,kq.rows.length),dich=r=>r<=M.d?r:r+n-1,nc=tp.columnCount;
+      for(let c=1;c<=nc;c++){const t=tp.getColumn(c);ws.getColumn(c).width=t.width;if(t.hidden)ws.getColumn(c).hidden=true}
+      tp.eachRow({includeEmpty:true},(tr,r)=>{const wr=ws.getRow(dich(r));if(tr.height)wr.height=tr.height;
+        tr.eachCell({includeEmpty:true},(c,ci)=>{if(!coRa&&ci>=M.hd+3&&ci<=M.hd+5)return;const o=wr.getCell(ci);o.style=cl(c.style);if(r!==M.d&&c.value!=null)o.value=c.value})});
+      (tp.model.merges||[]).forEach(mg=>{const g=tp.getCell(mg.split(':')[0]),h=tp.getCell(mg.split(':')[1]);if(!coRa&&g.col>=M.hd+3&&g.col<=M.hd+5)return;
+        ws.mergeCells(dich(+g.row),+g.col,dich(+h.row),+h.col)});
+      hR=M.h;cV=M.hd;dong=kq.rows.map((r,i)=>[M.d+i,r]);
+      // ô theo kỳ ở phần đầu / phần cuối (đúng ô như mẫu)
+      const dat=(a,v,fm)=>{const o=ws.getCell(a);o.value=v===''?null:v;if(fm)o.numFmt=fm},hom=new Date(),homU=new Date(Date.UTC(hom.getFullYear(),hom.getMonth(),hom.getDate()));
+      const tNo=sumBy(kq.rows,r=>r.no),tCo=sumBy(kq.rows,r=>r.co),dk=kq.dau_ky,ck=kq.cuoi_ky,cty=!kq.chu_tk||/TAN HUNG THINH/i.test(kq.chu_tk);
+      if(kieu==='VCB'){if(kq.chu_tk)dat('C3',kq.chu_tk);dat('F3',homU,'dd/mm/yyyy');dat('C4',String(kq.so_tk||''));if(!cty){dat('C6','');dat('C7','')}
+        dat('C10',skNgU(kq.tu),'dd/mm/yyyy');dat('F10',skNgU(kq.den),'dd/mm/yyyy');dat('C11',dk!=null?skEN(dk)+' VND':'');dat('C12',dk?soChu(dk):'');
+        const f=M.d+n+1;dat('C'+f,dk!=null&&ck!=null?skEN(ck-dk)+' VND':'');dat('C'+(f+1),ck!=null?skEN(ck)+' VND':'');dat('C'+(f+2),ck?soChu(ck):'')}
+      else if(kieu==='VIB'){dat('C5','Từ ngày '+fmtD(kq.tu)+' đến ngày '+fmtD(kq.den));dat('C6',kq.chu_tk||'TANHUNGTHINH HOLDING CO.,');dat('C7',String(kq.so_tk||''));
+        dat('C9',hom.toLocaleString('en-US',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).replace(/^(\d+)\/(\d+)\/(\d+),/,'$2/$1/$3'));
+        dat('C10',dk!=null?skEN(dk)+' VND':'');dat('C11',skEN(tNo)+' VND');dat('C12',skEN(tCo)+' VND');dat('C13',ck!=null?skEN(ck)+' VND':'')}
+      else{dat('F5','Ngày thực hiện/Date: '+fmtD(homU.toISOString()));dat('C8',kq.chu_tk||'');dat('C10',String(kq.so_tk||''));
+        dat('B12',skNgU(kq.tu),'dd/mm/yyyy');dat('D12',skNgU(kq.den),'dd/mm/yyyy');dat('A16',kq.so_the?'Card number: '+String(kq.so_the).replace('…','...'):'')}
+      // dòng giao dịch: định dạng từng ô lấy từ hàng mẫu, giá trị đúng cột của kiểu sao kê
+      const mu=tp.getRow(M.d),so2=v=>v?Number(v):null,ngD=r=>skNgU(r.ngay);
+      const COT={VCB:r=>[String(r.stt??''),fmtD(r.ngay)+(r.so_ct?' / '+r.so_ct:''),skNgU(r.ngay_hl||r.ngay),so2(r.no),so2(r.co),r.so_du,r.nd],
+        VIB:r=>[ngD(r),r.so_ct||'',r.nd,so2(r.no),so2(r.co),'VND',r.so_du],
+        THE:r=>[ngD(r),skNgU(r.ngay_hl),(+(r.no||r.co)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'VND',so2(r.co),so2(r.no),r.nd]}[kieu];
+      dong.forEach(([rr,r])=>{for(let c=1;c<cV;c++)ws.getCell(rr,c).style=cl(mu.getCell(c).style);if(mu.height)ws.getRow(rr).height=mu.height;COT(r).forEach((v,i)=>{const o=ws.getCell(rr,i+1);o.value=v==null||v===''?null:v;
+        if(v instanceof Date&&!/[dy]/.test(o.numFmt||''))o.numFmt='dd/mm/yyyy';else if(typeof v==='number'&&!/0/.test(o.numFmt||''))o.numFmt='#,##0'})});
+      if(kieu!=='VCB')dong.forEach(([rr,r])=>{const w=Math.max(...[[kieu==='VIB'?3:6,r.nd]].map(([c,t])=>Math.ceil(String(t||'').length*1.15/(ws.getColumn(c).width||20))));
+        ws.getRow(rr).height=Math.max(mu.height||15,15*w)})}
+    // HĐ ĐẦU VÀO · HÓA ĐƠN ĐẦU RA (file gốc: thêm ngay sau cột cuối ngân hàng, định dạng như mẫu) + dòng giao dịch
+    const vcb=mau.getWorksheet('VCB');
+    if(goc){const nhom=(c,t,i)=>{const o=ws.getCell(hR-1,c);o.value=t;o.style=cl(vcb.getCell(13,8+i).style);ws.getCell(hR-1,c+1).style=cl(vcb.getCell(13,9+i).style);ws.getCell(hR-1,c+2).style=cl(vcb.getCell(13,10+i).style);if(hR>1)ws.mergeCells(hR-1,c,hR-1,c+2)};
+      if(hR>1){nhom(cV,'HĐ ĐẦU VÀO',0);if(coRa)nhom(cV+3,'HÓA ĐƠN ĐẦU RA',3)}
+      SK_HD_COT.forEach((t,i)=>{[0,...(coRa?[3]:[])].forEach(k=>{const o=ws.getCell(hR,cV+k+i);o.value=t;o.style=cl(vcb.getCell(14,8+k+i).style);ws.getColumn(cV+k+i).width=vcb.getColumn(8+k+i).width})})}
+    const mauO=i=>(goc?vcb.getCell(15,8+i):tp.getCell(M.d,cV+i)).style;
+    const hdV=(rr,c,h,gcO,i0)=>{const ng=String(h.ngay||'').split(', ').filter(Boolean),v=[h.so||'',ng.length===1?skNgU(ng[0])||ng[0]:ng.join(', '),h.ten||gcO||''];
+      v.forEach((x,i)=>{const o=ws.getCell(rr,c+i);o.style=cl(mauO(i0+i));o.value=x===''?null:x;if(x instanceof Date)o.numFmt='dd/mm/yyyy'})};
+    dong.forEach(([rr,r])=>{const g=skGcX(r),raB=r.co&&!r.no;
+      hdV(rr,cV,r.vao,!r.vao.so&&!(coRa&&raB)&&!r.ra.so?g:'',0);if(coRa)hdV(rr,cV+3,r.ra,!r.ra.so&&raB?g:'',3)});
+    // thông tin app để cuối, cách 1 cột trống
+    const cA=cV+(coRa?7:4),nen={type:'pattern',pattern:'solid',fgColor:{argb:'FFF2F2F2'}};
+    SK_APP_COT.forEach((t,i)=>{const o=ws.getCell(hR,cA+i);o.value=t;o.style=cl(vcb.getCell(14,8).style);o.fill=nen;ws.getColumn(cA+i).width=[16,40,16][i]});
+    dong.forEach(([rr,r])=>skAppO(r).forEach((v,i)=>{const o=ws.getCell(rr,cA+i);o.style=cl(vcb.getCell(15,10).style);o.alignment={vertical:'middle',horizontal:'left',wrapText:true};o.value=v||null}));
     const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     a.download='Sao-ke_'+(kq.so_tk||'tk')+'_'+kq.tu+'_'+kq.den+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    toast(goc?'Đã xuất theo đúng cột file gốc ngân hàng':'Đã xuất (không có file gốc — bố cục chuẩn)')}
+    toast(goc?'Đã xuất theo đúng file gốc ngân hàng':'Đã xuất theo mẫu sao kê '+kieu)}
   catch(e){toast('Không xuất được: '+e.message)}}
 // trang xem online (không đăng nhập): #sao-ke=<mã>
 async function skCongKhai(tok){$('#app').innerHTML='<div class="sk-pub"><div class="m-empty">Đang tải...</div></div>';
