@@ -161,7 +161,9 @@ async function soQuy(khoang?: { tu: string, den: string, thu_tu: string }) {
   const cf = await kiotHet('cashflow', { startDate: tu, endDate: khoang ? khoang.den : den, includeAccount: 'true', includeBranch: 'true', includeUser: 'true' });
   await ghi('kt_kiot_so_quy', cf.map(doiSQ));
   const d = await sb('rpc/kt_dong_bo_kiot', { p_tu: khoang ? khoang.thu_tu : tu }, 'return=representation');
-  return { tu, den: khoang ? khoang.den : den, so_phieu: cf.length, dong_bo: d.ok ? await d.json() : 'lỗi ' + d.status };
+  // 20/11/2026: trước đây lỗi ở đây chỉ ghi chữ 'lỗi 400' trong kết quả, lượt kéo vẫn tính "thành công" → chuông không báo,
+  // phiếu thu Kiot không vào app suốt ~25 tiếng (4A trùng khoá). Nay ghi rõ lỗi, cuối lượt ghi keo_kiot_loi để chuông báo. — Monsieur Claude
+  return { tu, den: khoang ? khoang.den : den, so_phieu: cf.length, dong_bo: d.ok ? await d.json() : 'lỗi ' + d.status + ' ' + (await d.text()).slice(0, 300) };
 }
 
 // ── SO KHỚP VỚI KIOT ──────────────────────────────────────────────────────────
@@ -380,7 +382,8 @@ Deno.serve(async req => {
     if (phatSinh.size && !(kq.hang && kq.hang.kieu === 'day_du')) kq.ton_cap_nhat = await tonGiuaNgay(phatSinh);
     if (kq.hoa_don || kq.hang) { const g = await sb('rpc/kt_tinh_gia_von', { p_tat_ca: false }, 'return=representation'); kq.gia_von = g.ok ? await g.json() : 'lỗi ' + g.status; }
     kq.giay = Math.round((Date.now() - batDau) / 1000);
-    await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'keo_kiot', du_lieu: kq });
+    const loiCB = kq.so_quy && typeof kq.so_quy.dong_bo === 'string' ? 'Chép phiếu thu Kiot sang app lỗi: ' + kq.so_quy.dong_bo : '';
+    await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: loiCB ? 'keo_kiot_loi' : 'keo_kiot', du_lieu: loiCB ? { loi: loiCB, da_xong: kq } : kq });
     await sb('rpc/kt_canh_bao_kiot', {});
     return tra(kq);
   } catch (e) {
