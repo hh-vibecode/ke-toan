@@ -1235,8 +1235,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.438';
-const APP_VERSION='20/11/2026 13:55';
+const APP_SO='1.439';
+const APP_VERSION='20/11/2026 14:08';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -5086,7 +5086,7 @@ async function lnkBKLuu(){const B=S.cache.lnk_bk,c=S.cache.lnk,id=c.lo.id,l=B.lo
 // Lần cũ đã có phiếu chi cho cùng khoản (gắn chi_id) → theo phiếu chi, không trừ 2 lần; nghi trùng (cùng TK, cùng số tiền ± 10 ngày) → báo + nút dùng phiếu chi. — Monsieur Claude
 // 19/11 anh: "tách riêng rồi thì tự tạo mã phiếu chi riêng, không nối với phiếu chi ở Thu chi & Ngân quỹ" → mã PCTG + số lần, bỏ gắn / dùng phiếu chi. — Monsieur Claude
 const maTT=id=>'PCTG'+String(id).padStart(6,'0');
-const ttTru=t=>t.chi&&t.chi.tt==='da_tt'?['Trùng PC'+String(t.chi.id).padStart(6,'0')+' — xoá phiếu chi đó ở Thu chi','warn']:!t.tk_id?['Chưa trừ — thiếu nguồn tiền','bad']:t.tien_te!=='VND'&&!+t.ty_gia?['Chưa trừ — thiếu tỷ giá','bad']:+t.phi>0&&!t.phi_tk_id&&t.tk_loai==='vay'?['Chưa trừ phí — chọn TK trả phí','bad']:(t.nghi_trung||[]).length?['Nghi trùng PC'+String(t.nghi_trung[0].id).padStart(6,'0'),'warn']:['Đã trừ số dư','ok'];
+const ttTru=t=>t.chi&&t.chi.tt==='da_tt'?['Trùng PC'+String(t.chi.id).padStart(6,'0')+' — xoá phiếu chi đó ở Thu chi','warn']:!t.tk_id?['Chưa trừ — thiếu nguồn tiền','bad']:t.tien_te!=='VND'&&!+t.ty_gia?['Chưa trừ — thiếu tỷ giá','bad']:+t.phi>0&&!t.phi_tk_id&&t.tk_loai==='vay'?[(t.vay_id?'Ghi vào khoản vay '+(t.vay_ten||'')+' · c':'C')+'hưa trừ phí — chọn TK trả phí','bad']:(t.nghi_trung||[]).length?['Nghi trùng PC'+String(t.nghi_trung[0].id).padStart(6,'0'),'warn']:t.tk_loai==='vay'?(t.vay_id?['Ghi vào khoản vay '+(t.vay_ten||''),'ok']:['Chưa gắn khoản vay','bad']):['Đã trừ số dư','ok'];   // 20/11 anh: trả từ TK vay = ghi vào khoản vay (không trừ tiền công ty)
 const ttCan=t=>ttTru(t)[1]==='bad'||ttTru(t)[1]==='warn';
 async function pageTtNN(){const el=$('#page'),f=S.f,g=nccGhi();if(!S.cache.po_d)el.innerHTML='<div class="m-empty">Đang tải...</div>';
   const d=await poDS(),T=d.tt_nn||[],tat=!!f.tt_all,q=f.tt_q||'',P=Object.fromEntries(d.po.map(p=>[p.id,p]));
@@ -5094,7 +5094,7 @@ async function pageTtNN(){const el=$('#page'),f=S.f,g=nccGhi();if(!S.cache.po_d)
   const K=T.filter(t=>tat||(t.ngay>=S.tu&&t.ngay<=S.den)),l=K.filter(t=>(f.tt_loc!=='con'||con(t)>0)&&(f.tt_loc!=='bs'||ttCan(t))&&(!q||khopTim(q,[maTT(t.id),t.ben_nhan,t.tk,t.ghi_chu,...(t.phan_bo||[]).map(z=>(z.ncc_ten||'')+' '+((P[z.po_id]||{}).so||''))])));
   el.innerHTML=`<div class="m-kpis m-k3">${kThe('info',IC_LNK.tien,'Đã chuyển '+(tat?'(mọi thời gian)':'trong kỳ'),fmt(sumBy(K,t=>vnd(t)||0)),fmt(K.length)+' lần chuyển · quy đổi theo tỷ giá từng lần')}
       ${kThe('warn',IC_LNK.cp,'Chưa phân bổ hết',fmt(K.filter(t=>con(t)>0).length)+' lần','còn tiền chưa chia cho NCC / PO',`S.f.tt_loc=S.f.tt_loc==='con'?'':'con';render()`,f.tt_loc==='con')}
-      ${(()=>{const c=K.filter(ttCan),b=c.filter(t=>ttTru(t)[1]==='bad').length,w=c.length-b;return kThe('bad',IC_LNK.di,'Cần bổ sung',fmt(c.length)+' lần',fmt(b)+' chưa trừ số dư (thiếu tỷ giá / nguồn tiền)'+(w?' · '+fmt(w)+' nghi trùng phiếu chi':''),`S.f.tt_loc=S.f.tt_loc==='bs'?'':'bs';render()`,f.tt_loc==='bs')})()}</div>
+      ${(()=>{const c=K.filter(ttCan),b=c.filter(t=>ttTru(t)[1]==='bad').length,w=c.length-b;return kThe('bad',IC_LNK.di,'Cần bổ sung',fmt(c.length)+' lần',fmt(b)+' chưa trừ số dư / phí (thiếu TK trả phí, tỷ giá, nguồn tiền)'+(w?' · '+fmt(w)+' nghi trùng phiếu chi':''),`S.f.tt_loc=S.f.tt_loc==='bs'?'':'bs';render()`,f.tt_loc==='bs')})()}</div>
     <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Thanh toán trung gian <span class="badge">${fmt(l.length)}</span></div></div>
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:240px" placeholder="Tìm đơn vị nhận, NCC, số PO..." value="${esc(q)}" onchange="S.f.tt_q=this.value;render()">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap"><input type="checkbox" ${tat?'checked':''} onchange="S.f.tt_all=this.checked;render()"> Mọi thời gian</label>${g?`<button class="m-btn pri" onclick="ttForm()">+ Thêm lần thanh toán</button>`:''}</div></div>
