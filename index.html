@@ -1237,8 +1237,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.444';
-const APP_VERSION='21/11/2026 11:50';
+const APP_SO='1.445';
+const APP_VERSION='21/11/2026 12:18';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3890,15 +3890,17 @@ async function pagePO(){const el=$('#page'),f=S.f,g=nccGhi(),t=f.po_tab||'po';if
   let tbTab='';if(f.po_kieu){const DX0=S.cache.dx_d=S.cache.dx_d||await rpc('kt_dx_ds').catch(()=>[]),TB=DX0.filter(x=>dxCuaKieu(x,f.po_kieu)),cho=TB.filter(x=>['cho_duyet','da_duyet'].includes(x.trang_thai)).length;
     tbTab=`<div class="m-seg ncc-seg">${[['po','Đơn đặt hàng (PO) · '+fmt(P.length)],['tb','Cửa hàng đặt trưng bày'+(cho?' · '+fmt(cho)+' chờ đặt':'')]].map(([k,l])=>`<button class="${(f.po_sub||'po')===k?'on':''}" onclick="S.f.po_sub='${k}';render()">${l}</button>`).join('')}</div>`;
     if(f.po_sub==='tb'){await poDX(el,f.po_kieu);el.insertAdjacentHTML('afterbegin',tbTab);return}}
-  const lo='',tt=f.po_tt||'',q=f.po_q||'',mau=P.filter(p=>p.la_mau).length;
-  const l=P.filter(p=>(!lo||p.loai===lo)&&(!tt||p.trang_thai===tt)&&(!q||khopTim(q,[p.so,p.so_cu,p.ncc_ten,p.so_pi,...(p.dong||[]).map(x=>(x.ma_tht||'')+' '+(x.ten||''))])));
-  const mo=P.filter(p=>!p.la_mau&&!['da_nhan','huy'].includes(p.trang_thai)),cho=P.filter(p=>!p.la_mau&&['da_gui','dang_giao'].includes(p.trang_thai));   // 12/11: thẻ số không tính PO mẫu
+  // 21/11 kế toán: "phần PO bộ lọc thời gian ko hoạt động" — trước không đọc kỳ đang chọn → nay lọc theo ngày PO trong kỳ (ô Mọi thời gian = bỏ lọc), thẻ số theo danh sách đang lọc
+  const lo='',tt=f.po_tt||'',q=f.po_q||'',mau=P.filter(p=>p.la_mau).length,tat=!!f.po_all,PK=tat?P:P.filter(p=>p.ngay&&p.ngay>=S.tu&&p.ngay<=S.den);
+  const l=PK.filter(p=>(!lo||p.loai===lo)&&(!tt||p.trang_thai===tt)&&(!q||khopTim(q,[p.so,p.so_cu,p.ncc_ten,p.so_pi,...(p.dong||[]).map(x=>(x.ma_tht||'')+' '+(x.ten||''))])));
+  const mo=PK.filter(p=>!p.la_mau&&!['da_nhan','huy'].includes(p.trang_thai)),cho=PK.filter(p=>!p.la_mau&&['da_gui','dang_giao'].includes(p.trang_thai));   // 12/11: thẻ số không tính PO mẫu
   const [a,b,tr]=phanTrang('po',l.length,30);
   el.innerHTML=poTabs(t)+tbTab+`<div class="m-kpis m-k3">${kThe('info',IC_LNK.tien,'Giá trị PO đang mở',fmt(sumBy(mo,p=>poVnd(p,poTong(p)))),fmt(mo.length)+' đơn · quy đổi VND · không tính PO mẫu')}
       ${kThe('warn',IC_LNK.cp,'Đã trả NCC (phiếu chi)',fmt(sumBy(mo,p=>poDa(p))),'phiếu chi đã chi tiền gắn vào PO')}${kThe('teal',IC_LNK.di,'Đang chờ giao',fmt(cho.length)+' đơn','đã gửi NCC / đang giao')}</div>
-    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">${f.po_kieu==='nhap_khau'?'Đơn đặt hàng NCC nước ngoài':f.po_kieu==='noi_dia'?'Đơn đặt hàng NCC nội địa':'Đơn đặt hàng NCC'} <span class="badge">${fmt(P.length)}</span>${mau?` ${pill(mau+' PO mẫu','warn')}`:''}</div></div>
+    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">${f.po_kieu==='nhap_khau'?'Đơn đặt hàng NCC nước ngoài':f.po_kieu==='noi_dia'?'Đơn đặt hàng NCC nội địa':'Đơn đặt hàng NCC'} <span class="badge">${fmt(l.length)}${l.length!==P.length?' / '+fmt(P.length):''}</span>${mau?` ${pill(mau+' PO mẫu','warn')}`:''}</div></div>
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:240px" placeholder="Tìm số PO, NCC, mã hàng..." value="${esc(q)}" onchange="S.f.po_q=this.value;S.f.po_tr=1;render()">
         <select class="m-in" style="width:150px" onchange="S.f.po_tt=this.value;S.f.po_tr=1;render()"><option value="">Tất cả trạng thái</option>${optsObj(Object.fromEntries(Object.entries(PO_TT).map(([k,v])=>[k,v[0]])),tt)}</select>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap"><input type="checkbox" ${tat?'checked':''} onchange="S.f.po_all=this.checked;S.f.po_tr=1;render()"> Mọi thời gian</label>
         ${g&&mau?`<button class="m-btn out" onclick="poXoaMau()">Xoá dữ liệu mẫu</button>`:''}${g?`<button class="m-btn out" onclick="poMauTrong()">⬇ Mẫu PO trống</button><label class="m-btn out" title="File PO bất kỳ (Excel, theo mẫu hay không) — app đưa về mẫu PO, chỉ cần điền phần Còn thiếu; chọn nhiều file được">⬆ Tải lên PO (Excel / Word / PDF)<input type="file" hidden multiple accept=".xlsx,.xls,.csv,.docx,.doc,.pdf" onchange="poTaiLen(this.files);this.value=''"></label><button class="m-btn pri" onclick="poForm(null,{loai:'${f.po_kieu||'noi_dia'}'})">+ Tạo PO</button>`:''}</div></div>
     <div class="scroll"><table class="m-t"><tr><th>Số PO</th><th>Ngày</th><th>Loại</th><th>Nhà cung cấp</th><th class="num">Mặt hàng</th><th class="num">Tổng tiền</th><th class="num">Quy đổi VND</th><th>Ngày giao</th><th class="c">Trạng thái</th><th></th></tr>
     ${l.slice(a,b).map(p=>`<tr class="click" onclick="poForm(${p.id})"><td class="nw"><span class="m-link">${esc(p.so)}</span>${p.la_mau?' <span class="badge">Mẫu</span>':''}</td><td class="nw">${fmtD(p.ngay)}</td><td class="nw">${PO_LOAI[p.loai]}</td>
