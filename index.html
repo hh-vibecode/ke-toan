@@ -1224,6 +1224,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 @media(max-width:700px){.xu-p{flex-direction:column;align-items:stretch}.xu-loc{justify-content:flex-start;padding-left:26px}}
 /* 04/11 phân bổ phiếu chi trong popup P&L */
 .pl-pbs{min-width:96px}.pl-pb{display:inline-block;margin:1px 4px 1px 0;padding:1px 7px;border-radius:6px;background:var(--info-bg);font-size:11.5px;white-space:nowrap}.pl-pb b{font-weight:600}.pl-pb.on{background:var(--accent);color:#fff}.pl-pb.chua{background:var(--warn-bg)}.pl-on td{background:var(--sel-bg)}
+.po-ct3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.po-ct3>div{min-width:0}.po-ct-t{font-weight:600;font-size:13px;margin:0 0 8px}
+@media (max-width:900px){.po-ct3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1235,8 +1237,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.442';
-const APP_VERSION='21/11/2026 11:42';
+const APP_SO='1.443';
+const APP_VERSION='21/11/2026 11:46';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -3912,7 +3914,7 @@ async function pagePO(){const el=$('#page'),f=S.f,g=nccGhi(),t=f.po_tab||'po';if
 async function poForm(id,san){const d=await poDS(),nc=await nccDS();S.cache.po_ncc=nc.ncc;
   const p=id?d.po.find(x=>x.id===id):{loai:san&&san.loai||'noi_dia',ncc_id:san&&san.ncc_id||null,ncc_ten:san&&san.ncc_ten||'',tien_te:san&&san.tien_te||'VND',ty_gia:san&&san.ty_gia||null,
     trang_thai:'nhap',ngay:homNay(),noi_giao:PO_NOI[0],vat:0,dong:san&&san.dong||[{}],khach:san&&san.khach||[],dx_id:san&&san.dx_id||null};
-  window._po=JSON.parse(JSON.stringify(p));_po._h=_po.so;if(!(_po.dong||[]).length)_po.dong=[{}];poVe()}   // _h: tiêu đề giữ số cũ khi đang sửa Số PO
+  CT_MOI.po=[];window._po=JSON.parse(JSON.stringify(p));_po._h=_po.so;if(!(_po.dong||[]).length)_po.dong=[{}];poVe()}   // _h: tiêu đề giữ số cũ khi đang sửa Số PO
 // 17/11 kế toán: "thông tin trên PO không sửa được, chỉ sửa được list hàng" — mỗi ô Thông tin đơn sửa xong là vẽ lại cả cửa sổ: ô ngày gõ tới đâu vẽ lại tới đó
 // (mất con trỏ giữa chừng → ngày sai / không gõ tiếp được), Tab / bấm ô kế tiếp bị mất. Ô không đổi bố cục (Số PI, ngày, nơi giao, trạng thái, ghi chú) giờ chỉ ghi giá trị
 // + cập nhật thanh Còn thiếu, không vẽ lại. — Monsieur Claude
@@ -3975,6 +3977,7 @@ function poVe(){const p=window._po,g=nccGhi(),ds=(S.cache.po_ncc||[]).filter(x=>
         <td class="num nw" style="padding-right:18px"><b>${v==null?(+z.so_tien?'<span class="neg-t">cần tỷ giá</span>':''):fmt(v)}</b></td>${c('don_vi_nhan',170)}
         <td>${g?`<span class="m-link" onclick="poCpBo(${i})">✕</span>`:''}</td></tr>`}).join('')||'<tr><td colspan="8" class="muted">Chưa có chi phí khác</td></tr>'}</table></div>
     ${g?`<div class="po-bt"><button class="m-btn sm" onclick="poCpThem()">+ Thêm chi phí</button></div>`:''}</div>
+    <div class="po-sec"><div class="po-sh">Hoá đơn &amp; chứng từ</div><div class="po-ct3">${['hd_ncc','hd_vc','ck'].map(k=>`<div>${ctBox('po',p.id||0,g,k).replace('class="sec" style="margin-top:14px"','class="po-ct-t"')}</div>`).join('')}</div></div>
     <div class="po-sec"><div class="po-sh">Đơn hàng khách đặt gắn PO này</div>
     <div class="scroll"><table class="m-t po-d"><tr><th>Khách</th><th>SĐT</th><th>Mã đơn bán</th><th class="num">Tiền cọc khách</th><th>Hẹn giao khách</th><th></th></tr>
       ${(p.khach||[]).map((k,i)=>{const c=(f,w,ty)=>`<td><input class="m-in" ${ty?`type="${ty}"`:''} style="width:${w}px" value="${esc(k[f]??'')}" onchange="poKh(${i},'${f}',this.value)"></td>`;
@@ -4017,7 +4020,7 @@ async function poLuu(){const ds=_po.dong.filter(x=>x.ma_tht||x.ten||+x.sl),sach=
   const {_file,_xoa,_h,...po0}=_po,p={...po0,dong:sach(),khach:(_po.khach||[]).filter(k=>k.ten||k.ma_don),chi_phi:(_po.chi_phi||[]).filter(z=>+z.so_tien||z.nd)};
   if(!p.ncc_ten)return alert('Chọn nhà cung cấp');if(!p.dong.length)return alert('Nhập ít nhất 1 dòng hàng');
   if(p.tien_te!=='VND'&&!(+p.ty_gia))return alert('Nhập tỷ giá quy đổi VND');
-  try{const id=await rpc('kt_po_luu',{p_dong:p});
+  try{const id=await rpc('kt_po_luu',{p_dong:p});if(!p.id)try{ctGuiMoi('po',id)}catch(e){}   // 21/11: chứng từ chọn trước khi PO có số
     // 12/11 anh: ảnh chọn từ máy khi PO chưa lưu → lưu PO xong mới tải ảnh lên rồi ghi lại mã ảnh vào dòng
     const cho=ds.filter(x=>x._f);if(cho.length){toast('Đang tải '+cho.length+' ảnh mẫu…');let loi=0;
       const q=cho.slice();await Promise.all([0,1,2].map(async()=>{for(let x;(x=q.shift());){try{x.anh_ct=await poUpAnh(id,x._f);x.anh='';delete x._f}catch(e){loi++}}}));   // 13/11: 3 ảnh cùng lúc
@@ -8138,8 +8141,11 @@ async function nenAnh(f){
 // bấm ＋ / kéo thả / dán Ctrl+V là xong — nén + tải lên chạy NGẦM theo hàng đợi, ô hiện ảnh xem trước + %; đóng phiếu vẫn tải tiếp.
 // Phiếu MỚI chưa lưu: ảnh chọn trước được giữ lại, bấm Lưu phiếu là tự tải lên. ganCT() tự vẽ ô sau khi mở form / ngăn kéo.
 const CTQ=[],CT_MOI={};let ctChay=false,ctUid=0;
+// 21/11/2026 kế toán: "từng PO muốn đính kèm hoá đơn NCC, hoá đơn vận chuyển, ảnh giao dịch CK" → ô theo tiền tố tên tệp (cùng cách ô Ảnh giao dịch UNC_):
+// tệp thêm vào ô nào tự thêm tiền tố của ô đó, mỗi ô chỉ hiện tệp của mình (ảnh mẫu từng dòng hàng PO không có tiền tố → không lẫn). — Monsieur Claude
+const CT_TIEN={hd_ncc:['HDNCC_','Hoá đơn NCC','Thêm HĐ NCC'],hd_vc:['HDVC_','Hoá đơn vận chuyển','Thêm HĐ vận chuyển'],ck:['CK_','Ảnh giao dịch chuyển khoản','Thêm ảnh CK']};
 const ctBox=(bang,id,sua,loc)=>{if(!id&&!loc)CT_MOI[bang]=[];
-  return `<div class="sec" style="margin-top:14px">${loc==='unc'?'Ảnh giao dịch (uỷ nhiệm chi / phiếu chi ký nhận)':'Chứng từ đính kèm'}</div><div class="ct" data-bang="${bang}" data-id="${id||''}" data-sua="${sua?1:0}"${loc?` data-loc="${loc}"`:''}><div class="muted" style="font-size:12px">Đang tải chứng từ…</div></div>`};
+  return `<div class="sec" style="margin-top:14px">${loc==='unc'?'Ảnh giao dịch (uỷ nhiệm chi / phiếu chi ký nhận)':CT_TIEN[loc]?CT_TIEN[loc][1]:'Chứng từ đính kèm'}</div><div class="ct" data-bang="${bang}" data-id="${id||''}" data-sua="${sua?1:0}"${loc?` data-loc="${loc}"`:''}><div class="muted" style="font-size:12px">Đang tải chứng từ…</div></div>`};
 function ganCT(){$$('.ct[data-bang]:not([data-xong])').forEach(el=>{el.dataset.xong=1;veCT(el)})}
 const ctAnh=f=>/^image\//.test(f.type||'');
 const ctNhan=q=>({cho:'Chờ tải',nen:'Đang nén…',tai:'Đang tải '+(q.pct||0)+'%',xong:'✓ Đã lưu',loi:'Lỗi — bấm thử lại',moi:'Lưu phiếu là tải lên'}[q.tt]);
@@ -8152,6 +8158,7 @@ const laUNC=t=>/^UNC_/i.test(t||'');
 // 23/10 anh: PDF hoá đơn kéo từ MISA ("… (MISA).pdf") hiện nhỏ ngay dưới ô Số hoá đơn (ô loc 'hd'), ghi chú dưới ảnh "Hoá đơn đỏ"; các ô ảnh khác không hiện lại
 const laMISA=t=>/\(MISA\)\.pdf$/i.test(t||'');
 const ctHop=el=>{const q=l=>document.querySelector(`.ct[data-bang="${el.dataset.bang}"][data-id="${el.dataset.id||''}"][data-loc="${l}"]`),coHD=!!q('hd');
+  if(CT_TIEN[el.dataset.loc]){const tt=CT_TIEN[el.dataset.loc][0];return t=>String(t||'').toUpperCase().startsWith(tt)}
   if(el.dataset.loc==='hd')return laMISA;
   if(el.dataset.loc==='unc')return t=>laUNC(t)&&!(coHD&&laMISA(t));
   return q('unc')?t=>!laUNC(t)&&!(coHD&&laMISA(t)):t=>!(coHD&&laMISA(t))};
@@ -8164,21 +8171,23 @@ function ctLuoi(bang,id,ds,u,sua,loc,hop){
         <div class="ct-ten" title="${esc(x.ten)} · ${esc(x.tao_boi||'')} ${fmtDT(x.tao_luc)}">${laMISA(x.ten)?'HĐ đỏ':esc(x.ten)}</div>
         <div class="ct-nut"><button title="Tải về" onclick="taiVeCT([${x.id}])">⬇</button>${sua?`<button title="Xoá" onclick="xoaCT('${bang}',${id},${x.id})">✕</button>`:''}</div></div>`}).join('')}
       ${dang.map(ctO).join('')}
-      ${sua?`<label class="ct-them"><input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" hidden onchange="ctThem('${bang}',${id||0},this.files${loc?`,'${loc}'`:''});this.value=''"><b>＋</b><span title="${loc==='unc'?'Thêm ảnh giao dịch':'Thêm ảnh / tệp / PDF — kéo thả hoặc Ctrl+V'}">${loc==='unc'?'Thêm ảnh GD':'Thêm tệp'}</span><small>kéo thả · Ctrl+V</small></label>`:''}</div>
+      ${sua?`<label class="ct-them"><input type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.csv,.docx,.doc" hidden onchange="ctThem('${bang}',${id||0},this.files${loc?`,'${loc}'`:''});this.value=''"><b>＋</b><span title="${loc==='unc'?'Thêm ảnh giao dịch':'Thêm ảnh / tệp / PDF — kéo thả hoặc Ctrl+V'}">${loc==='unc'?'Thêm ảnh GD':CT_TIEN[loc]?CT_TIEN[loc][2]:'Thêm tệp'}</span><small>kéo thả · Ctrl+V</small></label>`:''}</div>
     ${ds.length>1?`<div style="margin-top:6px"><button class="btn sm" onclick="taiVeCT([${ds.map(x=>x.id).join(',')}])">⬇ Tải tất cả (${ds.length})</button></div>`:''}
     ${!ds.length&&!dang.length&&!sua?'<div class="muted" style="font-size:12px">Chưa có chứng từ</div>':''}`}
 async function veCT(el){
   const bang=el.dataset.bang,id=+el.dataset.id||0,sua=el.dataset.sua==='1';
   const loc=el.dataset.loc||'',hop=ctHop(el);
   if(!id){el.innerHTML=ctLuoi(bang,0,[],{},sua,loc,hop);return}
-  try{const ds=(await rpc('kt_ds_chung_tu',{p_bang:bang,p_dong_id:id})).filter(x=>hop(x.ten));
-    const urls=ds.length?(await ctFn({viec:'xem',ids:ds.map(x=>x.id)})).ds:[];const u=Object.fromEntries(urls.map(x=>[x.id,x.url]));
+  try{const dk=bang==='po'&&CT_DEM[bang+':'+id]&&Date.now()-CT_DEM[bang+':'+id].luc<120000?CT_DEM[bang+':'+id]:null;   // 21/11: PO vẽ lại cả cửa sổ mỗi lần sửa ô
+    const tat=dk?dk.ds:await rpc('kt_ds_chung_tu',{p_bang:bang,p_dong_id:id}),ds=tat.filter(x=>hop(x.ten));
+    const u=dk?dk.u:Object.fromEntries((tat.length?(await ctFn({viec:'xem',ids:tat.map(x=>x.id)})).ds:[]).map(x=>[x.id,x.url]));if(bang==='po'&&!dk)CT_DEM[bang+':'+id]={ds:tat,u,luc:Date.now()};
     const cu=(S.cache['ct_'+bang+id]||[]).filter(x=>!hop(x.ten));   // 2 ô cùng phiếu: gộp, không ghi đè nhau (trình xem ảnh dùng chung)
     S.cache['ct_'+bang+id]=[...cu,...ds.map(x=>({...x,url:u[x.id]}))];
     el.innerHTML=ctLuoi(bang,id,ds,u,sua,loc,hop);
   }catch(e){el.innerHTML=`<div class="neg" style="font-size:12px">${esc(e.message)}</div>`}}
 // vẽ lại ô của 1 phiếu đang mở (nếu có): taiLai = đọc lại danh sách từ máy chủ, không thì chỉ vẽ lại phần đang tải
-function veLaiCT(bang,id,taiLai){$$(`.ct[data-bang="${bang}"][data-id="${id||''}"]`).forEach(el=>{
+const CT_DEM={};
+function veLaiCT(bang,id,taiLai){if(taiLai)delete CT_DEM[bang+':'+id];$$(`.ct[data-bang="${bang}"][data-id="${id||''}"]`).forEach(el=>{
   if(taiLai||!id){veCT(el);return}
   const g=el.querySelector('.ct-grid');if(!g)return;g.querySelectorAll('.ct-item.dang').forEach(n=>n.remove());
   const them=g.querySelector('.ct-them'),hop=ctHop(el);const h=CTQ.filter(q=>q.k===bang+':'+id&&hop(q.file.name)).map(ctO).join('');
@@ -8187,6 +8196,7 @@ function veTienDo(q){$$(`.ct-item[data-q="${q.uid}"] .ct-tt`).forEach(n=>n.textC
 function ctThem(bang,id,files,loc){
   let fs=[...(files||[])].filter(f=>ctAnh(f)||/\.(pdf|jpe?g|png|webp|heic|heif|xlsx?|csv|docx?)$/i.test(f.name)).map(ctLoai);
   if(loc==='unc')fs=fs.map(f=>laUNC(f.name)?f:new File([f],'UNC_'+f.name,{type:f.type}));
+  if(CT_TIEN[loc]){const tt=CT_TIEN[loc][0];fs=fs.map(f=>f.name.toUpperCase().startsWith(tt)?f:new File([f],tt+f.name,{type:f.type}))}
   if(!fs.length)return toast('Chỉ nhận ảnh, PDF, Excel, Word');
   const moi=fs.map(f=>({uid:++ctUid,bang,id,k:bang+':'+id,file:f,url:ctAnh(f)?URL.createObjectURL(f):null,tt:id?'cho':'moi',pct:0}));
   if(!id){(CT_MOI[bang]=CT_MOI[bang]||[]).push(...moi);veLaiCT(bang,0);return}
