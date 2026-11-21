@@ -1235,8 +1235,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.441';
-const APP_VERSION='21/11/2026 11:22';
+const APP_SO='1.442';
+const APP_VERSION='21/11/2026 11:42';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -8357,7 +8357,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={sao_ke:"info",lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={sao_ke:"info",lich_loi:"bad",lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -8375,6 +8375,7 @@ async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)
   if(x.bang==='lich_tt'){if(coXem('sap_tra')){S.f.ltt_tab='dk';go('sap_tra')}return}   // 26/10: nhắc lịch thanh toán định kỳ
   if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='de_xuat'){if(coXem('po')){S.f.dx_loc='cho_duyet';S.cache.dx_d=null;go('dx_kd');if(x.dong_id)setTimeout(()=>dxMo(x.dong_id),900)}return}   // 12/11 đề xuất mua hàng mới
+  if(x.bang==='kt_lich'){if(coXem('cd_nhat_ky')){S.f.log_tab='lich';go('cd_nhat_ky')}return}   // 21/11: lịch chạy lỗi → Log hệ thống, tab Lịch chạy
   if(x.bang==='bao_loi'){S.f.log_tab='loi';S.f.bl_loc='mo';go('cd_nhat_ky');return}   // 24/10: báo lỗi → Log hệ thống, tab Báo lỗi
   const trang=x.bang==='chi'?'chi':x.bang==='dieu_chuyen'?'dieu_chuyen':x.bang==='kt_kiot'?'cd_kiot':null;if(!trang||!coXem(trang))return;
   if(trang==='cd_kiot'){const m=x.loai==='kiot_lech'&&String(x.tieu_de||'').match(/T(\d{1,2})\/(\d{4})/);if(m){kiotLechXem(m[2]+'-'+m[1].padStart(2,'0'));return}go('cd_kiot');return}
@@ -8559,6 +8560,7 @@ const LOGIC2=[
  ['chung','Cài đặt → Xuất dữ liệu','Chọn kỳ (nút nhanh tháng này / tháng trước / quý / năm), tick phần cần xuất → 1 file Excel, mỗi phần 1 sheet + sheet Tóm tắt: phiếu chi (lọc đã TT, tài khoản công ty / từng TK; kèm sheet theo tài khoản), phiếu thu, điều chuyển, số dư + sổ quỹ theo ngày, tạm ứng / hoàn ứng, vay, công nợ KH / NCC, hoá đơn vào / ra, P&L theo tháng (đúng số trang P&L). Định dạng: tiêu đề, khung, số #,##0, ngày dd/mm/yyyy, cố định tiêu đề, bộ lọc, dòng tổng SUBTOTAL.','Anh 23/10 ("giống MISA, thích xuất gì tích phần ấy"). Phần "sắp có": nhật ký chung, nhập xuất tồn, tài sản, lưu chuyển tiền tệ. Quyền theo quyền xem từng trang.','23/10'],
  ['bao_cao','Trừ VAT tiền về TK công ty 599','Mọi khoản Kiot ghi "Tiền khách trả" vào TK VCB CTY …599 (từ T9): trừ 8% (bán 100 tính 92); hàng đèn điện thờ / chuông mõ trừ 10% — khách trả công nợ không gắn hoá đơn nên tỷ lệ 10% theo phần hàng 2 nhóm này trong hoá đơn của khách 90 ngày trước. Không trừ: chuyển rút nội bộ, nộp tiền vào TK, lãi ngân hàng, BHXH hoàn.','Anh 23/10. Dòng riêng trong P&L, giảm doanh thu ròng của cơ sở bán.','23/10'],
  ['bao_cao','Đơn đặt: nhóm nào được tính','Đơn KiotViet tạo trong kỳ chia nhóm: Đã đi hàng · Đã cọc chưa đi · Nghi đã đi hàng → TÍNH (số đơn, giá trị, tỷ lệ đi hàng). Báo giá chưa cọc (phiếu tạm) · Báo giá không chốt (huỷ khi chưa cọc) · Huỷ thật (đã cọc mà không lấy / COD trả lại) · Hàng tặng / mẫu / khuyến mãi (đơn hoàn thành 0đ) → KHÔNG tính.','Anh 22/10. Cọc theo luật app MKT (kt_v_don_coc). Tổng quan và Hiệu suất đơn dùng chung cách chia.','22/10'],
+ ['chung','Lịch chạy — soát kết quả thật','Lịch gọi Edge đi qua kt_goi_edge, mỗi lần ghi 1 dòng; phút 08 / 38 mỗi giờ soát mã trả về: lỗi, quá 150 giây, Edge báo lỗi, không phản hồi → chuông "Lịch … chạy lỗi" (1 lần / 12 tiếng) + tab Lịch chạy hiện lỗi gần nhất. Lịch SQL lỗi cũng báo.','Bảng lịch Edge chỉ đặt ở scripts/lich-kt.js. Mỗi lượt Edge giữ < 95 giây (tự dừng, ghi phần bỏ lại); việc Kiot ban đêm không chồng nhau.','21/11'],
  ['chung','Log hệ thống → tab Lưu lượng','Cài đặt → Log hệ thống có 3 tab: Chỉnh sửa · Lưu lượng · Lịch chạy. 23:55 hằng ngày (lịch kt-luu-luong) chụp: dung lượng CSDL cả 3 app + riêng kế toán, kho tệp theo bucket, đĩa máy chủ, lượt gọi 24 giờ (REST / tệp / đăng nhập / realtime), kết nối, lịch lỗi; thông tin máy chủ đang thuê (gói, compute, đĩa, vùng, dịch vụ).','Ngưỡng gói Pro: CSDL > 80% của 8 GB, kho tệp > 80% của 100 GB, đĩa > 90%, lịch kt- lỗi → chuông Supreme. Băng thông (egress) API không trả — xem Dashboard → Usage.','22/10'],
  ['chung','Số dư tài khoản không gồm TK vay','Sổ quỹ → Số dư: bỏ tài khoản loại Vay (thuộc mục Khoản vay).','Anh 22/10.','22/10'],
  ['bao_cao','Dòng tiền khớp phân loại chi phí','Báo cáo dòng tiền đặt tên + thứ tự loại chi giống báo cáo chi phí (theo danh mục). Giao dịch cá nhân tách mục riêng "IV. Giao dịch cá nhân".','Vẫn tính vào tiền thuần trong kỳ và số dư (tiền thật đi qua tài khoản).','21/10'],
@@ -8776,30 +8778,49 @@ const KIOT_P=['tong_quan','ban_hang','khach_hang','ncc','hang_hoa','no_kh','no_n
 async function kiotFn(b){const r=await fetch(FN_KIOT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phien:S.phien,...b})});
   const j=await r.json().catch(()=>({}));if(!r.ok||j.loi)throw new Error(j.loi||'Lỗi '+r.status);return j}
 // [tên, lịch giờ VN, việc làm]
-const LICH_KT={'kt-kiot':['Kéo Kiot','15 phút/lần · phút 02, 17, 32, 47 mỗi giờ','Sổ quỹ 10 ngày → phiếu thu · khách, NCC, hàng hoá, hoá đơn, trả hàng, nhập hàng (phần Kiot sửa) · tồn các mặt hàng vừa bán / trả / nhập'],
-  'kt-kiot-hang-dem':['Kéo đầy đủ hàng hoá + so tồn','23:20 hằng ngày','Toàn bộ mặt hàng + tồn từng cơ sở (bắt cả chuyển kho, kiểm kho) · so tồn app với Kiot trước khi ghi đè'],
-  'kt-kiot-thu-hd-1':['Kéo bảng chia thu hoá đơn (lượt 1)','00:45 hằng ngày','Tiền Kiot đã chia vào từng hoá đơn 4 tháng gần nhất — để đối chiếu hoa hồng với sổ quỹ'],
-  'kt-kiot-thu-hd-2':['Kéo bảng chia thu hoá đơn (lượt 2)','00:50 hằng ngày','Như lượt 1, các tháng lùi 4–7'],
-  'kt-kiot-thu-hd-3':['Kéo bảng chia thu hoá đơn (lượt 3)','00:55 hằng ngày','Như lượt 1, các tháng lùi 8–11'],
-  'kt-ton-kho':['Chụp tồn cuối ngày','23:40 hằng ngày','Lưu giá trị tồn từng cơ sở; ngày cuối tháng lưu từng mã'],
-  'kt-kiot-doi-chieu':['So khớp doanh thu','23:50 hằng ngày','Kéo lại hoá đơn + trả hàng tháng này và tháng trước, so từng mã, tự bù phần thiếu'],
-  'kt-meinvoice':['Kéo hoá đơn meInvoice','00:25 hằng ngày','Hoá đơn công ty tổng tháng này + tháng trước'],
-  'kt-meinvoice-bot':['Kéo hoá đơn đầu vào (MISA)','00:35 hằng ngày','HĐ mua vào tháng này + tháng trước, tự gắn phiếu chi + phiếu thu ↔ HĐ bán ra, tải PDF HĐ đã gắn về chứng từ'],
-  'kt-meinvoice-trua':['Kéo hoá đơn meInvoice (lượt trưa)','12:25 hằng ngày','Như lượt 00:25 — anh 03/11: 2 lần / ngày'],
-  'kt-meinvoice-bot-trua':['Kéo hoá đơn đầu vào MISA (lượt trưa)','12:35 hằng ngày','Như lượt 00:35 — anh 03/11: 2 lần / ngày'],
-  'kt-kiot-canh-bao':['Cảnh báo Kiot','Phút 05 mỗi giờ','Báo khi Kiot lâu chưa kéo được'],
-  'kt-nop-ket':['Đồng bộ nộp két','15 phút/lần','Tiền cửa hàng nộp két 10 ngày gần nhất'],
-  'kt-nhac-viec':['Nhắc việc','08:00 hằng ngày','Nhắc lại việc còn treo'],
-  'kt-pb-ds':['Phân bổ theo doanh số','00:15 hằng ngày','Tính lại tỷ lệ phân bổ chi phí theo doanh số'],
-  'kt-phan-loai-con':['Phân loại mục con loại chi','4 giờ / lần · 3h 7h 11h 15h 19h 23h','Gán mục con theo mục cha + nội dung; không đoán được → Loại chi KXĐ'],
-  'kt-luu-luong':['Chụp lưu lượng Supabase','23:55 hằng ngày','CSDL, kho tệp, đĩa, lượt gọi, máy chủ → Log lưu lượng'],
-  'kt-kiem-he-thong':['Kiểm hệ thống Supabase','09:00 ngày 15 + cuối tháng','Dung lượng, khoá RLS, lịch lỗi → chuông Supreme'],
-  'dong_bo_sheet':['Đồng bộ sheet đề nghị (máy anh)','Theo lịch Windows','Sheet ĐNTT → phiếu chi'],
-  'nap_file_dong_tien':['Kéo file dòng tiền (máy anh)','Theo lịch Windows','File dòng tiền Drive → Log so khớp']};
+// 21/11/2026 (anh: "rà lại hết lịch chạy, sắp xếp lại cho hợp lý"): xếp theo nhóm + giờ chạy trong ngày (giờ VN). Lịch gọi Edge đặt ở scripts/lich-kt.js.
+// [tên, giờ chạy, việc làm, nhóm] — nhóm: lien = chạy liên tục · ngay = ban ngày · dem = ban đêm · thang = định kỳ tháng · may = máy anh
+const LICH_KT={'kt-kiot':['Kéo Kiot','15 phút / lần · phút 02, 17, 32, 47','Sổ quỹ 10 ngày → phiếu thu · khách, NCC, hàng hoá, hoá đơn, trả hàng, nhập hàng (phần Kiot sửa) · tồn các mặt hàng vừa bán / trả / nhập','lien'],
+  'kt-kiot-canh-bao':['Cảnh báo Kiot','Phút 05 mỗi giờ','Kiot lâu chưa kéo được, lệch chưa tự bù, phiếu thu chia hoá đơn quá 26 tiếng chưa cập nhật → chuông','lien'],
+  'kt-nop-ket':['Đồng bộ nộp két','15 phút / lần · phút 07, 22, 37, 52','Tiền cửa hàng nộp két 10 ngày gần nhất','lien'],
+  'kt-kiot-thu-hd-ngay':['Phiếu thu chia HĐ (ban ngày)','Phút 10 mỗi giờ · 08:10–22:10','Chỉ chạy khi có phiếu thu Kiot mới: tháng này + tháng hoá đơn còn nợ của khách đó','lien'],
+  'kt-ncc-tu-gan':['Tự gắn phiếu chi vào NCC','Phút 25 mỗi giờ','Phiếu chi mới → NCC + phiếu nhập Kiot','lien'],
+  'kt-don-nguon':['Nguồn đơn online / offline','Phút 40 mỗi giờ','Làm mới nguồn đơn theo kênh Kiot','lien'],
+  'kt-lich-soat':['Soát kết quả lịch chạy','Phút 08 và 38 mỗi giờ','Đọc kết quả thật mọi lịch gọi Edge (lỗi, quá 150 giây, không phản hồi) + lịch SQL lỗi → chuông','lien'],
+  'kt-sao-ke-moi':['Đối chiếu sao kê mới nạp','2 tiếng / lần','Chỉ chạy khi có kỳ sao kê chờ xử lý','lien'],
+  'kt-phan-loai-con':['Phân loại mục con chi','4 tiếng / lần · từ 3h','Gán mục con theo mục cha + nội dung; không đoán được → Loại chi KXĐ','lien'],
+  'kt-nhac-viec':['Nhắc việc','08:00','Nhắc lại việc còn treo','ngay'],
+  'kt-nhac-lich-tt':['Nhắc lịch thanh toán định kỳ','08:00','Khoản định kỳ sắp đến hạn → chuông','ngay'],
+  'kt-meinvoice-trua':['Kéo hoá đơn meInvoice (trưa)','12:25','Như lượt 00:25 — 2 lần / ngày','ngay'],
+  'kt-meinvoice-bot-trua':['Kéo hoá đơn đầu vào MISA (trưa)','12:35','Như lượt 00:35 — 2 lần / ngày','ngay'],
+  'kt-hd-pdf-ra':['Tải PDF hoá đơn bán ra','13:00 · 01:00','PDF HĐ đầu ra đã gắn phiếu → kho chứng từ','ngay'],
+  'kt-hd-pdf-vao':['Tải PDF hoá đơn đầu vào','13:05 · 01:05','PDF HĐ đầu vào đã gắn phiếu → kho chứng từ','ngay'],
+  'kt-sao-ke':['Tính lại đối chiếu sao kê','13:30 · 01:30','Mọi kỳ sao kê 6 tháng (sau khi kéo + ghép HĐ MISA)','ngay'],
+  'kt-so-dt-2app':['So doanh thu với app MKT','21:30','Ghi dòng kế toán (ben = kt) vào bảng so chung 2 app','dem'],
+  'kt-so-hh':['Chia sẻ hoa hồng cho app MKT','21:40','Hoa hồng + quy tắc theo đơn → bảng so chung để app MKT so đơn hằng đêm','dem'],
+  'kt-kiot-hang-dem':['Kéo đầy đủ hàng hoá + so tồn','23:20','Toàn bộ mặt hàng + tồn từng cơ sở (bắt cả chuyển kho, kiểm kho) · so tồn app với Kiot trước khi ghi đè','dem'],
+  'kt-ton-kho':['Chụp tồn cuối ngày','23:40','Lưu giá trị tồn từng cơ sở; ngày cuối tháng lưu từng mã (sau lượt kéo đủ hàng 23:20)','dem'],
+  'kt-kiot-doi-chieu':['So khớp doanh thu Kiot (lượt 1)','23:50','Tháng này + tháng trước: hoá đơn, trả hàng, sổ quỹ, phiếu nhập, đơn đặt — so từng mã, tự bù','dem'],
+  'kt-luu-luong':['Chụp lưu lượng Supabase','23:55','CSDL, kho tệp, đĩa, lượt gọi, máy chủ → Log lưu lượng','dem'],
+  'kt-kiot-doi-chieu-2':['So khớp Kiot (lượt 2)','00:10','1 tháng cũ xoay vòng + công nợ toàn bộ khách / NCC','dem'],
+  'kt-pb-ds':['Phân bổ theo doanh số','00:15','Tính lại tỷ lệ phân bổ chi phí theo doanh số','dem'],
+  'kt-meinvoice':['Kéo hoá đơn meInvoice','00:25','Hoá đơn công ty tổng tháng này + tháng trước','dem'],
+  'kt-meinvoice-bot':['Kéo hoá đơn đầu vào (MISA)','00:35','HĐ mua vào tháng này + tháng trước, tự gắn phiếu chi + phiếu thu ↔ HĐ bán ra','dem'],
+  'kt-kiot-thu-hd-1':['Phiếu thu chia HĐ (lượt 1)','00:40','Tháng này + tháng trước','dem'],
+  'kt-kiot-thu-hd-2':['Phiếu thu chia HĐ (lượt 2)','00:52','Lùi 2–3 tháng','dem'],
+  'kt-kiot-thu-hd-3':['Phiếu thu chia HĐ (lượt 3)','00:57','Lùi 4–5 tháng','dem'],
+  'kt-kiot-thu-hd-4':['Phiếu thu chia HĐ (lượt 4)','01:07','Lùi 6–7 tháng','dem'],
+  'kt-khach-nguon':['Nguồn khách online / offline','01:10','Làm mới nguồn khách theo đơn','dem'],
+  'kt-kiot-thu-hd-5':['Phiếu thu chia HĐ (lượt 5)','01:12','Lùi 8–9 tháng','dem'],
+  'kt-kiot-thu-hd-6':['Phiếu thu chia HĐ (lượt 6)','01:22','Lùi 10–11 tháng','dem'],
+  'kt-kiem-he-thong':['Kiểm hệ thống Supabase','09:00 ngày 15 + cuối tháng','Dung lượng, khoá RLS, lịch lỗi → chuông Supreme','thang'],
+  'dong_bo_sheet':['Đồng bộ sheet đề nghị (máy anh)','Theo lịch Windows','Sheet ĐNTT → phiếu chi','may'],
+  'nap_file_dong_tien':['Kéo file dòng tiền (máy anh)','Theo lịch Windows','File dòng tiền Drive → Log so khớp','may']};
+const NHOM_LICH=[['lien','Chạy liên tục trong ngày'],['ngay','Ban ngày'],['dem','Ban đêm (theo giờ chạy)'],['thang','Định kỳ tháng'],['may','Trên máy anh']];
 const TEN_KIOT={khach:'khách',ncc:'NCC',hang:'hàng',hoa_don:'HĐ',tra_hang:'trả hàng',nhap_hang:'nhập'};
 // lần chạy thuộc lịch nào (để hiện "lần cuối" trên thẻ lịch)
 const lichCua=x=>{const k=x.kq||{},d=k.da_xong||k;return x.viec==='luu_luong'?'kt-luu-luong':x.viec==='kiem_he_thong'?'kt-kiem-he-thong':/^keo_misabot/.test(x.viec)?'kt-meinvoice-bot':
-  x.viec==='dong_bo_sheet'||x.viec==='nap_file_dong_tien'?x.viec:x.viec==='doi_chieu_kiot'?'kt-kiot-doi-chieu':x.viec==='chup_ton_kho'?'kt-ton-kho':x.viec==='keo_meinvoice'?'kt-meinvoice':
+  x.viec==='dong_bo_sheet'||x.viec==='nap_file_dong_tien'?x.viec:x.viec==='doi_chieu_kiot'?'kt-kiot-doi-chieu':x.viec==='chup_ton_kho'?'kt-ton-kho':x.viec==='keo_meinvoice'?'kt-meinvoice':x.viec==='keo_thu_hd'||(k.da_xong&&k.da_xong.thu_hd)?'kt-kiot-thu-hd-1':
   (!d.so_quy&&d.hang&&d.hang.kieu==='day_du')||(!d.so_quy&&d.so_ton)?'kt-kiot-hang-dem':'kt-kiot'};
 const loiChay=x=>/_loi$/.test(x.viec)||!!(x.kq&&x.kq.loi);
 function tomTatChay(x){const k=x.kq||{};
@@ -8810,6 +8831,7 @@ function tomTatChay(x){const k=x.kq||{};
   if(x.viec==='chup_ton_kho')return `${k.chi_nhanh||0} cơ sở${k.chi_tiet_cuoi_thang?' · '+fmt(k.chi_tiet_cuoi_thang)+' dòng cuối tháng':''}`;
   if(x.viec==='keo_meinvoice')return esc(JSON.stringify(k).slice(0,160));
   const d=k.da_xong||k,p=[];
+  if(d.thu_hd)return `Phiếu thu chia hoá đơn: ${(d.thu_hd.thang||[]).map(m=>'T'+(+m.slice(5))).join(', ')} · ${fmt(d.thu_hd.so_hd)} HĐ${d.thu_hd.sua_da_tra?' · sửa đã trả '+fmt(d.thu_hd.sua_da_tra)+' HĐ':''}`;
   if(d.so_quy)p.push(`${fmt(d.so_quy.so_phieu)} phiếu sổ quỹ`);
   for(const t in TEN_KIOT)if(d[t])p.push(`${TEN_KIOT[t]} ${fmt(d[t].so_dong)}${d[t].kieu==='day_du'?' (đầy đủ)':''}`);
   if(d.ton_cap_nhat)p.push(`tồn ${fmt(d.ton_cap_nhat)} mã`);
@@ -9360,12 +9382,16 @@ async function pageLuuLuong(){const el=$('#page');el.innerHTML='<div class="m-em
 }
 // 22/10 anh: các lịch định kỳ / dữ liệu kéo hằng ngày — chuyển từ cuối Log so khớp sang trang riêng
 async function pageLich(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
-  const r=await rpc('kt_ds_lich');
+  const [r,goi]=await Promise.all([rpc('kt_ds_lich'),rpc('kt_ds_lich_goi').catch(()=>[])]);
   const the=(ten,lich,mo,bat,cuoi,loi,phu)=>`<div class="kl-th" style="--c:var(--${!cuoi?'grey':loi?'bad':'ok'})"><div class="kl-t"><b>${esc(ten)}</b><span class="badge">${esc(lich)}</span>${bat?'':pill('Đang tắt','bad')}</div>
       <div class="muted kl-v">${esc(mo)}</div><div class="kl-c">${cuoi?`Lần cuối: <b>${fmtDT(cuoi)}</b> · ${tuLuc(cuoi)} · ${loi?pill('Lỗi','bad'):pill('OK','ok')}`:'<span class="muted">Chưa thấy lần chạy</span>'}${phu||''}</div></div>`;
-  const lich=`<div class="kl-lich">${r.lich.map(j=>{const L=LICH_KT[j.ten]||[j.ten,j.lich,''],c=j.cuoi||{};
-      return the(L[0],L[1],L[2],j.bat,c.luc,c.tt&&c.tt!=='succeeded',`<div class="muted" style="font-size:11.5px">7 ngày: ${fmt(j.lan_7n)} lần${+j.loi_7n?' · <span class="neg-t">'+fmt(j.loi_7n)+' lỗi</span>':''}</div>`)}).join('')}
-    ${r.may.map(m=>{const L=LICH_KT[m.viec]||[m.viec,'',''];return the(L[0],L[1],L[2],true,m.luc,false,`<div class="muted" style="font-size:11.5px">24 giờ: ${fmt(m.lan_24h)} lần</div>`)}).join('')}</div>`;
+  // 21/11: lịch gọi Edge lấy KẾT QUẢ THẬT (kt_lich_goi, soát phút 08 / 38) — trước chỉ biết cron "đã gửi lệnh" nên Edge hỏng vẫn hiện OK
+  const thu=Object.keys(LICH_KT),vt=k=>{const i=thu.indexOf(k);return i<0?999:i};
+  const theLich=j=>{const L=LICH_KT[j.ten]||[j.ten,j.lich,'','lien'],c=j.cuoi||{},e=j.edge,loi=e?!!(e.xong&&e.loi):!!(c.tt&&c.tt!=='succeeded'),nl=e?(+j.edge_loi_7n||0):(+j.loi_7n||0),lc=j.edge_loi_cuoi;
+      return the(L[0],L[1],L[2],j.bat,e?e.luc:c.luc,loi,`<div class="muted" style="font-size:11.5px">7 ngày: ${fmt(e?j.edge_lan_7n:j.lan_7n)} lần${nl?' · <span class="neg-t">'+fmt(nl)+' lỗi</span>':''}${e&&!e.xong?' · đang chờ kết quả':''}</div>${lc?`<div class="neg-t" style="font-size:11.5px">Lỗi gần nhất ${fmtDT(lc.luc)}: ${esc(String(lc.loi).slice(0,160))}</div>`:''}`)};
+  const nhomCua=j=>(LICH_KT[j.ten]||[])[3]||'lien';
+  const lich=NHOM_LICH.map(([k,ten])=>{const ds=k==='may'?r.may:r.lich.filter(j=>nhomCua(j)===k).sort((a,b)=>vt(a.ten)-vt(b.ten));if(!ds.length)return '';
+      return `<div class="sec">${ten} <span class="badge">${ds.length}</span></div><div class="kl-lich">${k==='may'?ds.map(m=>{const L=LICH_KT[m.viec]||[m.viec,'',''];return the(L[0],L[1],L[2],true,m.luc,false,`<div class="muted" style="font-size:11.5px">24 giờ: ${fmt(m.lan_24h)} lần</div>`)}).join(''):ds.map(theLich).join('')}</div>`}).join('');
   const loc=S.f.kl_viec||'',ds=r.chay.filter(x=>!loc||lichCua(x)===loc);
   const ls=`<div class="sec">Lịch sử chạy <span class="badge">${fmt(ds.length)} lần gần nhất</span>
       <select class="sel" style="margin-left:auto" onchange="S.f.kl_viec=this.value;render()"><option value="">Mọi việc</option>${Object.entries(LICH_KT).map(([k,v])=>`<option value="${k}" ${loc===k?'selected':''}>${v[0]}</option>`).join('')}</select></div>
@@ -9373,7 +9399,16 @@ async function pageLich(){const el=$('#page');el.innerHTML='<div class="m-empty"
     ${ds.map(x=>{const k=x.kq||{},l=loiChay(x);return `<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc((LICH_KT[lichCua(x)]||[x.viec])[0])}</td><td class="nw muted">${esc(x.nguoi||'')}</td>
       <td style="font-size:11.5px">${l?`<span class="neg-t">${esc(String(k.loi||'').slice(0,240))}</span>${k.da_xong?'<br><span class="muted">Đã xong trước lỗi: '+tomTatChay({...x,kq:k.da_xong})+'</span>':''}`:tomTatChay(x)}</td>
       <td class="num">${k.giay??''}</td><td>${l?pill('Lỗi','bad'):pill('OK','ok')}</td></tr>`}).join('')||'<tr><td colspan="6" class="m-empty">Chưa có</td></tr>'}</table></div>`;
-  el.innerHTML=head(PAGES[S.page].ten+` <span class="badge" style="vertical-align:middle">${r.lich.length} lịch tự động · ${r.may.length} việc trên máy anh</span>`)+lich+ls;
+  // 21/11 anh: "báo lịch chạy mỗi lần chuẩn hơn + rà lần lỗi chạy lại lần 2, 3" → từng lần gọi lịch Edge / lịch SQL lỗi (kt_lich_goi, 3 ngày)
+  const XL={chay_lai:['Lỗi → đã chạy lại','warn'],lan_sau_ok:['Lỗi → lượt sau đã đúng','warn'],het_lan:['Lỗi sau 3 lần','bad'],khong_chay_lai:['Lỗi · không chạy lại','bad']};
+  const ttGoi=g=>!g.xong?pill('Đang chạy','grey'):!g.loi?pill(g.lan>1?'OK (lần '+g.lan+')':'OK','ok'):g.xu_ly?pill(...XL[g.xu_ly]):pill('Lỗi · chờ chạy lại','warn');
+  const gl=S.f.kl_goi||'loi',gds=goi.filter(g=>gl==='tat'||(gl==='loi'?(g.loi||g.lan>1):g.lan>1)),nLoi=goi.filter(g=>g.loi).length,nLai=goi.filter(g=>g.lan>1).length;
+  const gt=`<div class="sec">Từng lần gọi lịch <span class="badge">3 ngày · ${fmt(goi.length)} lần · ${fmt(nLoi)} lỗi · ${fmt(nLai)} lần chạy lại</span>
+      <div class="m-seg" style="margin-left:auto">${[['loi','Lỗi & chạy lại'],['lai','Chạy lại'],['tat','Tất cả']].map(([k,v])=>`<button class="${gl===k?'on':''}" onclick="S.f.kl_goi='${k}';render()">${v}</button>`).join('')}</div></div>
+    <div class="card scroll"><table class="m-t"><tr><th>Lúc gọi</th><th>Lịch</th><th class="num">Lần</th><th>Kết quả</th><th class="num">Giây</th><th>Trạng thái</th></tr>
+    ${gds.slice(0,300).map(g=>`<tr><td class="nw">${fmtDT(g.luc)}</td><td class="nw">${esc((LICH_KT[g.lich]||[g.lich])[0])}<div class="muted" style="font-size:11px">${esc(g.lich)}${g.loai==='sql'?' · SQL':''}</div></td><td class="num">${g.lan}</td>
+      <td style="font-size:11.5px">${g.loi?'<span class="neg-t">'+esc(String(g.loi).slice(0,220))+'</span>':'<span class="muted">'+esc(String(g.kq||(g.xong?'':'Chờ kết quả')).slice(0,160))+'</span>'}</td><td class="num">${g.giay??''}</td><td>${ttGoi(g)}</td></tr>`).join('')||'<tr><td colspan="6" class="m-empty">'+(gl==='tat'?'Chưa có lần gọi nào':'3 ngày qua không có lần lỗi / chạy lại')+'</td></tr>'}</table></div>`;
+  el.innerHTML=head(PAGES[S.page].ten+` <span class="badge" style="vertical-align:middle">${r.lich.length} lịch tự động · ${r.may.length} việc trên máy anh</span>`)+lich+gt+ls;
 }
 async function kiotChay(b,body,hoi){
   if(hoi&&!confirm(hoi))return;
@@ -9559,7 +9594,7 @@ function skGhep(D){
         for(let j=i;j<=c.length-(n-ds.length);j++){ds.push(c[j]);di(j+1,con-c[j][b],ds);ds.pop();if(tim)return}};di(0,v,[])}
     if(tim){tim.forEach(s=>{s.m=[a];s.cach='chia'});dung.add(key(a))}}
   return L}
-const SK_PH={thu:'PT',chi:'PC',dc:'DC'},skSoPhieu=a=>SK_PH[a.k]?SK_PH[a.k]+String(a.id).padStart(6,'0'):a.k==='tt'?maTT(a.id):'Vay';
+const SK_PH={thu:'PT',chi:'PC',dc:'DC',tt:'PCTG'},skSoPhieu=a=>SK_PH[a.k]?SK_PH[a.k]+String(a.id).padStart(6,'0'):'Vay';   // 21/11: không gọi maTT (ngoài đoạn → Edge kt-sao-ke lỗi "maTT is not defined" từ 19/11)
 // 19/11 kế toán: "tk đang âm mà tải sao kê vẫn báo khớp, không soi bị double khoản chi trên app" — so SỔ APP với sao kê: số dư cuối kỳ, ngày lệch đầu tiên,
 // phiếu trên app (trong kỳ) không ghép được dòng sao kê nào = nghi nhập trùng / sai tài khoản / sai ngày; cùng số tiền ±3 ngày với phiếu khác = Nghi trùng. — Monsieur Claude
 function skSoApp(D,kq){if(kq.the||!(D.app_ngay||[]).length)return null;const k=D.ky,A=Object.fromEntries(D.app_ngay.map(x=>[x.ngay,+x.so_du]));

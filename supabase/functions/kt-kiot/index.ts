@@ -323,16 +323,21 @@ Deno.serve(async req => {
     tok = await kiotToken();
     if (body.doi_chieu) {   // so khớp theo tháng (mặc định tháng này + tháng trước)
       const nay = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 7), d = new Date(nay + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() - 1);
-      const ds: string[] = (body.doi_chieu.thang || [d.toISOString().slice(0, 7), nay]).filter((m: string) => /^\d{4}-\d{2}$/.test(m)).slice(0, 3);
+      const ds: string[] = (body.doi_chieu.thang || (body.doi_chieu.chi_cu ? [] : [d.toISOString().slice(0, 7), nay])).filter((m: string) => /^\d{4}-\d{2}$/.test(m)).slice(0, 3);
       // 10/11/2026 (anh: "sửa lại cái đối chiếu Kiot"): lịch đêm soát thêm XOAY VÒNG 1 tháng cũ của năm (mỗi đêm 1 tháng, ~10 đêm hết vòng)
       // → số Kiot các tháng cũ trong log so khớp 3 bên luôn mới; phiếu Kiot sửa / huỷ / lập lùi ngày tháng cũ được bù. Monsieur Claude
-      if (!body.doi_chieu.thang && nguoi === 'Kiot (tự kéo)') {
-        const cu: string[] = []; for (let m = '2026-01'; m < ds[0]; m = thangSau(m)) cu.push(m);
+      // 21/11/2026: 1 lượt (3 tháng + công nợ) đã 102–129 giây, sắp chạm 150 giây (Edge bị cắt 504, không ghi nhật ký — như lỗi kéo thu hoá đơn)
+      // → lịch tách 2 lượt: {"doi_chieu":{"lich":"thang"}} = tháng này + tháng trước; {"doi_chieu":{"chi_cu":true,"cong_no":true}} = tháng cũ xoay vòng + công nợ.
+      //   Body cũ của lịch ({"doi_chieu":{}}) vẫn chạy như trước. Quá 95 giây thì không mở tháng / công nợ tiếp (ghi lại phần bỏ). — Monsieur Claude
+      const tuKeo = nguoi === 'Kiot (tự kéo)', tach = !!(body.doi_chieu.lich || body.doi_chieu.chi_cu);
+      if (!body.doi_chieu.thang && tuKeo && (body.doi_chieu.chi_cu || !tach)) {
+        const cu: string[] = []; for (let m = '2026-01'; m < (ds[0] || d.toISOString().slice(0, 7)); m = thangSau(m)) cu.push(m);
         if (cu.length) ds.unshift(cu[Math.floor(Date.now() / 864e5) % cu.length]);
       }
-      kq.doi_chieu = [];
-      for (const m of ds) kq.doi_chieu.push(await doiChieuThang(m, nguoi));
-      if (nguoi === 'Kiot (tự kéo)' || body.doi_chieu.cong_no) kq.cong_no = await doiChieuCongNo(nguoi);   // lịch đêm 23:50 hoặc bấm có cong_no
+      kq.doi_chieu = []; const boLai: string[] = [];
+      for (const m of ds) { if (Date.now() - batDau > 95e3) { boLai.push(m); continue; } kq.doi_chieu.push(await doiChieuThang(m, nguoi)); }
+      if ((tuKeo && !tach) || body.doi_chieu.cong_no) { if (Date.now() - batDau > 95e3) boLai.push('công nợ'); else kq.cong_no = await doiChieuCongNo(nguoi); }
+      if (boLai.length) kq.loi = 'Quá 95 giây, chưa so: ' + boLai.join(', ');
       kq.giay = Math.round((Date.now() - batDau) / 1000);
       await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: 'doi_chieu_kiot', du_lieu: kq });
       await sb('rpc/kt_canh_bao_kiot', {});   // có vấn đề → chuông app (supabase-schema-kt-kiot-canh-bao.sql)
