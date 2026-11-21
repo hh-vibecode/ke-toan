@@ -339,6 +339,15 @@ Deno.serve(async req => {
       return tra(kq);
     }
     if (body.thu_hd) {   // 02/11 anh: đối chiếu hoa hồng với sổ quỹ — Kiot không đổi "ngày sửa" hoá đơn khi phiếu thu đến sau, nên kéo lại theo tháng (lui = số tháng lùi từ tháng này)
+      // 21/11/2026: lượt đêm 3–4 tháng / lần quá 150 giây (Kiot ban đêm chậm) → 504, không ghi nhật ký, bảng đứng từ 18/11 → Đối soát báo nhầm
+      // "phiếu thu gắn thiếu" (TT012095 → HD060508). Nay: lịch 2 tháng / lượt; quá 95 giây thì không mở tháng mới (ghi lỗi tháng bỏ lại → chuông);
+      // tu_dong = lượt ban ngày: chỉ kéo khi có phiếu thu cục mới (kt_thu_hd_can_keo trả các tháng cần kéo), không có → bỏ qua. — Monsieur Claude
+      if (body.thu_hd.tu_dong) {
+        const c = await sb('rpc/kt_thu_hd_can_keo', {}, 'return=representation');
+        const lui = c.ok ? await c.json() : null;
+        if (!Array.isArray(lui) || !lui.length) return tra({ thu_hd: { bo_qua: c.ok ? 'không có phiếu thu mới' : 'lỗi kiểm ' + c.status } });
+        body.thu_hd.lui = lui;
+      }
       const nay = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 7), thang: string[] = [];
       for (const l of (body.thu_hd.lui || [0])) { const t = new Date(nay + '-01T00:00:00Z'); t.setUTCMonth(t.getUTCMonth() - Number(l)); const m = t.toISOString().slice(0, 7); if (m >= '2026-01') thang.push(m); }
       kq.thu_hd = { thang, so_hd: 0 };
@@ -352,9 +361,12 @@ Deno.serve(async req => {
         kq.thu_hd.so_hd += ds.length;
       };
       let hong: string[] = [];
-      for (const m of thang) { try { await motThang(m); } catch (_) { hong.push(m); } }
-      if (hong.length && Date.now() - batDau < 120e3) { await new Promise(r => setTimeout(r, 20e3)); const lai = hong; hong = []; for (const m of lai) { try { await motThang(m); } catch (e) { hong.push(m); kq.thu_hd.loi = String(e); } } }
+      const boLai: string[] = [];
+      for (const m of thang) { if (Date.now() - batDau > 95e3) { boLai.push(m); continue; } try { await motThang(m); } catch (_) { hong.push(m); } }
+      if (hong.length && Date.now() - batDau < 80e3) { await new Promise(r => setTimeout(r, 20e3)); const lai = hong; hong = []; for (const m of lai) { try { await motThang(m); } catch (e) { hong.push(m); kq.thu_hd.loi = String(e); } } }
+      if (boLai.length) { kq.thu_hd.bo_lai = boLai; hong.push(...boLai); kq.thu_hd.loi = (kq.thu_hd.loi ? kq.thu_hd.loi + ' · ' : '') + 'tháng ' + boLai.join(', ') + ' chưa kéo (quá 95 giây)'; }
       if (hong.length) kq.thu_hd.thang_loi = hong;
+      if (kq.thu_hd.so_hd) { const d = await sb('rpc/kt_thu_hd_dong_bo_da_tra', {}, 'return=representation'); kq.thu_hd.sua_da_tra = d.ok ? await d.json() : 'lỗi ' + d.status; }   // 21/11: đã trả hoá đơn theo Kiot
       kq.giay = Math.round((Date.now() - batDau) / 1000);
       await sb('kt_nhat_ky', { nguoi, bang: 'kt_kiot', hanh_dong: hong.length ? 'keo_kiot_loi' : 'keo_thu_hd', du_lieu: hong.length ? { loi: 'Thu theo hoá đơn: tháng ' + hong.join(', ') + ' — ' + (kq.thu_hd.loi || ''), da_xong: kq } : kq });
       return tra(kq);

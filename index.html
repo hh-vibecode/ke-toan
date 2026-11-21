@@ -1235,8 +1235,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.440';
-const APP_VERSION='20/11/2026 16:58';
+const APP_SO='1.441';
+const APP_VERSION='21/11/2026 11:22';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -8695,6 +8695,7 @@ const LOGIC2=[
  ['kiot','So khớp Kiot','23:50 mỗi đêm so lại tháng này + tháng trước: hoá đơn, trả hàng, sổ quỹ, phiếu nhập, đơn đặt — thiếu / lệch tự bù.','App thừa chỉ báo, không xoá.','15/10'],
  ['kiot','So khớp Kiot','Phiếu app có mà Kiot không còn trong tháng (mọi nhóm: HĐ, trả hàng, đơn đặt, phiếu nhập, sổ quỹ) → hỏi Kiot từng phiếu theo id (≤ 10 / nhóm / lần so): "không còn tồn tại" = Kiot đã xoá, còn trả về = đổi ngày / trạng thái. Chuông "Doanh thu Tx lệch Kiot" ghi mã + tình trạng; bấm → bảng phiếu lệch (tình trạng, ngày, chi nhánh, người bán, khách / NCC, tiền, phiếu liên quan, link Kiot).','Kiot API không cho biết AI xoá — xem web Kiot: Thiết lập → Lịch sử thao tác. Sổ quỹ không hỏi được từng phiếu (ghi chưa rõ). Phiếu app thừa không tự xoá khỏi app. Đơn đặt Kiot không còn mà CHƯA có tiền (không trả trên phiếu, không phiếu cọc TTDH) = báo giá → ghi riêng "bỏ qua", không tính lệch, không lên chuông (anh 09/11).','09/11'],
  ['kiot','So khớp Kiot','So công nợ toàn bộ khách / NCC mỗi đêm; lệch ghi đè theo Kiot.','','15/10'],
+ ['kiot','Phiếu thu chia hoá đơn','Kiot không đổi ngày sửa hoá đơn khi khách trả sau → app kéo lại bảng chia phiếu thu vào hoá đơn: đêm 6 lượt × 2 tháng (00:40–01:22, 12 tháng gần nhất) + mỗi giờ 08:10–22:10 khi có phiếu thu mới. Sau mỗi lượt: "đã trả" hoá đơn ghi theo Kiot.','Tháng nào quá 26 tiếng chưa kéo lại → chuông. Dùng cho Đối soát "phiếu thu gắn thiếu", hoa hồng, công nợ.','21/11'],
  ['kiot','So khớp Kiot','Kéo đầy đủ hàng hoá 23:20 → so tồn kho trước khi ghi đè.','','14/10'],
  ['kiot','Cảnh báo','Chuông báo: kéo lỗi, quá 4 tiếng không kéo được, lịch so khớp không chạy, còn lệch không tự bù được.','Cùng vấn đề chỉ báo lại sau 12 tiếng.','14/10'],
 ];
