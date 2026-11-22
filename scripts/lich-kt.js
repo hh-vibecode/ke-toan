@@ -12,7 +12,7 @@ const LICH = [
   ['kt-kiot',              '2,17,32,47 * * * *', 'kt-kiot', {}, 170000],                                      // 15 phút / lần
   ['kt-kiot-hang-dem',     '20 16 * * *', 'kt-kiot', { day_du: ['hang'] }, 170000],                          // 23:20 VN — ~40 giây
   ['kt-kiot-doi-chieu',    '50 16 * * *', 'kt-kiot', { doi_chieu: { lich: 'thang' } }, 170000],              // 23:50 VN — tháng này + tháng trước
-  ['kt-kiot-doi-chieu-2',  '10 17 * * *', 'kt-kiot', { doi_chieu: { chi_cu: true, cong_no: true } }, 170000], // 00:10 VN — tháng cũ xoay vòng + công nợ
+  ['kt-kiot-doi-chieu-2',  '37 18 * * *', 'kt-kiot', { doi_chieu: { chi_cu: true, cong_no: true } }, 170000], // 01:37 VN — tháng cũ xoay vòng + công nợ (22/11: dời khỏi 00:10–01:00, Kiot treo lệnh nặng khung đó)
   ['kt-kiot-thu-hd-1',     '40 17 * * *', 'kt-kiot', { thu_hd: { lui: [0, 1] } }, 170000],                   // 00:40 VN
   ['kt-kiot-thu-hd-2',     '52 17 * * *', 'kt-kiot', { thu_hd: { lui: [2, 3] } }, 170000],                   // 00:52
   ['kt-kiot-thu-hd-3',     '57 17 * * *', 'kt-kiot', { thu_hd: { lui: [4, 5] } }, 170000],                   // 00:57

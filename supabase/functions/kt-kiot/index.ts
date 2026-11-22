@@ -28,10 +28,16 @@ let tok = '';
 
 // 31/10/2026: đứt mạng tới Kiot ("http2 error: connection error", ~2% lần chạy — 32 / 1.445 trong 15 ngày) làm fetch NÉM lỗi → trước đây
 // dừng cả lần kéo (lần sau 15 phút tự kéo bù). Giờ mọi lệnh gọi Kiot thử lại tối đa 4 lần, cả lỗi mạng lẫn 429 / 5xx. — Monsieur Claude
+// 22/11/2026: đêm 22/11 lúc 00:10–00:57 Kiot TREO các lệnh nặng (không trả, không lỗi) → fetch chờ mãi, Edge bị cắt 150 giây (504 IDLE_TIMEOUT),
+// không ghi nhật ký (đối chiếu tháng cũ + công nợ, thu hoá đơn 1–3). Nay: mỗi lần gọi tự huỷ sau 20 giây rồi thử lại; tổng quá 125 giây
+// thì DỪNG có lỗi rõ (ghi nhật ký + chuông) thay vì bị cắt câm. — Monsieur Claude
+let batDauGoi = 0;
 async function kf(url: string, init?: RequestInit): Promise<Response> {
   for (let lan = 0; ; lan++) {
+    const con = batDauGoi ? 125e3 - (Date.now() - batDauGoi) : 125e3;
+    if (con < 3e3) throw new Error('Kiot trả chậm — quá 125 giây, dừng để Edge không bị cắt (lần sau chạy lại)');
     try {
-      const r = await fetch(url, init);
+      const r = await fetch(url, { ...init, signal: AbortSignal.timeout(Math.min(20e3, con)) });
       if ((r.status !== 429 && r.status < 500) || lan === 3) return r;
     } catch (e) { if (lan === 3) throw e; }
     await new Promise(s => setTimeout(s, 1500 * (lan + 1)));
@@ -308,7 +314,7 @@ async function tonGiuaNgay(ids: Set<number>) {
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
   const tra = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, 'Content-Type': 'application/json' } });
-  const batDau = Date.now(); let body: any = {};
+  const batDau = Date.now(); batDauGoi = batDau; let body: any = {};
   try { body = await req.json(); } catch (_) { /* cron gửi {} */ }
   let nguoi = 'Kiot (tự kéo)';
   if (req.headers.get('x-kt-cron') !== Deno.env.get('KT_CRON_KEY')) {
