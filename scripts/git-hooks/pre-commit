@@ -1,0 +1,15 @@
+#!/bin/sh
+# Chốt chặn chống 404 (sự cố 901f86e 21/11/2026: index git hỏng → commit xoá 395 file).
+# Chặn commit nếu: index.html không còn trong commit, hoặc xoá > 5 file cùng lúc.
+# Cố ý xoá nhiều thật thì: CHO_XOA=1 git commit ...
+if ! git cat-file -e :index.html 2>/dev/null; then
+  echo "CHẶN COMMIT: index.html không có trong index → app sẽ 404. Kiểm lại 'git status'." >&2
+  exit 1
+fi
+SO_XOA=$(git diff --cached --diff-filter=D --name-only | wc -l | tr -d ' ')
+if [ "$SO_XOA" -gt 5 ] && [ "$CHO_XOA" != "1" ]; then
+  echo "CHẶN COMMIT: commit này xoá $SO_XOA file (index git có thể hỏng). Kiểm 'git diff --cached --stat'." >&2
+  echo "Nếu cố ý xoá: CHO_XOA=1 git commit ..." >&2
+  exit 1
+fi
+exit 0

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Chốt chặn chống 404: không đẩy commit nào thiếu index.html / phien-ban.txt.
+while read local_ref local_sha remote_ref remote_sha; do
+  case "$local_sha" in 0000000000000000000000000000000000000000) continue;; esac
+  for f in index.html phien-ban.txt; do
+    if ! git cat-file -e "$local_sha:$f" 2>/dev/null; then
+      echo "CHẶN PUSH: commit $local_sha thiếu $f → app sẽ 404." >&2
+      exit 1
+    fi
+  done
+done
+exit 0

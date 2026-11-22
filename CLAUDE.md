@@ -33,6 +33,10 @@ Bối cảnh đầy đủ lúc khởi tạo: `BRIEF.md` (đọc 1 lần ở phi�
 - **Minh bạch, không giấu:** anh không trách khi làm sai. Mỗi báo cáo kể đủ việc làm sai (kể cả đã tự sửa), phần CHƯA kiểm
   được, rủi ro tiềm tàng (dữ liệu, quyền, bảo mật, job, số liệu). Không chắc thì nói không chắc. Cùng nhau giải quyết.
 - **Tự làm, không giao việc cho anh:** SQL, deploy, cấu hình làm được thì tự làm rồi báo. Chỉ nhờ anh khi thật sự bị chặn.
+- **Chống 404 (sự cố 21/11/2026: index git hỏng → commit 901f86e xoá 395 file, app 404):** đầu phiên chạy
+  `git config core.hooksPath scripts/git-hooks` (máy mới / clone mới phải chạy lại). Hook chặn commit thiếu `index.html` hoặc xoá > 5 file,
+  chặn push commit thiếu `index.html` / `phien-ban.txt`. KHÔNG bỏ qua hook (`--no-verify`). `git status` thấy hàng loạt `??` / `D` lạ → DỪNG, đừng commit.
+  Đẩy xong luôn `curl` trang live kiểm mã 200.
 - **Commit:** pull → `git diff --cached --stat` (chỉ đúng file mình sửa) → commit → push. Push bị từ chối → `git pull --rebase`,
   xung đột giải TAY từng chỗ, kiểm 0 dấu `<<<<<<<` và cú pháp OK rồi mới push — mỗi bước 1 lệnh, không nối `&&` sau bước kiểm.
 - **Đóng dấu phiên bản bằng `scripts/dong-dau.js`** (số phiên bản v1.N tăng theo số lần sửa index.html + giờ máy thật — anh 15/10/2026; từ 19/10 script ghi + git add `phien-ban.txt` → app mọi TK tự tải lại khi có bản mới, nên LUÔN chạy dong-dau trước khi commit index.html). Trước đây: **Đóng dấu `APP_VERSION` bằng giờ máy thật** (`date` / `Get-Date`), không tự ước. Đẩy xong đợi trang live hiện đúng bản mới
