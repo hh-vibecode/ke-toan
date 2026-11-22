@@ -1,0 +1,5 @@
+# khoá / token / mã truy cập — KHÔNG BAO GIỜ commit
+*.local.txt
+*.local.*
+.env*
+node_modules/
