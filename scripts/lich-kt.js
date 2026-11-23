@@ -31,6 +31,8 @@ const LICH = [
   ['kt-sao-ke-moi',        '0 */2 * * *', 'kt-sao-ke?moi=1', {}, 170000, 'public.kt_sao_ke_cho_xu_ly()'],    // 2 tiếng / lần khi có kỳ sao kê chờ
   ['kt-so-hh',             '40 14 * * *', 'kt-so-hh', {}, 170000],                                           // 21:40 VN
 ];
+// Lịch body tính theo ngày (không đặt ở đây): kt-kiot-so-quy-thang 16:00 VN — quét sổ quỹ từ đầu tháng, bắt phiếu Kiot lập lùi ngày
+// → supabase-schema-kt-kiot-so-quy-thang.sql (23/11/2026, VIEC 417). Monsieur Claude
 const LICH_SQL = [['kt-lich-soat', '8,38 * * * *', 'select public.kt_lich_soat()']];   // soát kết quả thật mọi lịch Edge
 (async () => {
   for (const [ten, gio, ham, body, cho, dk] of LICH) {
