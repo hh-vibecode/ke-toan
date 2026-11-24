@@ -4,10 +4,10 @@
 // Tham số: 1 = file kết quả JSON, 2 = danh sách trang (cách dấu phẩy, bỏ trống = mọi trang)
 const fs = require('fs'), os = require('os'), path = require('path'), { spawn } = require('child_process');
 const { taoTam, xoaTam } = require('./tk-tam'); const tatTrinhDuyet = require('./tat-trinh-duyet');
-const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', OUT = process.argv[2] || path.join(os.tmpdir(), 'ra-nut.json'), CHI = (process.argv[3] || '').split(',').filter(Boolean);
+const EDGE = process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', OUT = process.argv[2] || path.join(os.tmpdir(), 'ra-nut.json'), CHI = (process.argv[3] || '').split(',').filter(Boolean);
 const ngu = ms => new Promise(r => setTimeout(r, ms));
 // hàm RPC coi là GHI nếu tên có 1 đoạn (tách theo "_") là động từ ghi; CHO = hàm đọc trùng chữ (cho qua)
-const GHI = 'luu,xoa,gui,duyet,gan,chot,khoa,them,sua,tao,chay,ghi,keo,nap,nhap,upsert,reset,doi_mk,dang_xuat,danh_dau,xac_nhan,tu_choi,xu_ly,dong_bo,cap_nhat,bao_kq,doc_chuong,da_doc,ap_dung,khong_can,bo_qua,tai_len,dat_lai,mo_lai,phan_hoi,dang_xem,hoan_tac,bo_gan,tach,gop,chuyen,xac,dong_y,ket_thuc,huy,ghep,day,nhac,danh_gia,doi', CHO = 'kt_po_gia_nhap';
+const GHI = 'lap,tra_ho,luu,xoa,gui,duyet,gan,chot,khoa,them,sua,tao,chay,ghi,keo,nap,nhap,upsert,reset,doi_mk,dang_xuat,danh_dau,xac_nhan,tu_choi,xu_ly,dong_bo,cap_nhat,bao_kq,doc_chuong,da_doc,ap_dung,khong_can,bo_qua,tai_len,dat_lai,mo_lai,phan_hoi,dang_xem,hoan_tac,bo_gan,tach,gop,chuyen,xac,dong_y,ket_thuc,huy,ghep,day,nhac,danh_gia,doi', CHO = 'kt_po_gia_nhap';
 (async () => {
   const tk = await taoTam('tam-ra', 'admin', ['*'], 'THỬ HỆ THỐNG Rà nút');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ranut-')), tep = path.join(dir, 'app.html');

@@ -11,7 +11,7 @@ const ngu = ms => new Promise(r => setTimeout(r, ms));
   let html = fs.readFileSync(process.env.KT_HTML || path.join(__dirname, '..', 'index.html'), 'utf8');   // KT_HTML: chụp 1 bản khác (vd bản cũ để so)
   html = html.replace('<div id="app"></div>', `<div id="app"></div><script>sessionStorage.setItem("kt_phien",${JSON.stringify(tk.phien)});window.__qa=[];
     window.addEventListener('error',e=>window.__qa.push(e.message));window.alert=m=>window.__qa.push('alert '+m);window.confirm=()=>false;
-    const __f=window.fetch;window.fetch=(u,o)=>{const s=String(u),m=s.match(/rpc\\/(kt_[a-z0-9_]+)/);if(o&&o.method&&o.method!=='GET'&&(/rest\\/v1\\/(?!rpc)/.test(s)||(m&&/_(luu|xoa|gui|duyet|gan|chot|khoa|them|sua|tao|nhap|xu_ly|cap_nhat|doc_chuong|dang_xem)(_|$)/.test(m[1]))))return Promise.reject(new Error('CHẶN GHI'));return __f(u,o)};</script>`);
+    const __f=window.fetch;window.fetch=(u,o)=>{const s=String(u),m=s.match(/rpc\\/(kt_[a-z0-9_]+)/);if(o&&o.method&&o.method!=='GET'&&(/rest\\/v1\\/(?!rpc)/.test(s)||(m&&/_(luu|xoa|gui|duyet|gan|chot|khoa|them|sua|tao|nhap|xu_ly|cap_nhat|doc_chuong|dang_xem|lap|tra_ho)(_|$)/.test(m[1]))))return Promise.reject(new Error('CHẶN GHI'));return __f(u,o)};</script>`);
   fs.writeFileSync(tep, html);
   const port = 9300 + Math.floor(Math.random() * 500);
   const ed = spawn(EDGE, ['--headless=new', '--disable-gpu', `--remote-debugging-port=${port}`, `--user-data-dir=${dir}/ud`, '--window-size=1600,1000', 'about:blank'], { stdio: 'ignore' });
