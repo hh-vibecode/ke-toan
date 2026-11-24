@@ -2,12 +2,13 @@
 // node chup-trang.js <file.png> <trang> [JS chạy sau khi mở trang] [JS chạy tiếp → chụp file thứ 2 tên <file>-2.png]
 const fs = require('fs'), os = require('os'), path = require('path'), { spawn } = require('child_process');
 const { taoTam, xoaTam } = require('./tk-tam'); const tatTrinhDuyet = require('./tat-trinh-duyet');
-const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [OUT, TRANG, JS1, JS2] = process.argv.slice(2);
+// 24/11: máy Mac dùng Chrome (Windows giữ Edge)
+const EDGE = process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', [OUT, TRANG, JS1, JS2] = process.argv.slice(2);
 const ngu = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const tk = await taoTam('tam-chup', 'admin', ['*'], 'THỬ HỆ THỐNG Chụp');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'chup-')), tep = path.join(dir, 'app.html');
-  let html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  let html = fs.readFileSync(process.env.KT_HTML || path.join(__dirname, '..', 'index.html'), 'utf8');   // KT_HTML: chụp 1 bản khác (vd bản cũ để so)
   html = html.replace('<div id="app"></div>', `<div id="app"></div><script>sessionStorage.setItem("kt_phien",${JSON.stringify(tk.phien)});window.__qa=[];
     window.addEventListener('error',e=>window.__qa.push(e.message));window.alert=m=>window.__qa.push('alert '+m);window.confirm=()=>false;
     const __f=window.fetch;window.fetch=(u,o)=>{const s=String(u),m=s.match(/rpc\\/(kt_[a-z0-9_]+)/);if(o&&o.method&&o.method!=='GET'&&(/rest\\/v1\\/(?!rpc)/.test(s)||(m&&/_(luu|xoa|gui|duyet|gan|chot|khoa|them|sua|tao|nhap|xu_ly|cap_nhat|doc_chuong|dang_xem)(_|$)/.test(m[1]))))return Promise.reject(new Error('CHẶN GHI'));return __f(u,o)};</script>`);
