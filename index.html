@@ -1261,6 +1261,7 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 #page.gon table.m-t td .m-btn.sm{height:28px}
 #page.gon .pill,#page.gon .m-pill{white-space:nowrap}
 .ncc-ma{color:var(--text2);font-variant-numeric:tabular-nums}
+.kd-the{margin-left:4px}.kd-the .m-pill{font-size:10.5px;padding:2px 7px}
 /* menu trái: mục con 1 dòng, nghiệp vụ đang mở giữ trên đầu khi cuộn */
 .sb-acc{margin-left:12px;padding-left:6px}
 .sb-sub{white-space:nowrap}.sb-sub .sb-t{overflow:hidden;text-overflow:ellipsis}
@@ -1279,8 +1280,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.450';
-const APP_VERSION='25/11/2026 15:09';
+const APP_SO='1.451';
+const APP_VERSION='25/11/2026 16:58';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1888,7 +1889,7 @@ const PAGES={
   no_kh:{ten:'Khách hàng',sb:'Công nợ khách hàng',nv:'cong_no',cd:'Khách hàng & Bán hàng',fn:()=>pageCongNoDT('kh')},
   // 16/11 anh: "bỏ bổ sung cửa hàng, đổi đơn khách đặt riêng thành đơn hàng khách đặt, gộp với công nợ khách hàng" → nhóm Khách hàng: Công nợ khách hàng · Đơn hàng khách đặt;
   // dx_bs ẩn khỏi menu (link cũ vẫn mở, chưa có đề xuất bổ sung nào), form công khai bỏ lựa chọn Bổ sung cửa hàng
-  dx_kd:{ten:'Đơn hàng khách đặt',nv:'cong_no',cd:'Khách hàng & Bán hàng',fn:()=>poTrang('khach')},
+  dx_kd:{ten:'Đơn đặt hàng',nv:'cong_no',cd:'Khách hàng & Bán hàng',fn:()=>poTrang('khach')},
   dx_bs:{ten:'Bổ sung cửa hàng',nv:null,fn:()=>poTrang('dx')},
   ncc_noi:{ten:'NCC nội địa',sb:'Quản lý NCC',nv:'cong_no',cd:'Mua hàng nội địa',fn:()=>pageNccDS('noi')},
   po_nd:{ten:'Đặt hàng NCC nội địa (PO)',sb:'Đặt hàng (PO)',nv:'cong_no',cd:'Mua hàng nội địa',fn:()=>poTrang('po','noi_dia')},
@@ -4071,9 +4072,8 @@ async function pagePO(){const el=$('#page'),f=S.f,g=nccGhi(),t=f.po_tab||'po';if
   if(t==='khach')return await poKhach(el,P);
   // 18/11 kế toán: "cửa hàng đặt trưng bày khi nhảy vào hệ thống sẽ nhảy vào phần PO (phân biệt NCC trong nước và NCC nước ngoài)" → trang PO nội địa / nước ngoài
   // có 2 tab: Đơn đặt hàng (PO) · Cửa hàng đặt trưng bày (đơn đặt từ NCC trong nước → PO nội địa; nước ngoài → PO nhập khẩu; đơn bổ sung cũ chưa ghi nguồn → nội địa). — Monsieur Claude
-  let tbTab='';if(f.po_kieu){const DX0=S.cache.dx_d=S.cache.dx_d||await rpc('kt_dx_ds').catch(()=>[]),TB=DX0.filter(x=>dxCuaKieu(x,f.po_kieu)),cho=TB.filter(x=>['cho_duyet','da_duyet'].includes(x.trang_thai)).length;
-    tbTab=`<div class="m-seg ncc-seg">${[['po','Đơn đặt hàng (PO) · '+fmt(P.length)],['tb','Cửa hàng đặt trưng bày'+(cho?' · '+fmt(cho)+' chờ đặt':'')]].map(([k,l])=>`<button class="${(f.po_sub||'po')===k?'on':''}" onclick="S.f.po_sub='${k}';render()">${l}</button>`).join('')}</div>`;
-    if(f.po_sub==='tb'){await poDX(el,f.po_kieu);el.insertAdjacentHTML('afterbegin',tbTab);return}}
+  // 25/11 anh: "cái này là đơn đặt hàng (PO); chuyển cửa hàng trưng bày vào chung" → bỏ tab, trưng bày nằm ở Khách hàng & Bán hàng → Đơn đặt hàng (thẻ Trưng bày)
+  const tbTab='';
   // 21/11 kế toán: "phần PO bộ lọc thời gian ko hoạt động" — trước không đọc kỳ đang chọn → nay lọc theo ngày PO trong kỳ (ô Mọi thời gian = bỏ lọc), thẻ số theo danh sách đang lọc
   const lo='',tt=f.po_tt||'',q=f.po_q||'',mau=P.filter(p=>p.la_mau).length,tat=!!f.po_all,PK=tat?P:P.filter(p=>p.ngay&&p.ngay>=S.tu&&p.ngay<=S.den);
   const l=PK.filter(p=>(!lo||p.loai===lo)&&(!tt||p.trang_thai===tt)&&(!q||khopTim(q,[p.so,p.so_cu,p.ncc_ten,p.so_pi,...(p.dong||[]).map(x=>(x.ma_tht||'')+' '+(x.ten||''))])));
@@ -4545,10 +4545,14 @@ function kdDL(DXd,P){const nay=homNay(),sau7=ymd(new Date(Date.now()+7*864e5));
   const hen=(h,xong)=>xong?null:h&&h<nay?['Quá hẹn giao','bad']:h&&h<=sau7?['Sắp đến hẹn','warn']:null;
   const ttD=(z,h)=>!z?['Chưa đặt NCC','bad']:z.tt==='da_giao_khach'?['Đã giao khách','ok']:z.tt==='da_nhan'?['Hàng đã về kho','ok']:hen(h,false)||(PO_TT[z.tt]||[z.tt,'info']);
   const D=K.map(x=>({x,k:x.khach,dong:(x.dong||[]).map((r,i)=>{const z=(x.po_dong||[]).find(q=>q.i===i);return {r,i,z,tt:ttD(z,x.khach.hen_giao)}})}));
+  // 25/11 anh: "chuyển cửa hàng trưng bày vào chung, không chỉ đơn khách đặt; thêm thẻ dưới tên người đặt: khách hàng hay trưng bày" → đề xuất cửa hàng
+  // (trưng bày / bổ sung, không tính từ chối) vào cùng danh sách, tb=true; chưa duyệt = "Chờ duyệt". — Monsieur Claude
+  DXd.filter(x=>x.loai!=='khach_dat'&&x.trang_thai!=='tu_choi').forEach(x=>D.push({x,tb:true,k:{ten:x.bo_phan||'',hen_giao:x.ngay_can||null,coc:0,ma_don:''},
+    dong:(x.dong||[]).map((r,i)=>{const z=(x.po_dong||[]).find(q=>q.i===i);return {r,i,z,tt:!z&&x.trang_thai==='cho_duyet'?['Chờ duyệt','warn']:ttD(z,x.ngay_can)}})}));
   const C=P.flatMap(p=>(p.khach||[]).filter(k=>!(k.ma_don&&maK.has(k.ma_don))).map(k=>({p,k,tt:p.trang_thai==='da_giao_khach'?['Đã giao khách','ok']:p.trang_thai==='da_nhan'?['Hàng đã về kho','ok']:hen(k.hen_giao,false)||(PO_TT[p.trang_thai]||['','info'])})));
   return {D,C}}
 // 17/11 anh: số đỏ menu = đơn cần lưu ý (còn mặt hàng chưa đặt NCC / quá hẹn / sắp đến hẹn giao 7 ngày)
-const KD_LY=['Chưa đặt NCC','Quá hẹn giao','Sắp đến hẹn'],kdCanLuuY=({D,C})=>D.filter(o=>o.dong.some(d=>KD_LY.includes(d.tt[0]))).length+C.filter(o=>KD_LY.includes(o.tt[0])).length;
+const KD_LY=['Chưa đặt NCC','Chờ duyệt','Quá hẹn giao','Sắp đến hẹn'],kdCanLuuY=({D,C})=>D.filter(o=>o.dong.some(d=>KD_LY.includes(d.tt[0]))).length+C.filter(o=>KD_LY.includes(o.tt[0])).length;
 // công nợ khách cần lưu ý = Quá hạn + Đến hạn (7 ngày) — đúng nhãn trạng thái trang Công nợ khách hàng
 const noCanLuuY=ds=>(ds||[]).filter(x=>['Quá hạn','Đến hạn'].includes(ttCongNo(x)[0])).length;
 // tải ngầm sau khi mở app (không chặn màn hình) rồi gắn số đỏ; 2 trang tự cập nhật số khi mở lại
@@ -4567,9 +4571,9 @@ async function poKhach(el,P){const f=S.f;if(!S.cache.dx_d)el.innerHTML='<div cla
   // 18/11 kế toán + anh ("link theo dõi là app"): đơn đặt tạo thẳng trên Kiot đã cọc (TTDH / trả trên đơn / phiếu thu sổ quỹ gắn đơn) mà chưa gửi form → hiện "Chưa gửi đặt hàng"
   const KK0=S.cache.kd_kiot=S.cache.kd_kiot||await rpc('kt_kd_kiot').catch(()=>[]),daCo=new Set([...D.map(o=>o.k.ma_don),...C.map(o=>o.k.ma_don)].filter(Boolean)),KK=KK0.filter(x=>!daCo.has(x.ma)&&(csT||locCS().includes(csCuaCN(x.cn))));window._kdKK=KK;
   S.demKD=kdCanLuuY({D:D0,C:C0});shellBadges();
-  const nhom=t=>t[0]==='Chưa đặt NCC'?'chua':['Đã giao khách','Hàng đã về kho'].includes(t[0])?'ve':'cho',lo=f.kd_loc||'',q=f.kd_q||'';
+  const nhom=t=>['Chưa đặt NCC','Chờ duyệt'].includes(t[0])?'chua':['Đã giao khách','Hàng đã về kho'].includes(t[0])?'ve':'cho',lo=f.kd_loc||'',q=f.kd_q||'',lk=f.kd_lk||'',ngTao=v=>v?ymd(new Date(v)):'',ngO=(d,tb)=>`<td class="nw">${d?fmtD(d):'<span class="muted">—</span>'} <span class="kd-the">${pill(tb?'Trưng bày':'Khách đặt',tb?'info':'ok')}</span></td>`;   // 25/11 anh: ngày tạo lên đầu, thẻ loại đơn cạnh ngày (như app MKT)
   const hop=(t,txt)=>(!lo||nhom(t)===lo)&&(!q||khopTim(q,txt));
-  const Dl=D.map(o=>({...o,dong:o.dong.filter(d=>hop(d.tt,[o.k.ten,o.k.sdt,o.k.ma_don,maDX(o.x.id),o.x.nguoi,o.x.bo_phan,d.r.ma,d.r.ten,d.z&&d.z.so]))})).filter(o=>o.dong.length),Cl=C.filter(o=>hop(o.tt,[o.k.ten,o.k.sdt,o.k.ma_don,o.p.so]));
+  const Dl=D.filter(o=>!lk||(lk==='tb')===!!o.tb).map(o=>({...o,dong:o.dong.filter(d=>hop(d.tt,[o.k.ten,o.k.sdt,o.k.ma_don,maDX(o.x.id),o.x.nguoi,o.x.bo_phan,d.r.ma,d.r.ten,d.z&&d.z.so]))})).filter(o=>o.dong.length),Cl=lk==='tb'?[]:C.filter(o=>hop(o.tt,[o.k.ten,o.k.sdt,o.k.ma_don,o.p.so]));
   const dongAll=D.flatMap(o=>o.dong),chua=dongAll.filter(d=>!d.z).length,giu=sumBy(D.filter(o=>o.dong.some(d=>nhom(d.tt)!=='ve')),o=>+o.k.coc||0)+sumBy(C.filter(o=>nhom(o.tt)!=='ve'&&!o.p.la_mau),o=>+o.k.coc||0);
   const tre=D.filter(o=>o.dong.some(d=>['Quá hẹn giao','Sắp đến hẹn'].includes(d.tt[0]))).length+C.filter(o=>['Quá hẹn giao','Sắp đến hẹn'].includes(o.tt[0])).length;
   const loTxt=z=>z&&z.lo?`<span class="m-link" onclick="event.stopPropagation();lnkMo(${z.lo.id})">${esc(z.lo.ma)}</span>${z.lo.cont?`<div class="dx-gy">${esc(z.lo.cont)}</div>`:''}${z.lo.ve?`<div class="dx-gy">về ${fmtD(z.lo.ve)}</div>`:''}`:'<span class="muted">—</span>';
@@ -4577,30 +4581,29 @@ async function poKhach(el,P){const f=S.f;if(!S.cache.dx_d)el.innerHTML='<div cla
   const KD_UT=['Chưa đặt NCC','Quá hẹn giao','Sắp đến hẹn'],ttDon=ds=>{for(const t of KD_UT){const d=ds.find(x=>x.tt[0]===t);if(d)return d.tt}return ds[0]?ds[0].tt:['','']};
   const rows=Dl.map(o=>{const ds=o.dong,da=ds.filter(d=>d.z).length,po=[...new Map(ds.filter(d=>d.z).map(d=>[d.z.po_id,d.z])).values()],lo=[...new Map(ds.filter(d=>d.z&&d.z.lo).map(d=>[d.z.lo.id,d.z])).values()];
       const tien=sumBy(ds,d=>(+d.r.sl||0)*(+d.r.gia_ban||0)),ten=ds.map(d=>d.r.ten||d.r.ten_kiot||d.r.ma||'').filter(Boolean),tt=ttDon(ds);
-      return `<tr class="click" onclick="dxMo(${o.x.id})"><td class="ten"><b>${esc(o.k.ten||'')}</b><div class="dx-gy">${esc(o.k.sdt||'')}</div></td>
+      const ng=ngTao(o.x.tao_luc);return [ng,`<tr class="click" onclick="dxMo(${o.x.id})">${ngO(ng,o.tb)}<td class="ten"><b>${esc(o.k.ten||'')}</b><div class="dx-gy">${esc(o.k.sdt||'')}</div></td>
       <td class="ten">${esc(o.x.nguoi||'')}<div class="dx-gy">${esc(o.x.bo_phan||'')}</div></td>
-      <td class="nw">${esc(o.k.ma_don||'')}<div class="dx-gy">${maDX(o.x.id)}${o.k.phieu_coc?' · '+esc(o.k.phieu_coc):''}</div></td><td class="num">${fmt(o.k.coc)}</td>
+      <td class="nw">${esc(o.k.ma_don||'')||maDX(o.x.id)}${o.tb&&o.x.uu_tien==='gap'?' '+pill('Gấp','bad'):''}<div class="dx-gy">${o.k.ma_don?maDX(o.x.id):''}${o.k.phieu_coc?' · '+esc(o.k.phieu_coc):''}</div></td><td class="num">${o.tb?'':fmt(o.k.coc)}</td>
       <td class="ten" title="${esc(ten.join(' · '))}">${ds.length>1?`<span class="badge">${fmt(ds.length)}</span> `:''}${esc(ten.join(' · '))}</td><td class="num">${fmt(sumBy(ds,d=>+d.r.sl||0))}</td><td class="num">${tien?fmt(tien):''}</td>
       <td class="nw">${po.length?po.map(z=>`<span class="m-link" onclick="event.stopPropagation();poForm(${z.po_id})">${esc(z.so)}</span>`).join(', ')+`<div class="dx-gy">${esc([...new Set(po.map(z=>z.ncc).filter(Boolean))].join(', '))}</div>`:'<span class="muted">chưa đặt</span>'}</td>
       <td class="nw">${lo.length?lo.map(z=>loTxt(z)).join(''):'<span class="muted">—</span>'}</td>
-      <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...tt)}${da<ds.length&&da?`<div class="dx-gy">${da} / ${ds.length} đã đặt NCC</div>`:''}</td></tr>`}).join('')
-    +Cl.map(o=>`<tr class="click" onclick="poForm(${o.p.id})"><td class="ten"><b>${esc(o.k.ten||'')}</b><div class="dx-gy">${esc(o.k.sdt||'')}</div></td><td class="ten">${o.p.tao_boi?esc(o.p.tao_boi):'<span class="muted">—</span>'}<div class="dx-gy">gắn tay trên PO</div></td><td class="nw">${esc(o.k.ma_don||'')}${o.k.phieu_coc?`<div class="dx-gy">${esc(o.k.phieu_coc)}</div>`:''}</td><td class="num">${fmt(o.k.coc)}</td>
+      <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...tt)}${da<ds.length&&da?`<div class="dx-gy">${da} / ${ds.length} đã đặt NCC</div>`:''}</td></tr>`]}).concat(Cl.map(o=>[String(o.p.ngay||'').slice(0,10),`<tr class="click" onclick="poForm(${o.p.id})">${ngO(String(o.p.ngay||'').slice(0,10),false)}<td class="ten"><b>${esc(o.k.ten||'')}</b><div class="dx-gy">${esc(o.k.sdt||'')}</div></td><td class="ten">${o.p.tao_boi?esc(o.p.tao_boi):'<span class="muted">—</span>'}<div class="dx-gy">gắn tay trên PO</div></td><td class="nw">${esc(o.k.ma_don||'')}${o.k.phieu_coc?`<div class="dx-gy">${esc(o.k.phieu_coc)}</div>`:''}</td><td class="num">${fmt(o.k.coc)}</td>
       <td class="ten"><span class="muted">cả PO (gắn tay)</span></td><td></td><td></td><td class="nw"><span class="m-link">${esc(o.p.so)}</span>${o.p.la_mau?' <span class="badge">Mẫu</span>':''}<div class="dx-gy">${esc(o.p.ncc_ten||'')}</div></td><td><span class="muted">—</span></td>
-      <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...o.tt)}</td></tr>`).join('')
-    +KK.filter(x=>(!lo||lo==='chua')&&(!q||khopTim(q,[x.khach,x.ma,x.nv,x.phieu,x.gc]))).map((x,i)=>`<tr class="click" onclick="kdKiotMo('${esc(x.ma)}')"><td class="ten"><b>${esc(x.khach||'')}</b><div class="dx-gy">${esc(x.khach_ma||'')}</div></td>
+      <td class="nw">${o.k.hen_giao?fmtD(o.k.hen_giao):''}</td><td class="c">${pill(...o.tt)}</td></tr>`]),KK.filter(x=>lk!=='tb'&&(!lo||lo==='chua')&&(!q||khopTim(q,[x.khach,x.ma,x.nv,x.phieu,x.gc]))).map((x,i)=>[String(x.ngay||'').slice(0,10),`<tr class="click" onclick="kdKiotMo('${esc(x.ma)}')">${ngO(String(x.ngay||'').slice(0,10),false)}<td class="ten"><b>${esc(x.khach||'')}</b><div class="dx-gy">${esc(x.khach_ma||'')}</div></td>
       <td class="ten">${esc(x.nv||'')}<div class="dx-gy">tạo trên Kiot</div></td><td class="nw">${esc(x.ma)}<div class="dx-gy">${esc(x.phieu||'')}</div></td><td class="num">${fmt(x.coc)}</td>
       <td class="ten" title="${esc(String(x.gc||'').replace(/\n/g,' · '))}">${+x.so_mh>1?`<span class="badge">${fmt(x.so_mh)}</span> `:''}${esc(String(x.gc||'').replace(/\n/g,' · '))||fmt(x.so_mh||0)+' mặt hàng'}</td><td class="num"></td><td class="num">${fmt(x.tong)}</td>
-      <td class="nw"><span class="muted">chưa đặt</span></td><td><span class="muted">—</span></td><td class="nw"></td><td class="c">${pill('Chưa gửi đơn','warn')}</td></tr>`).join('');
+      <td class="nw"><span class="muted">chưa đặt</span></td><td><span class="muted">—</span></td><td class="nw"></td><td class="c">${pill('Chưa gửi đơn','warn')}</td></tr>`])).sort((a,b)=>b[0].localeCompare(a[0])).map(r=>r[1]).join('');
   const th=(k,c,ic,lb,v,s)=>kThe(c,ic,lb,v,s,`S.f.kd_loc=S.f.kd_loc==='${k}'?'':'${k}';render()`,lo===k);
   el.innerHTML=`<div class="m-kpis m-k3">${kThe('info',IC_LNK.tien,'Tiền cọc khách đang giữ',fmt(giu),'đơn chưa về đủ hàng')}${th('chua','bad',IC_LNK.di,'Chưa đặt NCC',fmt(chua)+' mặt hàng','khách đã cọc')}
       ${kThe('warn',IC_LNK.cp,'Quá hẹn / sắp đến hẹn',fmt(tre)+' đơn','trong 7 ngày')}</div>
-    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Đơn hàng khách đặt <span class="badge">${fmt(D.length+C.length+KK.length)} đơn</span></div></div>
+    <div class="m-card"><div class="ncc-top"><div><div class="ncc-tit">Đơn đặt hàng <span class="badge">${fmt(D.length+C.length+KK.length)} đơn</span></div></div>
       <div class="ncc-ctl"><input class="m-in" type="search" style="width:240px" placeholder="Tìm khách, người đặt, mã đơn, mã hàng, PO..." value="${esc(q)}" onchange="S.f.kd_q=this.value;render()">
+        <select class="m-in" style="width:130px" onchange="S.f.kd_lk=this.value;render()">${optsObj({'':'Mọi loại đơn',khach:'Khách đặt',tb:'Trưng bày'},lk)}</select>
         <select class="m-in" style="width:150px" onchange="S.f.kd_loc=this.value;render()">${optsObj({'':'Tất cả tình trạng',chua:'Chưa đặt NCC',cho:'Đang chờ hàng',ve:'Đã về / đã giao'},lo)}</select>
         <button class="m-btn out" onclick="navigator.clipboard&&navigator.clipboard.writeText('${location.origin+location.pathname}#de-xuat-mua');toast('Đã chép link form — gửi cho Sale')">Chép link form</button></div></div>
-    <div class="scroll"><table class="m-t kd-t"><colgroup><col style="width:150px"><col style="width:130px"><col style="width:100px"><col style="width:100px"><col><col style="width:44px"><col style="width:100px"><col style="width:130px"><col style="width:96px"><col style="width:92px"><col style="width:150px"></colgroup>
-      <tr><th>Khách</th><th>Người đặt</th><th>Mã đơn Kiot</th><th class="num">Tiền cọc</th><th>Mặt hàng</th><th class="num">SL</th><th class="num">Giá bán</th><th>PO</th><th>Lô hàng</th><th>Hẹn giao</th><th class="c">Tình trạng</th></tr>
-    ${rows||'<tr><td colspan="11" class="m-empty">Chưa có đơn hàng khách đặt</td></tr>'}</table></div></div>`}
+    <div class="scroll"><table class="m-t kd-t"><colgroup><col style="width:186px"><col style="width:140px"><col style="width:124px"><col style="width:100px"><col style="width:100px"><col><col style="width:44px"><col style="width:100px"><col style="width:130px"><col style="width:96px"><col style="width:92px"><col style="width:150px"></colgroup>
+      <tr><th>Ngày tạo</th><th>Khách / cửa hàng</th><th>Người đặt</th><th>Mã đơn</th><th class="num">Tiền cọc</th><th>Mặt hàng</th><th class="num">SL</th><th class="num">Giá bán</th><th>PO</th><th>Lô hàng</th><th>Hẹn giao</th><th class="c">Tình trạng</th></tr>
+    ${rows||'<tr><td colspan="12" class="m-empty">Chưa có đơn hàng khách đặt</td></tr>'}</table></div></div>`}
 // 16/11 kế toán: "Vận chuyển nội địa: chỉ cần theo dõi danh mục các đơn vị vận chuyển và tiền thanh toán cho họ khi có phát sinh từng chuyến (Nhất Tín trừ luôn
 // vào tiền hàng COD; 1 số nhà xe thì cửa hàng xuất két trả tiền rồi cộng vào giá vốn trên Kiot)". Chỉ theo dõi, không ghi P&L (tránh tính 2 lần). — Monsieur Claude
 const vcNut=(t,on,cls)=>`<button class="m-btn sm out${cls?' '+cls:''}" onclick="event.stopPropagation();${on}">${t}</button>`;
@@ -8963,6 +8966,7 @@ const LOGIC2=[
  ['cong_no','PO — Đơn vị nhận tiền (24/11)','Chi phí khác của PO: chọn Đơn vị nhận tiền = NCC của PO hoặc đơn vị Vận chuyển & Logistics (có "+ Thêm đơn vị vận chuyển mới…"). Chọn NCC của PO → cộng vào phải trả NCC (quy về tiền tệ PO): ô Còn phải trả NCC = tiền hàng + thuế + chi phí trả NCC − đã trả. Chữ gõ tay cũ hiện "(chưa liên kết)", chưa tính công nợ tới khi chọn lại.','Kế toán 24/11.','24/11'],
  ['cong_no','Menu Khách hàng & NCC (24/11)','5 nhóm: Khách hàng & Bán hàng (Công nợ khách hàng, Đơn hàng khách đặt) · Mua hàng nội địa (Quản lý NCC, Đặt hàng PO, Báo giá NCC) · Mua hàng & Nhập khẩu (Quản lý NCC, Đặt hàng PO, Hồ sơ nhập khẩu, Báo giá NCC) · Dịch vụ & Trung gian (Vận chuyển & Logistics — tab Đơn vị logistics / Vận chuyển nội địa; Thanh toán trung gian) · Quản lý giá (Đối chiếu giá nhập, Định giá bán). Danh sách NCC nước ngoài không còn đơn vị vận chuyển.','Kế toán 24/11 (ảnh menu mẫu). Kèm: hoàn lại bản v1.447 (lô đường biển / bộ, chốt chi phí, lập phiếu chi từ chi phí lô).','24/11'],
  ['cong_no','Giao diện nhóm Khách hàng & NCC (25/11)','Mọi trang trong nhóm: bỏ dòng mô tả dưới tiêu đề, dòng phụ dưới thẻ số và dòng phụ trong ô (mã, SĐT, ghi chú nhỏ) → rê chuột xem; chữ dài cắt "…"; tiêu đề bảng dính khi cuộn; dòng Tổng dính đáy. Quản lý NCC nội địa / nước ngoài / Vận chuyển & Logistics cùng khung cột: Mã · Tên · Điện thoại · Số đơn · tiền · Giao dịch gần nhất. NCC nước ngoài: Giao dịch gần nhất lấy thêm ngày PO và ngày chuyển tiền trung gian (trước chỉ có ngày Kiot nên trống).','Anh 25/11: "2 cái quản lý NCC khung phải giống nhau; dễ nhìn hơn, thoáng hơn, ít text hơn, tham khảo KiotViet; hạn chế chú thích ở ngoài, 1 ô không quá nhiều thông tin; tiêu đề kéo xuống cũng mất".','25/11'],
+ ['cong_no','Đơn đặt hàng gộp khách đặt + trưng bày (25/11)','Khách hàng & Bán hàng → Đơn đặt hàng (trước: Đơn hàng khách đặt) gồm cả đề xuất cửa hàng (trưng bày / bổ sung, không tính từ chối); cột đầu Ngày tạo kèm thẻ Khách đặt / Trưng bày (như app MKT), xếp mới tạo trước; ô lọc Mọi loại đơn. Trưng bày chưa duyệt = Chờ duyệt (tính vào số đỏ menu cùng Chưa đặt NCC / quá hẹn / sắp đến hẹn). Trang Đặt hàng (PO) nội địa / nước ngoài bỏ tab Cửa hàng đặt trưng bày.','Anh 25/11: "cái này là đơn đặt hàng; chuyển cửa hàng trưng bày vào chung chứ không chỉ mình đơn khách hàng đặt nữa, thêm thẻ khách hàng hay trưng bày" + "cho ngày tạo lên đầu, để thẻ ở phần ngày tạo, giống MKT". Trước (18/11): trưng bày là tab trong trang PO.','25/11'],
  ['cong_no','PO — Giao dịch & chứng từ (21/11)','Ảnh thanh toán gắn ở lần thanh toán (Thanh toán trung gian / phiếu chi); PO tự hiện mọi giao dịch phân bổ / gắn vào PO + phiếu chi phí của lô, bấm Chứng từ xem ảnh. Hoá đơn NCC gắn ở PO, 1 ô.','','21/11'],
  ['cong_no','PO — Số PO tự cấp (21/11)','Để trống ô Số PO → PO-MMYY (tháng năm của ngày PO)-viết tắt NCC; tháng đó NCC đã có PO thì thêm STT 2 số tiếp theo (PO-1126-TSF → PO-1126-TSF02). Viết tắt: ô "Viết tắt (mã PO)" ở form NCC. Bỏ tiền tố THT (kế toán 21/11).','21/11 chạy lại 22 PO: 10 đổi (mã cũ lưu so_cu, ô tìm PO tìm được mã cũ), giữ tháng-năm kế toán đã ghi trong mã; hồ sơ nhập khẩu đổi theo.','21/11'],
  ['cong_no','Đặt hàng: khách đặt · cửa hàng trưng bày (18/11)','Form công khai (link #de-xuat-mua → Đặt hàng) có 2 loại (18/11 kế toán): (1) Sản phẩm có khách đặt — khách đã cọc: tên, SĐT, mã đơn Kiot, tiền cọc, phiếu thu cọc, hẹn giao → vào trang Đơn hàng khách đặt (menu Khách hàng, có cột Người đặt · bộ phận); (2) Cửa hàng đặt trưng bày — chỉ danh sách hàng + chọn Đặt từ NCC trong nước / NCC nước ngoài (bắt buộc) → vào tab Cửa hàng đặt trưng bày của trang Đặt hàng (PO) nội địa / nước ngoài tương ứng. Hàng cần đặt nhập dạng bảng như file PO (≤ 200 mặt hàng): ảnh, mã Kiot, tên *, màu, kích thước, ĐVT, SL * (khách đặt thêm Giá bán khách); hàng chưa có mã Kiot phải có màu hoặc kích thước; tải được file Excel / Word / PDF (tìm dòng tiêu đề có cột Tên hàng + SL, đọc mọi sheet, ảnh dán trong file gắn theo dòng). Cửa hàng KHÔNG chọn NCC. Người mua hàng mở đề xuất: mỗi dòng gợi ý NCC = NCC của phiếu nhập Kiot gần nhất có mã đó (bỏ phiếu nhập huỷ / không ghi NCC, kèm giá nhập) → sửa được → gom theo NCC, mỗi NCC bấm Tạo PO (dòng PO giữ số đề xuất + số dòng, đơn giá = giá nhập Kiot gần nhất nếu đúng NCC). Đề xuất "Đã đặt PO" khi mọi dòng đã vào PO chưa huỷ; mới đặt một phần → "Đã duyệt". Trang Đơn hàng khách đặt (menu Khách hàng): mỗi mặt hàng 1 dòng — PO nào, NCC, lô nhập khẩu / cont (PO gắn trong Hồ sơ nhập khẩu), tình trạng theo PO, quá hẹn / sắp đến hẹn (7 ngày).','Kế toán 16/11: "gộp bổ sung và trưng bày làm 1 tên BỔ SUNG CỬA HÀNG", "bỏ chọn NCC vì cửa hàng không nắm SP thuộc nhà nào", "PO 100 mã, khách A đặt 2 mã… gắn SP thuộc PO nào, về cont nào".','16/11'],
