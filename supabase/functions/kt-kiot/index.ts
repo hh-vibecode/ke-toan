@@ -143,7 +143,10 @@ const LOAI: Record<string, { bang: string, duong: string, tham: Record<string, s
     doi: x => ({ id: x.id, ma: x.code, ngay: vn(x.purchaseDate), chi_nhanh: x.branchName ?? null, nv_ban: x.soldByName ?? null,
       khach_id: x.customerId ?? null, khach_ma: x.customerCode ?? null, khach_ten: x.customerName ?? null, tong: n0(x.total), da_tra: n0(x.totalPayment),
       trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null, kenh_id: x.SaleChannelId ?? x.saleChannelId ?? null, ghi_chu: x.description ?? null,
-      cod: x.usingCod ?? null, so_mh: (x.orderDetails || []).length, sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
+      cod: x.usingCod ?? null, so_mh: (x.orderDetails || []).length,
+      // 26/11 kế toán: đơn Kiot giữ hàng có sẵn không phải đơn cần đặt NCC → lưu từng dòng hàng để app so tồn. Monsieur Claude
+      chi_tiet: (x.orderDetails || []).map((d: any) => ({ ma: d.productCode, ten: d.productName, sl: d.quantity, gia: n0(d.price) })),
+      sua_kiot: vn(x.modifiedDate ?? x.createdDate), keo_luc: new Date().toISOString() }) },
   tra_hang: { bang: 'kt_kiot_tra_hang', duong: 'returns', tham: {}, dayDu: (tu, den) => ({ fromReturnDate: tu, toReturnDate: den }), moc: (x, tu) => String(x.returnDate) >= tu,
     doi: x => ({ id: x.id, ma: x.code, hoa_don_id: x.invoiceId ?? null, ngay: vn(x.returnDate), chi_nhanh: x.branchName ?? null,
       tong_tra: n0(x.returnTotal), phi_tra: n0(x.returnFee), da_tra: n0(x.totalPayment), trang_thai: x.status ?? null, trang_thai_ten: x.statusValue ?? null,
