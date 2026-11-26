@@ -177,7 +177,9 @@ Deno.serve(async req => {
         mst: x.BuyerTaxCode || '', nguoi_mua: x.BuyerLegalName || x.BuyerFullName || 'Khách lẻ', ten: ten[x.InvSeries] || x.InvoiceName || null,
         thanh_tien: +x.TotalAmountWithoutVAT || 0, tien_thue: +x.TotalVATAmount || 0, tong: +x.TotalAmount || 0,
         ma: x.TransactionID || x.TransactionId || x.transactionID || '',
-        ghi_chu: x.OrgInvNo ? `Điều chỉnh / thay thế HĐ ${x.OrgInvSeries || ''} ${x.OrgInvNo}`.replace(/\s+/g, ' ') : '' }));
+        ghi_chu: x.OrgInvNo ? `Điều chỉnh / thay thế HĐ ${x.OrgInvSeries || ''} ${x.OrgInvNo}`.replace(/\s+/g, ' ') : '',
+        // 26/11/2026: lưu HĐ gốc (Org*) + trường trạng thái nếu MISA trả (lệnh /invoice/paging hiện KHÔNG trả EInvoiceStatus / ReferenceType) — VAT P&L theo HĐ meInvoice
+        misa: Object.fromEntries(Object.keys(x).filter(k => /status|referencetype|cancel|delet|replac|adjust|^org/i.test(k) && x[k] != null && x[k] !== '').map(k => [k, x[k]])) }));
       const r = await sb('rpc/kt_nap_meinvoice', { p_thang: th, p_ds: dong }, 'return=representation');
       if (!r.ok) throw new Error(`nạp ${th} lỗi ${r.status} ${(await r.text()).slice(0, 200)}`);
       kq.thang[th] = await r.json();
