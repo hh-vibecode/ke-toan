@@ -1280,8 +1280,8 @@ body.co-xn{padding-top:34px}body.co-xn .sb{top:34px;height:calc(100vh - 34px)}
 // Khoá công khai (anon) chỉ gọi được các hàm kt_* — hàm tự kiểm MÃ TRUY CẬP rồi mới trả dữ liệu
 // (xem supabase-schema-kt.sql). Bảng kt_* không cho đọc thẳng. KHÔNG đặt khoá quản trị ở đây.
 // số phiên bản tăng 1 mỗi lần cập nhật app (scripts/dong-dau.js) + giờ đẩy lên
-const APP_SO='1.453';
-const APP_VERSION='26/11/2026 10:58';
+const APP_SO='1.454';
+const APP_VERSION='26/11/2026 14:12';
 const SB_URL='https://bcrpxfvvjsjpvbksqzls.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjcnB4ZnZ2anNqcHZia3NxemxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzE0OTgsImV4cCI6MjEwMjg0NzQ5OH0.XGEUvHP1YBhxYKD9Xq1yH2gl95-V9VgaY5HfsAnFb2c';
 // Mốc dữ liệu (09/10/2026, anh: xử lý cả năm 2026): Kiot + tiền vào (thu Kiot) + tiền ra (chi) từ 01/01; điều chuyển từ 01/05 —
@@ -1794,7 +1794,7 @@ function lock(hetHan){if(xnDoc())return thoatXemNhu();const p=S.phien;if(p&&!het
 async function boot(){
   $('#app').innerHTML='<div class="empty">Đang tải...</div>';
   const [dm,gy,ch]=await Promise.all([rpc('kt_danh_muc'),rpc('kt_goi_y'),rpc('kt_dem_cau_hoi').catch(()=>0)]);S.cauHoi=ch;
-  S.dm=dm;S.toi=dm.toi;S.gy=gy;fillDatalists();S.tb=await rpc('kt_dem_thong_bao').catch(()=>0);demLoi();setTimeout(demKH,2500);
+  S.dm=dm;S.toi=dm.toi;S.gy=gy;fillDatalists();S.tb=await rpc('kt_dem_thong_bao').catch(()=>0);demLoi();setTimeout(demKH,2500);setTimeout(hanPopup,3000);
   if(!S.tu)setKy('thang',true);
   const h=location.hash.slice(1);if(h&&PAGES[h])S.page=h;
   if(!coXem(S.page))S.page=Object.keys(PAGES).find(coXem)||'cd_logic';
@@ -1941,6 +1941,7 @@ const PAGES={
   cd_tai_khoan:{ten:'Tài khoản tiền',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('tai_khoan')},
   cd_don_vi:{ten:'Cơ sở / bộ phận',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('don_vi')},
   cd_loai:{ten:'Loại thu / chi',nv:'he_thong',cd:'Danh mục',fn:()=>pageCaiDat('loai')},
+  cd_han:{ten:'Hạn dịch vụ & khoá',nv:'he_thong',cd:'Danh mục',fn:()=>pageHan()},   // 26/11 anh: báo trước 1 / 2 tuần hết hạn Kiot, MISA
   cd_giai_dap:{ten:'Cần giải đáp',nv:'he_thong',cd:'Hỗ trợ',fn:()=>pageGiaiDap()},
   cd_logic:{ten:'Logic xử lý',nv:'he_thong',cd:'Hỗ trợ',fn:()=>pageCaiDat('logic')},
   // 22/10 anh: nhóm "Nhật ký" đổi thành "Log" + thêm Log lưu lượng (Supabase) + Log lịch chạy (tách từ cuối Log so khớp)
@@ -1957,7 +1958,7 @@ function go(p){S.page=p;location.hash=p;shell();dxBao()}
 function demMuc(k){const dem=S.cache.dem||{};return k==='cd_giai_dap'?(S.cauHoi||0):k==='doi_soat'?(S.soLoi||0):k==='chi'?(dem.cho_duyet||0)+(dem.cho_gd||0)+(dem.cho_tt||0):k==='dieu_chuyen'?(dem.dc_chua_xac_nhan||0):k==='thu'?(dem.thu_cho_duyet||0):k==='no_kh'?(S.demNoKH||0):k==='dx_kd'?(S.demKD||0):0}
 const mucNV=nv=>Object.keys(PAGES).filter(k=>PAGES[k].nv===nv&&coXem(k));
 // 22/10 anh: "xếp lại cài đặt, cái nào nhóm được với nhau thì nhóm" — mục con Cài đặt & Hệ thống chia nhóm, có tiêu đề nhỏ
-const CD_NHOM=['Danh mục','Dữ liệu','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_xuat','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
+const CD_NHOM=['Danh mục','Dữ liệu','Người dùng','Log','Hỗ trợ'],CD_THU=['cd_tai_khoan','cd_don_vi','cd_loai','cd_han','cd_xuat','cd_phan_quyen','cd_nhat_ky','cd_kiot','cd_giai_dap','cd_logic'];
 // Log hệ thống: 1 trang, 3 tab — mỗi tab dùng lại hàm trang cũ, chèn thanh tab ngay dưới tiêu đề
 const LOG_TAB=[['sua','Chỉnh sửa'],['luu_luong','Lưu lượng'],['lich','Lịch chạy'],['loi','Báo lỗi'],['ban','Lịch sử cập nhật']];
 async function pageLogHT(){const t=S.f.log_tab||'sua';
@@ -2846,6 +2847,37 @@ async function pageBaoLoi(){const el=$('#page');el.innerHTML='<div class="m-empt
     ${l.map(x=>`<tr><td class="nw">${fmtDT(x.luc)}</td><td class="nw">${esc(x.nguoi||'')}</td><td class="nw">${phieu(x)}</td><td class="ten" style="white-space:pre-wrap">${esc(x.noi_dung)}${x.xu_ly_ghi?`<div class="muted" style="font-size:11.5px">↳ ${esc(x.xu_ly_ghi)}</div>`:''}${(x.lich_su||[]).filter(h=>h.loai==='phan_hoi').map(h=>`<div style="font-size:11.5px;color:var(--warn)">↳ Phản hồi ${fmtDT(h.luc)}: ${esc(h.noi_dung||'')}</div>`).join('')}</td>
       <td class="nw"><span class="m-link" onclick="moCT('bao_loi',${x.id})">Xem</span></td><td class="nw">${x.da_xu_ly?pill('Đã xử lý','ok')+`<div class="muted" style="font-size:11px">${esc(x.xu_ly_boi||'')} ${fmtDT(x.xu_ly_luc)}</div>`:pill('Chưa xử lý','bad')}</td>
       <td class="nw">${x.da_xu_ly?`<button class="m-btn sm" onclick="xuLyLoi(${x.id},false)">Mở lại</button>`:`<button class="m-btn sm duyet" onclick="xuLyLoi(${x.id},true)">✓ Đã xử lý</button>`}</td></tr>`).join('')||'<tr><td colspan="7" class="m-empty">Không có báo lỗi</td></tr>'}</table></div></div>`}
+// ── HẠN DỊCH VỤ & KHOÁ (26/11/2026, anh: "xem set báo trước 1 vs 2 tuần hết hạn trên popup thông báo ở màn hình app") — supabase-schema-kt-han-dich-vu.sql.
+// Kiot / MISA không trả ngày hết hạn qua API → nhập tay. Báo: chuông 08:00 khi còn 14 / 7 ngày, ngày hết hạn, quá hạn; popup khi mở app (1 lần / ngày) khi còn ≤ 14 ngày. — Monsieur Claude
+const hanTT=c=>c==null?['Chưa nhập hạn','']:c<0?['Đã hết hạn','bad']:c===0?['Hết hạn hôm nay','bad']:c<=7?['Còn '+c+' ngày','bad']:c<=14?['Còn '+c+' ngày','warn']:['Còn '+c+' ngày','ok'];
+async function pageHan(){const el=$('#page');el.innerHTML='<div class="m-empty">Đang tải...</div>';
+  const ds=await rpc('kt_han_ds');S.cache.han=ds;
+  el.innerHTML=head(PAGES[S.page].ten+' <span class="badge" style="vertical-align:middle">báo trước 14 và 7 ngày</span>',`<button class="m-btn pri" onclick="formHan()">+ Thêm dịch vụ</button>`)+`
+    <div class="m-card"><div class="scroll"><table class="m-t"><tr><th>Dịch vụ</th><th>Dùng cho</th><th>Hết hạn</th><th>Trạng thái</th><th>Ghi chú</th><th>Sửa lần cuối</th><th></th></tr>
+    ${ds.map(x=>{const t=hanTT(x.con);return `<tr><td class="nw"><b>${esc(x.ten)}</b></td><td class="ten" style="font-size:12px">${esc(x.dung_cho||'')}</td>
+      <td class="nw">${x.het_han?fmtD(x.het_han):'<span class="muted">—</span>'}</td><td class="nw">${t[1]?pill(t[0],t[1]):`<span class="muted">${t[0]}</span>`}</td>
+      <td class="ten" style="font-size:12px">${esc(x.ghi_chu||'')}</td><td class="nw muted" style="font-size:11.5px">${esc(x.sua_boi||'')} · ${fmtD(x.sua_luc)}</td>
+      <td class="nw c"><button class="m-btn out" style="height:28px" title="Sửa" onclick="formHan(${x.id})">✏</button> <button class="m-btn out" style="height:28px" title="Xoá" onclick="xoaHan(${x.id})">✕</button></td></tr>`}).join('')||'<tr><td colspan="7" class="m-empty">Chưa có dịch vụ</td></tr>'}</table></div></div>`}
+function formHan(id){const x=id?(S.cache.han||[]).find(r=>r.id===id)||{}:{};
+  modal(`<h2>${id?'Sửa':'Thêm'} dịch vụ</h2>
+    <div class="form" id="f">
+      <label><span>Tên dịch vụ${BB}</span><input name="ten" value="${esc(x.ten||'')}" placeholder="vd KiotViet"></label>
+      <label><span>Ngày hết hạn</span><input type="date" name="het_han" value="${x.het_han||''}"></label>
+      <label class="full"><span>Dùng cho</span><input name="dung_cho" value="${esc(x.dung_cho||'')}"></label>
+      <label class="full"><span>Ghi chú</span><input name="ghi_chu" value="${esc(x.ghi_chu||'')}"></label>
+    </div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đóng</button><button class="btn pri" onclick="luuHan(${id||0})">Lưu</button></div>`)}
+async function luuHan(id){const f=$('#f'),v=n=>f.querySelector(`[name=${n}]`).value.trim();
+  if(!v('ten'))return alert('Chưa nhập tên dịch vụ');
+  await save('kt_han_luu',{p_dong:{id:id||'',ten:v('ten'),het_han:v('het_han'),dung_cho:v('dung_cho'),ghi_chu:v('ghi_chu')}});render()}
+async function xoaHan(id){const x=(S.cache.han||[]).find(r=>r.id===id);if(!confirm(`Xoá "${x?x.ten:''}"? Sẽ không báo hạn nữa.`))return;await save('kt_han_xoa',{p_id:id},'Đã xoá');render()}
+// popup khi mở app: mục còn ≤ 14 ngày, mỗi người 1 lần / ngày
+async function hanPopup(){if(!S.toi)return;const k='kt_han_pop_'+S.toi.id+'_'+homNay();if(localStorage.getItem(k))return;
+  let ds=[];try{ds=await rpc('kt_han_sap')}catch(e){return}if(!ds.length||$('#modal'))return;localStorage.setItem(k,'1');
+  modal(`<h2>Dịch vụ sắp hết hạn</h2>
+    <div class="m-card" style="margin:0"><table class="m-t"><tr><th>Dịch vụ</th><th>Hết hạn</th><th>Trạng thái</th></tr>
+    ${ds.map(x=>{const t=hanTT(x.con);return `<tr><td class="nw"><b>${esc(x.ten)}</b></td><td class="nw">${fmtD(x.het_han)}</td><td class="nw">${pill(t[0],t[1])}</td></tr>`}).join('')}</table></div>
+    <div class="acts"><button class="btn" onclick="closeModal()">Đã biết</button>${coXem('cd_han')?`<button class="btn pri" onclick="closeModal();go('cd_han')">Cập nhật hạn</button>`:''}</div>`)}
 // 26/10 anh: "lỗi xử lý xong báo lại người đã làm — click vào ra lỗi đã báo với cách xử lý" (27/10 bỏ bước người báo xác nhận)
 const BL_LS={xu_ly:['Đã xử lý','ok'],phan_hoi:['Phản hồi','warn'],hoan_thanh:['Hoàn thành','ok']};
 const blLS=b=>(b.lich_su||[]).map(h=>`<div class="bl-ls"><div>${pill(BL_LS[h.loai][0],BL_LS[h.loai][1])} <span class="muted">${esc(h.ai||'')} · ${fmtDT(h.luc)}</span></div>${h.noi_dung?`<div style="white-space:pre-wrap">${esc(h.noi_dung)}</div>`:''}</div>`).join('');
@@ -8677,7 +8709,7 @@ async function demChuong(){if(!S.phien||document.visibilityState!=='visible')ret
   try{const n=await rpc('kt_dem_thong_bao');if(n!==S.tb){const tang=n>S.tb;S.tb=n;veSoChuong();if(tang&&$('.tb-chuong.open'))veChuong()}}catch(e){}}
 setInterval(demChuong,60000);document.addEventListener('visibilitychange',demChuong);
 const tuLuc=t=>{const s=(Date.now()-new Date(t))/1000;return s<60?'vừa xong':s<3600?Math.floor(s/60)+' phút trước':s<86400?Math.floor(s/3600)+' giờ trước':s<7*86400?Math.floor(s/86400)+' ngày trước':fmtDT(t)};
-const MAU_TB={sao_ke:"info",lich_loi:"bad",lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
+const MAU_TB={han_dv:"warn",sao_ke:"info",lich_loi:"bad",lich_tt:'warn',bao_loi_kq:'ok',bao_loi:'bad',he_thong:'info',chi_binh_luan:'vio',kiot_loi:'bad',kiot_lech:'warn',chi_trung:'bad',chi_moi:'warn',chi_kiot:'warn',chi_cho_gd:'teal',chi_cho_tt:'info',chi_duyet:'ok',chi_da_tt:'ok',chi_tu_choi:'bad',dc_moi:'vio',dc_xac_nhan:'ok'};
 async function moChuong(b){const d=b.parentNode,o=d.classList.contains('open');$$('.tb-dd.open').forEach(x=>x.classList.remove('open'));if(o)return;
   d.classList.add('open');d.querySelector('.cb-ds').innerHTML='<div class="muted" style="padding:12px;font-size:12px">Đang tải…</div>';await veChuong()}
 async function veChuong(){const box=$('.tb-chuong .cb-ds');if(!box)return;
@@ -8692,6 +8724,7 @@ async function moThongBao(id){const x=(S.cache.tb||[]).find(t=>t.id===id);if(!x)
   $$('.tb-dd.open').forEach(d=>d.classList.remove('open'));
   if(!x.da_doc){x.da_doc=true;S.tb=Math.max(0,S.tb-1);veSoChuong();docChuong(id)}
   if(x.bang==='sao_ke'){if(coXem('sao_ke_hd')){S.f.sk_ky=x.dong_id;S.f.sk_chieu='';S.f.sk_tt='';S.f.sk_q='';S.cache.sk_ds=null;delete S.cache['sk_'+x.dong_id];go('sao_ke_hd')}return}   // 16/11 sao kê mới đã đối chiếu tự động
+  if(x.bang==='kt_han'){if(coXem('cd_han'))go('cd_han');return}   // 26/11 dịch vụ sắp / đã hết hạn
   if(x.bang==='lich_tt'){if(coXem('sap_tra')){S.f.ltt_tab='dk';go('sap_tra')}return}   // 26/10: nhắc lịch thanh toán định kỳ
   if(x.bang==='bao_loi_kq'){moKQLoi(x.dong_id);return}   // 26/10: lỗi mình báo đã xử lý → xem cách xử lý, Hoàn thành / Phản hồi tiếp
   if(x.bang==='de_xuat'){if(coXem('po')){S.f.dx_loc='cho_duyet';S.cache.dx_d=null;go('dx_kd');if(x.dong_id)setTimeout(()=>dxMo(x.dong_id),900)}return}   // 12/11 đề xuất mua hàng mới
@@ -8775,6 +8808,7 @@ async function luuTL(id){const v=$('#tl'+id).value.trim();if(!v)return alert('Ch
 // [nghiệp vụ, mục, quy tắc, ghi chú / ví dụ, cập nhật]. Thêm / đổi logic → sửa đúng dòng ở đây.
 const LG_NV=[['chi_so','Chỉ số (cách tính)'],['chung','Dữ liệu chung'],['thu_chi','Thu chi & Ngân quỹ'],['cong_no','Công nợ'],['thue','Hoá đơn & Thuế'],['bao_cao','Báo cáo & Chốt kỳ'],['kiot','Kéo & so khớp Kiot']];
 const LOGIC2=[
+ ['chung','Hạn dịch vụ & khoá','Cài đặt → Danh mục → Hạn dịch vụ & khoá: nhập tay ngày hết hạn từng dịch vụ (Kiot, MISA không trả ngày hết hạn qua API). Chuông 08:00 khi còn đúng 14 / 7 ngày, ngày hết hạn và mỗi ngày khi đã quá hạn (lịch kt-han-dich-vu); popup giữa màn hình khi mở app, 1 lần / ngày / người, khi có mục còn ≤ 14 ngày.','Chỉ người có quyền hệ thống (Supreme / Admin / GĐ) nhận. Gia hạn xong sửa ngày mới thì hết báo. Đổi khoá / mật khẩu API phải cập nhật thêm khoá trên máy chủ.','26/11'],
  ['chung','Cửa sổ chi tiết','Mọi phiếu trong Thu chi & Ngân quỹ (chi, thu, điều chuyển, tạm ứng, vay) + công nợ, khoá kỳ mở CỬA SỔ LỚN giữa màn hình, cùng 1 kiểu.','Có khung Hoạt động (lịch sử + bình luận báo chuông) và nút Xuất phiếu Word (thu: người nộp ký; điều chuyển: người thực hiện; tạm ứng: người nhận ký).','19/10'],
  ['chi_so','Tổng quan · Doanh thu','Tổng tiền hoá đơn Kiot trạng thái Hoàn thành + Đang xử lý (đang giao), theo NGÀY HOÁ ĐƠN trong kỳ, mọi khách, mọi kênh.','Giống màn Tổng quan Kiot. Đơn đặt chưa giao chưa tính. Dòng nhỏ: tiền trả hàng trong kỳ.','19/10'],
  ['chi_so','Tổng quan · Doanh thu theo nhóm hàng','Dòng hàng hoá đơn Kiot (Hoàn thành + Đang xử lý) gom về nhóm cha; doanh thu dòng quy về tổng hoá đơn (đã trừ giảm giá hoá đơn). Mặc định 6 nhóm lớn + Khác; bấm Khác xem đủ. Bấm 1 nhóm hoặc Tổng cộng: tách Online / Offline; bấm Online / Offline (xem đơn): popup các hoá đơn cấu thành doanh số — ngày, khách, cơ sở, nguồn, phần doanh thu của nhóm trong hoá đơn; có bảng Theo nguồn, chuyển tab Tất cả / Online / Offline, bấm hoá đơn xem chi tiết, xuất Excel.','Online / offline theo nguồn đơn Kiot = kênh bán trên hoá đơn (trống thì lấy kênh đơn đặt hàng gắn). Bán trực tiếp / Khác / Chùa Vẻn / trống = offline; Facebook, Tiktok, Website, Shopee, Nến Bơ… = online — cùng luật P&L. Tỷ trọng dòng Online / Offline = % trong nhóm đó.','30/10'],
